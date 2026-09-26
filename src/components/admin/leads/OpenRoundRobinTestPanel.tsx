@@ -1949,7 +1949,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       className={cn(
                         'border-t border-border align-middle',
                         expired ? 'bg-muted/40' : 'bg-background',
-                        orrLead && !expired && 'ring-2 ring-inset ring-primary/60 bg-primary/5',
+                        orrLead && !expired && 'bg-emerald-50/70',
                       )}
                     >
                       <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
