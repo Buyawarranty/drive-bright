@@ -2274,6 +2274,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           pricingData: updatedPricingData
         }));
         
+        // Make sure "back" from Bumper lands on step 4, not the homepage.
+        try {
+          const here = new URL(window.location.href);
+          if (!here.searchParams.get('step')) {
+            here.searchParams.set('step', '4');
+            window.history.replaceState(window.history.state, '', here.toString());
+          }
+          localStorage.setItem('buyawarranty_currentStep', JSON.stringify({ value: '4', timestamp: Date.now() }));
+        } catch { /* noop */ }
         redirectToStripeWithBackGuard(checkoutData.url);
       } else {
         toast.error('Unable to process. Please try again.');
