@@ -35,6 +35,8 @@ Updated: just now
 - Miles offers human chat only while a specialist is On duty; otherwise show Call us, WhatsApp us and Request a callback. See mem://chat/miles-live-agent-offer
 - Miles contractual answers always use the newest Platinum Plan and Terms returned by Supabase, never a fixed document version. See mem://chat/miles-latest-policy-documents
 
+- Leaving agents keep their sales forever: archive only, never delete or unassign sold records. See mem://constraints/agent-sales-history-permanent
+
 ## Memories
 - [Test Phone Visible, Never Blocked](mem://admin/leads/test-phone-visible-not-blocked) — 07960 111131 works across website/chat and shows TEST in New Leads without disabled actions
 - [ORR Column Parity](mem://admin/leads/orr-column-parity-time-to-lead) — RR and ORR share identical columns; ORR only adds the Time to Lead countdown column; distribution rule is a separate functional difference
