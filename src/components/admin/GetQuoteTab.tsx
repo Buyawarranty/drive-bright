@@ -6826,6 +6826,33 @@ Questions? Call 0330 229 5040`;
                       </button>
                     </div>
 
+                    {/* Why buttons are grey — explain the room above the minimum price */}
+                    {!priceMatchEvidenced && basePrice.totalPrice > 0 && (() => {
+                      const headroom = Math.max(0, Math.round(basePrice.totalPrice - ABSOLUTE_MIN_TOTAL));
+                      const noneFit = isUnderAbsoluteMin(basePrice.totalPrice - 25);
+                      const bigOnesBlocked = !noneFit && isUnderAbsoluteMin(Math.round(basePrice.totalPrice * 0.7));
+                      if (!noneFit && !bigOnesBlocked) return null;
+                      return (
+                        <p className="text-[11px] leading-relaxed text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                          {noneFit ? (
+                            <>
+                              <strong>No discount available on this quote.</strong> The calculated price is only
+                              <strong> £{headroom}</strong> above the £{ABSOLUTE_MIN_TOTAL} minimum for this cover, so even
+                              £25 off would go under it. To open up discounts, lower the cover a notch (smaller claim limit,
+                              higher excess or lower labour rate), use <strong>Price match</strong> with evidence, or ask management.
+                            </>
+                          ) : (
+                            <>
+                              <strong>Some discounts are greyed out.</strong> This price is <strong>£{headroom}</strong> above
+                              the £{ABSOLUTE_MIN_TOTAL} minimum for this cover — the larger percentages would go under it.
+                              Lowering the cover options (claim limit, excess or labour rate) brings the minimum down and
+                              opens up bigger discounts.
+                            </>
+                          )}
+                        </p>
+                      );
+                    })()}
+
                     {discountAuthBy && (
                       <div className="mt-2 flex items-center justify-between gap-3 p-3 rounded-lg border-2 border-emerald-300 bg-emerald-50">
                         <p className="text-xs text-emerald-900">
