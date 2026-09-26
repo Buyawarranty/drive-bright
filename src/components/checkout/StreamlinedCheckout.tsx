@@ -277,6 +277,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // True when the customer opened the fields via "Enter your address manually" —
   // clearing the search box must not collapse fields they're typing into.
   const [manualAddressEntry, setManualAddressEntry] = useState(false);
+  // Only true once the address is COMPLETE: a full address picked from the
+  // lookup, or every field filled manually / restored complete. A partial
+  // Postcoder fill (postcode + town only) must never trigger the auto-scroll.
+  const [addressConfirmedComplete, setAddressConfirmedComplete] = useState(false);
   // Postcode/street/town search input — starts empty even if an address was restored
   const [postcodeInput, setPostcodeInput] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -294,7 +298,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     
     setIsLookingUp(true);
     setAddressLookupFailed(false);
-    
+    // A fresh lookup means the address is back to partial until a full
+    // address is picked — re-arm the auto-scroll gate.
+    setAddressConfirmedComplete(false);
+    hasAutoScrolledToPayRef.current = false;
+    hasAutoScrolledToPaymentRef.current = false;
+
     try {
       console.log('🔍 Auto postcode lookup for:', cleanPostcode);
 
@@ -469,6 +478,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   // Populate every address field once the customer picks their final address
   const handleSelectLookupAddress = useCallback((addr: any) => {
+    // Full address chosen — the address is now genuinely complete.
+    setAddressConfirmedComplete(true);
     const line1 = addr.line_1 || '';
     const line2 = [addr.line_2, addr.line_3].filter(Boolean).join(', ');
     const town = addr.town_or_city || addr.town || addr.posttown || '';
@@ -1112,12 +1123,30 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return count;
   }, [customerData, mileageValueValid]);
 
+  // Mark the address as confirmed-complete when every field is filled WITHOUT
+  // going through the lookup picker: manual entry, or details restored
+  // already complete from an earlier step. A partial Postcoder fill (postcode
+  // + town while the suggestion dropdown is still open) never counts.
+  useEffect(() => {
+    if (addressConfirmedComplete) return;
+    if (!addressComplete) return;
+    if (showAddressDropdown || isLookingUp) return;
+    if (manualAddressEntry) {
+      setAddressConfirmedComplete(true);
+      return;
+    }
+    // Restored/pre-filled complete address (no lookup in flight, no dropdown).
+    if (addressSuggestions.length === 0) {
+      setAddressConfirmedComplete(true);
+    }
+  }, [addressComplete, addressConfirmedComplete, manualAddressEntry, showAddressDropdown, isLookingUp, addressSuggestions.length]);
+
   // Auto-scroll to "Choose how you want to pay" only once personal details AND a
-  // fully validated address (real postcode, address line 1 and town) are in place.
+  // fully confirmed address (picked in full or every field completed) are in place.
   const hasAutoScrolledToPayRef = React.useRef(false);
   useEffect(() => {
     if (hasAutoScrolledToPayRef.current) return;
-    if (personalDetailsComplete && addressComplete) {
+    if (personalDetailsComplete && addressComplete && addressConfirmedComplete && !showAddressDropdown && !isLookingUp) {
       hasAutoScrolledToPayRef.current = true;
       setTimeout(() => {
         const paySection = document.getElementById('how-to-pay-section');
@@ -1126,7 +1155,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
       }, 300);
     }
-  }, [personalDetailsComplete, addressComplete]);
+  }, [personalDetailsComplete, addressComplete, addressConfirmedComplete, showAddressDropdown, isLookingUp]);
 
   // Track if component has been mounted (for bfcache handling)
   const hasMountedRef = React.useRef(false);
@@ -1221,34 +1250,35 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackStripeCheckoutPageLoad();
   }, []);
 
-  // Auto-scroll to "How to Pay" section when all address fields are complete
+  // Auto-scroll to "How to Pay" section when the address is fully confirmed
   useEffect(() => {
-    // Only if address is complete
-    if (!addressComplete) return;
-    
+    // Only if address is complete AND confirmed (full pick or all fields filled)
+    if (!addressComplete || !addressConfirmedComplete) return;
+    if (showAddressDropdown || isLookingUp) return;
+
     // Only trigger once per session
     if (hasAutoScrolledToPaymentRef.current) return;
-    
+
     // Ensure all required address fields are filled
-    const isAddressFullyComplete = 
+    const isAddressFullyComplete =
       addressData.postcode?.trim() &&
       addressData.address_line_1?.trim() &&
       addressData.town?.trim();
-    
+
     if (isAddressFullyComplete) {
       hasAutoScrolledToPaymentRef.current = true;
-      
+
       // Small delay to ensure DOM is updated
       setTimeout(() => {
         if (howToPayRef.current) {
-          howToPayRef.current.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
+          howToPayRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
           });
         }
       }, 300);
     }
-  }, [addressComplete, addressData.postcode, addressData.address_line_1, addressData.town]);
+  }, [addressComplete, addressConfirmedComplete, showAddressDropdown, isLookingUp, addressData.postcode, addressData.address_line_1, addressData.town]);
 
   // Auto-validate pre-filled fields from Step 2
   useEffect(() => {
