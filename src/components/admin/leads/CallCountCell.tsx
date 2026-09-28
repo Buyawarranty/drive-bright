@@ -57,11 +57,7 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({ lead, agentId
   const formatWhen = (iso: string) => {
     const d = new Date(iso);
     const mins = Math.round((Date.now() - d.getTime()) / 60000);
-    const rel =
-      mins < 1 ? 'just now'
-      : mins < 60 ? `${mins}m ago`
-      : mins < 1440 ? `${Math.round(mins / 60)}h ago`
-      : `${Math.round(mins / 1440)}d ago`;
+    const rel = formatTimeAgo(iso);
     return `${d.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })} (${rel})`;
   };
 
