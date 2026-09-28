@@ -130,14 +130,44 @@ serve(async (req: Request) => {
       ['Consequential', saleExtras.consequential],
     ] as [string, any][]).filter(([, on]) => !!on).map(([l]) => l);
     const addOnsDisplay = addOns.length ? addOns.join(', ') : 'None';
-    // Quotes & Orders reference price (frozen at point of sale) + discount given
-    const quotedTotal = saleExtras.sale_quoted_total ?? saleExtras.original_amount ?? null;
-    const soldTotal = saleValue != null ? Number(saleValue) : (saleExtras.final_amount ?? null);
-    const discountAmt = saleExtras.sale_discount_amount ?? saleExtras.discount_amount ??
-      (quotedTotal != null && soldTotal != null ? Number(quotedTotal) - Number(soldTotal) : null);
-    const discountPct = saleExtras.sale_discount_pct != null
-      ? Number(saleExtras.sale_discount_pct)
-      : (quotedTotal ? Math.round((Number(discountAmt || 0) / Number(quotedTotal)) * 1000) / 10 : null);
+    // Quotes & Orders full retail price + the discount the agent actually gave.
+    // The price-override audit holds the real grid price (matrix_total) for every
+    // quote link / confirm payment, so prefer it over the stored sale fields.
+    let auditMatrix: number | null = null;
+    let auditLowest: number | null = null;
+    try {
+      const normalizedReg = String(regPlate || '').toUpperCase().replace(/\s/g, '');
+      if (normalizedReg) {
+        const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+        const spacedReg = normalizedReg.length > 4 ? `${normalizedReg.slice(0, -3)} ${normalizedReg.slice(-3)}` : normalizedReg;
+        const { data: audits } = await supabase
+          .from('price_override_audit')
+          .select('matrix_total, entered_total, created_at')
+          .in('vehicle_reg', [normalizedReg, spacedReg])
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(50);
+        const rows = (audits || []).filter((a: any) => Number(a.matrix_total) > 0);
+        if (rows.length) {
+          auditMatrix = Number(rows[0].matrix_total);
+          const entered = rows.map((a: any) => Number(a.entered_total)).filter((n) => n > 0);
+          if (entered.length) auditLowest = Math.min(...entered);
+        }
+      }
+    } catch (_) { /* ignore */ }
+    const quotedTotal = auditMatrix ?? saleExtras.sale_quoted_total ?? saleExtras.original_amount ?? null;
+    const candidates = [
+      saleValue != null ? Number(saleValue) : null,
+      saleExtras.final_amount != null ? Number(saleExtras.final_amount) : null,
+      auditLowest,
+    ].filter((n): n is number => n != null && n > 0);
+    const soldTotal = candidates.length ? Math.min(...candidates) : null;
+    const discountAmt = quotedTotal != null && soldTotal != null
+      ? Math.max(0, Math.round((Number(quotedTotal) - soldTotal) * 100) / 100)
+      : (saleExtras.sale_discount_amount ?? saleExtras.discount_amount ?? null);
+    const discountPct = quotedTotal && discountAmt != null
+      ? Math.round((Number(discountAmt) / Number(quotedTotal)) * 1000) / 10
+      : (saleExtras.sale_discount_pct != null ? Number(saleExtras.sale_discount_pct) : null);
     const isPriceMatch = !!saleExtras.price_match_applied;
 
     const row = (label: string, value: string, highlight = false) =>
@@ -229,6 +259,10 @@ serve(async (req: Request) => {
           <div style="font-size: 14px; opacity: 0.9;">Sale Value</div>
           <div style="font-size: 32px; font-weight: bold; margin: 5px 0;">${saleValueDisplay}</div>
           <div style="font-size: 14px; opacity: 0.9;">Payment: <strong>${payment}</strong></div>
+          ${quotedTotal != null ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.35); font-size: 15px;">
+            Quotes &amp; Orders full price: <strong>${money(quotedTotal)}</strong><br/>
+            Discount given: <strong>${discountAmt ? `${money(discountAmt)} (${discountPct}%)` : 'None (0%)'}</strong>
+          </div>` : ''}
         </div>
         <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
