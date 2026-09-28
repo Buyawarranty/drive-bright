@@ -334,11 +334,21 @@ const Auth = () => {
       );
 
       if (fnError || !fnData?.success) {
-        const message =
-          (fnData && (fnData as any).error) ||
-          fnError?.message ||
-          "We couldn't create your account. Please contact support.";
-        throw new Error(message);
+        let message: string | undefined = (fnData as any)?.error;
+        // Non-2xx responses: read the friendly message from the response body.
+        const ctx = (fnError as any)?.context;
+        if (!message && ctx && typeof ctx.json === 'function') {
+          try {
+            const body = await ctx.clone().json();
+            message = body?.error;
+          } catch { /* ignore */ }
+        }
+        toast({
+          title: "Sign Up Failed",
+          description: message || "We couldn't create your account. Please contact support.",
+          variant: "destructive",
+        });
+        return;
       }
 
       toast({
