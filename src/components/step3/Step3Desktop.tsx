@@ -583,6 +583,14 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                     <span className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#f36b21] bg-[#fff1e6] border border-[#ffd9bd] rounded-full px-2.5 py-1">12 instalments only</span>
                   )}
                 </div>
+                <div className="mb-2">
+                  <div className="text-[30px] leading-[1.05] tracking-[-0.03em] font-extrabold text-[#161616]">
+                    {months / 12}-Year Warranty
+                  </div>
+                  <div className="mt-1 text-[13px] font-bold text-[#f36b21]">
+                    12 monthly instalments
+                  </div>
+                </div>
                 {months > 12 ? (
                   <>
                     <p className="text-[18px] leading-tight font-bold text-[#161616] m-0">12 monthly payments of</p>
@@ -623,12 +631,6 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-[#6c6c6c]">Labour</span>
                     <span className="font-bold text-[#161616]">{selectedLabour.label}</span>
-                  </div>
-                )}
-                {selectedDuration && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#6c6c6c]">Cover</span>
-                    <span className="font-bold text-[#161616]">{selectedDuration.label}</span>
                   </div>
                 )}
                 {voluntaryExcess !== null && (
