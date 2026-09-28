@@ -5397,6 +5397,11 @@ Questions? Call 0330 229 5040`;
                             <div className="text-[11px] font-medium text-black">
                               £{planMonthly}/mo · {plan} instalments
                             </div>
+                            {years > 1 && (
+                              <div className="inline-block rounded-full bg-emerald-600/10 border border-emerald-600/30 px-2 py-0.5 text-[10px] font-bold text-emerald-700 uppercase tracking-wide">
+                                Or pay yearly — collected every year
+                              </div>
+                            )}
                             {years === 1 ? (
                               <div className="text-[11px] font-medium text-muted-foreground">Baseline price</div>
                             ) : s.saving > 0 ? (
