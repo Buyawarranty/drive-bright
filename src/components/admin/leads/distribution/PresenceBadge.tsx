@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { formatTimeAgo } from '@/lib/formatTimeAgo';
 
 type PresenceStatus = 'active' | 'idle' | 'offline';
 
@@ -56,8 +57,7 @@ export const PresenceBadge: React.FC<PresenceBadgeProps> = ({
     const diff = Math.floor((now.getTime() - d.getTime()) / 1000);
 
     if (diff < 60) return 'Just now';
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 86400) return formatTimeAgo(d);
     return d.toLocaleDateString();
   };
 

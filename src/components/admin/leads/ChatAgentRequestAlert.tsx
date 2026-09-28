@@ -16,7 +16,7 @@ interface ChatLeadRow {
   created_at: string;
 }
 
-const minsAgo = (iso: string) => Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+import { formatTimeAgo } from '@/lib/formatTimeAgo';
 
 const readDismissed = (): string[] => {
   try {
@@ -151,7 +151,7 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
                         {name || r.email || r.phone || 'Chat customer'}
                       </p>
                       <p className="text-[11px] text-blue-700 font-medium truncate">
-                        asked for a person in chat · {minsAgo(r.created_at)}m ago
+                        asked for a person in chat · {formatTimeAgo(r.created_at)}
                       </p>
                       {r.vehicle_reg && (
                         <p className="text-[11px] text-gray-600 truncate flex items-center gap-1">

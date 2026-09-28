@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { TEAM_COLOR_CLASSES, type AgentTeam } from '@/hooks/useAgentTeams';
 import { cn } from '@/lib/utils';
 import { Activity, AlertCircle, CalendarDays } from 'lucide-react';
+import { formatTimeAgo } from '@/lib/formatTimeAgo';
 
 /**
  * Per-team lead-source breakdown for the last 24 hours.
@@ -51,9 +52,7 @@ const formatAgo = (d: Date | null) => {
   if (!d) return 'no leads yet';
   const mins = Math.floor((Date.now() - d.getTime()) / 60000);
   if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  return `${hrs}h ago`;
+  return formatTimeAgo(d);
 };
 
 const formatRange = (from: Date, to: Date) => {
