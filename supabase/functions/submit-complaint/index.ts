@@ -55,7 +55,7 @@ const handler = async (req: Request): Promise<Response> => {
       preferredContactMethod,
     } = body;
 
-    if (!firstName || !lastName || !email || !warrantyRef || !category || !description) {
+    if (!firstName || !lastName || !email || !category || (category !== 'Not about a warranty' && !warrantyRef) || !description) {
       return new Response(
         JSON.stringify({ success: false, error: "Missing required fields" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -63,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const reference = generateReference();
-    const regLabel = registrationPlate?.trim().toUpperCase() || warrantyRef;
+    const regLabel = registrationPlate?.trim().toUpperCase() || warrantyRef || 'N/A';
     const customerName = `${firstName} ${lastName}`.trim();
     console.log("Processing complaint:", reference, email);
 
@@ -75,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
       last_name: lastName,
       email,
       phone: phone || null,
-      warranty_ref: warrantyRef,
+      warranty_ref: warrantyRef?.trim() || 'N/A',
       registration_plate: registrationPlate?.trim().toUpperCase() || null,
       category,
       description,

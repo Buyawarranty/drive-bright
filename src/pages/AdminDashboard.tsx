@@ -140,8 +140,8 @@ const ConcessionsTab = lazy(() => import('@/components/admin/ConcessionsTab').th
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'performance_manager', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'performance_manager', 'sales_manager', 'sales_lead', 'lead_gen', 'accounts_manager', 'accounts_payroll', 'accounts', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester'];
-const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
-const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
+const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'non-claim-complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'non-claim-complaints', 'attendance', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const SALES_TABS = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'staff-system-reports', 'unsubscribe', 'account'];
 const SALES_LEAD_TABS = ['overview', 'new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'agent-feedback', 'staff-system-reports', 'unsubscribe', 'account'];
 const SALES_MANAGER_TABS = ['overview', 'concessions', 'new-leads', 'whatsapp-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'open-round-robin', 'orr-test-lab', 'orr-sandbox', 'price-updates', 'vehicle-stats', 'banners-billboards', 'sms-tracking', 'user-permissions', 'unsubscribe', 'account'];
@@ -938,6 +938,11 @@ const AdminDashboard = () => {
           );
         }
         return <ComplaintsTab />;
+      case 'non-claim-complaints':
+        if (!isTabAllowedForRole('complaints', effectiveUserRole, effectiveUserPermissions)) {
+          return <div className="p-6"><h2 className="text-xl font-semibold">Access denied</h2></div>;
+        }
+        return <ComplaintsTab key="non-claim" mode="non_claim" />;
       case 'careers-applications': {
         const careersAllowed = ['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole)
           || effectiveUserPermissions?.tab_hr === true;

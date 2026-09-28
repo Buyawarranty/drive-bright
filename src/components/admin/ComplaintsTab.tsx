@@ -53,7 +53,9 @@ const STATUS_META: Record<Status, { label: string; color: string; icon: any }> =
   closed: { label: 'Closed', color: 'bg-gray-100 text-gray-700 border-gray-300', icon: CheckCircle },
 };
 
-export const ComplaintsTab: React.FC = () => {
+const CLAIM_CATEGORIES = ['Claim decision', 'Claim delay'];
+
+export const ComplaintsTab: React.FC<{ mode?: 'all' | 'non_claim' }> = ({ mode = 'all' }) => {
   const { toast } = useToast();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [admins, setAdmins] = useState<AdminUser[]>([]);
@@ -71,7 +73,8 @@ export const ComplaintsTab: React.FC = () => {
     if (cRes.error) {
       toast({ title: 'Failed to load complaints', description: cRes.error.message, variant: 'destructive' });
     } else {
-      setComplaints((cRes.data || []) as Complaint[]);
+      const rows = (cRes.data || []) as Complaint[];
+      setComplaints(mode === 'non_claim' ? rows.filter(c => !CLAIM_CATEGORIES.includes(c.category)) : rows);
     }
     setAdmins((aRes.data || []) as AdminUser[]);
     setLoading(false);
