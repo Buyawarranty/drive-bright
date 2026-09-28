@@ -593,7 +593,6 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                 </div>
                 {months > 12 ? (
                   <>
-                    <p className="text-[18px] leading-tight font-bold text-[#161616] m-0">12 monthly payments of</p>
                     <p className="text-[56px] leading-none tracking-[-0.04em] font-extrabold m-0 text-[#161616] mt-1">£{displayedMonthlyPrice}</p>
                     <div className="mt-2.5 text-[#161616] text-sm font-semibold">
                       Payments end after 12 months · Cover lasts {months / 12} years
