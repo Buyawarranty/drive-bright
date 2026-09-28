@@ -20,6 +20,8 @@ export const ALERT_RAIL_ORDER = {
   stuckCheckout: 20,
   // Chat hand-over requests sit just under the stuck-checkout alert.
   chatAgentRequest: 25,
+  // Non-claim complaints (managers only) sit at the bottom of the rail.
+  complaintAlert: 30,
 } as const;
 
 
