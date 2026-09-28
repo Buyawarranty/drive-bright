@@ -42,6 +42,22 @@ function pct(part: number, whole: number) {
   return `${((part / whole) * 100).toFixed(1)}%`;
 }
 
+function sourceLabel(source?: string | null): string {
+  const s = (source || '').toLowerCase();
+  if (s.includes('google')) return 'Google Ads';
+  if (s.includes('facebook') || s.includes('meta') || s.includes('social') || s.includes('fb_')) return 'Meta';
+  if (s.includes('bing')) return 'Bing';
+  if (s.includes('tiktok')) return 'TikTok';
+  if (s.includes('phone') || s.includes('call')) return 'Phone';
+  if (s.includes('referral') || s.includes('dealer') || s.includes('partner')) return 'Referral / dealer';
+  if (s.includes('website') || s.includes('organic') || s.includes('direct')) return 'Website / organic';
+  if (s.includes('email')) return 'Email';
+  if (!s) return 'Unknown';
+  return 'Other';
+}
+
+const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+
 function median(values: number[]) {
   if (!values.length) return 0;
   const s = [...values].sort((a, b) => a - b);
@@ -77,7 +93,7 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
       for (let page = 0; page < 20; page++) {
         const { data, error } = await supabase
           .from('customers')
-          .select('id, signup_date, registration_plate, email, status')
+          .select('id, signup_date, registration_plate, email, status, acquisition_source')
           .order('signup_date', { ascending: false })
           .range(page * pageSize, page * pageSize + pageSize - 1);
         if (error || !data?.length) break;
