@@ -132,9 +132,9 @@ export const ComplaintsTab: React.FC<{ mode?: 'all' | 'non_claim' }> = ({ mode =
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <MessageSquare className="h-6 w-6 text-primary" /> Complaints
+          <MessageSquare className="h-6 w-6 text-primary" /> {mode === 'non_claim' ? 'Non claims complaints' : 'Complaints'}
         </h1>
-        <p className="text-muted-foreground">Manage customer complaints submitted via the website.</p>
+        <p className="text-muted-foreground">{mode === 'non_claim' ? 'Complaints that are not about a claim — service, billing, cancellations, or not about a warranty at all.' : 'Manage customer complaints submitted via the website.'}</p>
       </div>
 
       {/* Status pills */}
