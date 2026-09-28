@@ -5397,6 +5397,11 @@ Questions? Call 0330 229 5040`;
                             <div className="text-[11px] font-medium text-black">
                               £{planMonthly}/mo · {plan} instalments
                             </div>
+                            {years > 1 && (
+                              <div className="inline-block rounded-full bg-emerald-600/10 border border-emerald-600/30 px-2 py-0.5 text-[10px] font-bold text-emerald-700 uppercase tracking-wide">
+                                Or pay yearly — collected every year
+                              </div>
+                            )}
                             {years === 1 ? (
                               <div className="text-[11px] font-medium text-muted-foreground">Baseline price</div>
                             ) : s.saving > 0 ? (
@@ -5418,61 +5423,63 @@ Questions? Call 0330 229 5040`;
                       );
                     })}
                   </div>
-                  {/* 24/36 instalment plans retired — 2/3 year cover is paid yearly via BAW PayLater */}
-                  {false && getInstalmentOptions(paymentType).length > 1 && (
-                    <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50/50 p-3">
-                      <Label className="text-sm font-semibold">Instalment plan</Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {getInstalmentOptions(paymentType).map((count) => {
-                          const amount = instalmentAmount(displayedTotalPrice, count, longPlanRatio);
-                          const scheduleTotal = instalmentScheduleTotal(displayedTotalPrice, count, longPlanRatio);
-                          const twelveTotal = instalmentScheduleTotal(displayedTotalPrice, 12, longPlanRatio);
-                          const comingSoon = isInstalmentComingSoon(count);
-                          return (
-                            <button
-                              key={count}
-                              type="button"
-                              disabled={comingSoon}
-                              onClick={() => !comingSoon && setInstalmentCount(count)}
-                              className={cn(
-                                "rounded-lg border-2 p-3 text-left transition-all relative",
-                                comingSoon
-                                  ? "border-dashed border-slate-300 bg-slate-50 cursor-not-allowed"
-                                  : instalmentCount === count
-                                    ? "border-primary bg-primary/10"
-                                    : "border-border bg-white hover:border-primary/50"
-                              )}
-                            >
-                              {comingSoon && (
-                                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
-                                  <Badge className="bg-amber-500 text-white hover:bg-amber-500 text-[10px] px-2 py-0.5">
-                                    Coming Soon
-                                  </Badge>
-                                </div>
-                              )}
-                              <div className={cn("font-semibold text-sm", comingSoon && "text-slate-600")}>
-                                {count} instalments
+                  {/* How it's paid — 2/3 year cover: 12 monthly instalments OR pay yearly (BAW PayLater).
+                      24/36 monthly instalment plans are retired; yearly is collected every year on the anniversary. */}
+                  {isPayLaterEligible(paymentType) && (() => {
+                    const years = payLaterYears(paymentType);
+                    const monthly = instalmentAmount(displayedTotalPrice, 12, longPlanRatio);
+                    const monthlyTotal = instalmentScheduleTotal(displayedTotalPrice, 12, longPlanRatio);
+                    const yearly = payLaterYearlyAmount(displayedTotalPrice, years);
+                    const yearlyTotal = payLaterTermTotal(displayedTotalPrice, years);
+                    const yearlyExtra = payLaterExtraVsTerm(displayedTotalPrice, years);
+                    return (
+                      <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50/50 p-3">
+                        <Label className="text-sm font-semibold">How it's paid</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setPayLaterMode(false)}
+                            className={cn(
+                              "rounded-lg border-2 p-3 pt-4 text-left transition-all relative",
+                              !payLaterMode ? "border-primary bg-primary/10" : "border-border bg-white hover:border-primary/50"
+                            )}
+                          >
+                            <span className="absolute -top-2.5 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                              12 monthly instalments
+                            </span>
+                            <div className="font-semibold text-sm">£{monthly}/mo · £{monthlyTotal} total</div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5">
+                              Paid off in 12 months · cover lasts {years} years
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPayLaterMode(true)}
+                            className={cn(
+                              "rounded-lg border-2 p-3 pt-4 text-left transition-all relative",
+                              payLaterMode ? "border-emerald-500 bg-emerald-50" : "border-emerald-200 bg-white hover:border-emerald-400"
+                            )}
+                          >
+                            <span className="absolute -top-2.5 left-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                              Pay yearly — collected every year
+                            </span>
+                            <div className="font-semibold text-sm">£{yearly}/year · £{yearlyTotal} across {years} years</div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5">
+                              {years} yearly payments · year 1 today, then every anniversary
+                            </div>
+                            {yearlyExtra > 0 && (
+                              <div className="text-[11px] font-semibold text-amber-700 mt-0.5">
+                                +£{yearlyExtra} vs paying up front
                               </div>
-                              <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-black")}>
-                                {comingSoon ? "Not active yet" : `£${amount}/mo · £${scheduleTotal} total`}
-                              </div>
-                              {!comingSoon && count !== 12 && (
-                                <div className="text-[11px] font-semibold text-amber-700">
-                                  +£{scheduleTotal - twelveTotal} vs 12-instalment plan
-                                </div>
-                              )}
-                            </button>
-                          );
-                        })}
+                            )}
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          The {years}-year warranty is either paid off over 12 monthly instalments, or collected every year — one payment per year on the policy anniversary.
+                        </p>
                       </div>
-                      <p className="text-[11px] text-muted-foreground">
-                        Spreading the payments over 24 or 36 months costs more than the 12-instalment plan.
-                      </p>
-                      {instalmentCount !== 12 && (
-                        <p className="text-[11px] font-semibold text-amber-700">{BUMPER_LONG_PLAN_NOTE}</p>
-                      )}
-                    </div>
-                  )}
+                    );
+                  })()}
                   {/* BAW PayLater — 2/3 year cover collected one year at a time */}
                   {isPayLaterEligible(paymentType) && (() => {
                     const years = payLaterYears(paymentType);
