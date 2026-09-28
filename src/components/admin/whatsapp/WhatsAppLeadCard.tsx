@@ -7,6 +7,7 @@ import { pipelineClass, pipelineLabel } from '@/lib/whatsappPipeline';
 import type { WhatsAppConversation } from '@/hooks/useWhatsAppConversations';
 import type { AdminUserLite } from '@/hooks/useAllAdminUsersMap';
 import { tagChipClass } from '@/hooks/useWhatsAppTags';
+import { formatTimeAgo } from '@/lib/formatTimeAgo';
 
 const timeAgo = (iso: string | null) => {
   if (!iso) return '';

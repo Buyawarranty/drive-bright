@@ -10,6 +10,7 @@ import { format, isSameDay } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import { DateRange } from 'react-day-picker';
 import { AttendanceLoginCharts } from '@/components/admin/AttendanceLoginCharts';
+import { formatTimeAgo } from '@/lib/formatTimeAgo';
 
 
 interface AdminUserRow {

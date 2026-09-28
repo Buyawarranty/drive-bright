@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { addSystemNote } from '@/utils/leadSystemNotes';
 import { subscribeLiveCallStats, primeLiveCallStat, LiveCallStat } from '@/lib/liveCallStats';
+import { formatTimeAgo } from '@/lib/formatTimeAgo';
 
 
 interface CallCountCellProps {
