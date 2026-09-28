@@ -2,7 +2,7 @@ import { getVehicleAge } from '@/lib/vehicleAge';
 import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, instalmentScheduleTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import {
   isPayLaterEligible, payLaterYears, payLaterYearlyAmount, payLaterTermTotal,
-  payLaterExtraVsTerm, buildPayLaterSchedule, BAW_PAYLATER_LABEL, BAW_PAYLATER_NOTE,
+  payLaterExtraVsTerm, buildPayLaterSchedule,
 } from '@/lib/bawPayLater';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
@@ -3960,7 +3960,7 @@ Questions? Call 0330 229 5040`;
         ? Number(confirmedAmount) || 0
         : 0;
       if (payLaterActive) {
-        const yearlyQuoted = payLaterYearlyAmount(quotedTotalAtSale, payLaterYearCount);
+        const yearlyQuoted = quotedTotalAtSale;
         customerData.baw_paylater = true;
         customerData.baw_paylater_years = payLaterYearCount;
         customerData.baw_paylater_yearly_amount = payLaterYearly;
@@ -8995,7 +8995,10 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
 
                     {/* Amount */}
                     {(() => {
-                      const effectiveQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
+                      const fullTermQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
+                      const effectiveQuoted = payLaterMode && isPayLaterEligible(paymentType)
+                        ? payLaterYearlyAmount(fullTermQuoted, payLaterYears(paymentType))
+                        : fullTermQuoted;
                       return (
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
