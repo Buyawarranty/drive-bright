@@ -309,6 +309,44 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
 
       <Card>
         <CardHeader className="pb-2">
+          <CardTitle className="text-base">Claims by lead source</CardTitle>
+          <CardDescription>Which channel the customer originally came from (Meta, Google and so on), how often those customers claim, and the amounts involved.</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-muted-foreground border-b">
+                <th className="py-2 pr-4 font-medium">Lead source</th>
+                <th className="py-2 pr-4 font-medium text-right">Purchases</th>
+                <th className="py-2 pr-4 font-medium text-right">Claims</th>
+                <th className="py-2 pr-4 font-medium text-right">Claim rate</th>
+                <th className="py-2 pr-4 font-medium text-right">Total claimed</th>
+                <th className="py-2 pr-4 font-medium text-right">Total paid out</th>
+                <th className="py-2 font-medium text-right">Avg per claim</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.bySource.map(row => (
+                <tr key={row.source} className="border-b last:border-0">
+                  <td className="py-2 pr-4 font-medium">{row.source}</td>
+                  <td className="py-2 pr-4 text-right">{row.purchases}</td>
+                  <td className="py-2 pr-4 text-right">{row.claims}</td>
+                  <td className="py-2 pr-4 text-right">{pct(row.claimants, row.purchases)}</td>
+                  <td className="py-2 pr-4 text-right">{gbp(row.claimed)}</td>
+                  <td className="py-2 pr-4 text-right">{gbp(row.paid)}</td>
+                  <td className="py-2 text-right">{row.claims ? gbp(row.claimed / row.claims) : '—'}</td>
+                </tr>
+              ))}
+              {!data.bySource.length && (
+                <tr><td colSpan={7} className="py-4 text-center text-muted-foreground">No purchase data in this period.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
           <CardTitle className="text-base">Claims each month</CardTitle>
           <CardDescription>How many claims were opened, and how many were approved or rejected.</CardDescription>
         </CardHeader>
