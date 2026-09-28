@@ -88,6 +88,8 @@ const CLAIMS_INTELLIGENCE_ROLES = [
   'super_admin',
   'admin',
   'sales_manager',
+  'claims_manager',
+  'claims_agent',
 ];
 
 const MANAGER_EXPORT_ROLES = [

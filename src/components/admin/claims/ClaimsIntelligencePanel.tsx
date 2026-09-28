@@ -16,6 +16,8 @@ interface ClaimRow {
   created_at: string;
   vehicle_registration?: string | null;
   email?: string | null;
+  claimed_amount?: number | null;
+  paid_amount?: number | null;
 }
 
 interface PurchaseRow {
@@ -24,6 +26,7 @@ interface PurchaseRow {
   registration_plate: string | null;
   email: string | null;
   status: string | null;
+  acquisition_source?: string | null;
 }
 
 interface Props {
@@ -38,6 +41,22 @@ function pct(part: number, whole: number) {
   if (!whole) return '0%';
   return `${((part / whole) * 100).toFixed(1)}%`;
 }
+
+function sourceLabel(source?: string | null): string {
+  const s = (source || '').toLowerCase();
+  if (s.includes('google')) return 'Google Ads';
+  if (s.includes('facebook') || s.includes('meta') || s.includes('social') || s.includes('fb_')) return 'Meta';
+  if (s.includes('bing')) return 'Bing';
+  if (s.includes('tiktok')) return 'TikTok';
+  if (s.includes('phone') || s.includes('call')) return 'Phone';
+  if (s.includes('referral') || s.includes('dealer') || s.includes('partner')) return 'Referral / dealer';
+  if (s.includes('website') || s.includes('organic') || s.includes('direct')) return 'Website / organic';
+  if (s.includes('email')) return 'Email';
+  if (!s) return 'Unknown';
+  return 'Other';
+}
+
+const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
 
 function median(values: number[]) {
   if (!values.length) return 0;
@@ -74,7 +93,7 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
       for (let page = 0; page < 20; page++) {
         const { data, error } = await supabase
           .from('customers')
-          .select('id, signup_date, registration_plate, email, status')
+          .select('id, signup_date, registration_plate, email, status, acquisition_source')
           .order('signup_date', { ascending: false })
           .range(page * pageSize, page * pageSize + pageSize - 1);
         if (error || !data?.length) break;
@@ -190,8 +209,39 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
       claims: policyMonthCounts.get(i + 1) || 0,
     }));
 
+    // Claims broken down by where the customer originally came from.
+    const bySourceMap = new Map<string, {
+      source: string; purchases: number; claimants: number; claims: number;
+      claimed: number; paid: number;
+    }>();
+    const sourceEntry = (key: string) => {
+      let e = bySourceMap.get(key);
+      if (!e) {
+        e = { source: key, purchases: 0, claimants: 0, claims: 0, claimed: 0, paid: 0 };
+        bySourceMap.set(key, e);
+      }
+      return e;
+    };
+    cohortByReg.forEach((p) => {
+      sourceEntry(sourceLabel(p.acquisition_source)).purchases += 1;
+    });
+    claimsByPurchase.forEach((list, reg) => {
+      const purchase = cohortByReg.get(reg);
+      const e = sourceEntry(sourceLabel(purchase?.acquisition_source));
+      e.claimants += 1;
+      list.forEach(c => {
+        e.claims += 1;
+        e.claimed += Number(c.claimed_amount) || 0;
+        e.paid += Number(c.paid_amount) || 0;
+      });
+    });
+    const bySource = [...bySourceMap.values()]
+      .filter(e => e.purchases > 0)
+      .sort((a, b) => b.claims - a.claims || b.purchases - a.purchases);
+
     return {
       totalPurchases,
+      bySource,
       claimants,
       scopedClaimCount: scopedClaims.length,
       avgPerMonth: scopedClaims.length / monthsSpan,
@@ -256,6 +306,44 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
           hint={data.slowest ? `${data.slowest.reg} · ${format(new Date(data.slowest.date), 'd MMM yyyy')}` : undefined}
         />
       </div>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Claims by lead source</CardTitle>
+          <CardDescription>Which channel the customer originally came from (Meta, Google and so on), how often those customers claim, and the amounts involved.</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-muted-foreground border-b">
+                <th className="py-2 pr-4 font-medium">Lead source</th>
+                <th className="py-2 pr-4 font-medium text-right">Purchases</th>
+                <th className="py-2 pr-4 font-medium text-right">Claims</th>
+                <th className="py-2 pr-4 font-medium text-right">Claim rate</th>
+                <th className="py-2 pr-4 font-medium text-right">Total claimed</th>
+                <th className="py-2 pr-4 font-medium text-right">Total paid out</th>
+                <th className="py-2 font-medium text-right">Avg per claim</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.bySource.map(row => (
+                <tr key={row.source} className="border-b last:border-0">
+                  <td className="py-2 pr-4 font-medium">{row.source}</td>
+                  <td className="py-2 pr-4 text-right">{row.purchases}</td>
+                  <td className="py-2 pr-4 text-right">{row.claims}</td>
+                  <td className="py-2 pr-4 text-right">{pct(row.claimants, row.purchases)}</td>
+                  <td className="py-2 pr-4 text-right">{gbp(row.claimed)}</td>
+                  <td className="py-2 pr-4 text-right">{gbp(row.paid)}</td>
+                  <td className="py-2 text-right">{row.claims ? gbp(row.claimed / row.claims) : '—'}</td>
+                </tr>
+              ))}
+              {!data.bySource.length && (
+                <tr><td colSpan={7} className="py-4 text-center text-muted-foreground">No purchase data in this period.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="pb-2">
