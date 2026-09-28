@@ -1297,59 +1297,20 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           </SelectContent>
                         </Select>
                       </div>
-                      {getInstalmentOptions(paymentType).length > 1 && (
-                        <div className="space-y-1.5 md:col-span-2">
-                          <Label className="text-xs font-semibold text-slate-500">Instalment plan</Label>
-                          <div className="grid grid-cols-2 gap-2">
-                            {getInstalmentOptions(paymentType).map((count) => {
-                              const comingSoon = isInstalmentComingSoon(count);
-                              return (
-                                <button
-                                  key={count}
-                                  type="button"
-                                  disabled={comingSoon}
-                                  onClick={() => !comingSoon && setInstalmentCount(count)}
-                                  className={cn(
-                                    "rounded-lg border-2 p-3 text-left transition-all relative",
-                                    comingSoon
-                                      ? "border-dashed border-slate-300 bg-slate-50 cursor-not-allowed"
-                                      : instalmentCount === count
-                                        ? "border-indigo-500 bg-indigo-50"
-                                        : "border-slate-200 bg-white hover:border-indigo-300"
-                                  )}
-                                >
-                                  {comingSoon && (
-                                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
-                                      <Badge className="bg-amber-500 text-white hover:bg-amber-500 text-[10px] px-2 py-0.5">
-                                        Coming Soon
-                                      </Badge>
-                                    </div>
-                                  )}
-                                  <div className={cn("text-sm font-semibold", comingSoon ? "text-slate-600" : "text-slate-800")}>
-                                    {count} instalments
-                                  </div>
-                                  <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-slate-900")}>
-                                    {comingSoon
-                                      ? "Not active yet"
-                                      : `£${instalmentAmount(currentPrice.totalPrice, count, longPlanRatio)}/mo · £${instalmentPlanTotal(currentPrice.totalPrice, count, longPlanRatio)} total`}
-                                  </div>
-                                  {!comingSoon && count !== 12 && (
-                                    <div className="text-[11px] font-semibold text-amber-700">
-                                      +£{instalmentPlanTotal(currentPrice.totalPrice, count, longPlanRatio) - Math.round(Number(currentPrice.totalPrice) || 0)} vs 12-instalment plan
-                                    </div>
-                                  )}
-                                </button>
-                              );
-                            })}
+                      {/* 24/36 instalment plans retired — 2 and 3 year cover is paid yearly only (BAW PayLater). */}
+                      {(paymentType === '24months' || paymentType === '36months') && (() => {
+                        const years = paymentType === '24months' ? 2 : 3;
+                        const total = Math.round(Number(currentPrice.totalPrice) || 0);
+                        const yearly = Math.round((total / years) * 1.1);
+                        return (
+                          <div className="md:col-span-2 rounded-lg border-2 border-emerald-300 bg-emerald-50 p-3 space-y-1.5 text-xs text-emerald-900">
+                            <div className="text-sm font-semibold">BAW PayLater — pay yearly</div>
+                            <div>£{yearly}/yr × {years} years · £{yearly * years} total (+£{yearly * years - total} vs paying up front)</div>
+                            <p>Tell the customer: you're buying a {years}-year warranty, and payment is taken once every year — year 1 today, then on each anniversary.</p>
+                            <p><span className="font-semibold">For you as the agent:</span> you still sell this as a full {years}-year warranty. Admin will chase each yearly payment, but you may need to call the customer to get it over the line. Your scoreboard and commission are paid year by year as each payment is collected — year 1 is credited now, year 2 when it's collected next year{years === 3 ? ', and year 3 the year after' : ''}.</p>
                           </div>
-                          <p className="text-[11px] text-slate-500">
-                            Spreading the payments over 24 or 36 months costs more than the 12-instalment plan.
-                          </p>
-                          {instalmentCount !== 12 && (
-                            <p className="text-[11px] font-semibold text-amber-700">{BUMPER_LONG_PLAN_NOTE}</p>
-                          )}
-                        </div>
-                      )}
+                        );
+                      })()}
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-500">Excess</Label>
                         <Select value={excessAmount.toString()} onValueChange={(v) => setExcessAmount(parseInt(v))}>

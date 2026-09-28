@@ -5511,7 +5511,7 @@ Questions? Call 0330 229 5040`;
                               Tell the customer: you're buying a {years}-year warranty, and payment is taken once every year — year 1 today, then on each anniversary.
                             </p>
                             <p className="mt-1.5 rounded-md border border-emerald-300 bg-emerald-100/70 px-2 py-1.5 text-[11px] leading-relaxed text-emerald-900">
-                              <span className="font-semibold">For you as the agent:</span> admin will chase the yearly payment for you, but you may need to call the customer each year to get it over the line. Your scoreboard tallies each year of the sale as it's paid — you won't see the full value of the sale until every payment is collected. You get your commission each year for this deal once the customer has paid.
+                              <span className="font-semibold">For you as the agent:</span> you still sell this as a full {years}-year warranty. Admin will chase each yearly payment, but you may need to call the customer to get it over the line. Your scoreboard and commission are paid year by year as each payment is collected — year 1 is credited now, year 2 when it's collected next year{years === 3 ? ', and year 3 the year after' : ''}. You get the full value of the deal once every year has been paid.
                             </p>
 
                           </div>
