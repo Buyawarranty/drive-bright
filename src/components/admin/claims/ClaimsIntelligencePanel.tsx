@@ -209,8 +209,39 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
       claims: policyMonthCounts.get(i + 1) || 0,
     }));
 
+    // Claims broken down by where the customer originally came from.
+    const bySourceMap = new Map<string, {
+      source: string; purchases: number; claimants: number; claims: number;
+      claimed: number; paid: number;
+    }>();
+    const sourceEntry = (key: string) => {
+      let e = bySourceMap.get(key);
+      if (!e) {
+        e = { source: key, purchases: 0, claimants: 0, claims: 0, claimed: 0, paid: 0 };
+        bySourceMap.set(key, e);
+      }
+      return e;
+    };
+    cohortByReg.forEach((p) => {
+      sourceEntry(sourceLabel(p.acquisition_source)).purchases += 1;
+    });
+    claimsByPurchase.forEach((list, reg) => {
+      const purchase = cohortByReg.get(reg);
+      const e = sourceEntry(sourceLabel(purchase?.acquisition_source));
+      e.claimants += 1;
+      list.forEach(c => {
+        e.claims += 1;
+        e.claimed += Number(c.claimed_amount) || 0;
+        e.paid += Number(c.paid_amount) || 0;
+      });
+    });
+    const bySource = [...bySourceMap.values()]
+      .filter(e => e.purchases > 0)
+      .sort((a, b) => b.claims - a.claims || b.purchases - a.purchases);
+
     return {
       totalPurchases,
+      bySource,
       claimants,
       scopedClaimCount: scopedClaims.length,
       avgPerMonth: scopedClaims.length / monthsSpan,
