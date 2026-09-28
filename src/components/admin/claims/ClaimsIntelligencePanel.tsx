@@ -16,6 +16,8 @@ interface ClaimRow {
   created_at: string;
   vehicle_registration?: string | null;
   email?: string | null;
+  claimed_amount?: number | null;
+  paid_amount?: number | null;
 }
 
 interface PurchaseRow {
@@ -24,6 +26,7 @@ interface PurchaseRow {
   registration_plate: string | null;
   email: string | null;
   status: string | null;
+  acquisition_source?: string | null;
 }
 
 interface Props {
