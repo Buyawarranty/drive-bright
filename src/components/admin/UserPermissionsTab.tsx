@@ -118,6 +118,7 @@ const ADMIN_TABS = [
   { id: 'call-tracking', label: 'Call rail', description: 'Inbound call tracking and assignments' },
   
   { id: 'complaints', label: 'Complaints', description: 'Manage customer complaints and resolutions' },
+  { id: 'non-claim-complaints', label: 'Non claims complaints', description: 'Complaints not related to a claim' },
   { id: 'lead-teams', label: 'Lead Teams', description: 'Team allocation, workstreams and Open Round Robin' },
   { id: 'attendance', label: 'Attendance & Rota', description: 'Working days rota and weekend shift sign-ups' },
   { id: 'goldmine-leads', label: 'Goldmine Leads', description: 'High-intent leads flagged for priority follow-up' },

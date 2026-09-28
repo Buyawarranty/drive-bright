@@ -22,7 +22,10 @@ const initialForm = {
   confirmAccurate: false,
 };
 
+const NOT_WARRANTY = 'Not about a warranty';
+
 const CATEGORIES = [
+  NOT_WARRANTY,
   'Warranty cover',
   'Claim decision',
   'Claim delay',
@@ -50,8 +53,8 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
     if (!s) return ''; // optional
     return /^[+0][\d\s()-]{8,}$/.test(s) ? '' : 'Enter a valid UK phone number';
   },
-  warrantyRef: (v) => (!String(v).trim() ? 'Please enter your warranty reference' : ''),
-  registrationPlate: (v) => (!String(v).trim() ? 'Please enter your vehicle registration' : ''),
+  warrantyRef: (v, f) => (f.category !== NOT_WARRANTY && !String(v).trim() ? 'Please enter your warranty number' : ''),
+  registrationPlate: (v, f) => (f.category !== NOT_WARRANTY && !String(v).trim() ? 'Please enter your vehicle registration' : ''),
 
   category: (v) => (!v ? 'Please select a category' : ''),
   description: (v) => {
@@ -153,7 +156,7 @@ const Complaints = () => {
       toast({ title: 'Please check the form', description: 'Some required fields need attention.', variant: 'destructive' });
       return;
     }
-    if (regStatus !== 'valid') {
+    if (form.category !== NOT_WARRANTY && regStatus !== 'valid') {
       setErrors((prev) => ({ ...prev, registrationPlate: regStatus === 'checking' ? 'Checking your registration — one moment…' : "We couldn't find that registration on a customer record. Please check and try again." }));
       toast({ title: 'Registration not recognised', description: 'Please enter the vehicle registration linked to your warranty.', variant: 'destructive' });
       return;
@@ -326,11 +329,11 @@ const Complaints = () => {
               <Field name="phone" type="tel" label="Phone number" value={form.phone} onChange={change} placeholder="e.g. 07700 900000" error={errors.phone} valid={fieldStatus.phone.valid && showStatus('phone') && !!form.phone} />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field name="warrantyRef" label="Warranty reference" required value={form.warrantyRef} onChange={change} placeholder="e.g. BAW-2025-XXXXX" error={errors.warrantyRef} hint="Found on your policy documents" valid={fieldStatus.warrantyRef.valid && showStatus('warrantyRef')} />
+                <Field name="warrantyRef" label={form.category === NOT_WARRANTY ? "Warranty number (not applicable)" : "Warranty number"} required={form.category !== NOT_WARRANTY} value={form.warrantyRef} onChange={change} placeholder="e.g. BAW-2025-XXXXX" error={errors.warrantyRef} hint={form.category === NOT_WARRANTY ? "Not needed — your complaint is not about a warranty" : "Found on your policy documents. Not about a warranty? Choose that under 'What is your complaint about?'"} valid={fieldStatus.warrantyRef.valid && showStatus('warrantyRef')} />
                 <Field
                   name="registrationPlate"
                   label="Vehicle registration"
-                  required
+                  required={form.category !== NOT_WARRANTY}
                   value={form.registrationPlate}
                   onChange={change}
                   placeholder="e.g. AB12 CDE"

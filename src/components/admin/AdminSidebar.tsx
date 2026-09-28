@@ -63,8 +63,8 @@ interface SortableTabProps {
   collapsed?: boolean;
 }
 
-const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
-const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
+const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'non-claim-complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'non-claim-complaints', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 
 const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
   return !!permissions && Object.keys(permissions).some(key => /^tab_[^_]+$/.test(key));
@@ -260,6 +260,12 @@ export const defaultTabs: Tab[] = [
     label: 'Complaints',
     icon: AlertTriangle,
     description: 'Manage customer complaints and resolutions'
+  },
+  {
+    id: 'non-claim-complaints',
+    label: 'Non claims complaints',
+    icon: AlertTriangle,
+    description: 'Complaints not related to a claim (service, billing, not about a warranty)'
   },
   {
     id: 'careers-applications',
