@@ -2,7 +2,7 @@ import { getVehicleAge } from '@/lib/vehicleAge';
 import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, instalmentScheduleTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import {
   isPayLaterEligible, payLaterYears, payLaterYearlyAmount, payLaterTermTotal,
-  payLaterExtraVsTerm, buildPayLaterSchedule, BAW_PAYLATER_LABEL, BAW_PAYLATER_NOTE,
+  payLaterExtraVsTerm, buildPayLaterSchedule,
 } from '@/lib/bawPayLater';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
@@ -266,8 +266,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [selectedLeadOwnerId, setSelectedLeadOwnerId] = useState<string | null>(null);
   const matchedLeadOwner = useLeadOwner(customerEmail, customerPhone);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
-  // Instalment plan is a SEPARATE choice from cover duration (admin surfaces only).
-  // 2-year = 12 or 24 instalments, 3-year = 12 or 36, 1-year = 12.
+  // Standard cover is paid over 12 instalments. Multi-year cover can instead use
+  // BAW PayLater: one payment now, then one payment on each policy anniversary.
   const [instalmentCount, setInstalmentCount] = useState<InstalmentCount>(12);
   // BAW PayLater — 2/3 year cover collected one year at a time (see lib/bawPayLater).
   const [payLaterMode, setPayLaterMode] = useState(false);
@@ -3439,9 +3439,12 @@ Questions? Call 0330 229 5040`;
     // figure is the one on the customer's quote link, so it must win — otherwise
     // the confirm box prefills the grid figure and the sale email, the CRM sold
     // price and the discount no longer reconcile.
-    const prefillQuoted = quotedPriceOverride !== ''
+    const fullTermQuoted = quotedPriceOverride !== ''
       ? Math.round(parseFloat(quotedPriceOverride) || 0)
       : Math.round(currentPrice.monthlyPrice * 12);
+    const prefillQuoted = payLaterMode && isPayLaterEligible(paymentType)
+      ? payLaterYearlyAmount(fullTermQuoted, payLaterYears(paymentType))
+      : fullTermQuoted;
     setPaymentAmount(prefillQuoted ? prefillQuoted.toString() : '');
 
     // Reset warranty start date to today
@@ -3655,7 +3658,7 @@ Questions? Call 0330 229 5040`;
 
     // Absolute minimum — never sell a warranty under £349 unless it is an
     // evidenced price match (competitor quote uploaded).
-    if (isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced) {
+    if (!payLaterMode && isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced) {
       toast({
         title: `Minimum ${MIN_TERM_LABEL} warranty price is £${ABSOLUTE_MIN_TOTAL}`,
         description: `No ${MIN_TERM_LABEL} warranty can be sold under £${ABSOLUTE_MIN_TOTAL} with these cover options. Switch on Price match and upload the competitor quote to go lower — contact your manager if you cannot get evidence.`,
@@ -3683,10 +3686,13 @@ Questions? Call 0330 229 5040`;
     // everything given away from that list price, whether it came from a pushed
     // quote or from typing a lower figure in the confirm box, so the CRM, the
     // "discount given" report and the sale email all agree.
-    const quotedOnScreen = Math.max(
+    const fullTermQuotedOnScreen = Math.max(
       Math.round(currentPrice.monthlyPrice * 12),
       quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : 0,
     );
+    const quotedOnScreen = payLaterMode && isPayLaterEligible(paymentType)
+      ? payLaterYearlyAmount(fullTermQuotedOnScreen, payLaterYears(paymentType))
+      : fullTermQuotedOnScreen;
     // Also check every quote already on record for this plate, so a discount is
     // never saved as zero just because the on-screen price has since changed.
     const quotedTotalAtSale = await resolveHighestQuotedTotal(
@@ -3951,10 +3957,10 @@ Questions? Call 0330 229 5040`;
       const payLaterActive = payLaterMode && isPayLaterEligible(paymentType);
       const payLaterYearCount = payLaterActive ? payLaterYears(paymentType) : 0;
       const payLaterYearly = payLaterActive
-        ? payLaterYearlyAmount(Number(confirmedAmount) || 0, payLaterYearCount)
+        ? Number(confirmedAmount) || 0
         : 0;
       if (payLaterActive) {
-        const yearlyQuoted = payLaterYearlyAmount(quotedTotalAtSale, payLaterYearCount);
+        const yearlyQuoted = quotedTotalAtSale;
         customerData.baw_paylater = true;
         customerData.baw_paylater_years = payLaterYearCount;
         customerData.baw_paylater_yearly_amount = payLaterYearly;
@@ -4041,7 +4047,10 @@ Questions? Call 0330 229 5040`;
       // pending so accounts can chase them from Payments pending.
       if (payLaterActive && customerId) {
         try {
-          const rows = buildPayLaterSchedule(Number(confirmedAmount) || 0, payLaterYearCount, startDate)
+          // The confirmation amount is already one yearly payment. Convert it
+          // back to the equivalent term base only for schedule construction.
+          const scheduleBase = (Number(confirmedAmount) / 1.1) * payLaterYearCount;
+          const rows = buildPayLaterSchedule(scheduleBase, payLaterYearCount, startDate)
             .map((row) => ({
               customer_id: customerId,
               warranty_reference_number: finalWarrantyReference,
@@ -5389,13 +5398,17 @@ Questions? Call 0330 229 5040`;
                           const plan = isInstalmentAllowed(term.id, instalmentCount) && !isInstalmentComingSoon(instalmentCount)
                             ? instalmentCount
                             : 12;
-                          const planTotal = instalmentScheduleTotal(baseTotal, plan, ratio);
+                          const termUsesPayLater = isSelectedTerm && payLaterMode && years > 1;
+                          const planTotal = termUsesPayLater ? payLaterTermTotal(baseTotal, years) : instalmentScheduleTotal(baseTotal, plan, ratio);
                           const planMonthly = instalmentAmount(baseTotal, plan, ratio);
+                          const yearlyAmount = payLaterYearlyAmount(baseTotal, years);
                           return (
                           <div className="mt-1.5 space-y-1">
-                            <div className="text-xs text-black font-medium">£{planTotal} total · £{Math.round(planTotal / years)}/yr</div>
+                            <div className="text-xs text-black font-medium">
+                              {termUsesPayLater ? `£${yearlyAmount} due now · £${planTotal} total` : `£${planTotal} total · £${Math.round(planTotal / years)}/yr`}
+                            </div>
                             <div className="text-[11px] font-medium text-black">
-                              £{planMonthly}/mo · {plan} instalments
+                              {termUsesPayLater ? `£${yearlyAmount}/year · collected every year` : `£${planMonthly}/mo · ${plan} instalments`}
                             </div>
                             {years > 1 && (
                               <div className="inline-block rounded-full bg-emerald-600/10 border border-emerald-600/30 px-2 py-0.5 text-[10px] font-bold text-emerald-700 uppercase tracking-wide">
@@ -5423,8 +5436,7 @@ Questions? Call 0330 229 5040`;
                       );
                     })}
                   </div>
-                  {/* How it's paid — 2/3 year cover: 12 monthly instalments OR pay yearly (BAW PayLater).
-                      24/36 monthly instalment plans are retired; yearly is collected every year on the anniversary. */}
+                  {/* One payment-choice section only: 12 monthly instalments or BAW PayLater. */}
                   {isPayLaterEligible(paymentType) && (() => {
                     const years = payLaterYears(paymentType);
                     const monthly = instalmentAmount(displayedTotalPrice, 12, longPlanRatio);
@@ -5438,7 +5450,7 @@ Questions? Call 0330 229 5040`;
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             type="button"
-                            onClick={() => setPayLaterMode(false)}
+                              onClick={() => setPayLaterMode(false)}
                             className={cn(
                               "rounded-lg border-2 p-3 pt-4 text-left transition-all relative",
                               !payLaterMode ? "border-primary bg-primary/10" : "border-border bg-white hover:border-primary/50"
@@ -5454,7 +5466,7 @@ Questions? Call 0330 229 5040`;
                           </button>
                           <button
                             type="button"
-                            onClick={() => setPayLaterMode(true)}
+                              onClick={() => setPayLaterMode(true)}
                             className={cn(
                               "rounded-lg border-2 p-3 pt-4 text-left transition-all relative",
                               payLaterMode ? "border-emerald-500 bg-emerald-50" : "border-emerald-200 bg-white hover:border-emerald-400"
@@ -5474,76 +5486,16 @@ Questions? Call 0330 229 5040`;
                             )}
                           </button>
                         </div>
-                        <p className="text-[11px] text-muted-foreground">
-                          The {years}-year warranty is either paid off over 12 monthly instalments, or collected every year — one payment per year on the policy anniversary.
-                        </p>
-                      </div>
-                    );
-                  })()}
-                  {/* BAW PayLater — 2/3 year cover collected one year at a time */}
-                  {isPayLaterEligible(paymentType) && (() => {
-                    const years = payLaterYears(paymentType);
-                    const yearly = payLaterYearlyAmount(displayedTotalPrice, years);
-                    const planTotal = payLaterTermTotal(displayedTotalPrice, years);
-                    const extra = payLaterExtraVsTerm(displayedTotalPrice, years);
-                    return (
-                      <div className={cn(
-                        "space-y-2 rounded-lg border-2 p-3 transition-all",
-                        payLaterMode ? "border-emerald-500 bg-emerald-50" : "border-emerald-200 bg-emerald-50/40"
-                      )}>
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <Label className="text-sm font-semibold">{BAW_PAYLATER_LABEL} — pay yearly</Label>
-                              <TooltipProvider delayDuration={150}>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button type="button" className="text-emerald-700 hover:text-emerald-900" aria-label="How BAW PayLater works">
-                                      <Info className="h-3.5 w-3.5" />
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
-                                    <p className="font-semibold mb-1">How BAW PayLater works</p>
-                                    <p>The customer takes 2 or 3 year cover but pays one year at a time. Year 1 is collected today; each remaining year is collected on the policy anniversary. Each yearly payment is the per-year price +10%.</p>
-                                    <p className="mt-1.5 font-semibold">Commission &amp; sales target</p>
-                                    <p>Commission is per year, and the sale only counts towards your target as each payment is collected — not the full term amount up front, because it hasn't been collected yet. Today's sale records the first-year (one-year equivalent) amount; later years count when accounts mark them collected.</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground">
-                              {years} year cover, collected one year at a time on the policy anniversary.
-                            </p>
-                            <p className="mt-1 text-[11px] font-semibold text-emerald-900">
-                              Tell the customer: you're buying a {years}-year warranty, and payment is taken once every year — year 1 today, then on each anniversary.
-                            </p>
-                            <p className="mt-1.5 rounded-md border border-emerald-300 bg-emerald-100/70 px-2 py-1.5 text-[11px] leading-relaxed text-emerald-900">
-                              <span className="font-semibold">For you as the agent:</span> you still sell this as a full {years}-year warranty. Admin will chase each yearly payment, but you may need to call the customer to get it over the line. Your scoreboard and commission are paid year by year as each payment is collected — year 1 is credited now, year 2 when it's collected next year{years === 3 ? ', and year 3 the year after' : ''}. You get the full value of the deal once every year has been paid.
-                            </p>
-
+                        {payLaterMode ? (
+                          <div className="rounded-md border border-emerald-300 bg-emerald-100/70 px-3 py-2 text-xs leading-relaxed text-emerald-900">
+                            <p className="font-bold">Payment to be collected every year</p>
+                            <p>Take £{yearly} now. The next £{yearly} payment is due on the policy anniversary{years === 3 ? ', followed by the final yearly payment one year later' : ''}.</p>
+                            <p className="mt-1"><span className="font-semibold">For the agent:</span> this is a full {years}-year warranty. Admin will chase each yearly payment, but you may need to call the customer. Your scoreboard and commission receive £{yearly} now, then each later yearly amount only when it is collected.</p>
                           </div>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={payLaterMode ? 'default' : 'outline'}
-                            onClick={() => setPayLaterMode(!payLaterMode)}
-                          >
-                            {payLaterMode ? 'Selected' : 'Use PayLater'}
-                          </Button>
-                        </div>
-                        <div className="rounded-md border border-emerald-200 bg-white p-2.5">
-                          <div className="text-lg font-bold text-emerald-700">£{yearly}<span className="text-sm font-semibold">/year</span></div>
-                          <div className="text-[11px] font-medium text-black">
-                            {years} yearly payments · £{planTotal} across the term
-                          </div>
-                          {extra > 0 && (
-                            <div className="text-[11px] font-semibold text-amber-700">
-                              +£{extra} vs paying the {years}-year price up front
-                            </div>
-                          )}
-                        </div>
-                        {payLaterMode && (
-                          <p className="text-[11px] font-semibold text-emerald-800">{BAW_PAYLATER_NOTE}</p>
+                        ) : (
+                          <p className="text-[11px] text-muted-foreground">
+                            The {years}-year warranty is paid off over 12 monthly instalments.
+                          </p>
                         )}
                       </div>
                     );
@@ -7272,6 +7224,9 @@ Questions? Call 0330 229 5040`;
                 {(() => {
                   const durationMonths = DURATION_MONTHS[paymentType] || 12;
                   const totalCoverDays = Math.round((durationMonths / 12) * 365);
+                  const payLaterActive = payLaterMode && isPayLaterEligible(paymentType);
+                  const payLaterYearCount = payLaterActive ? payLaterYears(paymentType) : 1;
+                  const selectedYearlyAmount = payLaterActive ? payLaterYearlyAmount(displayedTotalPrice, payLaterYearCount) : 0;
                   const monthlyTotal = displayedTotalPrice;
                   const monthlyPence = monthlyTotal > 0 && totalCoverDays > 0
                     ? Math.round((monthlyTotal * 100) / totalCoverDays) : 0;
@@ -7330,11 +7285,11 @@ Questions? Call 0330 229 5040`;
 
                       {/* 1 — Monthly */}
                       <div className="rounded-lg border border-blue-200 bg-blue-50/60 px-3 py-2.5">
-                        <div className="text-[11px] font-bold uppercase tracking-wide text-blue-700">Monthly · Bumper ({instalmentCount})</div>
+                        <div className="text-[11px] font-bold uppercase tracking-wide text-blue-700">{payLaterActive ? 'BAW PayLater · yearly' : `Monthly · Bumper (${instalmentCount})`}</div>
                         <div className="mt-1 text-2xl font-extrabold leading-none text-blue-800">
-                          £{instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}<span className="text-sm font-semibold text-blue-600">/mo</span>
+                          £{payLaterActive ? selectedYearlyAmount : instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}<span className="text-sm font-semibold text-blue-600">/{payLaterActive ? 'year' : 'mo'}</span>
                         </div>
-                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{instalmentScheduleTotal(monthlyTotal, instalmentCount, longPlanRatio)} · {instalmentCount} × £{instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}</div>
+                        <div className="mt-1.5 text-[11px] text-blue-700">{payLaterActive ? `£${selectedYearlyAmount} due now · collected every year` : `Total £${instalmentScheduleTotal(monthlyTotal, instalmentCount, longPlanRatio)} · ${instalmentCount} × £${instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}`}</div>
                         {instalmentCount !== 12 && (
                           <div className="mt-1 text-[11px] font-semibold text-amber-700">Must be set up on the Bumper {instalmentCount}-month plan</div>
                         )}
@@ -7403,13 +7358,13 @@ Questions? Call 0330 229 5040`;
                       <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                         <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500">This quote</div>
                         <div className="mt-1 text-2xl font-extrabold leading-none text-slate-800">
-                          £{instalmentScheduleTotal(gridTotal, instalmentCount, longPlanRatio)}
+                          £{payLaterActive ? selectedYearlyAmount : instalmentScheduleTotal(gridTotal, instalmentCount, longPlanRatio)}
                         </div>
                         <div className="mt-1.5 text-[11px] text-slate-600">
                           Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr
                         </div>
                         <div className="text-[11px] text-slate-500">
-                          Over {durationMonths} months · {instalmentCount} instalments
+                          {payLaterActive ? `${durationMonths}-month warranty · payment collected every year` : `Over ${durationMonths} months · ${instalmentCount} instalments`}
                         </div>
                         {instalmentCount !== 12 && (
                           <div className="mt-1 text-[11px] font-semibold text-amber-700">
@@ -9040,7 +8995,10 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
 
                     {/* Amount */}
                     {(() => {
-                      const effectiveQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
+                      const fullTermQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
+                      const effectiveQuoted = payLaterMode && isPayLaterEligible(paymentType)
+                        ? payLaterYearlyAmount(fullTermQuoted, payLaterYears(paymentType))
+                        : fullTermQuoted;
                       return (
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
