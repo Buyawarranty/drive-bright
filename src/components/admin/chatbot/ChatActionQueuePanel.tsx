@@ -35,6 +35,7 @@ import { useIsManagement } from '@/hooks/useIsManagement';
  * need nothing (browsing only, or already turned into a lead) are hidden
  * unless the manager asks to see them.
  */
+import { lastCustomerQuestion, topicForConversation, type ChatTopic } from '@/lib/chatTopic';
 
 type ThreadRow = {
   id: string;
@@ -96,6 +97,8 @@ type QueueRow = {
   termMonths: number | null;
   messages: number;
   lastCustomerText: string;
+  lastQuestion: string;
+  topic: ChatTopic;
   lastActivity: string;
   unanswered: number;
   handoverOpen: boolean;
@@ -322,6 +325,8 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
           termMonths: quoteEvent?.term_months ?? null,
           messages: msgs.length,
           lastCustomerText: lastCustomer ? textOf(lastCustomer).slice(0, 160) : '',
+          lastQuestion: lastCustomerQuestion(customerMsgs.map(textOf)),
+          topic: topicForConversation(customerMsgs.map(textOf)),
           lastActivity: lastMsg?.created_at || thread.updated_at || thread.created_at,
           unanswered,
           handoverOpen,
@@ -610,7 +615,17 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
                           {new Date(r.thread.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </div>
                       </td>
-                      <td className="max-w-[230px] px-2 py-2 text-xs">{r.reason}</td>
+                      <td className="max-w-[260px] px-2 py-2 text-xs">
+                        <Badge variant="outline" className={`${r.topic.className} mb-1 text-[10px]`}>
+                          {r.topic.label}
+                        </Badge>
+                        {r.lastQuestion && (
+                          <div className="mb-1 italic text-foreground" title={r.lastQuestion}>
+                            “{r.lastQuestion}”
+                          </div>
+                        )}
+                        <div className="text-muted-foreground">{r.reason}</div>
+                      </td>
                       <td className="px-2 py-2">{r.name || <span className="text-muted-foreground">—</span>}</td>
                       <td className="px-2 py-2 whitespace-nowrap">
                         {r.phone ? (
