@@ -22,7 +22,7 @@ const PersistentCallback: React.FC = () => {
     <>
       {isMobile ? (
         /* Mobile: dual-action sticky bottom bar */
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-2.5 pb-[env(safe-area-inset-bottom,10px)] animate-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border shadow-[0_-4px_12px_rgba(0,0,0,0.08)] px-2.5 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))] animate-in slide-in-from-bottom-4 duration-300">
           <div className="flex gap-2 items-stretch">
             <a
               href="tel:03302295040"

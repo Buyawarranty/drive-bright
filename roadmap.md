@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Mobile bottom call-to-action bar: retain normal bottom padding and add iPhone safe-area spacing so both actions remain fully visible
+
 - [x] Claims: Bumper PayBetter tag hidden from non-management (management only); tag also lights up when the customer's payment source is PayBetter
 - [x] Claims: mileage +/- chip hover now explains itself in plain English (miles driven since purchase; red = claim mileage lower than purchase — check before paying)
 
