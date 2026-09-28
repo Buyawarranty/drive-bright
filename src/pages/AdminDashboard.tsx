@@ -33,6 +33,7 @@ import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { AlertRailHost } from '@/components/admin/AlertRail';
 import { StuckCheckoutAlert } from '@/components/admin/leads/StuckCheckoutAlert';
 import { ChatAgentRequestAlert } from '@/components/admin/leads/ChatAgentRequestAlert';
+import { NonClaimComplaintAlert } from '@/components/admin/NonClaimComplaintAlert';
 
 
 
