@@ -1459,6 +1459,9 @@ const AdminDashboardInner: React.FC<{
             {/* Red "stuck on checkout" pop-up — left rail, below the new-lead cards, every tab */}
             <StuckCheckoutAlert />
 
+            {/* Orange "new complaint — not claim related" pop-up — managers only */}
+            <NonClaimComplaintAlert />
+
             {/* Blue "chat customer wants a person" pop-up — managers and sales agents only */}
             {['admin', 'super_admin', 'sales_manager', 'sales', 'sales_lead'].includes(displayRole || '') && (
               <ChatAgentRequestAlert
