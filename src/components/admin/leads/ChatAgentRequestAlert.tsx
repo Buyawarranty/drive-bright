@@ -17,6 +17,7 @@ interface ChatLeadRow {
 }
 
 import { formatTimeAgo } from '@/lib/formatTimeAgo';
+import { lastCustomerQuestion, topicForConversation, textOfMessage, type ChatTopic } from '@/lib/chatTopic';
 
 const readDismissed = (): string[] => {
   try {
@@ -40,6 +41,7 @@ const readDismissed = (): string[] => {
  */
 export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => void }> = ({ onOpenLead }) => {
   const [rows, setRows] = useState<ChatLeadRow[]>([]);
+  const [info, setInfo] = useState<Record<string, { question: string; topic: ChatTopic }>>({});
   const [dismissedIds, setDismissedIds] = useState<string[]>(() => readDismissed());
   const [expanded, setExpanded] = useState(true);
 
@@ -70,7 +72,37 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
       .gte('created_at', since)
       .order('created_at', { ascending: false })
       .limit(20);
-    setRows((data as ChatLeadRow[]) || []);
+    const leads = (data as ChatLeadRow[]) || [];
+    setRows(leads);
+    if (leads.length === 0) return;
+    // Last customer question + topic from the linked chat thread.
+    const { data: threads } = await supabase
+      .from('ai_sandbox_threads')
+      .select('id, sales_lead_id')
+      .in('sales_lead_id', leads.map((l) => l.id));
+    const threadToLead = new Map<string, string>();
+    (threads || []).forEach((t: any) => t.sales_lead_id && threadToLead.set(t.id, t.sales_lead_id));
+    if (threadToLead.size === 0) return;
+    const { data: msgs } = await supabase
+      .from('ai_sandbox_messages')
+      .select('thread_id, role, content, parts, created_at')
+      .in('thread_id', [...threadToLead.keys()])
+      .eq('role', 'user')
+      .order('created_at', { ascending: true })
+      .limit(2000);
+    const texts = new Map<string, string[]>();
+    (msgs || []).forEach((m: any) => {
+      const leadId = threadToLead.get(m.thread_id);
+      if (!leadId) return;
+      const arr = texts.get(leadId) ?? [];
+      arr.push(textOfMessage(m));
+      texts.set(leadId, arr);
+    });
+    const next: Record<string, { question: string; topic: ChatTopic }> = {};
+    texts.forEach((arr, leadId) => {
+      next[leadId] = { question: lastCustomerQuestion(arr), topic: topicForConversation(arr) };
+    });
+    setInfo(next);
   }, []);
 
   useEffect(() => {
@@ -153,6 +185,18 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
                       <p className="text-[11px] text-blue-700 font-medium truncate">
                         asked for a person in chat · {formatTimeAgo(r.created_at)}
                       </p>
+                      {info[r.id] && (
+                        <div className="mt-1 space-y-0.5">
+                          <span className={`inline-block rounded border px-1.5 py-0 text-[10px] font-semibold ${info[r.id].topic.className}`}>
+                            {info[r.id].topic.label}
+                          </span>
+                          {info[r.id].question && (
+                            <p className="text-[11px] italic text-gray-800 line-clamp-2" title={info[r.id].question}>
+                              “{info[r.id].question}”
+                            </p>
+                          )}
+                        </div>
+                      )}
                       {r.vehicle_reg && (
                         <p className="text-[11px] text-gray-600 truncate flex items-center gap-1">
                           <Car className="h-3 w-3 shrink-0" />
