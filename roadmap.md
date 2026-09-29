@@ -31,7 +31,7 @@
 - [x] Chatbot pop-up mute is a clear Mute/Muted toggle and now persists (localStorage), so muting really stops the ring
 - [x] Chatbot Data dashboard: remove the duplicate audio listener, cancel scheduled ring bursts immediately on mute, and stop all alert polling/audio when pop-up access is denied
 - [x] Renewals → New Leads: policies 60 days from expiry become real new leads owned by the original selling agent when they work Renewals, else longest-waiting Renewals rotation
-- [ ] Renewal eligibility: exclude anyone ever cancelled or refunded, unresolved complaints/disputes/chargebacks, fraud flags and contact restrictions; declined claims alone must NOT block renewal
+- [x] Renewal eligibility: no claims, cancellations or refunds enter New Leads automatically; claim-history renewals require manager approval, while cancellation/refund and existing safety holds remain blocked
 - [ ] Renewal cadence: 60d create lead + light notice, 30d main contact, 14d reminder, 7d stronger reminder, 1-2d optional final — stop the cadence once renewed or declined
 - [x] Stripe charge.dispute.created/updated webhook tags the customer "Payment Disputed" (blocks renewal + repurchase)
 - [x] Claims action "Flag as misrepresented — do not cover" applies "Misrepresentation – Do Not Cover" across all of a customer's records
