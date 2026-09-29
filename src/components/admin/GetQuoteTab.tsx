@@ -3662,12 +3662,22 @@ Questions? Call 0330 229 5040`;
       }
     }
 
-    // Absolute minimum — never sell a warranty under £349 unless it is an
-    // evidenced price match (competitor quote uploaded).
-    if (!payLaterMode && isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced) {
+    // Absolute minimum — never sell a warranty under the per-term floor
+    // (£399 / £769 / £1,099 for 1/2/3 years, shaped up for richer cover)
+    // unless it is an evidenced price match (competitor quote uploaded).
+    // In Pay Yearly mode the payment box holds the FIRST yearly payment, so
+    // the floor must be checked against the FULL term total — a custom total
+    // below the floor can never be made acceptable by splitting it yearly.
+    const payLaterActiveForFloor = payLaterMode && isPayLaterEligible(paymentType);
+    const floorCheckAmount = payLaterActiveForFloor
+      ? payLaterFinalTotal(displayedTotalPrice, payLaterYears(paymentType))
+      : parseFloat(paymentAmount);
+    if (isUnderAbsoluteMin(floorCheckAmount) && !priceMatchEvidenced) {
       toast({
         title: `Minimum ${MIN_TERM_LABEL} warranty price is £${ABSOLUTE_MIN_TOTAL}`,
-        description: `No ${MIN_TERM_LABEL} warranty can be sold under £${ABSOLUTE_MIN_TOTAL} with these cover options. Switch on Price match and upload the competitor quote to go lower — contact your manager if you cannot get evidence.`,
+        description: payLaterActiveForFloor
+          ? `The full ${MIN_TERM_LABEL} total (£${Math.round(floorCheckAmount)}) is under the £${ABSOLUTE_MIN_TOTAL} minimum — splitting it into yearly payments does not change that. Raise the custom total, or switch on Price match and upload the competitor quote.`
+          : `No ${MIN_TERM_LABEL} warranty can be sold under £${ABSOLUTE_MIN_TOTAL} with these cover options. Switch on Price match and upload the competitor quote to go lower — contact your manager if you cannot get evidence.`,
         variant: "destructive",
       });
       return;
