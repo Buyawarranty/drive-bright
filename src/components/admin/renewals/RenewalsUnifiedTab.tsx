@@ -28,6 +28,7 @@ export const RenewalsUnifiedTab: React.FC<Props> = ({ userRole, onNavigateToTab 
     <div className="space-y-4">
       <RenewalsEngineLiveSwitch userRole={userRole} />
       <RenewalSummaryCards />
+      <RenewalStatsBar />
 
       <Tabs value={view} onValueChange={(v) => setView(v as 'queue' | 'approval' | 'engine')} className="space-y-4">
         <TabsList>
