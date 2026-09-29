@@ -171,6 +171,14 @@ html, body {
     --pricing-benefit: 134 61% 41%;
     --pricing-discount: 211 100% 50%;
 
+    /* Analytics charts */
+    --analytics-revenue: 168 72% 34%;
+    --analytics-revenue-strong: 168 78% 27%;
+    --analytics-goal: 166 42% 86%;
+    --analytics-goal-border: 168 55% 31%;
+    --analytics-aov: 27 94% 50%;
+    --analytics-orders: 213 72% 48%;
+
     /* Keep destructive for errors - softer red #D9534F */
     --destructive: 2 65% 58%;
     --destructive-foreground: 0 0% 100%;
@@ -210,6 +218,12 @@ html, body {
     --destructive-foreground: 210 40% 98%;
     --whatsapp: 158 82% 28%;
     --whatsapp-foreground: 0 0% 100%;
+    --analytics-revenue: 168 64% 44%;
+    --analytics-revenue-strong: 168 72% 51%;
+    --analytics-goal: 168 28% 22%;
+    --analytics-goal-border: 168 54% 55%;
+    --analytics-aov: 32 95% 58%;
+    --analytics-orders: 213 80% 66%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;

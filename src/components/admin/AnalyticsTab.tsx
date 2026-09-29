@@ -76,6 +76,44 @@ interface AdminUser {
   email: string;
 }
 
+const MonthlyGoalBarShape = ({ x, y, width, height, payload }: any) => {
+  const revenue = Math.max(0, Number(payload?.revenue) || 0);
+  const target = Math.max(0, Number(payload?.target) || 0);
+  const chartValue = Math.max(revenue, target, 1);
+  const baseline = y + height;
+  const targetHeight = target > 0 ? height * (target / chartValue) : 0;
+  const revenueHeight = height * (revenue / chartValue);
+  const targetY = baseline - targetHeight;
+  const revenueY = baseline - revenueHeight;
+
+  return (
+    <g>
+      {target > 0 && (
+        <rect
+          x={x}
+          y={targetY}
+          width={width}
+          height={targetHeight}
+          rx={4}
+          fill="hsl(var(--analytics-goal))"
+          stroke="hsl(var(--analytics-goal-border))"
+          strokeWidth={2}
+        />
+      )}
+      <rect
+        x={x + 3}
+        y={revenueY}
+        width={Math.max(width - 6, 0)}
+        height={revenueHeight}
+        rx={3}
+        fill={payload?.isSelected ? 'hsl(var(--analytics-revenue-strong))' : 'hsl(var(--analytics-revenue))'}
+        stroke={payload?.isSelected ? 'hsl(var(--analytics-revenue-strong))' : 'none'}
+        strokeWidth={payload?.isSelected ? 2 : 0}
+      />
+    </g>
+  );
+};
+
 // Test names to exclude from analytics (matching CustomersTab filtering)
 const TEST_NAMES = ['kamran qureshi', 'prajwal chauhan', 'accepttest'];
 
@@ -898,7 +936,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         aov: 0,
         isSelected: false,
         target: monthlyRevenueTargets[`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`] || 0,
-        percentageAchieved: 0
+        percentageAchieved: 0,
+        chartValue: 0
       };
     }).reverse();
 
@@ -956,6 +995,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     months.forEach(m => {
       m.aov = m.salesCount > 0 ? Math.round(m.revenue / m.salesCount) : 0;
       m.percentageAchieved = m.target > 0 ? Math.round((m.revenue / m.target) * 100) : 0;
+      m.chartValue = Math.max(m.revenue, m.target);
     });
 
     return months;
@@ -1490,7 +1530,6 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               <ComposedChart
                 data={monthlyRevenue}
                 onClick={handleBarClick}
-                barGap="-100%"
                 style={{ cursor: 'pointer' }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
@@ -1518,66 +1557,39 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                     );
                   }}
                 />
-                <Legend formatter={(value) => value === 'revenue' ? 'Revenue' : value === 'target' ? 'Monthly Goal' : value === 'percentageAchieved' ? 'Goal Achieved' : value === 'aov' ? 'Avg Order Value' : value === 'salesCount' ? 'Warranties Sold' : value} />
+                <Legend formatter={(value) => value === 'chartValue' ? 'Revenue toward monthly goal' : value === 'aov' ? 'Avg Order Value' : value === 'salesCount' ? 'Warranties Sold' : value} />
                 <Bar
                   yAxisId="left"
-                  dataKey="revenue"
-                  radius={[4, 4, 0, 0]}
-                  fill="#10b981"
-                  barSize={44}
+                  dataKey="chartValue"
+                  name="Revenue toward monthly goal"
+                  shape={<MonthlyGoalBarShape />}
+                  fill="hsl(var(--analytics-revenue))"
+                  barSize={48}
                 >
-                  {monthlyRevenue.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.isSelected ? '#059669' : '#10b981'}
-                      stroke={entry.isSelected ? '#047857' : 'transparent'}
-                      strokeWidth={entry.isSelected ? 2 : 0}
-                      style={{
-                        cursor: 'pointer',
-                        filter: entry.isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' : 'none'
-                      }}
-                    />
-                  ))}
                   <LabelList
                     dataKey="salesCount"
                     position="top"
                     formatter={(value: number) => value > 0 ? `${value} ${value === 1 ? 'deal' : 'deals'}` : ''}
-                    style={{ fill: '#065f46', fontSize: 11, fontWeight: 600 }}
-                  />
-                </Bar>
-                <Bar
-                  yAxisId="left"
-                  dataKey="target"
-                  fill="transparent"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={3}
-                  radius={[4, 4, 0, 0]}
-                  barSize={44}
-                >
-                  <LabelList
-                    dataKey="percentageAchieved"
-                    position="top"
-                    formatter={(value: number) => value > 0 ? `${value}%` : ''}
-                    className="fill-primary text-xs font-bold"
+                    style={{ fill: 'hsl(var(--analytics-revenue-strong))', fontSize: 11, fontWeight: 600 }}
                   />
                 </Bar>
                 <Line
                   yAxisId="right"
                   type="monotone"
                   dataKey="aov"
-                  stroke="#f59e0b"
+                  stroke="hsl(var(--analytics-aov))"
                   strokeWidth={2.5}
-                  dot={{ fill: '#f59e0b', r: 4 }}
+                  dot={{ fill: 'hsl(var(--analytics-aov))', r: 4 }}
                   activeDot={{ r: 6 }}
                 />
                 <Line
                   yAxisId="right"
                   type="monotone"
                   dataKey="salesCount"
-                  stroke="#3b82f6"
+                  stroke="hsl(var(--analytics-orders))"
                   strokeWidth={2}
-                  dot={{ fill: '#3b82f6', r: 4 }}
-                  activeDot={{ r: 6, fill: '#2563eb' }}
+                  dot={{ fill: 'hsl(var(--analytics-orders))', r: 4 }}
+                  activeDot={{ r: 6, fill: 'hsl(var(--analytics-orders))' }}
                 />
               </ComposedChart>
             </ResponsiveContainer>
