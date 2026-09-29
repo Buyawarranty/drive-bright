@@ -108,6 +108,7 @@ interface PolicyRow {
   mot_repair: boolean | null;
   retention_worked_at: string | null;
   retention_outcome: string | null;
+  renewal_review_required: boolean;
   customer_full_name: string | null;
   email: string | null;
   payment_amount: number | null;
@@ -373,7 +374,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     'id, customer_id, policy_number, warranty_number, plan_type, payment_type, status, ' +
     'policy_start_date, policy_end_date, claim_limit, tyre_cover, wear_tear, ' +
     'breakdown_recovery, vehicle_rental, europe_cover, mot_repair, ' +
-    'retention_worked_at, retention_outcome, customer_full_name, email, ' +
+    'retention_worked_at, retention_outcome, renewal_review_required, customer_full_name, email, ' +
     'payment_amount, payment_currency, voluntary_excess, ' +
     'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status, assigned_to, created_at, labour_rate, voluntary_excess, claim_limit )';
 
@@ -383,6 +384,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
       let q: any = (supabase.from('customer_policies') as any)
         .select(baseSelect)
         .not('status', 'in', EXCLUDED_STATUSES)
+        .eq('renewal_review_required', false)
         .or('is_deleted.is.null,is_deleted.eq.false');
       q = applySegment(q, segment);
 
@@ -449,6 +451,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
           let q: any = (supabase.from('customer_policies') as any)
             .select('id', { count: 'exact', head: true })
             .not('status', 'in', EXCLUDED_STATUSES)
+            .eq('renewal_review_required', false)
             .or('is_deleted.is.null,is_deleted.eq.false');
           q = applySegment(q, s.id);
           const { count } = await q;
