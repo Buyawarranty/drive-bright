@@ -210,7 +210,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [myOnly, setMyOnly] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all');
   type SortKey = 'due_next' | 'due_latest' | 'newest' | 'oldest' | 'name_az' | 'name_za';
-  const [sortKey, setSortKey] = useState<SortKey>('newest');
+  const [sortKey, setSortKey] = useState<SortKey>('due_next');
+  const [bucket, setBucket] = useState<'contact' | 'held'>('contact');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
@@ -381,10 +382,12 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const fetchRows = useCallback(async () => {
     setLoading(true);
     try {
+      // Cancelled/refunded/claim-history policies are loaded too so they can be
+      // shown separately in the "Claims, refunds & cancellations" view — they
+      // never appear in the sales "Due to contact" list.
       let q: any = (supabase.from('customer_policies') as any)
         .select(baseSelect)
-        .not('status', 'in', EXCLUDED_STATUSES)
-        .eq('renewal_review_required', false)
+        .not('status', 'in', "('expired','voided','deleted')")
         .or('is_deleted.is.null,is_deleted.eq.false');
       q = applySegment(q, segment);
 
@@ -408,7 +411,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
 
       let list: PolicyRow[] = ((data as any) || []).filter((r: PolicyRow) => {
         const cs = (r.customers?.status || '').toLowerCase();
-        return !['cancelled', 'refunded', 'deleted'].includes(cs);
+        return cs !== 'deleted';
       });
 
       // Hide renewed customers from active queue, except when "All Renewals" is selected
@@ -572,8 +575,27 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     );
   }, [rows, fetchCallCounts, fetchLatestNotes, fetchClaimFlags]);
 
+  const rowHasClaim = useCallback((r: PolicyRow) => {
+    const email = (r.customers?.email || r.email || '').toLowerCase();
+    const regKey = (r.customers?.registration_plate || '').replace(/\s+/g, '').toUpperCase();
+    return !!((email && claimEmails.has(email)) || (regKey && claimRegs.has(regKey)));
+  }, [claimEmails, claimRegs]);
+  const rowUnwind = useCallback((r: PolicyRow): string | null => {
+    const s = `${(r as any).status || ''} ${r.customers?.status || ''}`.toLowerCase();
+    if (s.includes('refund')) return 'Refunded';
+    if (s.includes('cancel')) return 'Cancelled';
+    return null;
+  }, []);
+  const isHeldRow = useCallback((r: PolicyRow) =>
+    rowHasClaim(r) || !!rowUnwind(r) || !!(r as any).renewal_review_required,
+  [rowHasClaim, rowUnwind]);
+  const bucketCounts = useMemo(() => {
+    const held = rows.filter(isHeldRow).length;
+    return { held, contact: rows.length - held };
+  }, [rows, isHeldRow]);
+
   const filtered = useMemo(() => {
-    const base = rows;
+    const base = rows.filter((r) => (bucket === 'held' ? isHeldRow(r) : !isHeldRow(r)));
     const searched = !search.trim() ? base : base.filter((r) =>
       [r.customer_full_name, r.email, r.customers?.email, r.customers?.phone,
        r.customers?.first_name, r.customers?.last_name, r.customers?.registration_plate,
@@ -610,7 +632,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     if (!pinnedRow) return sorted;
     const withoutPinned = sorted.filter((r) => r.id !== pinnedRow.id);
     return [pinnedRow, ...withoutPinned];
-  }, [rows, search, pinnedRow, sortKey]);
+  }, [rows, search, pinnedRow, sortKey, bucket, isHeldRow]);
 
   // Pagination: 200 rows per page.
   const RENEWALS_PAGE_SIZE = 200;
@@ -1037,6 +1059,20 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
         </Card>
       )}
 
+      <div className="flex flex-wrap items-center gap-2">
+        <Button size="sm" variant={bucket === 'contact' ? 'default' : 'outline'} onClick={() => setBucket('contact')}>
+          Due to contact <span className="ml-1.5 tabular-nums opacity-80">({bucketCounts.contact})</span>
+        </Button>
+        <Button size="sm" variant={bucket === 'held' ? 'destructive' : 'outline'} onClick={() => setBucket('held')}>
+          Claims, refunds &amp; cancellations <span className="ml-1.5 tabular-nums opacity-80">({bucketCounts.held})</span>
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          {bucket === 'contact'
+            ? 'No claim, no refund, no cancellation — ready for sales agents.'
+            : 'Not for sales contact. Claim-history renewals need manager approval.'}
+        </span>
+      </div>
+
       {loading ? (
         <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
           <Loader2 className="h-4 w-4 animate-spin" /> Loading renewals…
@@ -1232,17 +1268,26 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                           </Badge>
 
                           {(() => {
-                            const regKey = (r.customers?.registration_plate || '').replace(/\s+/g, '').toUpperCase();
-                            const hasClaim = (email && claimEmails.has(email)) || (regKey && claimRegs.has(regKey));
-                            return hasClaim ? (
-                              <Badge
-                                variant="outline"
-                                className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-amber-500 text-amber-700 bg-amber-50"
-                                title="This customer has submitted a claim"
-                              >
-                                Claim made
-                              </Badge>
-                            ) : null;
+                            const hasClaim = rowHasClaim(r);
+                            const unwind = rowUnwind(r);
+                            return (
+                              <>
+                                {hasClaim ? (
+                                  <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-destructive text-destructive bg-destructive/10" title="This customer has submitted a claim — needs manager approval before renewal">
+                                    Claim made
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-primary/40 text-primary bg-primary/5" title="No claim on record">
+                                    No claim
+                                  </Badge>
+                                )}
+                                {unwind && (
+                                  <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-destructive text-destructive bg-destructive/10" title="Policy was cancelled or refunded — not for renewal">
+                                    {unwind}
+                                  </Badge>
+                                )}
+                              </>
+                            );
                           })()}
                         </div>
                         <div className="text-[10px] text-muted-foreground">
