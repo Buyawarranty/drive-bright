@@ -24,6 +24,7 @@ import { ViewAsStaffButton } from './ViewAsStaffButton';
 import { TeamActivityPanel } from './TeamActivityPanel';
 import { AdminAccessLogPanel } from './AdminAccessLogPanel';
 import { useAuth } from '@/hooks/useAuth';
+import { ClaimsDataAccessManager } from './claims/ClaimsDataAccessManager';
 import { defaultTabs as SIDEBAR_TABS } from './AdminSidebar';
 
 /**
@@ -1604,6 +1605,7 @@ export const UserPermissionsTab = () => {
 
   return (
     <div className="space-y-6">
+      <ClaimsDataAccessManager />
       {loadError && (
         <Card className="border-amber-200 bg-amber-50/70">
           <CardContent className="py-4">
