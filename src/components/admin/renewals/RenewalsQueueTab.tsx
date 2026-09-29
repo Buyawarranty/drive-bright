@@ -210,7 +210,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [myOnly, setMyOnly] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all');
   type SortKey = 'due_next' | 'due_latest' | 'newest' | 'oldest' | 'name_az' | 'name_za';
-  const [sortKey, setSortKey] = useState<SortKey>('newest');
+  const [sortKey, setSortKey] = useState<SortKey>('due_next');
+  const [bucket, setBucket] = useState<'contact' | 'held'>('contact');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
@@ -381,34 +382,17 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const fetchRows = useCallback(async () => {
     setLoading(true);
     try {
+      // Cancelled/refunded/claim-history policies are loaded too so they can be
+      // shown separately in the "Claims, refunds & cancellations" view — they
+      // never appear in the sales "Due to contact" list.
       let q: any = (supabase.from('customer_policies') as any)
         .select(baseSelect)
-        .not('status', 'in', EXCLUDED_STATUSES)
-        .eq('renewal_review_required', false)
+        .not('status', 'in', "('expired','voided','deleted')")
         .or('is_deleted.is.null,is_deleted.eq.false');
-      q = applySegment(q, segment);
-
-      // Optional date filter — narrows by policy_end_date window on top of segment
-      if (datePeriod !== 'all') {
-        const range = datePeriod === 'custom' ? dateCustomRange : periodToRange(datePeriod);
-        if (range?.from) {
-          const from = new Date(range.from); from.setHours(0, 0, 0, 0);
-          q = q.gte('policy_end_date', from.toISOString());
-        }
-        if (range?.to) {
-          const to = new Date(range.to); to.setHours(23, 59, 59, 999);
-          q = q.lte('policy_end_date', to.toISOString());
-        }
-      }
-
-      // Soonest expiry first
-      q = q.order('policy_end_date', { ascending: true, nullsFirst: false }).limit(PAGE_SIZE);
-      const { data, error } = await q;
-      if (error) throw error;
-
+...
       let list: PolicyRow[] = ((data as any) || []).filter((r: PolicyRow) => {
         const cs = (r.customers?.status || '').toLowerCase();
-        return !['cancelled', 'refunded', 'deleted'].includes(cs);
+        return cs !== 'deleted';
       });
 
       // Hide renewed customers from active queue, except when "All Renewals" is selected
@@ -588,11 +572,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   [rowHasClaim, rowUnwind]);
   const bucketCounts = useMemo(() => {
     const held = rows.filter(isHeldRow).length;
-    return bucket === 'held'
-      ? { held, contact: contactCountCache.current }
-      : (contactCountCache.current = rows.length - held, { contact: rows.length - held, held: heldCountCache.current });
-  }, [rows, isHeldRow, bucket]);
-  if (bucket === 'held') heldCountCache.current = bucketCounts.held;
+    return { held, contact: rows.length - held };
+  }, [rows, isHeldRow]);
 
   const filtered = useMemo(() => {
     const base = rows.filter((r) => (bucket === 'held' ? isHeldRow(r) : !isHeldRow(r)));
@@ -632,7 +613,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     if (!pinnedRow) return sorted;
     const withoutPinned = sorted.filter((r) => r.id !== pinnedRow.id);
     return [pinnedRow, ...withoutPinned];
-  }, [rows, search, pinnedRow, sortKey]);
+  }, [rows, search, pinnedRow, sortKey, bucket, isHeldRow]);
 
   // Pagination: 200 rows per page.
   const RENEWALS_PAGE_SIZE = 200;
