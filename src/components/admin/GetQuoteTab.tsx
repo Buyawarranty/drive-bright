@@ -5488,9 +5488,13 @@ Questions? Call 0330 229 5040`;
                         </div>
                         {payLaterMode ? (
                           <div className="rounded-md border border-emerald-300 bg-emerald-100/70 px-3 py-2 text-xs leading-relaxed text-emerald-900">
-                            <p className="font-bold">Payment to be collected every year</p>
-                            <p>Take £{yearly} now. The next £{yearly} payment is due on the policy anniversary{years === 3 ? ', followed by the final yearly payment one year later' : ''}.</p>
-                            <p className="mt-1"><span className="font-semibold">For the agent:</span> this is a full {years}-year warranty. Admin will chase each yearly payment, but you may need to call the customer. Your scoreboard and commission receive £{yearly} now, then each later yearly amount only when it is collected.</p>
+                            <p className="font-bold">BAW PayLater</p>
+                            <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                              <li>Payment collected every year: £{yearly}</li>
+                              <li>First payment collected today</li>
+                              <li>Your commission is paid every year</li>
+                              <li>Your scoreboard reflects each yearly total when collected</li>
+                            </ul>
                           </div>
                         ) : (
                           <p className="text-[11px] text-muted-foreground">
