@@ -42,6 +42,8 @@ interface VehicleInfo {
 }
 
 // Simple body type inference from model name
+import { excludeTestVehicles } from '@/lib/testVehicles';
+
 const normReg = (v?: string | null) => (v || '').toUpperCase().replace(/\s+/g, '');
 
 
