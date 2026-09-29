@@ -53,6 +53,11 @@ import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { getAgentColor } from '@/lib/agentColors';
 
+/** Renewal leads are generated with original_source 'renewal' and an auto tag 'Renewal'. */
+const isRenewalLead = (lead: any): boolean =>
+  (lead?.original_source || '').toLowerCase() === 'renewal' ||
+  ((lead?.auto_tags || []) as string[]).some((t) => (t || '').toLowerCase() === 'renewal');
+
 interface LeadTableRowProps {
   lead: Lead;
   tags: LeadTag[];
