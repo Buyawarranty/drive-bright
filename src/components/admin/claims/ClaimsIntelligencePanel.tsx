@@ -27,6 +27,15 @@ interface PurchaseRow {
   email: string | null;
   status: string | null;
   acquisition_source?: string | null;
+  payment_type?: string | null;
+}
+
+// Warranty length in years, derived from how the customer pays.
+function termYears(paymentType?: string | null): 1 | 2 | 3 {
+  const p = (paymentType || '').toLowerCase();
+  if (p.includes('36') || p.includes('3-year') || p.includes('3 year')) return 3;
+  if (p.includes('24') || p.includes('2-year') || p.includes('2 year')) return 2;
+  return 1;
 }
 
 interface Props {
