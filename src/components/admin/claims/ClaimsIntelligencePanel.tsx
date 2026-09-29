@@ -266,6 +266,7 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
     return {
       totalPurchases,
       bySource,
+      byTerm,
       claimants,
       scopedClaimCount: scopedClaims.length,
       avgPerMonth: scopedClaims.length / monthsSpan,
