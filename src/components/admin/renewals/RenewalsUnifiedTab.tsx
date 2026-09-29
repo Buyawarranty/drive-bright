@@ -4,6 +4,7 @@ import { RenewalsQueueTab } from '@/components/admin/renewals/RenewalsQueueTab';
 import { RenewalsSandboxTab } from '@/components/admin/renewals-sandbox/RenewalsSandboxTab';
 import { RenewalsEngineLiveSwitch } from '@/components/admin/renewals-sandbox/RenewalsEngineLiveSwitch';
 import { RenewalSummaryCards } from '@/components/admin/renewals-sandbox/RenewalSummaryCards';
+import { RenewalStatsBar } from '@/components/admin/renewals/RenewalStatsBar';
 import { RenewalApprovalTab } from '@/components/admin/renewals/RenewalApprovalTab';
 import { useIsManagement } from '@/hooks/useIsManagement';
 
@@ -27,6 +28,7 @@ export const RenewalsUnifiedTab: React.FC<Props> = ({ userRole, onNavigateToTab 
     <div className="space-y-4">
       <RenewalsEngineLiveSwitch userRole={userRole} />
       <RenewalSummaryCards />
+      <RenewalStatsBar />
 
       <Tabs value={view} onValueChange={(v) => setView(v as 'queue' | 'approval' | 'engine')} className="space-y-4">
         <TabsList>
