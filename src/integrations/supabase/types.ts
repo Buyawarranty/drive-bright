@@ -11186,6 +11186,73 @@ export type Database = {
           },
         ]
       }
+      renewal_reviews: {
+        Row: {
+          claim_count: number
+          created_at: string
+          customer_id: string
+          id: string
+          manager_note: string | null
+          policy_id: string
+          reasons: string[]
+          renewal_year: number
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          claim_count?: number
+          created_at?: string
+          customer_id: string
+          id?: string
+          manager_note?: string | null
+          policy_id: string
+          reasons?: string[]
+          renewal_year: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          claim_count?: number
+          created_at?: string
+          customer_id?: string
+          id?: string
+          manager_note?: string | null
+          policy_id?: string
+          reasons?: string[]
+          renewal_year?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renewal_reviews_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewal_reviews_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "customer_policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewal_reviews_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       round_robin_state: {
         Row: {
           id: string
@@ -15469,6 +15536,10 @@ export type Database = {
         Args: { p_customer_id: string }
         Returns: string
       }
+      renewal_eligibility_reasons: {
+        Args: { p_policy_id: string }
+        Returns: string[]
+      }
       renewal_pool_get_next: {
         Args: { _agent: string }
         Returns: {
@@ -15515,6 +15586,10 @@ export type Database = {
         }[]
       }
       revert_pricing_to_code_defaults: { Args: never; Returns: undefined }
+      review_renewal: {
+        Args: { p_decision: string; p_note?: string; p_review_id: string }
+        Returns: string
+      }
       rolling_rr_distribute: {
         Args: {
           _batch_cap?: number
