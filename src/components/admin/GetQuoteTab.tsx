@@ -6054,7 +6054,9 @@ Questions? Call 0330 229 5040`;
                   <div className="space-y-0.5">
                     <Label className="text-base font-semibold text-gray-900">Custom Pricing</Label>
                     <p className="text-sm text-muted-foreground">
-                      {isPriceOverridden
+                      {payLaterMode && isPayLaterEligible(paymentType)
+                        ? `Enter the final price for the full ${payLaterYears(paymentType)}-year warranty. Pay Yearly splits this exact total across ${payLaterYears(paymentType)} yearly collections — nothing is added.`
+                        : isPriceOverridden
                         ? "Using custom price — edit fields or reset to calculated"
                         : "Auto-calculated based on selections — edit to override"}
                     </p>
@@ -6116,7 +6118,9 @@ Questions? Call 0330 229 5040`;
                             </p>
                           </div>
                           <div className="space-y-1.5">
-                            <Label htmlFor="custom-full" className="text-sm font-medium text-gray-700">Total Price (£)</Label>
+                            <Label htmlFor="custom-full" className="text-sm font-medium text-gray-700">
+                              {payLaterMode && isPayLaterEligible(paymentType) ? 'Final full-warranty price (£)' : 'Total Price (£)'}
+                            </Label>
                             <Input
                               id="custom-full"
                               type="text"
