@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { UnifiedDateFilter, periodToRange, type DateScope, type PeriodKey } from '../UnifiedDateFilter';
 import { QuickMonthFilter } from '../QuickMonthFilter';
 import { DateRange } from 'react-day-picker';
+import { excludeTestVehicles } from '@/lib/testVehicles';
 import {
   format, startOfMonth, endOfMonth, eachMonthOfInterval,
   differenceInCalendarDays, isWithinInterval, min as minDate, max as maxDate,
