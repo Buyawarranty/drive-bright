@@ -102,7 +102,7 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
       for (let page = 0; page < 20; page++) {
         const { data, error } = await supabase
           .from('customers')
-          .select('id, signup_date, registration_plate, email, status, acquisition_source')
+          .select('id, signup_date, registration_plate, email, status, acquisition_source, payment_type')
           .order('signup_date', { ascending: false })
           .range(page * pageSize, page * pageSize + pageSize - 1);
         if (error || !data?.length) break;
@@ -178,7 +178,7 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
       if (!slowest || days > slowest.days) slowest = { days, reg, date: sorted[0].created_at };
       list.forEach(c => {
         const d = Math.max(0, differenceInCalendarDays(new Date(c.created_at), start));
-        const monthNo = Math.min(13, Math.floor(d / 30) + 1);
+        const monthNo = Math.min(37, Math.floor(d / 30) + 1);
         policyMonthCounts.set(monthNo, (policyMonthCounts.get(monthNo) || 0) + 1);
       });
     });
