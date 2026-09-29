@@ -30,7 +30,7 @@
 - [x] Chatbot pop-up permission: "Customer waiting for a specialist" ring/pop-up is now permission-gated (`tab_chatbot-popup`) — default ON for admin, super admin and claims only; anyone else needs it switched on in User Permissions
 - [x] Chatbot pop-up mute is a clear Mute/Muted toggle and now persists (localStorage), so muting really stops the ring
 - [x] Chatbot Data dashboard: remove the duplicate audio listener, cancel scheduled ring bursts immediately on mute, and stop all alert polling/audio when pop-up access is denied
-- [ ] Renewals → New Leads: policies 60 days from expiry become real new leads owned by the original selling agent, else normal round robin
+- [x] Renewals → New Leads: policies 60 days from expiry become real new leads owned by the original selling agent when they work Renewals, else longest-waiting Renewals rotation
 - [ ] Renewal eligibility: exclude anyone ever cancelled or refunded, unresolved complaints/disputes/chargebacks, fraud flags and contact restrictions; declined claims alone must NOT block renewal
 - [ ] Renewal cadence: 60d create lead + light notice, 30d main contact, 14d reminder, 7d stronger reminder, 1-2d optional final — stop the cadence once renewed or declined
 - [x] Stripe charge.dispute.created/updated webhook tags the customer "Payment Disputed" (blocks renewal + repurchase)
@@ -70,7 +70,7 @@
 - [ ] Payment Assist browser-flow verification (S17DRW / RV19OWW)
 
 ## Renewals queue (Sep 2026)
-- [ ] Sync renewal assignment with selected distribution mode (round robin / open round robin); never leave a renewal unassigned
+- [x] Sync renewal assignment with the dedicated Renewals workstream; never use new starters for catch-up batches
 - [ ] Clear "Renewal" tag on every renewal row
 - [ ] Sync New Leads activity (notes, calls, status, owner) into the renewals row
 
@@ -78,7 +78,7 @@
 - [x] Open Round Robin practice "overnight leads" panel restyled to match New Leads table (columns, badges, status dropdown, action buttons, phone/email/reg styling)
 - [x] Open Round Robin Team Blue practice header: "Your turn" column moved next to "Agent" column
 - [x] Stop 20% off marketing reminders going to customers who already hold active warranty cover (Jenny Beaumont)
-- [ ] Renewals: 90-day window, feed every 2h into Renewals + New Leads
+- [x] Renewals: feed every 2h into Renewals + New Leads, covering 60 days ahead and missed active expiries from the previous 180 days
 - [ ] Open Round Robin: plan safe merge into New Leads (sandbox only, no live impact)
 - [x] Open Round Robin: temporary per-attempt reservations; unanswered calls return unowned to shared retry, contact assigns the caller; use the supplied lead-desk layout
 
