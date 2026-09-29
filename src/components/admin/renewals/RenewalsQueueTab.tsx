@@ -389,7 +389,26 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
         .select(baseSelect)
         .not('status', 'in', "('expired','voided','deleted')")
         .or('is_deleted.is.null,is_deleted.eq.false');
-...
+      q = applySegment(q, segment);
+
+      // Optional date filter — narrows by policy_end_date window on top of segment
+      if (datePeriod !== 'all') {
+        const range = datePeriod === 'custom' ? dateCustomRange : periodToRange(datePeriod);
+        if (range?.from) {
+          const from = new Date(range.from); from.setHours(0, 0, 0, 0);
+          q = q.gte('policy_end_date', from.toISOString());
+        }
+        if (range?.to) {
+          const to = new Date(range.to); to.setHours(23, 59, 59, 999);
+          q = q.lte('policy_end_date', to.toISOString());
+        }
+      }
+
+      // Soonest expiry first
+      q = q.order('policy_end_date', { ascending: true, nullsFirst: false }).limit(PAGE_SIZE);
+      const { data, error } = await q;
+      if (error) throw error;
+
       let list: PolicyRow[] = ((data as any) || []).filter((r: PolicyRow) => {
         const cs = (r.customers?.status || '').toLowerCase();
         return cs !== 'deleted';
