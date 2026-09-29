@@ -17,6 +17,7 @@ import {
   Send, UserCheck, Play, Network, StickyNote, UserCircle2, Trophy,
   RefreshCw, ArrowRightLeft, CalendarClock, Zap, MailPlus,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, ArrowUpDown,
+  MessageCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -30,6 +31,7 @@ import { useRenewalLeadSync } from '@/hooks/useRenewalLeadSync';
 
 import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
 import { CustomerActivityCell } from '@/components/admin/leads/CustomerActivityCell';
+import { SendWhatsAppLeadButton } from '@/components/admin/leads/SendWhatsAppLeadButton';
 import {
   useRenewalReservation,
   useRenewalReservationCountdown,
@@ -168,6 +170,12 @@ function planLengthLabel(row: PolicyRow): string {
   if (months <= 26) return '24mo';
   if (months <= 38) return '36mo';
   return `${months}mo`;
+}
+
+function whatsappHref(phone: string): string {
+  let digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('0')) digits = `44${digits.slice(1)}`;
+  return `https://wa.me/${digits}`;
 }
 
 export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string, leadData?: any) => void }> = ({ userRole, onNavigateToTab }) => {
@@ -1047,16 +1055,17 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                   <th className="p-2 w-[36px]">
                     <Checkbox checked={allSelected} onCheckedChange={toggleAllVisible} />
                   </th>
-                  <th className="text-left p-2 w-[140px]">Agent</th>
-                  <th className="text-left p-2 w-[120px]">Status</th>
-                  <th className="text-center p-2 w-[90px]">Calls</th>
-                  <th className="text-left p-2 w-[380px]">Actions</th>
-                  <th className="text-left p-2 w-[140px]">Name</th>
-                  <th className="text-left p-2 w-[130px]">Phone</th>
+                  <th className="sticky left-0 z-10 bg-muted p-2 text-left w-[110px] min-w-[110px]">Agent</th>
+                  <th className="text-left p-2 w-[95px]">Status</th>
+                  <th className="text-center p-2 w-[60px]">Calls</th>
+                  <th className="text-left p-2 w-[120px]">Actions</th>
+                  <th className="text-left p-2 w-[110px]">Name</th>
+                  <th className="text-left p-2 w-[150px]">Phone</th>
+                  <th className="text-left p-2 w-[90px]">WhatsApp</th>
                   <th className="text-left p-2 w-[180px]">Email</th>
-                  <th className="text-left p-2 w-[90px]">Reg</th>
-                  <th className="text-left p-2 w-[110px]" title="What the customer paid for their current policy — hover for plan, duration, excess, claim limit and add-ons.">Payment</th>
-                  <th className="text-left p-2 w-[110px]" title="When the customer paid for / started their current policy.">Paid Date</th>
+                  <th className="text-left p-2 w-[85px]">Reg</th>
+                  <th className="text-left p-2 w-[80px]" title="What the customer paid for their current policy — hover for plan, duration, excess, claim limit and add-ons.">Payment</th>
+                  <th className="text-left p-2 w-[100px]" title="When the customer paid for / started their current policy.">Paid Date</th>
                   <th className="text-left p-2 w-[110px]">Agent activity</th>
                   <th className="text-left p-2 w-[110px]">Lead Date</th>
                   <th className="text-left p-2 w-[140px]" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</th>
@@ -1107,7 +1116,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                   return (
                     <tr key={r.id} className={`border-t hover:bg-muted/30 align-top ${isSelected ? 'bg-primary/5' : ''} ${isUrgent ? 'border-l-4 border-l-red-500' : ''} ${isPinned ? 'bg-emerald-50/70 ring-1 ring-emerald-300' : ''}`}>
                       <td className="p-2 text-center text-xs tabular-nums text-muted-foreground font-medium">{rowNumber}</td>
-                      <td className="p-2">
+                      <td className="sticky left-0 z-[1] bg-card p-2">
                         <Checkbox checked={isSelected} onCheckedChange={() => toggleRow(r.id)} />
                       </td>
                       <td className="p-2">
@@ -1160,17 +1169,6 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       </td>
                       <td className="p-2">
                         <div className="flex items-center gap-1 flex-wrap">
-                          {phone && (
-                            <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Call"
-                              onClick={() => logCustomerCall(r)}>
-                              <a href={`tel:${phone}`}><Phone className="h-3 w-3" /></a>
-                            </Button>
-                          )}
-                          {email && (
-                            <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Quick email">
-                              <a href={`mailto:${email}`}><Mail className="h-3 w-3" /></a>
-                            </Button>
-                          )}
                           {onNavigateToTab && (
                             <Button size="sm" variant="default" className="h-7 px-2 text-xs gap-1"
                               onClick={() => onNavigateToTab('get-quote', sendQuotePrefill)}
@@ -1248,7 +1246,30 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                           {r.policy_number || r.warranty_number || ''}
                         </div>
                       </td>
-                      <td className="p-2 text-xs">{phone || '—'}</td>
+                      <td className="p-2 text-xs">
+                        {phone ? (
+                          <Button asChild size="sm" variant="outline" className="h-7 px-2 text-xs" title="Call customer"
+                            onClick={() => logCustomerCall(r)}>
+                            <a href={`tel:${phone}`} className="gap-1"><Phone className="h-3 w-3" />{phone}</a>
+                          </Button>
+                        ) : '—'}
+                      </td>
+                      <td className="p-2">
+                        {leadSync?.leadId ? (
+                          <SendWhatsAppLeadButton
+                            leadId={leadSync.leadId}
+                            phone={phone || null}
+                            firstName={r.customers?.first_name}
+                            onSent={() => void refreshLeadSync()}
+                          />
+                        ) : phone ? (
+                          <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Open WhatsApp">
+                            <a href={whatsappHref(phone)} target="_blank" rel="noreferrer" aria-label={`WhatsApp ${name}`}>
+                              <MessageCircle className="h-3.5 w-3.5" />
+                            </a>
+                          </Button>
+                        ) : <span className="text-xs text-muted-foreground">—</span>}
+                      </td>
                       <td className="p-2 text-xs truncate max-w-[180px]" title={email}>{email || '—'}</td>
                       <td className="p-2 text-xs uppercase">{r.customers?.registration_plate || '—'}</td>
                       <td className="p-2 text-xs whitespace-nowrap">
