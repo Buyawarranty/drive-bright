@@ -6,6 +6,7 @@ import { Car, AlertTriangle, TrendingDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { normaliseMake, normaliseModelFamily } from './vehicleNormalisation';
 import { settledCost } from './claimCost';
+import { excludeTestVehicles } from '@/lib/testVehicles';
 
 interface ClaimData {
   id: string;
@@ -29,8 +30,10 @@ interface VehicleInfo {
 
 const COLORS = ['#f97316', '#ef4444', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
 
-export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ claims }) => {
+export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ claims: allClaims }) => {
   const [vehicleMap, setVehicleMap] = useState<Map<string, VehicleInfo>>(new Map());
+  // Internal test vehicles must not skew make/model rankings.
+  const claims = useMemo(() => excludeTestVehicles(allClaims || []), [allClaims]);
 
   useEffect(() => {
     const regs = Array.from(new Set(claims.map(c => c.vehicle_registration?.toUpperCase()).filter(Boolean))) as string[];

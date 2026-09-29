@@ -42,7 +42,10 @@ interface VehicleInfo {
 }
 
 // Simple body type inference from model name
+import { excludeTestVehicles } from '@/lib/testVehicles';
+
 const normReg = (v?: string | null) => (v || '').toUpperCase().replace(/\s+/g, '');
+
 
 function inferBodyType(make: string, model: string): string {
   const m = `${make} ${model}`.toLowerCase();
@@ -73,7 +76,9 @@ function inferBodyType(make: string, model: string): string {
 type FuelFilter = string;
 type YearFilter = string;
 
-export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerProps> = ({ claims }) => {
+export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerProps> = ({ claims: allClaims }) => {
+  // Internal test vehicles must not appear in the claims matrix or rankings.
+  const claims = useMemo(() => excludeTestVehicles(allClaims || []), [allClaims]);
   const [vehicleMap, setVehicleMap] = useState<Map<string, VehicleInfo>>(new Map());
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 250);
