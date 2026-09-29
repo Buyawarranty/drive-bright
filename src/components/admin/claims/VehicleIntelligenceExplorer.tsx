@@ -86,24 +86,29 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Fetch vehicle data
+  // Fetch vehicle data. Registrations are stored with inconsistent spacing/case
+  // across claims and customers, so match on a normalised plate instead of .in().
   useEffect(() => {
-    const regs = Array.from(new Set(claims.map(c => c.vehicle_registration?.toUpperCase()).filter(Boolean))) as string[];
-    if (regs.length === 0) return;
+    const regs = new Set(claims.map(c => normReg(c.vehicle_registration)).filter(Boolean));
+    if (regs.size === 0) return;
 
     const fetchVehicles = async () => {
-      const { data } = await supabase
-        .from('customers')
-        .select('registration_plate, vehicle_make, vehicle_model, vehicle_fuel_type, vehicle_year, vehicle_transmission')
-        .in('registration_plate', regs);
-
-      if (data) {
-        const map = new Map<string, VehicleInfo>();
+      const map = new Map<string, VehicleInfo>();
+      const pageSize = 1000;
+      for (let page = 0; page < 20; page++) {
+        const { data, error } = await supabase
+          .from('customers')
+          .select('registration_plate, vehicle_make, vehicle_model, vehicle_fuel_type, vehicle_year, vehicle_transmission')
+          .not('vehicle_make', 'is', null)
+          .range(page * pageSize, page * pageSize + pageSize - 1);
+        if (error || !data?.length) break;
         data.forEach(v => {
-          if (v.registration_plate) map.set(v.registration_plate.toUpperCase(), v as VehicleInfo);
+          const key = normReg(v.registration_plate);
+          if (key && regs.has(key) && !map.has(key)) map.set(key, v as VehicleInfo);
         });
-        setVehicleMap(map);
+        if (data.length < pageSize) break;
       }
+      setVehicleMap(map);
     };
     fetchVehicles();
   }, [claims]);
