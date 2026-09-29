@@ -53,6 +53,7 @@ import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplore
 import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
 import { ClaimsIntelligencePanel } from './claims/ClaimsIntelligencePanel';
+import { ClaimsDataAccessManager, useClaimsDataAccess } from './claims/ClaimsDataAccessManager';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useReturnedAppeals } from '@/hooks/useReturnedAppeals';
 import { AppealsInboxPanel } from '@/components/admin/claims/AppealsInboxPanel';
@@ -116,7 +117,7 @@ export const ClaimsTab = ({
   const canExportClaims =
     MANAGER_EXPORT_ROLES.includes(userRole || '') ||
     (user?.email || '').toLowerCase().startsWith('accounts@');
-  const canViewClaimsIntelligence = CLAIMS_INTELLIGENCE_ROLES.includes(userRole || '');
+  const { allowed: canViewClaimsIntelligence } = useClaimsDataAccess();
   const [rangeExportOpen, setRangeExportOpen] = useState(false);
   const [rangeExportFrom, setRangeExportFrom] = useState('');
   const [rangeExportTo, setRangeExportTo] = useState('');
@@ -641,6 +642,7 @@ export const ClaimsTab = ({
       {/* Claims data Sub-tab — managers only */}
       {activeSubTab === 'claims-data' && canViewClaimsIntelligence && (
         <div className="space-y-6">
+          <ClaimsDataAccessManager />
           <ClaimsIntelligencePanel claims={(claims || []).filter((c: any) => c.status !== 'fake_test') as any} />
           <VehicleIntelligenceExplorer claims={(claims || []).filter((c: any) => c.status !== 'fake_test') as any} />
           <div id="claims-analytics-section" className="scroll-mt-4 space-y-6">
