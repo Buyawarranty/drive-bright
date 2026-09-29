@@ -572,8 +572,30 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     );
   }, [rows, fetchCallCounts, fetchLatestNotes, fetchClaimFlags]);
 
+  const rowHasClaim = useCallback((r: PolicyRow) => {
+    const email = (r.customers?.email || r.email || '').toLowerCase();
+    const regKey = (r.customers?.registration_plate || '').replace(/\s+/g, '').toUpperCase();
+    return !!((email && claimEmails.has(email)) || (regKey && claimRegs.has(regKey)));
+  }, [claimEmails, claimRegs]);
+  const rowUnwind = useCallback((r: PolicyRow): string | null => {
+    const s = `${(r as any).status || ''} ${r.customers?.status || ''}`.toLowerCase();
+    if (s.includes('refund')) return 'Refunded';
+    if (s.includes('cancel')) return 'Cancelled';
+    return null;
+  }, []);
+  const isHeldRow = useCallback((r: PolicyRow) =>
+    rowHasClaim(r) || !!rowUnwind(r) || !!(r as any).renewal_review_required,
+  [rowHasClaim, rowUnwind]);
+  const bucketCounts = useMemo(() => {
+    const held = rows.filter(isHeldRow).length;
+    return bucket === 'held'
+      ? { held, contact: contactCountCache.current }
+      : (contactCountCache.current = rows.length - held, { contact: rows.length - held, held: heldCountCache.current });
+  }, [rows, isHeldRow, bucket]);
+  if (bucket === 'held') heldCountCache.current = bucketCounts.held;
+
   const filtered = useMemo(() => {
-    const base = rows;
+    const base = rows.filter((r) => (bucket === 'held' ? isHeldRow(r) : !isHeldRow(r)));
     const searched = !search.trim() ? base : base.filter((r) =>
       [r.customer_full_name, r.email, r.customers?.email, r.customers?.phone,
        r.customers?.first_name, r.customers?.last_name, r.customers?.registration_plate,
@@ -1037,6 +1059,20 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
         </Card>
       )}
 
+      <div className="flex flex-wrap items-center gap-2">
+        <Button size="sm" variant={bucket === 'contact' ? 'default' : 'outline'} onClick={() => setBucket('contact')}>
+          Due to contact <span className="ml-1.5 tabular-nums opacity-80">({bucketCounts.contact})</span>
+        </Button>
+        <Button size="sm" variant={bucket === 'held' ? 'destructive' : 'outline'} onClick={() => setBucket('held')}>
+          Claims, refunds &amp; cancellations <span className="ml-1.5 tabular-nums opacity-80">({bucketCounts.held})</span>
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          {bucket === 'contact'
+            ? 'No claim, no refund, no cancellation — ready for sales agents.'
+            : 'Not for sales contact. Claim-history renewals need manager approval.'}
+        </span>
+      </div>
+
       {loading ? (
         <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
           <Loader2 className="h-4 w-4 animate-spin" /> Loading renewals…
@@ -1232,17 +1268,26 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                           </Badge>
 
                           {(() => {
-                            const regKey = (r.customers?.registration_plate || '').replace(/\s+/g, '').toUpperCase();
-                            const hasClaim = (email && claimEmails.has(email)) || (regKey && claimRegs.has(regKey));
-                            return hasClaim ? (
-                              <Badge
-                                variant="outline"
-                                className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-amber-500 text-amber-700 bg-amber-50"
-                                title="This customer has submitted a claim"
-                              >
-                                Claim made
-                              </Badge>
-                            ) : null;
+                            const hasClaim = rowHasClaim(r);
+                            const unwind = rowUnwind(r);
+                            return (
+                              <>
+                                {hasClaim ? (
+                                  <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-destructive text-destructive bg-destructive/10" title="This customer has submitted a claim — needs manager approval before renewal">
+                                    Claim made
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-primary/40 text-primary bg-primary/5" title="No claim on record">
+                                    No claim
+                                  </Badge>
+                                )}
+                                {unwind && (
+                                  <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-destructive text-destructive bg-destructive/10" title="Policy was cancelled or refunded — not for renewal">
+                                    {unwind}
+                                  </Badge>
+                                )}
+                              </>
+                            );
                           })()}
                         </div>
                         <div className="text-[10px] text-muted-foreground">
