@@ -334,6 +334,34 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
 
       <Card>
         <CardHeader className="pb-2">
+          <CardTitle className="text-base">Customer warranty mix</CardTitle>
+          <CardDescription>What share of customers are on 1, 2 or 3 year cover, and how often each group claims.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex h-4 w-full overflow-hidden rounded-full bg-muted">
+            {data.byTerm.map(t => {
+              const share = data.totalPurchases ? (t.purchases / data.totalPurchases) * 100 : 0;
+              if (!share) return null;
+              const color = t.years === 1 ? 'hsl(var(--primary))' : t.years === 2 ? 'hsl(142 71% 45%)' : 'hsl(38 92% 50%)';
+              return <div key={t.years} style={{ width: `${share}%`, background: color }} title={`${t.years} year: ${pct(t.purchases, data.totalPurchases)}`} />;
+            })}
+          </div>
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
+            {data.byTerm.map(t => (
+              <div key={t.years} className="rounded-lg border p-3">
+                <p className="text-sm font-semibold">{t.years}-year warranty</p>
+                <p className="text-2xl font-bold">{pct(t.purchases, data.totalPurchases)}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {t.purchases} customers · {t.claims} claims · {pct(t.claimants, t.purchases)} claim rate
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
           <CardTitle className="text-base">Claims by lead source</CardTitle>
           <CardDescription>Which channel the customer originally came from (Meta, Google and so on), how often those customers claim, and the amounts involved.</CardDescription>
         </CardHeader>
