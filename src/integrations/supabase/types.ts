@@ -3572,6 +3572,24 @@ export type Database = {
           },
         ]
       }
+      claims_data_access: {
+        Row: {
+          created_at: string
+          granted_by_email: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by_email?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       claims_submissions: {
         Row: {
           approved_at: string | null
@@ -14878,6 +14896,7 @@ export type Database = {
         Returns: boolean
       }
       has_all_leads_permission: { Args: { _user_id: string }; Returns: boolean }
+      has_claims_data_access: { Args: never; Returns: boolean }
       has_manager_discount_access: {
         Args: { _user_id: string }
         Returns: boolean
@@ -14906,6 +14925,7 @@ export type Database = {
         Returns: boolean
       }
       is_blog_writer: { Args: { user_id: string }; Returns: boolean }
+      is_claims_data_owner: { Args: never; Returns: boolean }
       is_ip_blocked: { Args: { check_ip: unknown }; Returns: boolean }
       is_known_fake_phone: { Args: { _phone: string }; Returns: boolean }
       is_management: { Args: { _user_id: string }; Returns: boolean }
@@ -15555,6 +15575,10 @@ export type Database = {
       }
       set_agent_lead_allocation: {
         Args: { _admin_user_id: string; _enabled: boolean }
+        Returns: undefined
+      }
+      set_claims_data_access: {
+        Args: { p_allow: boolean; p_user_id: string }
         Returns: undefined
       }
       set_sale_credit_agent:
