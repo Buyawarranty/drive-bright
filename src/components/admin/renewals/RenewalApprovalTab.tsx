@@ -147,7 +147,7 @@ export const RenewalApprovalTab: React.FC = () => {
               {filtered.map((row) => {
                 const customer = row.customers;
                 const name = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ') || customer?.name || 'Customer';
-                const hardBlocked = row.reasons.some((reason) => reason !== 'claim_made');
+                const hardBlocked = row.reasons.some((reason) => reason !== 'claim_made' && reason !== 'cancelled_or_refunded');
                 return (
                   <tr key={row.id} className="border-t align-top">
                     <td className="p-3"><div className="font-medium">{name}</div><div className="text-xs text-muted-foreground">{customer?.email || '—'}</div><div className="text-xs text-muted-foreground">{customer?.phone || ''}</div></td>
