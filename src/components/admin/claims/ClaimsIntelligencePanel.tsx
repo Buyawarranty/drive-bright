@@ -127,7 +127,7 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
   };
 
   const data = useMemo(() => {
-    const cleanClaims = (claims || []).filter(c => c.status !== 'fake_test');
+    const cleanClaims = excludeTestVehicles((claims || []).filter(c => c.status !== 'fake_test'));
 
     // Purchase cohort: filtered by signup date when the scope is signup.
     const cohort = purchases.filter(p => (scope === 'signup' ? inRange(p.signup_date) : true));
