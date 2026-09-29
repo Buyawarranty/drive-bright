@@ -213,10 +213,25 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
     }
 
     const monthsSpan = monthly.length || 1;
-    const policyMonthChart = Array.from({ length: 13 }, (_, i) => ({
-      month: i === 12 ? '13+' : `${i + 1}`,
+    const policyMonthChart = Array.from({ length: 37 }, (_, i) => ({
+      month: i === 36 ? '37+' : `${i + 1}`,
       claims: policyMonthCounts.get(i + 1) || 0,
-    }));
+    })).filter((_, i) => i < 36 || (policyMonthCounts.get(37) || 0) > 0);
+
+    // Warranty-length mix: what share of customers are on 1, 2 or 3 year cover,
+    // and how often each group claims.
+    const byTermMap = new Map<1 | 2 | 3, { years: 1 | 2 | 3; purchases: number; claimants: number; claims: number }>();
+    ([1, 2, 3] as const).forEach(y => byTermMap.set(y, { years: y, purchases: 0, claimants: 0, claims: 0 }));
+    cohortByReg.forEach((p) => {
+      byTermMap.get(termYears(p.payment_type))!.purchases += 1;
+    });
+    claimsByPurchase.forEach((list, reg) => {
+      const purchase = cohortByReg.get(reg);
+      const e = byTermMap.get(termYears(purchase?.payment_type))!;
+      e.claimants += 1;
+      e.claims += list.length;
+    });
+    const byTerm = [...byTermMap.values()];
 
     // Claims broken down by where the customer originally came from.
     const bySourceMap = new Map<string, {
