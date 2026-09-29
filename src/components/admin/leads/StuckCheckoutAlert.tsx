@@ -236,7 +236,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                         {r.customer_name || r.customer_email || r.customer_phone || 'Customer'}
                       </p>
                       <p className="text-[11px] text-red-700 font-medium truncate">
-                        {SIGNAL_LABELS[r.signal_type] || r.signal_type} · {timeAgo(r.created_at)}
+                        {SIGNAL_LABELS[r.signal_type] || r.signal_type} · came in {cameInAt(r.created_at)} · {timeAgo(r.created_at)}
                       </p>
                       <p className="text-[11px] text-gray-600 truncate">
                         {[r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null, r.plan_name, r.amount ? `£${r.amount}` : null]
