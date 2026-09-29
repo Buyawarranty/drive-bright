@@ -27,6 +27,15 @@ interface PurchaseRow {
   email: string | null;
   status: string | null;
   acquisition_source?: string | null;
+  payment_type?: string | null;
+}
+
+// Warranty length in years, derived from how the customer pays.
+function termYears(paymentType?: string | null): 1 | 2 | 3 {
+  const p = (paymentType || '').toLowerCase();
+  if (p.includes('36') || p.includes('3-year') || p.includes('3 year')) return 3;
+  if (p.includes('24') || p.includes('2-year') || p.includes('2 year')) return 2;
+  return 1;
 }
 
 interface Props {
@@ -93,7 +102,7 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
       for (let page = 0; page < 20; page++) {
         const { data, error } = await supabase
           .from('customers')
-          .select('id, signup_date, registration_plate, email, status, acquisition_source')
+          .select('id, signup_date, registration_plate, email, status, acquisition_source, payment_type')
           .order('signup_date', { ascending: false })
           .range(page * pageSize, page * pageSize + pageSize - 1);
         if (error || !data?.length) break;
@@ -169,7 +178,7 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
       if (!slowest || days > slowest.days) slowest = { days, reg, date: sorted[0].created_at };
       list.forEach(c => {
         const d = Math.max(0, differenceInCalendarDays(new Date(c.created_at), start));
-        const monthNo = Math.min(13, Math.floor(d / 30) + 1);
+        const monthNo = Math.min(37, Math.floor(d / 30) + 1);
         policyMonthCounts.set(monthNo, (policyMonthCounts.get(monthNo) || 0) + 1);
       });
     });
@@ -204,10 +213,25 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
     }
 
     const monthsSpan = monthly.length || 1;
-    const policyMonthChart = Array.from({ length: 13 }, (_, i) => ({
-      month: i === 12 ? '13+' : `${i + 1}`,
+    const policyMonthChart = Array.from({ length: 37 }, (_, i) => ({
+      month: i === 36 ? '37+' : `${i + 1}`,
       claims: policyMonthCounts.get(i + 1) || 0,
-    }));
+    })).filter((_, i) => i < 36 || (policyMonthCounts.get(37) || 0) > 0);
+
+    // Warranty-length mix: what share of customers are on 1, 2 or 3 year cover,
+    // and how often each group claims.
+    const byTermMap = new Map<1 | 2 | 3, { years: 1 | 2 | 3; purchases: number; claimants: number; claims: number }>();
+    ([1, 2, 3] as const).forEach(y => byTermMap.set(y, { years: y, purchases: 0, claimants: 0, claims: 0 }));
+    cohortByReg.forEach((p) => {
+      byTermMap.get(termYears(p.payment_type))!.purchases += 1;
+    });
+    claimsByPurchase.forEach((list, reg) => {
+      const purchase = cohortByReg.get(reg);
+      const e = byTermMap.get(termYears(purchase?.payment_type))!;
+      e.claimants += 1;
+      e.claims += list.length;
+    });
+    const byTerm = [...byTermMap.values()];
 
     // Claims broken down by where the customer originally came from.
     const bySourceMap = new Map<string, {
@@ -242,6 +266,7 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
     return {
       totalPurchases,
       bySource,
+      byTerm,
       claimants,
       scopedClaimCount: scopedClaims.length,
       avgPerMonth: scopedClaims.length / monthsSpan,
@@ -306,6 +331,34 @@ export const ClaimsIntelligencePanel: React.FC<Props> = ({ claims }) => {
           hint={data.slowest ? `${data.slowest.reg} · ${format(new Date(data.slowest.date), 'd MMM yyyy')}` : undefined}
         />
       </div>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Customer warranty mix</CardTitle>
+          <CardDescription>What share of customers are on 1, 2 or 3 year cover, and how often each group claims.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex h-4 w-full overflow-hidden rounded-full bg-muted">
+            {data.byTerm.map(t => {
+              const share = data.totalPurchases ? (t.purchases / data.totalPurchases) * 100 : 0;
+              if (!share) return null;
+              const color = t.years === 1 ? 'hsl(var(--primary))' : t.years === 2 ? 'hsl(142 71% 45%)' : 'hsl(38 92% 50%)';
+              return <div key={t.years} style={{ width: `${share}%`, background: color }} title={`${t.years} year: ${pct(t.purchases, data.totalPurchases)}`} />;
+            })}
+          </div>
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
+            {data.byTerm.map(t => (
+              <div key={t.years} className="rounded-lg border p-3">
+                <p className="text-sm font-semibold">{t.years}-year warranty</p>
+                <p className="text-2xl font-bold">{pct(t.purchases, data.totalPurchases)}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {t.purchases} customers · {t.claims} claims · {pct(t.claimants, t.purchases)} claim rate
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="pb-2">
