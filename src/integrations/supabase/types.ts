@@ -14479,6 +14479,10 @@ export type Database = {
         Args: { p_admin_user_id: string }
         Returns: boolean
       }
+      agent_works_renewals: {
+        Args: { p_admin_user_id: string }
+        Returns: boolean
+      }
       apply_customer_risk_tag: {
         Args: {
           p_actor?: string
