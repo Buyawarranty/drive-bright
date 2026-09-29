@@ -2,7 +2,7 @@ import { getVehicleAge } from '@/lib/vehicleAge';
 import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, instalmentScheduleTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import {
   isPayLaterEligible, payLaterYears, payLaterYearlyAmount, payLaterTermTotal,
-  payLaterExtraVsTerm, buildPayLaterSchedule,
+  payLaterExtraVsTerm,
 } from '@/lib/bawPayLater';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
@@ -3447,7 +3447,7 @@ Questions? Call 0330 229 5040`;
     // price and the discount no longer reconcile.
     const fullTermQuoted = quotedPriceOverride !== ''
       ? Math.round(parseFloat(quotedPriceOverride) || 0)
-      : Math.round(currentPrice.monthlyPrice * 12);
+      : Math.round(displayedTotalPrice);
     const prefillQuoted = payLaterMode && isPayLaterEligible(paymentType)
       ? payLaterFirstPayment(fullTermQuoted, payLaterYears(paymentType))
       : fullTermQuoted;
@@ -3693,7 +3693,7 @@ Questions? Call 0330 229 5040`;
     // quote or from typing a lower figure in the confirm box, so the CRM, the
     // "discount given" report and the sale email all agree.
     const fullTermQuotedOnScreen = Math.max(
-      Math.round(currentPrice.monthlyPrice * 12),
+      Math.round(displayedTotalPrice),
       quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : 0,
     );
     const quotedOnScreen = payLaterMode && isPayLaterEligible(paymentType)
@@ -5458,6 +5458,7 @@ Questions? Call 0330 229 5040`;
                     const monthlyTotal = instalmentScheduleTotal(displayedTotalPrice, 12, longPlanRatio);
                     const yearly = payLaterFirstPayment(displayedTotalPrice, years);
                     const yearlyTotal = payLaterFinalTotal(displayedTotalPrice, years);
+                    const laterYearly = Math.floor(yearlyTotal / years);
                     const yearlyExtra = isPriceOverridden ? 0 : payLaterExtraVsTerm(displayedTotalPrice, years);
                     return (
                       <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50/50 p-3">
@@ -5490,7 +5491,9 @@ Questions? Call 0330 229 5040`;
                             <span className="absolute -top-2.5 left-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
                               Pay yearly — collected every year
                             </span>
-                            <div className="font-semibold text-sm">£{yearly}/year · £{yearlyTotal} across {years} years</div>
+                            <div className="font-semibold text-sm">
+                              {isPriceOverridden ? `£${yearly} first year · £${yearlyTotal} total` : `£${yearly}/year · £${yearlyTotal} across ${years} years`}
+                            </div>
                             <div className="text-[11px] text-muted-foreground mt-0.5">
                               {years} yearly payments · year 1 today, then every anniversary
                             </div>
@@ -5511,8 +5514,7 @@ Questions? Call 0330 229 5040`;
                             <p className="font-bold">BAW PayLater</p>
                             <ul className="mt-1 list-disc space-y-0.5 pl-4">
                               <li>£{yearly} collected today</li>
-                              <li>£{yearlyTotal} total across the full {years}-year warranty</li>
-                              <li>First payment collected today</li>
+                              <li>{isPriceOverridden && laterYearly !== yearly ? `£${laterYearly} collected on each following anniversary` : 'Payment collected every year'}</li>
                               <li>Your commission is paid every year</li>
                               <li>Your scoreboard reflects each yearly total when collected</li>
                             </ul>
@@ -9026,7 +9028,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
 
                     {/* Amount */}
                     {(() => {
-                      const fullTermQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
+                      const fullTermQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : displayedTotalPrice;
                       const effectiveQuoted = payLaterMode && isPayLaterEligible(paymentType)
                         ? payLaterFirstPayment(fullTermQuoted, payLaterYears(paymentType))
                         : fullTermQuoted;
