@@ -42,6 +42,8 @@ interface VehicleInfo {
 }
 
 // Simple body type inference from model name
+const normReg = (v?: string | null) => (v || '').toUpperCase().replace(/\s+/g, '');
+
 function inferBodyType(make: string, model: string): string {
   const m = `${make} ${model}`.toLowerCase();
   // Motorbike makes
@@ -118,7 +120,7 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
     const byKey = new Map<string, { make: string; model: string; fuel: string; year: string; bodyType: string; claimCount: number; totalCost: number; paidCount: number }>();
 
     claims.forEach(c => {
-      const reg = c.vehicle_registration?.toUpperCase();
+      const reg = normReg(c.vehicle_registration);
       const info = reg ? vehicleMap.get(reg) : null;
       if (!info?.vehicle_make) return;
 
