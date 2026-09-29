@@ -47,6 +47,10 @@ const timeAgo = (iso: string) => {
   return m ? `${h}hr ${m}min ago` : `${h}hr ago`;
 };
 
+/** Clock time the lead came in, UK time, e.g. "12:41". */
+const cameInAt = (iso: string) =>
+  new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
+
 const formatUkPhone = (p: string) => {
   const d = p.replace(/\D/g, '').replace(/^44/, '0');
   return d.length === 11 ? `${d.slice(0, 5)} ${d.slice(5)}` : p;
@@ -125,7 +129,12 @@ export const StuckCheckoutAlert: React.FC = () => {
       keys.forEach((k) => lastSeen.set(k, t));
       if (keys.length === 0 || isNewVisit) heads.push(r);
     }
-    return heads.filter((r) => !dismissedIds.includes(r.id)).reverse();
+    // Never pop up while it is too early to call — the customer is still
+    // buying. Only the call window (and the second-try window) interrupts.
+    return heads
+      .filter((r) => !dismissedIds.includes(r.id))
+      .filter((r) => getContactCadence(r.created_at).canCall)
+      .reverse();
   }, [rows, dismissedIds]);
 
   // Resolve which agent owns each stuck customer's lead (by email / phone tail-9).
@@ -227,7 +236,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                         {r.customer_name || r.customer_email || r.customer_phone || 'Customer'}
                       </p>
                       <p className="text-[11px] text-red-700 font-medium truncate">
-                        {SIGNAL_LABELS[r.signal_type] || r.signal_type} · {timeAgo(r.created_at)}
+                        {SIGNAL_LABELS[r.signal_type] || r.signal_type} · came in {cameInAt(r.created_at)} · {timeAgo(r.created_at)}
                       </p>
                       <p className="text-[11px] text-gray-600 truncate">
                         {[r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null, r.plan_name, r.amount ? `£${r.amount}` : null]
