@@ -960,7 +960,12 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               onOpenChange={setEditInfoOpen}
             />
           )}
-          {!repeatCustomer && !(((lead as any).auto_tags || []) as string[]).some(t => t === 'repeat_customer' || t === 'same_customer_sticky') && (lead as any).manual_entry && <ManualLeadBadge />}
+          {isRenewalLead(lead) && (
+            <Badge className="text-[10px] px-1.5 py-0.5 bg-primary text-primary-foreground border-0 flex-shrink-0 uppercase tracking-wide font-bold" title="Renewal — existing customer whose warranty is coming up for renewal">
+              Renewal
+            </Badge>
+          )}
+          {!isRenewalLead(lead) && !repeatCustomer && !(((lead as any).auto_tags || []) as string[]).some(t => t === 'repeat_customer' || t === 'same_customer_sticky') && (lead as any).manual_entry && <ManualLeadBadge />}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
@@ -1740,7 +1745,12 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               onOpenChange={setEditInfoOpen}
             />
           )}
-          {!repeatCustomer && !(((lead as any).auto_tags || []) as string[]).some(t => t === 'repeat_customer' || t === 'same_customer_sticky') && (lead as any).manual_entry && <ManualLeadBadge />}
+          {isRenewalLead(lead) && (
+            <Badge className="text-[10px] px-1.5 py-0.5 bg-primary text-primary-foreground border-0 flex-shrink-0 uppercase tracking-wide font-bold" title="Renewal — existing customer whose warranty is coming up for renewal">
+              Renewal
+            </Badge>
+          )}
+          {!isRenewalLead(lead) && !repeatCustomer && !(((lead as any).auto_tags || []) as string[]).some(t => t === 'repeat_customer' || t === 'same_customer_sticky') && (lead as any).manual_entry && <ManualLeadBadge />}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
