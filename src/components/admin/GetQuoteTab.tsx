@@ -2,7 +2,7 @@ import { getVehicleAge } from '@/lib/vehicleAge';
 import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, instalmentScheduleTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import {
   isPayLaterEligible, payLaterYears, payLaterYearlyAmount, payLaterTermTotal,
-  payLaterExtraVsTerm, buildPayLaterSchedule,
+  payLaterExtraVsTerm,
 } from '@/lib/bawPayLater';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
@@ -1484,6 +1484,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     : Math.ceil(Number(currentPrice.monthlyPrice || 0) * 12);
   const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.ceil(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
+  // A manually entered total is the agent's final Pay Yearly offer. The standard
+  // 10% yearly-collection uplift applies only while using the calculated price.
+  const payLaterFinalTotal = (termTotal: number, years: number) =>
+    isPriceOverridden ? Math.round(termTotal) : payLaterTermTotal(termTotal, years);
+  const payLaterFirstPayment = (termTotal: number, years: number) =>
+    Math.ceil(payLaterFinalTotal(termTotal, years) / Math.max(1, years));
   // Hard block: total under the absolute minimum (never below £399) without an
   // evidenced price match. The NET amount counts — a pay-in-full discount on top
   // may not drop the payable figure under the floor either.
@@ -3441,9 +3447,9 @@ Questions? Call 0330 229 5040`;
     // price and the discount no longer reconcile.
     const fullTermQuoted = quotedPriceOverride !== ''
       ? Math.round(parseFloat(quotedPriceOverride) || 0)
-      : Math.round(currentPrice.monthlyPrice * 12);
+      : Math.round(displayedTotalPrice);
     const prefillQuoted = payLaterMode && isPayLaterEligible(paymentType)
-      ? payLaterYearlyAmount(fullTermQuoted, payLaterYears(paymentType))
+      ? payLaterFirstPayment(fullTermQuoted, payLaterYears(paymentType))
       : fullTermQuoted;
     setPaymentAmount(prefillQuoted ? prefillQuoted.toString() : '');
 
@@ -3687,11 +3693,11 @@ Questions? Call 0330 229 5040`;
     // quote or from typing a lower figure in the confirm box, so the CRM, the
     // "discount given" report and the sale email all agree.
     const fullTermQuotedOnScreen = Math.max(
-      Math.round(currentPrice.monthlyPrice * 12),
+      Math.round(displayedTotalPrice),
       quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : 0,
     );
     const quotedOnScreen = payLaterMode && isPayLaterEligible(paymentType)
-      ? payLaterYearlyAmount(fullTermQuotedOnScreen, payLaterYears(paymentType))
+      ? payLaterFirstPayment(fullTermQuotedOnScreen, payLaterYears(paymentType))
       : fullTermQuotedOnScreen;
     // Also check every quote already on record for this plate, so a discount is
     // never saved as zero just because the on-screen price has since changed.
@@ -4047,11 +4053,20 @@ Questions? Call 0330 229 5040`;
       // pending so accounts can chase them from Payments pending.
       if (payLaterActive && customerId) {
         try {
-          // The confirmation amount is already one yearly payment. Convert it
-          // back to the equivalent term base only for schedule construction.
-          const scheduleBase = (Number(confirmedAmount) / 1.1) * payLaterYearCount;
-          const rows = buildPayLaterSchedule(scheduleBase, payLaterYearCount, startDate)
-            .map((row) => ({
+          const scheduleTotal = isPriceOverridden
+            ? Math.round(displayedTotalPrice)
+            : Math.round(Number(confirmedAmount) * payLaterYearCount);
+          const basePayment = Math.floor(scheduleTotal / payLaterYearCount);
+          const remainder = scheduleTotal - (basePayment * payLaterYearCount);
+          const rows = Array.from({ length: payLaterYearCount }, (_, index) => {
+            const dueDate = new Date(startDate.getTime());
+            dueDate.setUTCFullYear(dueDate.getUTCFullYear() + index);
+            return {
+              yearNumber: index + 1,
+              amount: basePayment + (index < remainder ? 1 : 0),
+              dueDate,
+            };
+          }).map((row) => ({
               customer_id: customerId,
               warranty_reference_number: finalWarrantyReference,
               year_number: row.yearNumber,
@@ -5399,9 +5414,9 @@ Questions? Call 0330 229 5040`;
                             ? instalmentCount
                             : 12;
                           const termUsesPayLater = isSelectedTerm && payLaterMode && years > 1;
-                          const planTotal = termUsesPayLater ? payLaterTermTotal(baseTotal, years) : instalmentScheduleTotal(baseTotal, plan, ratio);
+                          const planTotal = termUsesPayLater ? payLaterFinalTotal(baseTotal, years) : instalmentScheduleTotal(baseTotal, plan, ratio);
                           const planMonthly = instalmentAmount(baseTotal, plan, ratio);
-                          const yearlyAmount = payLaterYearlyAmount(baseTotal, years);
+                          const yearlyAmount = payLaterFirstPayment(baseTotal, years);
                           return (
                           <div className="mt-1.5 space-y-1">
                             <div className="text-xs text-black font-medium">
@@ -5441,9 +5456,10 @@ Questions? Call 0330 229 5040`;
                     const years = payLaterYears(paymentType);
                     const monthly = instalmentAmount(displayedTotalPrice, 12, longPlanRatio);
                     const monthlyTotal = instalmentScheduleTotal(displayedTotalPrice, 12, longPlanRatio);
-                    const yearly = payLaterYearlyAmount(displayedTotalPrice, years);
-                    const yearlyTotal = payLaterTermTotal(displayedTotalPrice, years);
-                    const yearlyExtra = payLaterExtraVsTerm(displayedTotalPrice, years);
+                    const yearly = payLaterFirstPayment(displayedTotalPrice, years);
+                    const yearlyTotal = payLaterFinalTotal(displayedTotalPrice, years);
+                    const laterYearly = Math.floor(yearlyTotal / years);
+                    const yearlyExtra = isPriceOverridden ? 0 : payLaterExtraVsTerm(displayedTotalPrice, years);
                     return (
                       <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50/50 p-3">
                         <Label className="text-sm font-semibold">How it's paid</Label>
@@ -5475,10 +5491,17 @@ Questions? Call 0330 229 5040`;
                             <span className="absolute -top-2.5 left-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
                               Pay yearly — collected every year
                             </span>
-                            <div className="font-semibold text-sm">£{yearly}/year · £{yearlyTotal} across {years} years</div>
+                            <div className="font-semibold text-sm">
+                              {isPriceOverridden ? `£${yearly} first year · £${yearlyTotal} total` : `£${yearly}/year · £${yearlyTotal} across ${years} years`}
+                            </div>
                             <div className="text-[11px] text-muted-foreground mt-0.5">
                               {years} yearly payments · year 1 today, then every anniversary
                             </div>
+                            {isPriceOverridden && (
+                              <div className="text-[11px] font-semibold text-emerald-700 mt-0.5">
+                                Custom total honoured — no extra uplift added
+                              </div>
+                            )}
                             {yearlyExtra > 0 && (
                               <div className="text-[11px] font-semibold text-amber-700 mt-0.5">
                                 +£{yearlyExtra} vs paying up front
@@ -5490,8 +5513,8 @@ Questions? Call 0330 229 5040`;
                           <div className="rounded-md border border-emerald-300 bg-emerald-100/70 px-3 py-2 text-xs leading-relaxed text-emerald-900">
                             <p className="font-bold">BAW PayLater</p>
                             <ul className="mt-1 list-disc space-y-0.5 pl-4">
-                              <li>Payment collected every year: £{yearly}</li>
-                              <li>First payment collected today</li>
+                              <li>£{yearly} collected today</li>
+                              <li>{isPriceOverridden && laterYearly !== yearly ? `£${laterYearly} collected on each following anniversary` : 'Payment collected every year'}</li>
                               <li>Your commission is paid every year</li>
                               <li>Your scoreboard reflects each yearly total when collected</li>
                             </ul>
@@ -6031,7 +6054,9 @@ Questions? Call 0330 229 5040`;
                   <div className="space-y-0.5">
                     <Label className="text-base font-semibold text-gray-900">Custom Pricing</Label>
                     <p className="text-sm text-muted-foreground">
-                      {isPriceOverridden
+                      {payLaterMode && isPayLaterEligible(paymentType)
+                        ? `Enter the final price for the full ${payLaterYears(paymentType)}-year warranty. Pay Yearly splits this exact total across ${payLaterYears(paymentType)} yearly collections — nothing is added.`
+                        : isPriceOverridden
                         ? "Using custom price — edit fields or reset to calculated"
                         : "Auto-calculated based on selections — edit to override"}
                     </p>
@@ -6093,7 +6118,9 @@ Questions? Call 0330 229 5040`;
                             </p>
                           </div>
                           <div className="space-y-1.5">
-                            <Label htmlFor="custom-full" className="text-sm font-medium text-gray-700">Total Price (£)</Label>
+                            <Label htmlFor="custom-full" className="text-sm font-medium text-gray-700">
+                              {payLaterMode && isPayLaterEligible(paymentType) ? 'Final full-warranty price (£)' : 'Total Price (£)'}
+                            </Label>
                             <Input
                               id="custom-full"
                               type="text"
@@ -7230,7 +7257,7 @@ Questions? Call 0330 229 5040`;
                   const totalCoverDays = Math.round((durationMonths / 12) * 365);
                   const payLaterActive = payLaterMode && isPayLaterEligible(paymentType);
                   const payLaterYearCount = payLaterActive ? payLaterYears(paymentType) : 1;
-                  const selectedYearlyAmount = payLaterActive ? payLaterYearlyAmount(displayedTotalPrice, payLaterYearCount) : 0;
+                  const selectedYearlyAmount = payLaterActive ? payLaterFirstPayment(displayedTotalPrice, payLaterYearCount) : 0;
                   const monthlyTotal = displayedTotalPrice;
                   const monthlyPence = monthlyTotal > 0 && totalCoverDays > 0
                     ? Math.round((monthlyTotal * 100) / totalCoverDays) : 0;
@@ -9005,9 +9032,9 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
 
                     {/* Amount */}
                     {(() => {
-                      const fullTermQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
+                      const fullTermQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : displayedTotalPrice;
                       const effectiveQuoted = payLaterMode && isPayLaterEligible(paymentType)
-                        ? payLaterYearlyAmount(fullTermQuoted, payLaterYears(paymentType))
+                        ? payLaterFirstPayment(fullTermQuoted, payLaterYears(paymentType))
                         : fullTermQuoted;
                       return (
                         <div className="grid grid-cols-2 gap-4">
