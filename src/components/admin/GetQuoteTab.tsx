@@ -5506,12 +5506,27 @@ Questions? Call 0330 229 5040`;
                         </div>
                         {payLaterMode ? (
                           <div className="rounded-md border border-emerald-300 bg-emerald-100/70 px-3 py-2 text-xs leading-relaxed text-emerald-900">
-                            <p className="font-bold">BAW PayLater</p>
+                            <p className="font-bold">Payment collected yearly</p>
                             <ul className="mt-1 list-disc space-y-0.5 pl-4">
-                              <li>£{yearly} collected today</li>
-                              <li>{isPriceOverridden && laterYearly !== yearly ? `£${laterYearly} collected on each following anniversary` : 'Payment collected every year'}</li>
-                              <li>Your commission is paid every year</li>
-                              <li>Your scoreboard reflects each yearly total when collected</li>
+                              <li>Take £{yearly} today.</li>
+                              {years >= 2 && (
+                                <li>£{isPriceOverridden && laterYearly !== yearly ? laterYearly : yearly} is due again on the 1-year policy anniversary.</li>
+                              )}
+                              {years >= 3 && (
+                                <li>The final £{isPriceOverridden && laterYearly !== yearly ? laterYearly : yearly} is due one year after that.</li>
+                              )}
+                              <li>This gives the customer a full {years}-year warranty.</li>
+                            </ul>
+                            <p className="mt-2 font-semibold">For the agent:</p>
+                            <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                              <li>Admin will chase the future yearly payments, although you may sometimes need to contact the customer.</li>
+                              <li>Your scoreboard and commission are credited as each payment is collected:</li>
+                            </ul>
+                            <ul className="mt-1 list-disc space-y-0.5 pl-8">
+                              <li>£{yearly} now</li>
+                              {Array.from({ length: years - 1 }, (_, i) => (
+                                <li key={i}>£{isPriceOverridden && laterYearly !== yearly ? laterYearly : yearly} after Year {i + 1} payment is collected</li>
+                              ))}
                             </ul>
                           </div>
                         ) : null}
