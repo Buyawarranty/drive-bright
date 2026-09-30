@@ -5413,27 +5413,23 @@ Questions? Call 0330 229 5040`;
                         )}
                         <div className="font-semibold">{term.label}</div>
                         {s && (() => {
-                          // The big box must always agree with the instalment plan boxes and the
-                          // sticky bar: same base total, same plan, same rounding.
+                          // Every duration card is a like-for-like 12-instalment comparison.
+                          // Pay Yearly is a separate payment choice below and must never replace
+                          // these core monthly, total and yearly-equivalent figures.
                           const isSelectedTerm = paymentType === term.id;
                           const baseTotal = isSelectedTerm
                             ? Math.round(Number(displayedTotalPrice) || s.total)
                             : s.total;
                           const ratio = oneYearRatio(termSavings["12months"]?.total, s.total);
-                          const plan = isInstalmentAllowed(term.id, instalmentCount) && !isInstalmentComingSoon(instalmentCount)
-                            ? instalmentCount
-                            : 12;
-                          const termUsesPayLater = isSelectedTerm && payLaterMode && years > 1;
-                          const planTotal = termUsesPayLater ? payLaterFinalTotal(baseTotal, years) : instalmentScheduleTotal(baseTotal, plan, ratio);
-                          const planMonthly = instalmentAmount(baseTotal, plan, ratio);
-                          const yearlyAmount = payLaterFirstPayment(baseTotal, years);
+                          const planTotal = instalmentScheduleTotal(baseTotal, 12, ratio);
+                          const planMonthly = instalmentAmount(baseTotal, 12, ratio);
                           return (
                           <div className="mt-1.5 space-y-1">
-                            <div className="text-xs text-black font-medium">
-                              {termUsesPayLater ? `£${yearlyAmount} due now · £${planTotal} total` : `£${planTotal} total · £${Math.round(planTotal / years)}/yr`}
+                            <div className="text-sm font-semibold text-foreground">
+                              £{planMonthly}/mo · 12 instalments
                             </div>
-                            <div className="text-[11px] font-medium text-black">
-                              {termUsesPayLater ? `£${yearlyAmount}/year · collected every year` : `£${planMonthly}/mo · ${plan} instalments`}
+                            <div className="text-xs font-medium text-muted-foreground">
+                              £{planTotal} total · £{Math.round(planTotal / years)}/yr
                             </div>
                             {years > 1 && (
                               <div className="inline-block rounded-full bg-emerald-600/10 border border-emerald-600/30 px-2 py-0.5 text-[10px] font-bold text-emerald-700 uppercase tracking-wide">
