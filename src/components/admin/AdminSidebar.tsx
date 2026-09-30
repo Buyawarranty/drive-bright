@@ -328,12 +328,6 @@ export const defaultTabs: Tab[] = [
     description: 'Confirmed sales with no verified payment — accounts verification queue'
   },
   {
-    id: 'baw-paylater',
-    label: 'BAW PayLater',
-    icon: PoundSterling,
-    description: 'Yearly collections on 2 and 3 year cover sold on BAW PayLater'
-  },
-  {
     id: 'admin-logs',
     label: 'Error Logs',
     icon: ScrollText,
