@@ -5393,7 +5393,10 @@ Questions? Call 0330 229 5040`;
                       return (
                       <button
                         key={term.id}
-                        onClick={() => setPaymentType(term.id as PaymentPeriod)}
+                        onClick={() => {
+                          setPaymentType(term.id as PaymentPeriod);
+                          setPayLaterMode(false);
+                        }}
                         className={cn(
                           "relative p-4 rounded-lg border-2 text-center transition-all",
                           paymentType === term.id
@@ -5457,40 +5460,23 @@ Questions? Call 0330 229 5040`;
                       );
                     })}
                   </div>
-                  {/* One payment-choice section only: 12 monthly instalments or BAW PayLater. */}
+                  {/* Alternative yearly collection for multi-year cover. Standard 12-instalment
+                      and pay-in-full pricing remains represented by the duration cards above. */}
                   {isPayLaterEligible(paymentType) && (() => {
                     const years = payLaterYears(paymentType);
-                    const monthly = instalmentAmount(displayedTotalPrice, 12, longPlanRatio);
-                    const monthlyTotal = instalmentScheduleTotal(displayedTotalPrice, 12, longPlanRatio);
                     const yearly = payLaterFirstPayment(displayedTotalPrice, years);
                     const yearlyTotal = payLaterFinalTotal(displayedTotalPrice, years);
                     const laterYearly = Math.floor(yearlyTotal / years);
                     const yearlyExtra = isPriceOverridden ? 0 : payLaterExtraVsTerm(displayedTotalPrice, years);
                     return (
                       <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50/50 p-3">
-                        <Label className="text-sm font-semibold">How it's paid</Label>
-                        <div className="grid grid-cols-2 gap-2">
+                        <Label className="text-sm font-semibold">BAW PayLater (Yearly collection)</Label>
+                        <div>
                           <button
                             type="button"
-                              onClick={() => setPayLaterMode(false)}
+                            onClick={() => setPayLaterMode((current) => !current)}
                             className={cn(
-                              "rounded-lg border-2 p-3 pt-4 text-left transition-all relative",
-                              !payLaterMode ? "border-primary bg-primary/10" : "border-border bg-white hover:border-primary/50"
-                            )}
-                          >
-                            <span className="absolute -top-2.5 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
-                              12 monthly instalments
-                            </span>
-                            <div className="font-semibold text-sm">£{monthly}/mo · £{monthlyTotal} total</div>
-                            <div className="text-[11px] text-muted-foreground mt-0.5">
-                              Paid off in 12 months · cover lasts {years} years
-                            </div>
-                          </button>
-                          <button
-                            type="button"
-                              onClick={() => setPayLaterMode(true)}
-                            className={cn(
-                              "rounded-lg border-2 p-3 pt-4 text-left transition-all relative",
+                              "relative w-full rounded-lg border-2 p-3 pt-4 text-left transition-all",
                               payLaterMode ? "border-emerald-500 bg-emerald-50" : "border-emerald-200 bg-white hover:border-emerald-400"
                             )}
                           >
@@ -5513,6 +5499,9 @@ Questions? Call 0330 229 5040`;
                                 +£{yearlyExtra} vs paying up front
                               </div>
                             )}
+                            <div className="mt-1 text-[11px] font-semibold text-emerald-700">
+                              {payLaterMode ? 'Selected — click to return to standard payment' : 'Select BAW PayLater'}
+                            </div>
                           </button>
                         </div>
                         {payLaterMode ? (
@@ -5525,11 +5514,7 @@ Questions? Call 0330 229 5040`;
                               <li>Your scoreboard reflects each yearly total when collected</li>
                             </ul>
                           </div>
-                        ) : (
-                          <p className="text-[11px] text-muted-foreground">
-                            The {years}-year warranty is paid off over 12 monthly instalments.
-                          </p>
-                        )}
+                        ) : null}
                       </div>
                     );
                   })()}
