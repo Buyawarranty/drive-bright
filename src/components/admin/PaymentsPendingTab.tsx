@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { PartPaymentSection, type PartRow } from '@/components/admin/payments/PartPaymentSection';
+import BawPayLaterTab from '@/components/admin/BawPayLaterTab';
 import { confirmCustomerPaymentReceived, markCustomerCancelled } from '@/components/admin/payments/confirmPaymentReceived';
 import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, BadgePoundSterling, CalendarClock, CheckCircle2, HelpCircle, Loader2, RefreshCw, Search } from 'lucide-react';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
@@ -603,6 +604,11 @@ export const PaymentsPendingTab: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* BAW PayLater yearly collections live inside Payments Pending — one combined section. */}
+      <div className="mt-10 border-t border-border pt-8">
+        <BawPayLaterTab />
+      </div>
     </div>
   );
 };
