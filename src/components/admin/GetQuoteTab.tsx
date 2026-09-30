@@ -5385,7 +5385,10 @@ Questions? Call 0330 229 5040`;
 
                 {/* Duration - Quick Select Chips */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold">Cover Duration</Label>
+                  <div>
+                    <Label className="text-base font-semibold">Cover Duration</Label>
+                    <p className="text-xs text-muted-foreground">Pay in full or spread the total over 12 instalments</p>
+                  </div>
                   <div className="grid grid-cols-3 gap-3">
                     {termOptions.map((term) => {
                       const s = termSavings[term.id];
@@ -5434,11 +5437,6 @@ Questions? Call 0330 229 5040`;
                             <div className="text-xs font-medium text-muted-foreground">
                               £{planTotal} total · £{Math.round(planTotal / years)}/yr
                             </div>
-                            {years > 1 && (
-                              <div className="inline-block rounded-full bg-emerald-600/10 border border-emerald-600/30 px-2 py-0.5 text-[10px] font-bold text-emerald-700 uppercase tracking-wide">
-                                Or pay yearly — collected every year
-                              </div>
-                            )}
                             {years === 1 ? (
                               <div className="text-[11px] font-medium text-muted-foreground">Baseline price</div>
                             ) : s.saving > 0 ? (
