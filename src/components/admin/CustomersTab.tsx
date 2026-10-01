@@ -392,12 +392,13 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
 };
 
 const getCustomerAcquisitionChannel = (
-  customer: Pick<Customer, 'acquisition_source' | 'gclid' | 'msclkid' | 'ttclid' | 'utm_source' | 'purchase_source'> & { is_manual_entry?: boolean | null }
+  customer: Pick<Customer, 'acquisition_source' | 'gclid' | 'msclkid' | 'ttclid' | 'utm_source' | 'purchase_source'> & { is_manual_entry?: boolean | null; fbclid?: string | null }
 ) => {
   const source = (customer.acquisition_source || '').trim().toLowerCase();
   const utm = (customer.utm_source || '').trim().toLowerCase();
   const purchaseSrc = (customer.purchase_source || '').trim().toLowerCase();
   const hasGclid = !!customer.gclid?.trim();
+  const hasFbclid = !!customer.fbclid?.trim();
   const hasMsclkid = !!customer.msclkid?.trim();
   const hasTtclid = !!customer.ttclid?.trim();
 
@@ -413,6 +414,7 @@ const getCustomerAcquisitionChannel = (
   ) return 'google_ads';
 
   if (
+    hasFbclid ||
     source.includes('facebook') || source.includes('meta') || source.includes('instagram') ||
     ['facebook_ads', 'social_ad', 'facebook', 'meta', 'fb', 'f', 'instagram', 'ig'].includes(source) ||
     utm.includes('facebook') || utm.includes('meta') || utm.includes('instagram') ||

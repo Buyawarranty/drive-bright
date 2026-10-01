@@ -181,3 +181,38 @@ export const getSessionFbReferrer = (): string | null => {
     return null;
   }
 };
+
+/** Read a first-party cookie by name. */
+const readCookie = (name: string): string | null => {
+  if (typeof document === 'undefined') return null;
+  const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+  return m ? decodeURIComponent(m[1]) : null;
+};
+
+/** Meta pixel click cookie (_fbc), format fb.1.<ts>.<fbclid>. */
+export const getFbcCookie = (): string | null => readCookie('_fbc');
+
+/** Meta pixel browser cookie (_fbp). */
+export const getFbpCookie = (): string | null => readCookie('_fbp');
+
+/**
+ * Best available fbclid: URL/stored value first, then the click id embedded
+ * in Meta's _fbc cookie (mirrors gclid's _gcl_aw fallback).
+ */
+export const getAttributionFbclid = (): string | null => {
+  const stored = getSessionFbclid() || getStoredFbclid();
+  if (stored) return stored;
+  const fbc = getFbcCookie();
+  if (fbc) {
+    const parts = fbc.split('.');
+    if (parts.length >= 4) return parts.slice(3).join('.') || null;
+  }
+  return null;
+};
+
+export const getFacebookTrackingData = () => {
+  const fbclid = getAttributionFbclid();
+  let fbc = getFbcCookie();
+  if (!fbc && fbclid) fbc = `fb.1.${Date.now()}.${fbclid}`;
+  return { fbclid, fbc, fbp: getFbpCookie() };
+};
