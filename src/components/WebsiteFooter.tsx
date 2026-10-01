@@ -176,6 +176,12 @@ const WebsiteFooter = () => {
             <p className="text-xs text-gray-600 mt-1 max-w-4xl mx-auto">
               Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England. VAT registration number 519 1099 85.
             </p>
+            <p className="text-xs text-gray-600 mt-2 max-w-4xl mx-auto">
+              Buy A Warranty Limited (FRN 1062024) is an appointed representative of Carfinanced Limited (FRN 1014460), which is authorised and regulated by the Financial Conduct Authority, for credit broking activities. Buy A Warranty Limited acts as a credit broker, not a lender.
+            </p>
+            <p className="text-xs text-gray-600 mt-1 max-w-4xl mx-auto">
+              Buy A Warranty Limited acts as a credit broker, not a lender. We do not charge customers a fee for arranging finance and do not receive any commission for introducing customers to these providers.
+            </p>
           </div>
         </div>
       </footer>
