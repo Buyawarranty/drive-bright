@@ -111,6 +111,7 @@ serve(async (req) => {
           voluntaryExcess,
           claimLimit,
           finalAmount: Number(totalAmount),
+          payInFull: true,
           discountCode,
           authHeader: req.headers.get("Authorization"),
           isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String(vehicleData?.vehicleType || "")),
