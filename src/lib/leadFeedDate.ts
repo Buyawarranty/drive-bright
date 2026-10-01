@@ -62,19 +62,29 @@ const londonLocalDateTimeToUtc = (
   millisecond: number,
 ) => {
   const utcGuess = new Date(Date.UTC(year, month - 1, day, hour, minute, second, millisecond));
-  const offsetMs = getTimeZoneOffsetMs(utcGuess);
+  // Compute the offset from a millisecond-free guess: parseTimeZoneParts drops
+  // milliseconds, so a .999 guess could cross London midnight and read the
+  // offset against the wrong day-side, losing ~1s of precision.
+  const offsetMs = getTimeZoneOffsetMs(new Date(Date.UTC(year, month - 1, day, hour, minute, second, 0)));
   return new Date(utcGuess.getTime() - offsetMs);
 };
 
-const getSelectionParts = (date: Date) => ({
-  year: date.getFullYear(),
-  month: date.getMonth() + 1,
-  day: date.getDate(),
-});
+// Calendar-day reads for the leads feed MUST use Europe/London (the same
+// formatter as parseTimeZoneParts above) — never the viewer's browser timezone.
+// Browser-local getters made "Today" roll over to the next London day early for
+// staff whose device is ahead of the UK, silently hiding every lead created
+// that day.
+const getSelectionParts = (date: Date) => {
+  const parts = parseTimeZoneParts(date);
+  return { year: parts.year, month: parts.month, day: parts.day };
+};
 
 export const getTodayLeadFeedSelectionDate = (baseDate = new Date()) => {
   const { year, month, day } = parseTimeZoneParts(baseDate);
-  return new Date(year, month - 1, day);
+  // Represent the selection as London midnight expressed in UTC so every
+  // London-aware read of this date round-trips exactly, whatever timezone the
+  // viewer's device is set to.
+  return londonLocalDateTimeToUtc(year, month, day, 0, 0, 0, 0);
 };
 
 export const shiftLeadFeedSelectionDate = (date: Date, days: number) => {
@@ -137,13 +147,19 @@ export const isDateInLeadFeedRange = (date: Date, range: LeadFeedDateRange) => {
   return true;
 };
 
+// Compare calendar days in Europe/London, not the viewer's local timezone —
+// this drives the "Today" trading-day boundary (18:00 the evening before) and
+// the Today/Yesterday range checks.
 const isSameSelectionDay = (left?: Date, right?: Date) => {
   if (!left || !right) return false;
 
+  const leftParts = parseTimeZoneParts(left);
+  const rightParts = parseTimeZoneParts(right);
+
   return (
-    left.getFullYear() === right.getFullYear() &&
-    left.getMonth() === right.getMonth() &&
-    left.getDate() === right.getDate()
+    leftParts.year === rightParts.year &&
+    leftParts.month === rightParts.month &&
+    leftParts.day === rightParts.day
   );
 };
 
