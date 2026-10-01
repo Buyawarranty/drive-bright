@@ -62,7 +62,10 @@ const londonLocalDateTimeToUtc = (
   millisecond: number,
 ) => {
   const utcGuess = new Date(Date.UTC(year, month - 1, day, hour, minute, second, millisecond));
-  const offsetMs = getTimeZoneOffsetMs(utcGuess);
+  // Compute the offset from a millisecond-free guess: parseTimeZoneParts drops
+  // milliseconds, so a .999 guess could cross London midnight and read the
+  // offset against the wrong day-side, losing ~1s of precision.
+  const offsetMs = getTimeZoneOffsetMs(new Date(Date.UTC(year, month - 1, day, hour, minute, second, 0)));
   return new Date(utcGuess.getTime() - offsetMs);
 };
 
