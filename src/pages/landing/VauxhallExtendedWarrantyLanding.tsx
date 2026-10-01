@@ -22,7 +22,7 @@ const vauxhallHero = vauxhallHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
-import VauxhallPPCFooter from '@/components/landing/VauxhallPPCFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import vauxhallCorsa from '@/assets/vauxhall-models/vauxhall-corsa-extended-warranty.jpg';
 import vauxhallAstra from '@/assets/vauxhall-models/vauxhall-astra-extended-warranty.jpg';
 import vauxhallMokka from '@/assets/vauxhall-models/vauxhall-mokka-extended-warranty.jpg';
@@ -518,7 +518,7 @@ const VauxhallExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        <VauxhallPPCFooter />
+        <WebsiteFooter />
 
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">
           <div className="flex gap-2">

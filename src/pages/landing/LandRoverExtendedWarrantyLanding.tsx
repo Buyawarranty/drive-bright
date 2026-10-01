@@ -22,7 +22,7 @@ const lrHero = lrHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
-import LandRoverPPCFooter from '@/components/landing/LandRoverPPCFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import rangeRover from '@/assets/landrover-models/range-rover-extended-warranty.jpg';
 import rangeRoverSport from '@/assets/landrover-models/range-rover-sport-extended-warranty.jpg';
 import rangeRoverVelar from '@/assets/landrover-models/range-rover-velar-extended-warranty.jpg';
@@ -535,7 +535,7 @@ const LandRoverExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        <LandRoverPPCFooter />
+        <WebsiteFooter />
 
         {/* Sticky mobile CTA */}
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">

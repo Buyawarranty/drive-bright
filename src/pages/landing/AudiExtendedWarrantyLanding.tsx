@@ -22,7 +22,7 @@ const audiHero = audiHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
-import AudiPPCFooter from '@/components/landing/AudiPPCFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import audiA1 from '@/assets/audi-models/audi-a1-extended-warranty.jpg';
 import audiA3 from '@/assets/audi-models/audi-a3-extended-warranty.jpg';
 import audiA4 from '@/assets/audi-models/audi-a4-extended-warranty.jpg';
@@ -534,7 +534,7 @@ const AudiExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        <AudiPPCFooter />
+        <WebsiteFooter />
 
         {/* Sticky mobile CTA */}
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">

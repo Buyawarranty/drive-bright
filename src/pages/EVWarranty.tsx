@@ -5,7 +5,7 @@ import { CheckCircle2, Shield, Clock, Phone, Menu, Star, Award } from 'lucide-re
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SEOHead } from '@/components/SEOHead';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
-import NewFooter from '@/components/NewFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
 import { saveWithTimestamp } from '@/utils/localStorage';
@@ -715,7 +715,7 @@ const EVWarranty = () => {
           </div>
         </section>
 
-        <NewFooter />
+        <WebsiteFooter />
       </main>
 
       {/* Floating Contact Buttons */}

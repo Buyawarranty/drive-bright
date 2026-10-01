@@ -24,7 +24,7 @@ const vwHero = vwHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
-import VolkswagenPPCFooter from '@/components/landing/VolkswagenPPCFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import vwGolf from '@/assets/volkswagen-models/vw-golf-extended-warranty.png';
 import vwPolo from '@/assets/volkswagen-models/vw-polo-extended-warranty.png';
 import vwPassat from '@/assets/volkswagen-models/vw-passat-extended-warranty.png';
@@ -587,7 +587,7 @@ const VolkswagenExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        <VolkswagenPPCFooter />
+        <WebsiteFooter />
 
         {/* Sticky mobile CTA */}
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">

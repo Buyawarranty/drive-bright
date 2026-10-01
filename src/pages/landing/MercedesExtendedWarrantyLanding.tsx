@@ -22,7 +22,7 @@ const mercHero = mercHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
-import MercedesPPCFooter from '@/components/landing/MercedesPPCFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import mercA from '@/assets/mercedes-models/mercedes-a-class-extended-warranty.png';
 import mercC from '@/assets/mercedes-models/mercedes-c-class-extended-warranty.png';
 import mercE from '@/assets/mercedes-models/mercedes-e-class-extended-warranty.png';
@@ -539,7 +539,7 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        <MercedesPPCFooter />
+        <WebsiteFooter />
 
         {/* Sticky mobile CTA */}
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">

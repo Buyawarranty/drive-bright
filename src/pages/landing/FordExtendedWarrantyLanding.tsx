@@ -22,7 +22,7 @@ const fordHero = fordHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
-import FordPPCFooter from '@/components/landing/FordPPCFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import fordFiesta from '@/assets/ford-models/ford-fiesta-extended-warranty.jpg';
 import fordFocus from '@/assets/ford-models/ford-focus-extended-warranty.jpg';
 import fordMondeo from '@/assets/ford-models/ford-mondeo-extended-warranty.jpg';
@@ -534,7 +534,7 @@ const FordExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        <FordPPCFooter />
+        <WebsiteFooter />
 
         {/* Sticky mobile CTA */}
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">
