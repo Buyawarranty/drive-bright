@@ -2436,7 +2436,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     isMotorbike: isMotorbikeAdjustment(vehiclePriceAdjustment),
                     surface: 'admin',
                   });
-                  const payInFullDiscounted = Math.max(promoPriceFloor(appliedPromos, promoTermFloor), payInFull - stripeSavings);
+                  const payInFullDiscounted = Math.max(Math.min(payInFull - stripeSavings, promoPriceFloor(appliedPromos, promoTermFloor) - Math.floor(promoPriceFloor(appliedPromos, promoTermFloor) * 0.10)), payInFull - stripeSavings);
                   const totalCoverDays = Math.round((months / 12) * 365);
                   // Daily price uses payInFull (12 payments) divided by total cover days, matching the duration cards
                   const pencePerDayRaw = totalCoverDays > 0 ? (payInFull * 100) / totalCoverDays : 0;
@@ -2526,7 +2526,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const promoDiscount = calcPromoDiscount(rawPayInFull, appliedPromos, promoTermFloor);
                   const payInFull = Math.max(promoPriceFloor(appliedPromos, promoTermFloor), rawPayInFull - promoDiscount);
                   const stripeSavings = Math.floor(payInFull * 0.10);
-                  const payInFullDiscounted = Math.max(promoPriceFloor(appliedPromos, promoTermFloor), payInFull - stripeSavings);
+                  const payInFullDiscounted = Math.max(Math.min(payInFull - stripeSavings, promoPriceFloor(appliedPromos, promoTermFloor) - Math.floor(promoPriceFloor(appliedPromos, promoTermFloor) * 0.10)), payInFull - stripeSavings);
                   const totalCoverDays = Math.round((months / 12) * 365);
                   const pencePerDayRaw = totalCoverDays > 0 ? (payInFull * 100) / totalCoverDays : 0;
                   const dailyPriceLabel = pencePerDayRaw >= 100

@@ -18,6 +18,7 @@ export interface PriceFloorInput {
   discountCode?: string;      // Optional - test codes (TEST*) bypass the floor for anyone
   authHeader?: string | null; // Optional - retained for backwards compatibility; no longer used for gating
   isMotorbike?: boolean;      // Optional - motorbike floors are exactly half
+  payInFull?: boolean;        // Optional - pay-in-full always keeps its 10% off, so floor is 90%
 }
 
 // Test discount codes that bypass the £120 absolute floor and 50% plan floor.
@@ -207,7 +208,8 @@ export async function validateCheckoutPrice(
   const bypass = isTestBypassCode(discountCode)
     ? await isLiveDiscountCode(supabase, discountCode!)
     : false;
-  const termFloor = getTermFloorGBP(paymentType, input.isMotorbike);
+  const baseTermFloor = getTermFloorGBP(paymentType, input.isMotorbike);
+  const termFloor = input.payInFull ? baseTermFloor - Math.floor(baseTermFloor * 0.10) : baseTermFloor;
   // HARD £299 backstop (13 Sep 2026): no non-motorbike sale may complete below
   // £299 under any circumstances. Website motorbikes (half-price floor) are the
   // only exception. Genuine live TEST codes keep the £1 QA floor.

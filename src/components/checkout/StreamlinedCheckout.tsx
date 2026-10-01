@@ -1049,9 +1049,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // For stripe (pay in full): cap discount so final price >= £1
   // IMPORTANT: Discount is calculated on stripeTotalPrice (already 10% off), not bumperTotalPrice
-  const maxStripeDiscount = stripeTotalPrice - MINIMUM_PRICE;
+  // Pay in full ALWAYS gets the full 10% off (1 Oct 2026): its floor is the
+  // term floor less 10%, so the minimum never swallows the pay-in-full saving.
+  const STRIPE_MINIMUM_PRICE = Math.min(stripeTotalPrice, MINIMUM_PRICE - Math.floor(MINIMUM_PRICE * 0.10));
+  const maxStripeDiscount = Math.max(0, stripeTotalPrice - STRIPE_MINIMUM_PRICE);
   const effectiveStripeDiscount = Math.min(stripeDiscountAmount, maxStripeDiscount);
-  const discountedStripePrice = Math.max(MINIMUM_PRICE, Math.floor(stripeTotalPrice - effectiveStripeDiscount));
+  const discountedStripePrice = Math.max(STRIPE_MINIMUM_PRICE, Math.floor(stripeTotalPrice - effectiveStripeDiscount));
   
   // For display purposes, show the discount amount relevant to the current selection
   const totalDiscountAmount = selectedPayment === 'full' ? effectiveStripeDiscount : effectiveBumperDiscount;
