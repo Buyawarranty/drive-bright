@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
 import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
-import MinimalLandingFooter from '@/components/brand-pages/MinimalLandingFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 
 // Lazy load heavy components
@@ -1251,7 +1251,7 @@ const AudiWarrantyLanding: React.FC = () => {
           ]}
         />
       </main>
-      <MinimalLandingFooter />
+      <WebsiteFooter />
       <BluePersistentCallback />
     </>
   );

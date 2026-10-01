@@ -22,7 +22,7 @@ const citroenHero = citroenHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
-import CitroenPPCFooter from '@/components/landing/CitroenPPCFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import citroenC1 from '@/assets/citroen-models/citroen-c1-extended-warranty.jpg';
 import citroenC3 from '@/assets/citroen-models/citroen-c3-extended-warranty.jpg';
 import citroenC4 from '@/assets/citroen-models/citroen-c4-extended-warranty.jpg';
@@ -535,7 +535,7 @@ const CitroenExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        <CitroenPPCFooter />
+        <WebsiteFooter />
 
         {/* Sticky mobile CTA */}
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">

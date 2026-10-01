@@ -15,7 +15,7 @@ import { saveWithTimestamp } from '@/utils/localStorage';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
 import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
-import MinimalLandingFooter from '@/components/brand-pages/MinimalLandingFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -1449,7 +1449,7 @@ const HybridWarrantyLanding: React.FC = () => {
           ]}
         />
       </main>
-      <MinimalLandingFooter />
+      <WebsiteFooter />
       <BluePersistentCallback />
       <RequestCallbackModal 
         isOpen={showCallbackModal} 

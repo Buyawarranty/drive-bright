@@ -10,7 +10,7 @@ import { ProductSchema } from '@/components/schema/ProductSchema';
 import { FAQSchema } from '@/components/schema/FAQSchema';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
-import NewFooter from '@/components/NewFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
 import trustpilotLogo from '@/assets/trustpilot-excellent-box.webp';
@@ -440,7 +440,7 @@ const SkodaWarranty = () => {
         </div>
       )}
 
-      <NewFooter />
+      <WebsiteFooter />
     </>
   );
 };

@@ -22,7 +22,7 @@ const nissanHero = nissanHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
-import NissanPPCFooter from '@/components/landing/NissanPPCFooter';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import nissanMicra from '@/assets/nissan-models/nissan-micra-extended-warranty.jpg';
 import nissanJuke from '@/assets/nissan-models/nissan-juke-extended-warranty.jpg';
 import nissanQashqai from '@/assets/nissan-models/nissan-qashqai-extended-warranty.jpg';
@@ -534,7 +534,7 @@ const NissanExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        <NissanPPCFooter />
+        <WebsiteFooter />
 
         {/* Sticky mobile CTA */}
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">
