@@ -4820,6 +4820,7 @@ export type Database = {
           discount_code: string | null
           email: string
           europe_cover: boolean | null
+          fbclid: string | null
           final_amount: number | null
           first_name: string | null
           flat_number: string | null
@@ -4967,6 +4968,7 @@ export type Database = {
           discount_code?: string | null
           email: string
           europe_cover?: boolean | null
+          fbclid?: string | null
           final_amount?: number | null
           first_name?: string | null
           flat_number?: string | null
@@ -5114,6 +5116,7 @@ export type Database = {
           discount_code?: string | null
           email?: string
           europe_cover?: boolean | null
+          fbclid?: string | null
           final_amount?: number | null
           first_name?: string | null
           flat_number?: string | null
