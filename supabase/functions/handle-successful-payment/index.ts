@@ -404,6 +404,10 @@ serve(async (req) => {
       // Google Ads attribution tracking
       gclid: trackingData?.gclid || metadata?.gclid || null,
       ga_client_id: trackingData?.clientId || metadata?.ga_client_id || null,
+      // Meta (Facebook) click attribution — parallel to gclid
+      fbclid: trackingData?.fbclid || metadata?.fbclid || null,
+      fbc: trackingData?.fbc || metadata?.fbc || null,
+      fbp: trackingData?.fbp || metadata?.fbp || null,
       purchase_source: (trackingData?.gclid || metadata?.gclid) ? 'google_ads' : (effectiveBumperOrderId ? 'bumper' : (stripeSessionId ? 'stripe' : 'website')),
       // Default all website sales to support@buyawarranty.co.uk
       assigned_to: 'e39499b8-f88c-4963-9f0d-63e1addb3025',
@@ -417,6 +421,9 @@ serve(async (req) => {
     let detectedAdSource: 'google' | 'facebook' | 'bing' | 'tiktok' | null = null;
     if (trackingData?.gclid || metadata?.gclid) {
       detectedAdSource = 'google';
+    } else if (trackingData?.fbclid || metadata?.fbclid) {
+      detectedAdSource = 'facebook';
+      customerRecord.purchase_source = 'facebook_ads';
     }
     // Always pull cart metadata so UTMs can be persisted onto the customer
     try {
@@ -443,6 +450,7 @@ serve(async (req) => {
           } else if (meta.fbclid || utmSrc === 'facebook' || utmSrc === 'fb' || utmSrc === 'ig') {
             detectedAdSource = 'facebook';
             customerRecord.purchase_source = 'facebook_ads';
+            if (meta.fbclid && !(customerRecord as any).fbclid) (customerRecord as any).fbclid = meta.fbclid;
           }
         }
 

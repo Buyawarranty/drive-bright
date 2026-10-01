@@ -1,0 +1,2 @@
+ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS fbclid text, ADD COLUMN IF NOT EXISTS fbc text, ADD COLUMN IF NOT EXISTS fbp text;
+CREATE INDEX IF NOT EXISTS idx_customers_fbclid ON public.customers (fbclid) WHERE fbclid IS NOT NULL;

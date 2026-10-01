@@ -1,3 +1,4 @@
+import { getFacebookTrackingData } from './fbclidCapture';
 /**
  * Google Click ID (GCLID) Capture Utility
  * Captures and stores GCLID for offline/server-side conversion tracking
@@ -241,10 +242,11 @@ export const getGaClientId = (): string | null => {
 /**
  * Get all tracking data for checkout
  */
-export const getTrackingData = (): { gclid: string | null; clientId: string | null } => {
+export const getTrackingData = (): { gclid: string | null; clientId: string | null; fbclid: string | null; fbc: string | null; fbp: string | null } => {
   return {
     gclid: getStoredGclid(),
     clientId: getGaClientId(),
+    ...getFacebookTrackingData(),
   };
 };
 

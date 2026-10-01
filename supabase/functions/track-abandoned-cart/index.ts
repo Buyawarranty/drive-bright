@@ -278,6 +278,22 @@ const handler = async (req: Request): Promise<Response> => {
     }
     if (!cartData.gclid_any && cartData.gclid) cartData.gclid_any = cartData.gclid;
 
+    // FBCLID recovery: same pattern as gclid, from page_views for this session.
+    if (!cartData.fbclid && cartData.tracking_session_id) {
+      const { data: pvFb } = await supabase
+        .from('page_views')
+        .select('fbclid')
+        .eq('session_id', cartData.tracking_session_id)
+        .not('fbclid', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      const recoveredFb = pvFb?.[0]?.fbclid || null;
+      if (recoveredFb) {
+        cartData.fbclid = recoveredFb;
+        console.log('🔁 Recovered fbclid from page_views for session', cartData.tracking_session_id);
+      }
+    }
+
     // Server-side identity hydration: recover phone/name from historical records when Step 3/4 payloads omit them
     await hydrateIdentityFromHistory(supabase, cartData);
 
