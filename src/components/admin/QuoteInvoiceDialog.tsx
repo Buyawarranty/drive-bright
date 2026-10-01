@@ -43,6 +43,10 @@ const COMPANY = {
     'Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Established 2016. Registered in the United Kingdom under Company number: 10314863.',
   legalLine2:
     'Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England. VAT registration number 519 1099 85.',
+  legalLine3:
+    'Buy A Warranty Limited (FRN 1062024) is an appointed representative of Carfinanced Limited (FRN 1014460), which is authorised and regulated by the Financial Conduct Authority, for credit broking activities. Buy A Warranty Limited acts as a credit broker, not a lender.',
+  legalLine4:
+    'Buy A Warranty Limited acts as a credit broker, not a lender. We do not charge customers a fee for arranging finance and do not receive any commission for introducing customers to these providers.',
   bank: {
     accountName: 'Buy A Warranty Limited',
     bankName: 'Metro Bank plc',
@@ -368,7 +372,7 @@ function buildInvoiceHtml(f: ReturnType<QuoteInvoiceDialogHydrate>): string {
   <div class="footer">
     <p><strong>${COMPANY.name}</strong></p>
     <p>${COMPANY.website} · ${COMPANY.email} · ${COMPANY.phone}</p>
-    <div class="legal"><p>${COMPANY.legalLine1}</p><p>${COMPANY.legalLine2}</p></div>
+    <div class="legal"><p>${COMPANY.legalLine1}</p><p>${COMPANY.legalLine2}</p><p>${COMPANY.legalLine3}</p><p>${COMPANY.legalLine4}</p></div>
   </div>
 
   </body></html>`;
