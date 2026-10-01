@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.fill_customer_meta_attribution() FROM PUBLIC, anon, authenticated;
