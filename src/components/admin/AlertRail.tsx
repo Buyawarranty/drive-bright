@@ -131,6 +131,16 @@ export const AlertRailHost: React.FC = () => {
   });
   const [showAll, setShowAll] = React.useState(false);
   const [count, setCount] = React.useState(0);
+  const [recentCount, setRecentCount] = React.useState(() => readRecentAlerts().length);
+
+  // Keep the floating panel reachable even with no live alerts, so staff can
+  // still open Recent alerts from any tab.
+  React.useEffect(() => {
+    const on = () => setRecentCount(readRecentAlerts().length);
+    window.addEventListener(RECENT_ALERTS_EVENT, on);
+    window.addEventListener('storage', on);
+    return () => { window.removeEventListener(RECENT_ALERTS_EVENT, on); window.removeEventListener('storage', on); };
+  }, []);
 
   React.useEffect(() => {
     let cancelled = false;
