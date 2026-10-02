@@ -451,11 +451,15 @@ serve(async (req) => {
     // CRITICAL: Extract GCLID and client_id from bumper_transactions for Google Ads attribution
     const bumperGclid = transactionData.gclid || null;
     const bumperClientId = transactionData.client_id || null;
+    // CRITICAL: Extract FBCLID from bumper_transactions for Facebook Ads attribution
+    const bumperFbclid = transactionData.fbclid || null;
     
     logStep("Google Ads attribution from Bumper transaction", {
       hasGclid: !!bumperGclid,
       hasClientId: !!bumperClientId,
-      gclidPrefix: bumperGclid ? bumperGclid.substring(0, 15) + '...' : null
+      gclidPrefix: bumperGclid ? bumperGclid.substring(0, 15) + '...' : null,
+      hasFbclid: !!bumperFbclid,
+      fbclidPrefix: bumperFbclid ? bumperFbclid.substring(0, 15) + '...' : null
     });
 
     const handlePaymentPayload = {
@@ -476,10 +480,11 @@ serve(async (req) => {
       // CRITICAL: Pass customer's selected start date for delayed warranty activation
       startDate: selectedStartDate,
       skipEmail: false, // CRITICAL: Ensure welcome emails are sent for Bumper purchases
-      // CRITICAL: Pass tracking data so handle-successful-payment can detect Google Ads attribution
-      trackingData: bumperGclid ? {
+      // CRITICAL: Pass tracking data so handle-successful-payment can detect Google Ads / Facebook Ads attribution
+      trackingData: (bumperGclid || bumperFbclid) ? {
         gclid: bumperGclid,
-        clientId: bumperClientId
+        clientId: bumperClientId,
+        fbclid: bumperFbclid
       } : null,
       metadata: {
         source: 'bumper',
@@ -493,6 +498,8 @@ serve(async (req) => {
         // CRITICAL: Include GCLID in metadata as backup for ad attribution
         gclid: bumperGclid,
         ga_client_id: bumperClientId,
+        // CRITICAL: Include FBCLID in metadata as backup for Facebook ad attribution
+        fbclid: bumperFbclid,
         // CRITICAL: Include start_date in metadata as backup
         start_date: selectedStartDate,
         // Vehicle details for metadata - ensure these are populated
