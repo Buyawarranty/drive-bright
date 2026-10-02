@@ -329,7 +329,7 @@ export const CourtCasesSection: React.FC = () => {
                   </label>
                 ))}
               </div>
-              <p className="text-[11px] text-muted-foreground">Each reminder appears in the banner at the top of Claims at 9am on that day. Close it with Done.</p>
+              <p className="text-[11px] text-muted-foreground">Each reminder appears in the banner at the top of Claims at 9am on that day. Close it with the X.</p>
             </div>
             <div><Label>Notes</Label><Textarea rows={3} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
           </div>
