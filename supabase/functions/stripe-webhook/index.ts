@@ -543,6 +543,40 @@ serve(async (req) => {
       }
     }
 
+    // Failed / abandoned Stripe payment attempts — recorded for Missed Payments.
+    if (
+      event.type === "payment_intent.payment_failed" ||
+      event.type === "checkout.session.expired" ||
+      event.type === "checkout.session.async_payment_failed"
+    ) {
+      try {
+        const obj = event.data.object as any;
+        const md = (obj.metadata || {}) as Record<string, string>;
+        const isPI = event.type === "payment_intent.payment_failed";
+        const err = isPI ? obj.last_payment_error : null;
+        const email =
+          obj.customer_details?.email || obj.customer_email || obj.receipt_email ||
+          err?.payment_method?.billing_details?.email || md.email || md.customer_email || null;
+        const phone = obj.customer_details?.phone || err?.payment_method?.billing_details?.phone || md.phone || null;
+        const reg = md.vehicle_reg || md.registration_plate || md.reg || null;
+        const cents = isPI ? obj.amount : obj.amount_total;
+        await supabaseClient.from("stripe_payment_failures").upsert({
+          stripe_event_id: event.id,
+          event_type: event.type,
+          stripe_object_id: obj.id,
+          email: email ? String(email).toLowerCase().trim() : null,
+          vehicle_reg: reg ? String(reg).toUpperCase().replace(/\s+/g, "") : null,
+          phone,
+          amount: typeof cents === "number" ? cents / 100 : null,
+          failure_code: err?.decline_code || err?.code || (event.type === "checkout.session.expired" ? "expired" : null),
+          failure_message: err?.message || (event.type === "checkout.session.expired" ? "Checkout abandoned (session expired)" : null),
+        }, { onConflict: "stripe_event_id" });
+        logStep("Recorded Stripe failure", { type: event.type, email, reg });
+      } catch (e) {
+        logStep("ERROR recording Stripe failure", { message: e instanceof Error ? e.message : String(e) });
+      }
+    }
+
     // Handle subscription events if needed
     if (event.type === "invoice.payment_succeeded") {
       const invoice = event.data.object as Stripe.Invoice;
