@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { Bell, ChevronDown, ChevronUp, Plus, X } from 'lucide-react';
+import { readRecentAlerts, removeRecentAlert, RECENT_ALERTS_EVENT, type RecentAlert, type RecentAlertTone } from '@/lib/recentAlerts';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 
 /**
@@ -24,6 +25,73 @@ export const ALERT_RAIL_ORDER = {
   chatAgentRequest: 25,
   complaintAlert: 30,
 } as const;
+
+const TONE: Record<RecentAlertTone, { card: string; dot: string }> = {
+  red: { card: 'bg-red-50 border-red-200', dot: 'bg-red-600' },
+  blue: { card: 'bg-blue-50 border-blue-200', dot: 'bg-blue-600' },
+  amber: { card: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
+  green: { card: 'bg-green-50 border-green-200', dot: 'bg-green-600' },
+  orange: { card: 'bg-orange-50 border-orange-200', dot: 'bg-orange-500' },
+  emerald: { card: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-600' },
+};
+
+const ago = (at: number) => {
+  const m = Math.max(0, Math.round((Date.now() - at) / 60000));
+  if (m < 1) return 'Just now';
+  if (m < 60) return `${m} min${m === 1 ? '' : 's'} ago`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${m % 60}m ago`;
+};
+
+const RecentAlerts: React.FC = () => {
+  const [list, setList] = React.useState<RecentAlert[]>(() => readRecentAlerts());
+  const [all, setAll] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
+  const [, tick] = React.useState(0);
+  React.useEffect(() => {
+    const on = () => setList(readRecentAlerts());
+    window.addEventListener(RECENT_ALERTS_EVENT, on);
+    window.addEventListener('storage', on);
+    const t = window.setInterval(() => tick((n) => n + 1), 60000);
+    return () => { window.removeEventListener(RECENT_ALERTS_EVENT, on); window.removeEventListener('storage', on); window.clearInterval(t); };
+  }, []);
+  if (!list.length) return null;
+  const shown = all ? list : list.slice(0, 3);
+  const more = list.length - 3;
+  return (
+    <div className="mt-2 rounded-xl border bg-white p-2">
+      <button type="button" onClick={() => setOpen((v) => !v)} className="flex w-full items-center gap-2 px-1 pb-1.5" aria-expanded={open}>
+        <Bell className="h-4 w-4 text-gray-700" />
+        <span className="text-sm font-semibold text-gray-900">Recent alerts</span>
+        {open ? <ChevronUp className="ml-auto h-4 w-4 text-gray-500" /> : <ChevronDown className="ml-auto h-4 w-4 text-gray-500" />}
+      </button>
+      {open && (
+        <div className="flex flex-col gap-1.5">
+          {shown.map((a) => (
+            <div key={a.key} className={`relative flex items-start gap-2 rounded-lg border px-2 py-1.5 ${TONE[a.tone].card}`}>
+              <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${TONE[a.tone].dot}`} />
+              <div className="min-w-0 flex-1 pr-4">
+                <div className="flex items-baseline justify-between gap-1">
+                  <span className="truncate text-xs font-semibold text-gray-900">{a.title}</span>
+                  <span className="shrink-0 text-[10px] text-gray-500">{ago(a.at)}</span>
+                </div>
+                <div className="truncate text-[11px] text-gray-600">{a.detail}</div>
+              </div>
+              <button type="button" aria-label="Remove from recent" onClick={() => removeRecentAlert(a.key)} className="absolute right-1 top-1 rounded p-0.5 text-gray-400 hover:bg-black/5">
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+          {more > 0 && (
+            <button type="button" onClick={() => setAll((v) => !v)} className="flex items-center justify-center gap-1 rounded-lg bg-blue-100 py-1.5 text-xs font-semibold text-gray-900 hover:bg-blue-200">
+              {all ? <>Show less <ChevronUp className="h-3.5 w-3.5" /></> : <><Plus className="h-3.5 w-3.5" />{more} more alert{more === 1 ? '' : 's'} <ChevronDown className="h-3.5 w-3.5" /></>}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 let railEl: HTMLElement | null = null;
 const getRailEl = (): HTMLElement => {
@@ -132,6 +200,7 @@ export const AlertRailHost: React.FC = () => {
             {showAll ? <>Show less <ChevronUp className="h-3.5 w-3.5" /></> : <><Plus className="h-3.5 w-3.5" />{hidden} more alert{hidden === 1 ? '' : 's'} <ChevronDown className="h-3.5 w-3.5" /></>}
           </button>
         )}
+        <RecentAlerts />
       </div>
     </div>
   );
