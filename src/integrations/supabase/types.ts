@@ -10116,6 +10116,45 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_button_clicks: {
+        Row: {
+          amount: number | null
+          created_at: string
+          email: string | null
+          fbclid: string | null
+          gclid: string | null
+          id: string
+          page_path: string | null
+          payment_method: string
+          tracking_session_id: string | null
+          vehicle_reg: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          email?: string | null
+          fbclid?: string | null
+          gclid?: string | null
+          id?: string
+          page_path?: string | null
+          payment_method: string
+          tracking_session_id?: string | null
+          vehicle_reg?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          email?: string | null
+          fbclid?: string | null
+          gclid?: string | null
+          id?: string
+          page_path?: string | null
+          payment_method?: string
+          tracking_session_id?: string | null
+          vehicle_reg?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
