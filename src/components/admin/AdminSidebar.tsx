@@ -880,19 +880,26 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         'lg:translate-x-0',
       )}>
         {collapsed ? (
-          <div className="p-2 border-b flex justify-center shrink-0">
+          <div className="p-2 border-b flex flex-col items-center gap-1 shrink-0">
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
                 <button
                   onClick={toggleCollapsed}
-                  aria-label="Expand sidebar"
+                  aria-label="Open menu"
                   className="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-gray-100 text-gray-600"
                 >
                   <PanelLeftOpen className="h-5 w-5" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right" className="text-xs">Expand sidebar</TooltipContent>
+              <TooltipContent side="right" className="text-xs">Open menu</TooltipContent>
             </Tooltip>
+            <button
+              onClick={toggleCollapsed}
+              aria-label="Open menu"
+              className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 hover:text-gray-800 [writing-mode:vertical-rl] py-1"
+            >
+              Menu
+            </button>
           </div>
         ) : (
           <div className="p-4 lg:p-6 border-b space-y-3 shrink-0">
