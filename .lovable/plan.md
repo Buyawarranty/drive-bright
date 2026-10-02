@@ -4,6 +4,7 @@
 - Replace the three separate links with one clear **Edit details** control containing Vehicle, Cover and Start date choices.
 - Keep every existing edit action and date picker working exactly as it does now.
 - Restyle the documents and claims information as a quiet information strip rather than bordered, filled tiles that resemble buttons.
+- Match the monthly payment summary in the desktop and mobile side panels to: payment today, 11 further monthly payments, total payable, and daily cost over the full cover term.
 - Check the Step 4 layout at desktop and mobile sizes without changing pricing, checkout behaviour, or schema markup.
 
 ## Technical details

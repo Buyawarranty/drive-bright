@@ -89,3 +89,6 @@
 - [x] Miles policy knowledge: resolve the newest Supabase Platinum Plan and Terms by default; remove stale hard-coded cancellation wording
 - [x] Website chat replies: keep the reply composer visible at the bottom and let staff email the same response when the visitor has left
 - [ ] Chatbot engagement: check how many visitor chats are happening and whether low use looks like placement/launcher friction
+
+- [ ] Simplify Step 4 edit controls and information panels.
+- [ ] Match the monthly sidebar payment wording to the approved four-line format.
