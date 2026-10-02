@@ -58,6 +58,25 @@ const isRenewalLead = (lead: any): boolean =>
   (lead?.original_source || '').toLowerCase() === 'renewal' ||
   ((lead?.auto_tags || []) as string[]).some((t) => (t || '').toLowerCase() === 'renewal');
 
+/** Parse the renewal due date from a renewal lead's notes ("RENEWAL — policy … expires 08 Oct 2026, 6 days away."). */
+function getRenewalDue(lead: any): { dateStr: string; days: number } | null {
+  if (!isRenewalLead(lead)) return null;
+  const m = (lead.notes || '').match(/expire[ds]\s+(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})/i);
+  if (!m) return null;
+  const due = new Date(`${m[1]} 00:00:00 UTC`);
+  if (isNaN(due.getTime())) return null;
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const get = (t: string) => parts.find(p => p.type === t)?.value || '';
+  const todayUtc = Date.UTC(Number(get('year')), Number(get('month')) - 1, Number(get('day')));
+  const days = Math.round((due.getTime() - todayUtc) / 86400000);
+  const dateStr = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+  }).format(due);
+  return { dateStr, days };
+}
+
 interface LeadTableRowProps {
   lead: Lead;
   tags: LeadTag[];
