@@ -317,8 +317,9 @@ html, body {
 
   /* ============================================================
      WINDOWS ONLY FONT OVERRIDE
-     Segoe UI replaces Helvetica Neue on Windows so text renders
-     at a normal, readable weight. Mac/iOS keeps Helvetica Neue.
+     Use the loaded Inter family instead of Windows' system Segoe UI.
+     Segoe's heavier metrics made bold pricing text look unnaturally thick.
+     Mac/iOS keeps Helvetica Neue.
      ============================================================ */
   html.windows,
   html.windows body,
@@ -340,7 +341,7 @@ html, body {
   html.windows label,
   html.windows .font-sans,
   html.windows .font-helvetica {
-    font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, 'Helvetica Neue', Arial, sans-serif !important;
+    font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif !important;
   }
 
   /* Preserve UK registration plate font on Windows */
