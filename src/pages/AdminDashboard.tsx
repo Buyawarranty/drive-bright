@@ -30,7 +30,8 @@ import LiveChatQuestionAlert from '@/components/admin/chatbot/LiveChatQuestionAl
 
 const MissedCallAlertBar = lazy(() => import('@/components/admin/MissedCallAlertBar').then(m => ({ default: m.MissedCallAlertBar })));
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
-import { AlertRailHost } from '@/components/admin/AlertRail';
+import { AlertRailHost, AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
+import { canSeePopup } from '@/lib/popupAccess';
 const FailedPaymentPopup = lazy(() => import('@/components/admin/FailedPaymentPopup'));
 import { StuckCheckoutAlert } from '@/components/admin/leads/StuckCheckoutAlert';
 import { ChatAgentRequestAlert } from '@/components/admin/leads/ChatAgentRequestAlert';
@@ -1411,8 +1412,7 @@ const AdminDashboardInner: React.FC<{
       <div className={sidebarCollapsed ? 'lg:pl-14' : 'lg:pl-64'}>
       {/* Live chat opening-hours bar — every member of staff, claims included */}
       <LiveChatHoursBanner />
-      {/* Top-left chat pop-ups for the named people responsible for chat */}
-      <LiveChatQuestionAlert />
+
 
 
 
@@ -1426,74 +1426,47 @@ const AdminDashboardInner: React.FC<{
       */}
       {(() => {
         const isManagementAlerts = ['admin', 'super_admin', 'sales_manager'].includes(displayRole || '');
+        const show = (id: string) => canSeePopup(id, displayRole, displayPermissions);
+        const goLead = (leadId: string) => {
+          handleTabChange('new-leads');
+          setSearchParams({ tab: 'new-leads', leadId }, { replace: true });
+        };
         return (
           <>
             {isManagementAlerts && (
               <Suspense fallback={null}>
-                {/* Background auto-distribute sweep only (no visible bar) —
-                    the ON/OFF toggle lives in Lead Allocation. */}
+                {/* Background auto-distribute sweep only (no visible bar) */}
                 <GlobalAutoDistributeBar headless userRole={displayRole} />
-
-                {/* Quick-grant access bar for admins */}
-                <QuickGrantAccessBar userRole={displayRole} />
-
-
-                {/* Payments to collect — management only */}
-                <CollectPaymentsBanner userRole={userRole} onNavigate={handleTabChange} />
-
-                {/* Real-time incoming CallRail call banner */}
-                <IncomingCallBanner />
-
-
-                {/* Global missed inbound call bar */}
-                <MissedCallAlertBar
-                  userRole={userRole}
-                  onOpenLead={(leadId) => {
-                    handleTabChange('new-leads');
-                    setSearchParams({ tab: 'new-leads', leadId }, { replace: true });
-                  }}
-                />
-
-                {/* Missed callback banner */}
-                <MissedCallbackAlertBanner
-                  onNavigate={(leadId, type) => {
-                    if (type === 'customer') handleTabChange('customers');
-                    else handleTabChange('new-leads');
-                  }}
-                />
-
-                <ReminderDuePopup activeTab={activeTab} onNavigate={(leadId, type) => {
-                  if (type === 'customer') {
-                    handleTabChange('customers');
-                  } else {
-                    handleTabChange('new-leads');
-                  }
-                }} />
               </Suspense>
             )}
 
-            {/* Agent new-lead alerts: stacked floating cards (beep + mute + close) */}
-            <NewLeadAlerts />
+            {/* Every pop-up below portals into the Live Alerts panel; visibility per user via User Permissions → Pop-ups */}
+            <Suspense fallback={null}>
+              {show('incoming_call') && <AlertRailSlot order={ALERT_RAIL_ORDER.incomingCall}><IncomingCallBanner /></AlertRailSlot>}
+              {show('live_chat_question') && <AlertRailSlot order={ALERT_RAIL_ORDER.liveChatQuestion}><LiveChatQuestionAlert /></AlertRailSlot>}
+              {show('missed_calls') && <AlertRailSlot order={ALERT_RAIL_ORDER.missedCall}><MissedCallAlertBar userRole={userRole} onOpenLead={goLead} /></AlertRailSlot>}
+              {show('missed_callback') && (
+                <AlertRailSlot order={ALERT_RAIL_ORDER.missedCallback}>
+                  <MissedCallbackAlertBanner onNavigate={(leadId, type) => { if (type === 'customer') handleTabChange('customers'); else handleTabChange('new-leads'); }} />
+                </AlertRailSlot>
+              )}
+              {show('reminders') && (
+                <AlertRailSlot order={ALERT_RAIL_ORDER.reminders}>
+                  <ReminderDuePopup activeTab={activeTab} onNavigate={(leadId, type) => { if (type === 'customer') handleTabChange('customers'); else handleTabChange('new-leads'); }} />
+                </AlertRailSlot>
+              )}
+              {show('collect_payments') && <AlertRailSlot order={ALERT_RAIL_ORDER.collectPayments}><CollectPaymentsBanner userRole={userRole} onNavigate={handleTabChange} /></AlertRailSlot>}
+              {show('quick_grant') && <AlertRailSlot order={ALERT_RAIL_ORDER.quickGrant}><QuickGrantAccessBar userRole={displayRole} /></AlertRailSlot>}
+            </Suspense>
 
-            {/* Red "stuck on checkout" pop-up — left rail, below the new-lead cards, every tab */}
-            <StuckCheckoutAlert />
-
-            {/* Orange "new complaint — not claim related" pop-up — managers only */}
-            {isManagementAlerts && (
+            {show('new_leads') && <NewLeadAlerts />}
+            {show('stuck_checkout') && <StuckCheckoutAlert />}
+            {show('complaint') && (
               <Suspense fallback={null}>
                 <NonClaimComplaintAlert />
               </Suspense>
             )}
-
-            {/* Blue "chat customer wants a person" pop-up — managers and sales agents only */}
-            {['admin', 'super_admin', 'sales_manager', 'sales', 'sales_lead'].includes(displayRole || '') && (
-              <ChatAgentRequestAlert
-                onOpenLead={(leadId) => {
-                  handleTabChange('new-leads');
-                  setSearchParams({ tab: 'new-leads', leadId }, { replace: true });
-                }}
-              />
-            )}
+            {show('chat_request') && <ChatAgentRequestAlert onOpenLead={goLead} />}
 
             {/* Daily CRM feedback survey pop-up for sales agents (silent, once a day) */}
             <DailyCrmSurveyPrompt
@@ -1505,9 +1478,9 @@ const AdminDashboardInner: React.FC<{
 
             {/* Sticky left-hand rail host (kept mounted so portalled alerts have a home) */}
             <AlertRailHost />
-            <Suspense fallback={null}>
+            {show('failed_payment') && <Suspense fallback={null}>
               <FailedPaymentPopup onOpenMissedPayments={() => handleTabChange('missed-payments')} />
-            </Suspense>
+            </Suspense>}
           </>
         );
       })()}

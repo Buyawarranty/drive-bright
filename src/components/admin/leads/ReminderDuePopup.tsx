@@ -159,7 +159,7 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="fixed top-20 right-4 z-[70] flex flex-col gap-2 max-h-[calc(100vh-6rem)] overflow-y-auto pr-1 -mr-1" style={{ width: '320px' }}>
+    <div className="flex w-full flex-col gap-2">
       <style>{`
         @keyframes borderPulse {
           0%, 100% { border-color: rgba(248, 113, 113, 0.55); }

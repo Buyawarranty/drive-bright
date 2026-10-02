@@ -69,7 +69,7 @@ export const CollectPaymentsBanner: React.FC<Props> = ({ userRole, onNavigate })
   if (dismissedCount >= 0 && total <= dismissedCount) return null;
 
   return (
-    <div className="border-b-2 border-red-400 bg-red-50 px-4 py-3 shadow-sm">
+    <div className="rounded-xl border border-l-4 border-red-200 border-l-red-600 bg-red-50 px-3 py-2 shadow-sm text-sm">
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-red-600 text-white">

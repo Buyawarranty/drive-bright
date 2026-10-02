@@ -535,7 +535,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const mustAcceptFirst = canClaim || canTakeUnmatched;
 
   return (
-    <div className="fixed top-4 left-4 z-[100] w-[300px] max-w-[calc(100vw-2rem)] rounded-md bwmc-halo animate-in slide-in-from-left-4">
+    <div className="w-full rounded-md bwmc-halo animate-in slide-in-from-left-4">
       <style>{`
         @keyframes bwmc-halo-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.85), 0 0 0 0 rgba(251, 191, 36, 0.6); }

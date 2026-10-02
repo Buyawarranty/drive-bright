@@ -23,7 +23,7 @@ export const IncomingCallBanner: React.FC = () => {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-[100] w-[380px] max-w-[calc(100vw-2rem)] rounded-xl border-2 border-green-500 bg-white shadow-2xl animate-in slide-in-from-top-4">
+    <div className="w-full rounded-xl border border-l-4 border-green-200 border-l-green-600 bg-white shadow-2xl animate-in slide-in-from-top-4">
       <div className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-t-xl">
         <PhoneIncoming className="w-4 h-4 animate-pulse" />
         <span className="font-semibold text-sm uppercase tracking-wide">Incoming call</span>

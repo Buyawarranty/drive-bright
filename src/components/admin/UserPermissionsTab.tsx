@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { PopupPermissionsSection } from './PopupPermissionsSection';
 import { supabase } from '@/integrations/supabase/client';
 import { BackupLoginPanel } from '@/components/admin/BackupLoginPanel';
 import { TempDevLoginPanel } from '@/components/admin/TempDevLoginPanel';
@@ -2268,6 +2269,12 @@ export const UserPermissionsTab = () => {
                   {renderTabPermissionsSection(editingUser.permissions, true, editingUser.role)}
                 </>
               )}
+
+              <PopupPermissionsSection
+                perms={editingUser.permissions || {}}
+                role={editingUser.role}
+                onChange={(next) => setEditingUser(prev => prev ? { ...prev, permissions: next } : prev)}
+              />
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setShowEditDialog(false)}>

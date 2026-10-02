@@ -19,6 +19,13 @@ const VISIBLE_LIMIT = 3;
 const OPEN_KEY = 'bw:live-alerts-open';
 
 export const ALERT_RAIL_ORDER = {
+  incomingCall: 2,
+  liveChatQuestion: 4,
+  missedCall: 6,
+  missedCallback: 8,
+  reminders: 35,
+  collectPayments: 40,
+  quickGrant: 45,
   newLeadPopup: 10,
   whatsappHotLead: 15,
   stuckCheckout: 20,
