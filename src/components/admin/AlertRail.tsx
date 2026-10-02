@@ -190,7 +190,7 @@ export const AlertRailHost: React.FC = () => {
       className={
         inSidebar
           ? 'border-b bg-slate-50 px-2 py-2'
-          : `fixed bottom-2 ${collapsed && isDesktop ? 'left-16' : 'left-2'} z-[120] w-[320px] max-w-[calc(100vw-1rem)] rounded-xl border bg-slate-50 p-2 shadow-xl ${count === 0 ? 'hidden' : ''}`
+          : `fixed bottom-2 ${collapsed && isDesktop ? 'left-16' : 'left-2'} z-[120] w-[320px] max-w-[calc(100vw-1rem)] rounded-xl border bg-slate-50 p-2 shadow-xl ${count === 0 && recentCount === 0 ? 'hidden' : ''}`
       }
     >
       <div className="flex items-center justify-between px-1 pb-1.5">
