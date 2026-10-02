@@ -12914,6 +12914,48 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_payment_failures: {
+        Row: {
+          amount: number | null
+          created_at: string
+          email: string | null
+          event_type: string
+          failure_code: string | null
+          failure_message: string | null
+          id: string
+          phone: string | null
+          stripe_event_id: string | null
+          stripe_object_id: string | null
+          vehicle_reg: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          email?: string | null
+          event_type: string
+          failure_code?: string | null
+          failure_message?: string | null
+          id?: string
+          phone?: string | null
+          stripe_event_id?: string | null
+          stripe_object_id?: string | null
+          vehicle_reg?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          email?: string | null
+          event_type?: string
+          failure_code?: string | null
+          failure_message?: string | null
+          id?: string
+          phone?: string | null
+          stripe_event_id?: string | null
+          stripe_object_id?: string | null
+          vehicle_reg?: string | null
+        }
+        Relationships: []
+      }
       structured_customer_notes: {
         Row: {
           actions_taken: Json | null
