@@ -91,6 +91,7 @@ const ADMIN_TABS = [
   { id: 'page-analytics', label: 'Page Analytics', description: 'Track page visits, traffic sources & Google Ads' },
   { id: 'admin-logs', label: 'Error Logs', description: 'Dashboard activity & issue log: clicks, load times, crashes and errors' },
   { id: 'payments-pending', label: 'Payments Pending', description: 'Confirmed sales with no verified payment — accounts verification queue' },
+  { id: 'missed-payments', label: 'Missed Payments', description: 'Customers who clicked Stripe or Bumper to pay — call the unpaid ones' },
   { id: 'pending-payment', label: 'Pending Payment', description: 'Pay later orders — warranty stays off until the payment is received' },
   { id: 'baw-paylater', label: 'BAW PayLater', description: 'Yearly collections on 2 and 3 year cover sold on BAW PayLater' },
   { id: 'google-ads', label: 'Marketing Analytics', description: 'Google Ads, Facebook Ads, conversions & ROAS' },

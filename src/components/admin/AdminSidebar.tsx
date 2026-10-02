@@ -328,6 +328,12 @@ export const defaultTabs: Tab[] = [
     description: 'Confirmed sales with no verified payment — accounts verification queue'
   },
   {
+    id: 'missed-payments',
+    label: 'Missed Payments',
+    icon: PoundSterling,
+    description: 'Customers who clicked Stripe or Bumper to pay — call the unpaid ones'
+  },
+  {
     id: 'admin-logs',
     label: 'Error Logs',
     icon: ScrollText,

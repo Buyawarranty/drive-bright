@@ -49,6 +49,7 @@ import { initAdminTelemetry, logAdminUiEvent, logAdminSlowLoad } from '@/lib/adm
 import { installAdminStallGuard } from '@/lib/adminStallGuard';
 const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
 const PaymentsPendingTab = lazy(() => import('@/components/admin/PaymentsPendingTab'));
+const MissedPaymentsTab = lazy(() => import('@/components/admin/MissedPaymentsTab'));
 const PendingPaymentTab = lazy(() => import('@/components/admin/PendingPaymentTab'));
 const BawPayLaterTab = lazy(() => import('@/components/admin/BawPayLaterTab'));
 const SalesStaffPerformancePanel = lazy(() => import('@/components/admin/SalesStaffPerformancePanel'));
@@ -231,6 +232,7 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   // Payments pending is the accounts team's verification queue — accounts roles and
   // management always get it, without needing a per-user grant.
   if (tab === 'payments-pending' && ACCOUNTS_ALLOWED_ROLES.has(role || '')) return true;
+  if (tab === 'missed-payments' && ACCOUNTS_ALLOWED_ROLES.has(role || '')) return true;
   // BAW PayLater yearly collections are chased by accounts and management.
   if (tab === 'baw-paylater' && ACCOUNTS_ALLOWED_ROLES.has(role || '')) return true;
   // Pay later orders: accounts/management plus the sales agents who take the deals
@@ -1001,6 +1003,15 @@ const AdminDashboard = () => {
         );
       // Payments pending: accounts verification queue for confirmed sales with no
       // Stripe / Bumper / Payment Assist evidence on the system.
+      case 'missed-payments':
+        if (!isTabAllowedForRole('missed-payments', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Missed payments" />;
+        }
+        return (
+          <Suspense fallback={<TabFallback />}>
+            <MissedPaymentsTab />
+          </Suspense>
+        );
       case 'payments-pending':
         if (!isTabAllowedForRole('payments-pending', effectiveUserRole, effectiveUserPermissions)) {
           return <AccessDenied label="Payments pending" />;
