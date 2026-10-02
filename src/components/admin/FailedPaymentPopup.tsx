@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { pushRecentAlert } from '@/lib/recentAlerts';
 import { X, CreditCard, Phone } from 'lucide-react';
 import { AlertRailSlot } from '@/components/admin/AlertRail';
 import { useFailedPayments } from '@/hooks/useFailedPayments';
@@ -14,6 +15,7 @@ export const FailedPaymentPopup: React.FC<{ onOpenMissedPayments?: () => void }>
   const shown = useMemo(() => items.filter(i => !hidden.has(i.key)).slice(0, 3), [items, hidden]);
 
   const dismiss = (key: string) => {
+    { const i = items.find(x => x.key === key); if (i) pushRecentAlert({ key: `fp-${key}`, title: 'Payment failed', detail: `${i.name || i.email || 'Customer'}${i.amount != null ? ' – £' + Number(i.amount).toFixed(2) : ''}`, tone: 'red' }); }
     const next = new Set(hidden); next.add(key); setHidden(next);
     try { localStorage.setItem(HIDDEN_KEY, JSON.stringify([...next].slice(-300))); } catch { /* ignore */ }
   };

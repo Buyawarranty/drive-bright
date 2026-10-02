@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { pushRecentAlert } from '@/lib/recentAlerts';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertTriangle, Phone, Copy, Mail, X, ChevronDown, ChevronUp, UserCircle2 } from 'lucide-react';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
@@ -176,6 +177,7 @@ export const StuckCheckoutAlert: React.FC = () => {
   };
 
   const dismiss = (id: string) => {
+    { const r: any = (rows as any[]).find((x: any) => x.id === id); if (r) pushRecentAlert({ key: `stuck-${id}`, title: 'Checkout stuck', detail: `${r.customer_name || r.customer_email || r.customer_phone || 'Customer'}${r.vehicle_reg ? ' – ' + r.vehicle_reg : ''}`, tone: 'amber' }); }
     setDismissedIds((prev) => {
       const next = [...new Set([...prev, id])].slice(-200);
       try { localStorage.setItem(DISMISSED_IDS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
