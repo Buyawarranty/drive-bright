@@ -993,15 +993,14 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 : due.days <= 30
                   ? 'bg-amber-500 text-white'
                   : 'bg-primary text-primary-foreground';
-            const label = due
-              ? `RENEWAL DUE — Expiry date: ${due.dateStr}`
-              : 'RENEWAL DUE';
+            const expiryLine = due ? `Expiry: ${due.dateStr}` : '';
             const tip = due
               ? `Renewal — warranty expires ${due.dateStr}${due.days < 0 ? `, ${Math.abs(due.days)} days overdue` : due.days === 0 ? ', due today' : `, in ${due.days} days`}`
               : 'Renewal — existing customer whose warranty is coming up for renewal';
             return (
-              <Badge className={cn('text-[10px] px-1.5 py-0.5 border-0 flex-shrink-0 uppercase tracking-wide font-bold', color)} title={tip}>
-                {label}
+              <Badge className={cn('text-[10px] px-1.5 py-0.5 border-0 flex-shrink-0 uppercase tracking-wide font-bold flex-col items-center leading-tight', color)} title={tip}>
+                <span>Renewal due</span>
+                {due && <span className="font-semibold">{expiryLine}</span>}
               </Badge>
             );
           })()}
@@ -1794,15 +1793,14 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 : due.days <= 30
                   ? 'bg-amber-500 text-white'
                   : 'bg-primary text-primary-foreground';
-            const label = due
-              ? `RENEWAL DUE — Expiry date: ${due.dateStr}`
-              : 'RENEWAL DUE';
+            const expiryLine = due ? `Expiry: ${due.dateStr}` : '';
             const tip = due
               ? `Renewal — warranty expires ${due.dateStr}${due.days < 0 ? `, ${Math.abs(due.days)} days overdue` : due.days === 0 ? ', due today' : `, in ${due.days} days`}`
               : 'Renewal — existing customer whose warranty is coming up for renewal';
             return (
-              <Badge className={cn('text-[10px] px-1.5 py-0.5 border-0 flex-shrink-0 uppercase tracking-wide font-bold', color)} title={tip}>
-                {label}
+              <Badge className={cn('text-[10px] px-1.5 py-0.5 border-0 flex-shrink-0 uppercase tracking-wide font-bold flex-col items-center leading-tight', color)} title={tip}>
+                <span>Renewal due</span>
+                {due && <span className="font-semibold">{expiryLine}</span>}
               </Badge>
             );
           })()}
