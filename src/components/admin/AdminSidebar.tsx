@@ -25,6 +25,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { SidebarTeamSwitcher } from './SidebarTeamSwitcher';
+import { SIDEBAR_ALERTS_ANCHOR_ID } from './AlertRail';
 import { useNewLeadAlert } from '@/hooks/useNewLeadAlert';
 
 const FreshLeadBubble: React.FC<{ compact?: boolean }> = ({ compact }) => {
@@ -873,13 +874,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
       {/* Sidebar */}
       <div className={cn(
-        'fixed left-0 top-[104px] h-[calc(100vh-104px)] bg-white shadow-lg border-r z-40 transform transition-all duration-300 ease-in-out overflow-hidden',
+        'fixed left-0 top-[104px] h-[calc(100vh-104px)] bg-white shadow-lg border-r z-40 transform transition-all duration-300 ease-in-out overflow-hidden flex flex-col',
         collapsed ? 'lg:w-14 w-64' : 'w-64',
         isOpen ? 'translate-x-0' : '-translate-x-full',
         'lg:translate-x-0',
       )}>
         {collapsed ? (
-          <div className="p-2 border-b flex justify-center">
+          <div className="p-2 border-b flex justify-center shrink-0">
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
                 <button
@@ -894,7 +895,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
             </Tooltip>
           </div>
         ) : (
-          <div className="p-4 lg:p-6 border-b space-y-3">
+          <div className="p-4 lg:p-6 border-b space-y-3 shrink-0">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h2 className="text-lg lg:text-xl font-bold text-gray-800">Admin Panel</h2>
@@ -969,6 +970,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
             <SidebarTeamSwitcher userRole={userRole} />
           </div>
         )}
+        {!collapsed && <div id={SIDEBAR_ALERTS_ANCHOR_ID} className="hidden lg:block shrink-0" />}
 
 
         <DndContext
@@ -977,8 +979,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
           onDragEnd={handleDragEnd}
         >
           <nav className={cn(
-            'mt-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-4',
-            collapsed ? 'h-[calc(100%-120px)]' : 'h-[calc(100%-180px)]',
+            'mt-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-1 min-h-0',
+            collapsed ? 'pb-28' : 'pb-28',
           )}>
 
             <SortableContext
