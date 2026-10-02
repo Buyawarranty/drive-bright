@@ -1152,8 +1152,10 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                     vehicle_model: r.customers?.vehicle_model || '',
                   };
                   const isPinned = pinnedRow?.id === r.id;
+                  const liveInNewLeads = !!leadSync?.leadId;
                   return (
-                    <tr key={r.id} className={`border-t hover:bg-muted/30 align-top ${isSelected ? 'bg-primary/5' : ''} ${isUrgent ? 'border-l-4 border-l-red-500' : ''} ${isPinned ? 'bg-emerald-50/70 ring-1 ring-emerald-300' : ''}`}>
+                    <React.Fragment key={r.id}>
+                    <tr className={`border-t hover:bg-muted/30 align-top ${liveInNewLeads ? 'bg-sky-50/60 border-l-4 border-l-sky-500' : ''} ${isSelected ? 'bg-primary/5' : ''} ${isUrgent ? 'border-l-4 border-l-red-500' : ''} ${isPinned ? 'bg-emerald-50/70 ring-1 ring-emerald-300' : ''}`}>
                       <td className="p-2 text-center text-xs tabular-nums text-muted-foreground font-medium">{rowNumber}</td>
                       <td className="sticky left-0 z-[1] bg-card p-2">
                         <Checkbox checked={isSelected} onCheckedChange={() => toggleRow(r.id)} />
@@ -1409,6 +1411,42 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                         </div>
                       </td>
                     </tr>
+                    {liveInNewLeads && leadSync && (
+                      <tr className="bg-sky-50/60 border-l-4 border-l-sky-500">
+                        <td colSpan={18} className="px-3 pb-3 pt-0">
+                          <div className="rounded-md border border-sky-300 bg-card px-3 py-2 text-xs">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                              <Badge className="bg-sky-600 text-white border-sky-700 text-[10px]">Live in New Leads</Badge>
+                              <span><span className="text-muted-foreground">Moved:</span> {leadSync.createdAt ? `${format(new Date(leadSync.createdAt), 'd MMM yy, HH:mm')} (${formatDistanceToNow(new Date(leadSync.createdAt), { addSuffix: true })})` : '—'}</span>
+                              <span><span className="text-muted-foreground">Owner:</span> {leadOwner ? `${leadOwner.first_name || ''} ${leadOwner.last_name || ''}`.trim() || leadOwner.email : 'Unassigned'}</span>
+                              <span><span className="text-muted-foreground">Status:</span> <span className="font-semibold capitalize">{(leadSync.status || 'new').replace(/_/g, ' ')}</span></span>
+                              <span>
+                                <span className="text-muted-foreground">Contacted:</span>{' '}
+                                {leadSync.callCount > 0 || leadSync.lastContactedAt
+                                  ? <span className="font-semibold text-emerald-700">Yes — {leadSync.callCount} call{leadSync.callCount === 1 ? '' : 's'}{leadSync.lastContactedAt ? `, last ${formatDistanceToNow(new Date(leadSync.lastContactedAt), { addSuffix: true })}` : ''}</span>
+                                  : <span className="font-semibold text-red-700">Not yet</span>}
+                              </span>
+                              {leadSync.priority && <span><span className="text-muted-foreground">Priority:</span> <span className="capitalize">{leadSync.priority}</span></span>}
+                              <span><span className="text-muted-foreground">Last action:</span> {leadSync.lastActionAt ? formatDistanceToNow(new Date(leadSync.lastActionAt), { addSuffix: true }) : '—'}</span>
+                              <a href={`/admin-dashboard/?tab=new-leads&leadId=${leadSync.leadId}`} className="ml-auto text-primary underline font-medium">Open in New Leads</a>
+                            </div>
+                            <div className="mt-1.5">
+                              <span className="text-muted-foreground">Notes ({leadSync.noteCount}):</span>
+                              {leadSync.notes.length === 0 ? <span className="ml-1 italic text-muted-foreground">No notes added yet</span> : (
+                                <ul className="mt-1 space-y-0.5">
+                                  {leadSync.notes.map((n, idx) => (
+                                    <li key={idx} className="whitespace-pre-wrap">
+                                      <span className="text-muted-foreground">{n.at ? format(new Date(n.at), 'd MMM HH:mm') : ''}{n.by ? ` · ${n.by}` : ''} —</span> {n.text}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
