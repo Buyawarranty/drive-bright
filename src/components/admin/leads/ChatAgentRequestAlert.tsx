@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { pushRecentAlert } from '@/lib/recentAlerts';
 import { supabase } from '@/integrations/supabase/client';
 import { MessagesSquare, Phone, Mail, X, ChevronDown, ChevronUp, Car } from 'lucide-react';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
@@ -125,6 +126,7 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
   const live = useMemo(() => rows.filter((r) => !dismissedIds.includes(r.id)), [rows, dismissedIds]);
 
   const dismiss = (id: string) => {
+    { const r: any = rows.find((x: any) => x.id === id); if (r) pushRecentAlert({ key: `chat-${id}`, title: 'Chat customer wants someone', detail: [r.first_name, r.last_name].filter(Boolean).join(' ') || r.email || r.phone || 'Chat customer', tone: 'blue' }); }
     setDismissedIds((prev) => {
       const next = [...new Set([...prev, id])].slice(-200);
       try { localStorage.setItem(DISMISSED_IDS_KEY, JSON.stringify(next)); } catch { /* ignore */ }

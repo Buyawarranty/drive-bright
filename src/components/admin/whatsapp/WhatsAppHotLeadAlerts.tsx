@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { pushRecentAlert } from '@/lib/recentAlerts';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
@@ -46,7 +47,7 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
               <button
                 type="button"
                 aria-label="Dismiss"
-                onClick={() => setDismissed((prev) => [...prev, c.id])}
+                onClick={() => { pushRecentAlert({ key: `wa-${c.id}`, title: 'WhatsApp hot lead', detail: `${c.display_name || prettyWhatsAppPhone(c.phone)}: ${c.last_message_preview || ''}`.slice(0, 90), tone: 'green' }); setDismissed((prev) => [...prev, c.id]); }}
                 className="shrink-0 rounded p-0.5 text-gray-600 hover:bg-emerald-100"
               >
                 <X className="h-4 w-4" />

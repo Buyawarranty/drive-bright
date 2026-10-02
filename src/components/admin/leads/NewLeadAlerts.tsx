@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef, useSyncExternalStore } from 'react';
+import { pushRecentAlert } from '@/lib/recentAlerts';
 import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp, ChevronRight, Clock, Volume2, VolumeX, PhoneCall } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNewLeadAlert, formatElapsed, playNewLeadBeep, type NewLeadAlertData } from '@/hooks/useNewLeadAlert';
@@ -39,7 +40,12 @@ const useOnCall = () =>
  * - Stack is narrow (240px) so it never dominates the screen.
  */
 export const NewLeadAlerts: React.FC = () => {
-  const { queue, dismissLead, snoozeLead } = useNewLeadAlert();
+  const { queue, dismissLead: rawDismissLead, snoozeLead } = useNewLeadAlert();
+  const dismissLead = (id: string) => {
+    const l: any = queue.find((x) => x.id === id);
+    if (l) pushRecentAlert({ key: `lead-${id}`, title: 'New lead', detail: `${[l.first_name, l.last_name].filter(Boolean).join(' ') || 'Lead'}${l.vehicle_reg ? ' – ' + l.vehicle_reg : ''}`, tone: 'emerald' });
+    rawDismissLead(id);
+  };
   const navigate = useNavigate();
   const [mutedIds, setMutedIds] = useState<Set<string>>(new Set());
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -95,22 +101,22 @@ export const NewLeadAlerts: React.FC = () => {
     return (
       <AlertRailSlot order={ALERT_RAIL_ORDER.newLeadPopup}>
       <div className="w-full">
-        <div className="flex items-center gap-2 rounded-full bg-[#0F1B34] text-white pl-3 pr-1 py-1 shadow-lg border border-emerald-500">
-          <PhoneCall className="w-4 h-4 text-emerald-300 animate-pulse" />
+        <div className="flex items-center gap-2 rounded-full bg-emerald-50 text-gray-900 pl-3 pr-1 py-1 shadow-sm border border-emerald-200">
+          <PhoneCall className="w-4 h-4 text-emerald-600 animate-pulse" />
           <span className="text-xs font-semibold">
             On call — {queue.length} lead{queue.length === 1 ? '' : 's'} waiting
           </span>
           <button
             type="button"
             onClick={() => setExpandedId(queue[0].id)}
-            className="text-[11px] font-semibold bg-white/10 hover:bg-white/20 rounded-full px-2 py-0.5"
+            className="text-[11px] font-semibold bg-white border border-emerald-200 hover:bg-emerald-100 rounded-full px-2 py-0.5"
           >
             Show
           </button>
           <button
             type="button"
             onClick={() => { clearAgentOnCall(); }}
-            className="text-[11px] font-semibold bg-emerald-500 hover:bg-emerald-400 rounded-full px-2 py-0.5"
+            className="text-[11px] font-semibold bg-emerald-600 text-white hover:bg-emerald-700 rounded-full px-2 py-0.5"
             title="Mark call as ended — pop-ups resume"
           >
             Call ended
@@ -130,13 +136,13 @@ export const NewLeadAlerts: React.FC = () => {
   const orrCount = queue.filter(isOrrLead).length;
   const rrCount = queue.length - orrCount;
   const allOrr = orrCount > 0 && rrCount === 0;
-  const headerBorder = allOrr ? 'border-blue-500' : 'border-emerald-500';
-  const headerFlame = allOrr ? 'text-blue-300' : 'text-emerald-300';
+  const headerBorder = allOrr ? 'border-blue-200 border-l-blue-600 bg-blue-50' : 'border-emerald-200 border-l-emerald-600 bg-emerald-50';
+  const headerFlame = allOrr ? 'text-blue-600' : 'text-emerald-600';
 
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.newLeadPopup}>
     <div className="w-full flex flex-col gap-1.5">
-      <div className={`flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-3 py-2 shadow-lg border ${headerBorder} shrink-0`}>
+      <div className={`flex items-center justify-between rounded-xl text-gray-900 px-3 py-2 shadow-sm border border-l-4 ${headerBorder} shrink-0`}>
         <button
           type="button"
           onClick={() => setCollapsedStack((c) => !c)}
@@ -153,7 +159,7 @@ export const NewLeadAlerts: React.FC = () => {
                   ? `${orrCount} ORR lead${orrCount === 1 ? '' : 's'}`
                   : queue.length === 1 ? '1 new lead' : `${queue.length} new leads`}
             </span>
-            <span className="block text-[11px] text-white/70 leading-tight">
+            <span className="block text-[11px] text-gray-500 leading-tight">
               {collapsedStack ? 'Click to expand' : 'Click to collapse'}
             </span>
           </span>
@@ -163,7 +169,7 @@ export const NewLeadAlerts: React.FC = () => {
             <button
               type="button"
               onClick={() => clearAgentOnCall()}
-              className="text-[10px] font-semibold bg-emerald-500 hover:bg-emerald-400 rounded px-1.5 py-0.5"
+              className="text-[10px] font-semibold bg-emerald-600 text-white hover:bg-emerald-700 rounded px-1.5 py-0.5"
               title="Mark call as ended"
             >
               End call
@@ -176,7 +182,7 @@ export const NewLeadAlerts: React.FC = () => {
               queue.forEach((l) => dismissLead(l.id));
               toast('All alerts dismissed', { duration: 2000 });
             }}
-            className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-white/20"
+            className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-black/5"
             aria-label="Dismiss all new lead alerts"
             title="Close all"
           >
@@ -321,9 +327,10 @@ const LeadAlertCard: React.FC<CardProps> = ({
   const remainingMs = deadlineMs ? deadlineMs - now : 0;
   const orrExpired = isOrr && remainingMs <= 0;
   const orrCountdown = isOrr ? formatElapsed(Math.max(0, remainingMs)) : '';
-  const themeBorder = isOrr ? 'border-blue-500' : 'border-emerald-500';
+  const themeBorder = isOrr ? 'border-blue-200 border-l-blue-600' : 'border-emerald-200 border-l-emerald-600';
+  const themeTint = isOrr ? 'bg-blue-50' : 'bg-emerald-50';
   const themeFlame = isOrr ? 'text-blue-500' : 'text-emerald-500';
-  const themeFlameHeader = isOrr ? 'text-blue-300' : 'text-emerald-300';
+  const themeFlameHeader = isOrr ? 'text-blue-600' : 'text-emerald-600';
   const themeBadge = isOrr
     ? (orrExpired ? 'bg-red-500' : 'bg-blue-500')
     : (urgent ? 'bg-red-500' : 'bg-emerald-500');
@@ -416,7 +423,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
 
   if (collapsed) {
     return (
-      <div className={`w-full rounded-lg border ${themeBorder} bg-white shadow-md hover:shadow-lg transition-shadow animate-in slide-in-from-left-4 flex items-center`}>
+      <div className={`w-full rounded-xl border border-l-4 ${themeBorder} ${themeTint} shadow-sm hover:shadow-md transition-shadow animate-in slide-in-from-left-4 flex items-center`}>
         <button
           type="button"
           onClick={onExpand}
@@ -450,19 +457,19 @@ const LeadAlertCard: React.FC<CardProps> = ({
   }
 
   return (
-    <div className={`rounded-lg border-2 ${themeBorder} bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4`}>
-      <div className="flex items-center gap-1.5 px-2 py-1.5 bg-[#0F1B34] text-white">
-        <Flame className={`w-3.5 h-3.5 shrink-0 ${urgent && !isOrr ? 'text-red-400 animate-pulse' : themeFlameHeader + ' animate-pulse'}`} />
+    <div className={`rounded-xl border border-l-4 ${themeBorder} ${themeTint} shadow-sm overflow-hidden animate-in slide-in-from-right-4`}>
+      <div className="flex items-center gap-1.5 px-2.5 pt-2 pb-1 text-gray-900">
+        <Flame className={`w-3.5 h-3.5 shrink-0 ${urgent && !isOrr ? 'text-red-600 animate-pulse' : themeFlameHeader + ' animate-pulse'}`} />
         <span className="font-bold text-[11px] tracking-wide truncate">
           {isOrr ? '⚡ ORR' : '🔥'} {firstName}
         </span>
-        <span className={`ml-auto font-mono font-bold text-[10px] px-1.5 py-0.5 rounded ${themeBadge}`}>
+        <span className={`ml-auto font-mono font-bold text-[10px] px-1.5 py-0.5 rounded text-white ${themeBadge}`}>
           {isOrr ? (orrExpired ? 'EXPIRED' : orrCountdown) : clock}
         </span>
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
-          className="p-0.5 rounded hover:bg-white/20"
+          className="p-0.5 rounded text-gray-500 hover:bg-black/5"
           aria-label={muted ? 'Unmute alert sound' : 'Mute alert sound'}
           title={muted ? 'Unmute' : 'Mute beep'}
         >
@@ -472,7 +479,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onCollapse(); }}
-            className="p-0.5 rounded hover:bg-white/20"
+            className="p-0.5 rounded text-gray-500 hover:bg-black/5"
             aria-label="Collapse"
             title="Collapse"
           >
@@ -482,7 +489,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onDismiss(); }}
-          className="p-0.5 rounded hover:bg-white/20"
+          className="p-0.5 rounded text-gray-500 hover:bg-black/5"
           aria-label="Dismiss this lead alert"
           title="Close"
         >
@@ -490,7 +497,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
         </button>
       </div>
 
-      <button onClick={openLead} className={`w-full text-left px-2.5 pt-2 pb-1 ${themeHoverBg} transition-colors`}>
+      <button onClick={openLead} className={`w-full text-left px-2.5 pt-1 pb-1 hover:bg-white/60 transition-colors`}>
         <div className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">{fullName}</div>
         {repeatInfo && (
           <div className="mt-0.5 inline-flex items-center gap-1 rounded bg-emerald-600 text-white text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-px">

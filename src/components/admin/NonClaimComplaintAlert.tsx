@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { pushRecentAlert } from '@/lib/recentAlerts';
 import { supabase } from '@/integrations/supabase/client';
 import { MessageSquare, Phone, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -99,6 +100,7 @@ export const NonClaimComplaintAlert: React.FC = () => {
   );
 
   const dismiss = (id: string) => {
+    { const r: any = rows.find((x: any) => x.id === id); if (r) pushRecentAlert({ key: `complaint-${id}`, title: 'Complaint (not claim)', detail: `${[r.first_name, r.last_name].filter(Boolean).join(' ') || r.email || 'Customer'} – ${r.reference}`, tone: 'orange' }); }
     setDismissedIds((prev) => {
       const next = [...new Set([...prev, id])].slice(-200);
       try { localStorage.setItem(DISMISSED_IDS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
