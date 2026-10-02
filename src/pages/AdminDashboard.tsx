@@ -1300,6 +1300,9 @@ const AdminDashboardInner: React.FC<{
   navigateToQuoteForm: () => void;
   renderContent: (role: string | null, perms: Record<string, boolean> | null) => React.ReactNode;
   navigate: (path: string, options?: any) => void;
+  accessFromCache?: boolean;
+}> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate, accessFromCache }) => {
+
 /** Header "Tabs" menu: searchable list of every tab this user may open, so
  *  staff can jump between tabs without using the left-hand menu. */
 const HeaderTabsMenu: React.FC<{
