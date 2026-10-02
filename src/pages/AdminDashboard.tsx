@@ -1331,7 +1331,17 @@ const HeaderTabsMenu: React.FC<{
   );
 };
 
-const AdminDashboardContent: React.FC<{
+/** Inner component that reads ViewAs context */
+const AdminDashboardInner: React.FC<{
+  activeTab: string;
+  handleTabChange: (tab: string) => void;
+  userRole: string | null;
+  userPermissions: Record<string, boolean> | null;
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: (open: boolean) => void;
+  navigateToQuoteForm: () => void;
+  renderContent: (role: string | null, perms: Record<string, boolean> | null) => React.ReactNode;
+  navigate: (path: string, options?: any) => void;
   accessFromCache?: boolean;
 }> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate, accessFromCache }) => {
 
