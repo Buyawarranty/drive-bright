@@ -451,11 +451,15 @@ serve(async (req) => {
     // CRITICAL: Extract GCLID and client_id from bumper_transactions for Google Ads attribution
     const bumperGclid = transactionData.gclid || null;
     const bumperClientId = transactionData.client_id || null;
+    // CRITICAL: Extract FBCLID from bumper_transactions for Facebook Ads attribution
+    const bumperFbclid = transactionData.fbclid || null;
     
     logStep("Google Ads attribution from Bumper transaction", {
       hasGclid: !!bumperGclid,
       hasClientId: !!bumperClientId,
-      gclidPrefix: bumperGclid ? bumperGclid.substring(0, 15) + '...' : null
+      gclidPrefix: bumperGclid ? bumperGclid.substring(0, 15) + '...' : null,
+      hasFbclid: !!bumperFbclid,
+      fbclidPrefix: bumperFbclid ? bumperFbclid.substring(0, 15) + '...' : null
     });
 
     const handlePaymentPayload = {

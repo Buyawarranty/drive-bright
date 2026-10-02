@@ -269,6 +269,7 @@ serve(async (req) => {
       claim_limit: claimLimit,
       // Server-side conversion tracking
       gclid: trackingData?.gclid || null,
+      fbclid: trackingData?.fbclid || null,
       client_id: trackingData?.clientId || null,
       conversion_status: 'pending'
     };
