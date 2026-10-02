@@ -117,7 +117,7 @@ export const NonClaimComplaintAlert: React.FC = () => {
 
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.complaintAlert}>
-      <div className="rounded-lg border-2 border-orange-600 bg-orange-500 text-white shadow-xl overflow-hidden">
+      <div className="rounded-xl border border-orange-200 border-l-4 border-l-orange-500 bg-orange-50 text-gray-900 shadow-sm overflow-hidden">
         <div className="flex items-start justify-between gap-2 px-3 py-2">
           <button
             onClick={() => setExpanded((v) => !v)}
@@ -125,14 +125,14 @@ export const NonClaimComplaintAlert: React.FC = () => {
           >
             <MessageSquare className="h-4 w-4 mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-sm font-bold leading-tight text-white">
+              <p className="text-sm font-bold leading-tight text-gray-900">
                 {live.length === 1 ? 'New complaint — not claim related' : `${live.length} new complaints — not claim related`}
               </p>
-              <p className="text-[11px] text-white/90">Managers only · in Non claims complaints</p>
+              <p className="text-[11px] text-gray-600">Managers only · in Non claims complaints</p>
             </div>
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
           </button>
-          <button onClick={dismissAll} aria-label="Dismiss" className="shrink-0 rounded p-0.5 hover:bg-white/20">
+          <button onClick={dismissAll} aria-label="Dismiss" className="shrink-0 rounded p-0.5 hover:bg-orange-100">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -140,28 +140,28 @@ export const NonClaimComplaintAlert: React.FC = () => {
         {expanded && (
           <div className="space-y-2 px-3 pb-3">
             {live.map((c) => (
-              <div key={c.id} className="rounded bg-white/10 px-2 py-2">
+              <div key={c.id} className="rounded bg-white border border-orange-100 px-2 py-2">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-mono text-[11px] bg-white/20 px-1.5 py-0.5 rounded">{c.reference}</span>
+                  <span className="font-mono text-[11px] bg-orange-100 px-1.5 py-0.5 rounded">{c.reference}</span>
                   <span className="text-[11px] bg-amber-300 text-amber-950 font-semibold px-1.5 py-0.5 rounded">
                     {c.category === 'Not about a warranty' ? 'Not about a warranty' : c.category}
                   </span>
-                  <span className="text-[11px] text-white/80">{timeAgo(c.created_at)}</span>
+                  <span className="text-[11px] text-gray-900/80">{timeAgo(c.created_at)}</span>
                 </div>
                 <p className="text-sm font-semibold mt-1">{c.first_name} {c.last_name}</p>
-                <p className="text-[12px] text-white/90 line-clamp-2">{c.description}</p>
+                <p className="text-[12px] text-gray-600 line-clamp-2">{c.description}</p>
                 <div className="flex flex-wrap gap-1.5 mt-1.5">
                   {c.phone && (
                     <a
                       href={`tel:${c.phone}`}
-                      className="inline-flex items-center gap-1 rounded bg-white text-orange-700 text-xs font-semibold px-2 py-1 hover:bg-white/90"
+                      className="inline-flex items-center gap-1 rounded bg-orange-500 text-white text-xs font-semibold px-2 py-1 hover:bg-orange-600"
                     >
                       <Phone className="h-3 w-3" /> Call now: {formatUkPhone(c.phone)}
                     </a>
                   )}
                   <button
                     onClick={openSection}
-                    className="inline-flex items-center rounded border border-white/60 text-white text-xs font-semibold px-2 py-1 hover:bg-white/20"
+                    className="inline-flex items-center rounded border border-white/60 text-gray-900 text-xs font-semibold px-2 py-1 hover:bg-orange-100"
                   >
                     Open Non claims complaints
                   </button>
