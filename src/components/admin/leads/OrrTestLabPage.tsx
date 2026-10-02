@@ -8,7 +8,6 @@ import { OpenPoolManagerAlerts } from './OpenPoolManagerAlerts';
 import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
 import { OrrTeamSelectionPanel } from './OrrTeamSelectionPanel';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
-import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OrrGlanceStrip } from './OrrGlanceStrip';
 import { OrrAgentRotationPanel } from './OrrAgentRotationPanel';
 import { OrrQueuePanels } from './OrrQueuePanels';
@@ -206,7 +205,8 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
           </p>
         </div>
         <WidgetErrorBoundary label="Live lead distribution">
-          <RollingRoundRobinLivePanel canEdit={isManagement && orrLive === true} readOnly={orrLive !== true} />
+          {/* Same panel as the sandbox, fed by real leads — one shared codebase. */}
+          <OpenRoundRobinTestPanel mode="live" canWrite={isManagement && orrLive === true} />
         </WidgetErrorBoundary>
       </div>
 
