@@ -232,16 +232,14 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
 
             {/* Pricing Section */}
             {selectedPayment === 'monthly' ? (
-              <div className="mb-4">
-                <span className="block text-sm font-bold text-[#1a1a1a]">First payment today</span>
-                <div className="text-2xl font-bold text-[#1a1a1a] leading-none mt-1">
-                  £{monthlyPrice}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Equal to {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day over term
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  £{monthlyPrice}/month × 12 payments · Paid over 12 months · Covers {months} months · 0% APR
+              <div className="mb-4 space-y-1">
+                <p className="text-sm font-bold text-foreground">
+                  <span className="text-2xl">£{monthlyPrice}</span> today
+                </p>
+                <p className="text-sm text-muted-foreground">Then 11 monthly payments of £{monthlyPrice}</p>
+                <p className="text-sm font-semibold text-foreground">£{monthlyPaidTotal} total payable</p>
+                <p className="text-sm text-muted-foreground">
+                  = {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day over your full cover term
                 </p>
               </div>
             ) : selectedPayment === 'full' ? (
