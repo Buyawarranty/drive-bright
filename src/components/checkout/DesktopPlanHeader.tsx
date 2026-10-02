@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { CheckCircle, Calendar as CalendarIcon, Car, Mail, Shield, Headphones } from 'lucide-react';
+import { CheckCircle, Calendar as CalendarIcon, Car, Mail, Headphones, Pencil, ChevronDown } from 'lucide-react';
 import { format, isToday, startOfDay, addDays, isBefore, isAfter } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface DesktopPlanHeaderProps {
@@ -34,7 +35,8 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
   onEditPlan,
   onChangeVehicle,
 }) => {
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
+  const [isChoosingDate, setIsChoosingDate] = useState(false);
   const vehicleDisplay = [vehicleYear, vehicleMake?.toUpperCase(), vehicleModel?.toUpperCase()].filter(Boolean).join(' ') || '';
   const today = startOfDay(new Date());
   const maxDate = addDays(today, 365);
@@ -48,7 +50,8 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
   const handleDateSelect = (date: Date | undefined) => {
     if (date && onStartDateChange) {
       onStartDateChange(date);
-      setIsCalendarOpen(false);
+      setIsChoosingDate(false);
+      setIsEditMenuOpen(false);
     }
   };
 
@@ -77,34 +80,71 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
       </div>
 
       {/* Vehicle row */}
-      <div className="flex items-center justify-between mt-5 py-4 border-t border-b border-[#E5E5E5]">
+      <div className="flex items-center justify-between gap-4 mt-5 py-4 border-t border-b border-border">
         <div className="flex items-center gap-3">
-          <Car className="w-5 h-5 text-gray-500" />
-          <span className="text-sm font-semibold text-[#1a1a1a]">{vehicleDisplay}</span>
+          <Car className="w-5 h-5 text-muted-foreground" />
+          <span className="text-sm font-semibold text-foreground">{vehicleDisplay}</span>
           {vehicleReg && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded border border-[#D4A843] bg-[#FFF8E7] text-xs font-bold text-[#1a1a1a] tracking-wide">
+            <span className="inline-flex items-center px-2 py-0.5 rounded border border-border bg-muted text-xs font-bold text-foreground tracking-wide">
               {vehicleReg.toUpperCase()}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          {onChangeVehicle && (
-            <button
-              onClick={onChangeVehicle}
-              className="text-sm font-semibold text-[#0BA360] hover:text-[#098a51] underline underline-offset-2 transition-colors"
-            >
-              Change vehicle
-            </button>
-          )}
-          {onEditPlan && (
-            <button
-              onClick={onEditPlan}
-              className="text-sm font-semibold text-[#0BA360] hover:text-[#098a51] underline underline-offset-2 transition-colors"
-            >
-              Edit cover
-            </button>
-          )}
-        </div>
+        <Popover open={isEditMenuOpen} onOpenChange={(open) => {
+          setIsEditMenuOpen(open);
+          if (!open) setIsChoosingDate(false);
+        }}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="flex-shrink-0 border-border bg-background text-foreground">
+              <Pencil className="w-4 h-4" />
+              Edit details
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-2" align="end">
+            {isChoosingDate ? (
+              <div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mb-1 w-full justify-start"
+                  onClick={() => setIsChoosingDate(false)}
+                >
+                  Back to edit options
+                </Button>
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={handleDateSelect}
+                  disabled={isDateDisabled}
+                  initialFocus
+                  className={cn("p-1 pointer-events-auto")}
+                />
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {onChangeVehicle && (
+                  <Button variant="ghost" className="w-full justify-start" onClick={onChangeVehicle}>
+                    <Car className="w-4 h-4 text-muted-foreground" />
+                    Change vehicle
+                  </Button>
+                )}
+                {onEditPlan && (
+                  <Button variant="ghost" className="w-full justify-start" onClick={onEditPlan}>
+                    <Pencil className="w-4 h-4 text-muted-foreground" />
+                    Edit cover
+                  </Button>
+                )}
+                {onStartDateChange && (
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => setIsChoosingDate(true)}>
+                    <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                    Change start date
+                  </Button>
+                )}
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Cover Start Date */}
@@ -115,44 +155,25 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
             Cover starts <span className="font-semibold">{formatStartDate()}</span>
           </span>
         </div>
-        {onStartDateChange && (
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-            <PopoverTrigger asChild>
-              <button className="text-sm font-semibold text-[#0BA360] hover:text-[#098a51] underline underline-offset-2 transition-colors">
-                Change date
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={handleDateSelect}
-                disabled={isDateDisabled}
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
-              />
-            </PopoverContent>
-          </Popover>
-        )}
       </div>
 
-      {/* Three benefit boxes */}
-      <div className="grid grid-cols-2 gap-3 mt-4">
-        <div className="bg-[#F0FAF4] border border-[#B8E2CE] rounded-lg p-3">
+      {/* Reassurance information */}
+      <div className="grid grid-cols-2 mt-4 border-t border-border pt-4">
+        <div className="pr-5">
           <div className="flex items-start gap-2 mb-1.5">
-            <Mail className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
-            <span className="text-xs font-bold text-[#1a1a1a] leading-tight">Documents emailed instantly</span>
+            <Mail className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+            <span className="text-xs font-bold text-foreground leading-tight">Documents emailed instantly</span>
           </div>
-          <p className="text-[11px] text-gray-600 leading-snug">
+          <p className="text-[11px] text-muted-foreground leading-snug pl-6">
             Your policy documents arrive in seconds.
           </p>
         </div>
-        <div className="bg-[#F0FAF4] border border-[#B8E2CE] rounded-lg p-3">
+        <div className="pl-5 border-l border-border">
           <div className="flex items-start gap-2 mb-1.5">
-            <Headphones className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
-            <span className="text-xs font-bold text-[#1a1a1a] leading-tight">Claims handled by real people</span>
+            <Headphones className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+            <span className="text-xs font-bold text-foreground leading-tight">Claims handled by real people</span>
           </div>
-          <p className="text-[11px] text-gray-600 leading-snug">
+          <p className="text-[11px] text-muted-foreground leading-snug pl-6">
             0330 229 5045<br/>Mon–Fri 9am–5pm
           </p>
         </div>

@@ -53,6 +53,11 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
     : duration.toLowerCase().includes('3 year') ? 36 
     : 12;
   const paymentMonths = 12; // Always paid over 12 months regardless of cover duration
+  const monthlyPaidTotal = monthlyPrice * paymentMonths;
+  const totalCoverDays = Math.round((coverMonths / 12) * 365);
+  const monthlyPencePerDay = monthlyPaidTotal > 0 && totalCoverDays > 0
+    ? Math.round((monthlyPaidTotal * 100) / totalCoverDays)
+    : 0;
 
   const formatStartDate = (date: Date) => {
     const today = new Date();
@@ -132,13 +137,14 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
 
               {/* Pricing */}
               {selectedPayment === 'monthly' && (
-                <div className="mb-3">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-sm font-bold text-[#1a1a1a]">First payment today</span>
-                    <span className="text-xl font-bold text-[#1a1a1a]">£{monthlyPrice}</span>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Then £{monthlyPrice}/month × {paymentMonths - 1} · Paid over 12 months · Covers {coverMonths} months · 0% APR
+                <div className="mb-3 space-y-1">
+                  <p className="text-sm font-bold text-foreground">
+                    <span className="text-xl">£{monthlyPrice}</span> today
+                  </p>
+                  <p className="text-xs text-muted-foreground">Then 11 monthly payments of £{monthlyPrice}</p>
+                  <p className="text-xs font-semibold text-foreground">£{monthlyPaidTotal} total payable</p>
+                  <p className="text-xs text-muted-foreground">
+                    = {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day over your full cover term
                   </p>
                 </div>
               )}
