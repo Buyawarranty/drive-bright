@@ -1292,6 +1292,7 @@ const AdminDashboardInner: React.FC<{
 
   const { effectiveRole, effectivePermissions, isImpersonating, viewAsAgent } = useViewAs();
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
+  const { isManagement: serverIsManagement } = useIsManagement();
   const { session } = useAuth();
   const isSuperAdmin = userRole === 'super_admin';
   const currentAdminIdForSurvey = useCurrentAdminId();
