@@ -21,6 +21,8 @@ type Row = {
   paid: boolean;
   paidAt?: string;
   failed?: string;
+  ownerName?: string;
+  leadStatus?: string;
 };
 
 const norm = (s?: string | null) => (s || '').trim().toLowerCase();
@@ -102,6 +104,18 @@ const MissedPaymentsTab: React.FC = () => {
       const cart = carts.find(c => norm(c.email) === r.email);
       if (cart) { r.name ||= cart.full_name || ''; r.phone ||= cart.phone || ''; r.reg ||= normReg(cart.vehicle_reg); }
     }
+    if (emails.length) {
+      const { data: leads } = await supabase.from('sales_leads').select('email, assigned_to, status, created_at').in('email', emails.slice(0, 500)).order('created_at', { ascending: false });
+      const ids = [...new Set((leads || []).map((l: any) => l.assigned_to).filter(Boolean))] as string[];
+      const { data: admins } = ids.length ? await supabase.from('admin_users').select('id, first_name, last_name, email').in('id', ids) : { data: [] as any[] };
+      for (const r of list) {
+        const l: any = (leads || []).find((x: any) => norm(x.email) === r.email);
+        if (!l) continue;
+        const a: any = (admins || []).find((x: any) => x.id === l.assigned_to);
+        r.ownerName = a ? ([a.first_name, a.last_name].filter(Boolean).join(' ') || a.email) : 'Unassigned';
+        r.leadStatus = l.status;
+      }
+    }
     list.sort((a, b) => b.clickedAt.localeCompare(a.clickedAt));
     setRows(list);
     setLoading(false);
@@ -154,14 +168,14 @@ const MissedPaymentsTab: React.FC = () => {
             <tr>
               <th className="p-2">Clicked</th><th className="p-2">Button</th><th className="p-2">Name</th>
               <th className="p-2">Phone</th><th className="p-2">Email</th><th className="p-2">Reg</th>
-              <th className="p-2">Amount</th><th className="p-2">Payment</th>
+              <th className="p-2">Amount</th><th className="p-2">Lead owner</th><th className="p-2">Lead status</th><th className="p-2">Payment</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} className="p-4 text-center text-muted-foreground">Loading…</td></tr>
+              <tr><td colSpan={10} className="p-4 text-center text-muted-foreground">Loading…</td></tr>
             ) : shown.length === 0 ? (
-              <tr><td colSpan={8} className="p-4 text-center text-muted-foreground">No customers here.</td></tr>
+              <tr><td colSpan={10} className="p-4 text-center text-muted-foreground">No customers here.</td></tr>
             ) : shown.map(r => (
               <tr key={r.key} className={`border-t ${r.paid ? 'bg-primary/10' : ''}`}>
                 <td className="p-2 whitespace-nowrap">{new Date(r.clickedAt).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
@@ -173,11 +187,13 @@ const MissedPaymentsTab: React.FC = () => {
                 <td className="p-2">{r.email || '—'}</td>
                 <td className="p-2 font-mono">{r.reg || '—'}</td>
                 <td className="p-2">{r.amount != null ? `£${Number(r.amount).toFixed(2)}` : '—'}</td>
+                <td className="p-2 whitespace-nowrap">{r.ownerName || '—'}</td>
+                <td className="p-2 capitalize">{r.leadStatus ? r.leadStatus.replace(/_/g, ' ') : '—'}</td>
                 <td className="p-2">
                   {r.paid
                     ? <Badge className="gap-1"><CheckCircle2 className="h-3 w-3" />Payment already made</Badge>
                     : r.failed
-                      ? <Badge variant="destructive" title={r.failed}>Payment failed — call{r.failed ? ` (${r.failed.length > 40 ? r.failed.slice(0, 40) + '…' : r.failed})` : ''}</Badge>
+                      ? <div className="flex flex-col gap-1"><Badge variant="destructive">{r.method === 'stripe' ? 'Failed Stripe payment' : 'Failed Bumper payment'}</Badge><span className="text-xs text-muted-foreground" title={r.failed}>{r.failed.length > 40 ? r.failed.slice(0, 40) + '…' : r.failed}</span></div>
                       : <Badge variant="destructive">Not paid — call</Badge>}
                 </td>
               </tr>
