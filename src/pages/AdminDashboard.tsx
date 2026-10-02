@@ -17,7 +17,7 @@ import { useUserPresence } from '@/hooks/useUserPresence';
 import { useStaffLocationPing } from '@/hooks/useStaffLocationPing';
 import { ViewAsProvider, useViewAs } from '@/contexts/ViewAsContext';
 import { ViewAsDropdown } from '@/components/admin/ViewAsDropdown';
-import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
+const ReminderDuePopup = lazy(() => import('@/components/admin/leads/ReminderDuePopup'));
 import GlobalQuickReminderButton from '@/components/admin/GlobalQuickReminderButton';
 import { PendingLeadsPill } from '@/components/admin/PendingLeadsPill';
 
@@ -28,19 +28,19 @@ import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner'
 import LiveChatHoursBanner from '@/components/admin/LiveChatHoursBanner';
 import LiveChatQuestionAlert from '@/components/admin/chatbot/LiveChatQuestionAlert';
 
-import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
+const MissedCallAlertBar = lazy(() => import('@/components/admin/MissedCallAlertBar').then(m => ({ default: m.MissedCallAlertBar })));
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { AlertRailHost } from '@/components/admin/AlertRail';
 import { StuckCheckoutAlert } from '@/components/admin/leads/StuckCheckoutAlert';
 import { ChatAgentRequestAlert } from '@/components/admin/leads/ChatAgentRequestAlert';
-import { NonClaimComplaintAlert } from '@/components/admin/NonClaimComplaintAlert';
+const NonClaimComplaintAlert = lazy(() => import('@/components/admin/NonClaimComplaintAlert').then(m => ({ default: m.NonClaimComplaintAlert })));
 
 
 
 
-import { ReassignRequestPopup } from '@/components/admin/leads/ReassignRequestPopup';
+const ReassignRequestPopup = lazy(() => import('@/components/admin/leads/ReassignRequestPopup').then(m => ({ default: m.ReassignRequestPopup })));
 
-import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
+const MissedCallbackAlertBanner = lazy(() => import('@/components/admin/leads/MissedCallbackAlertBanner').then(m => ({ default: m.MissedCallbackAlertBanner })));
 import { NewLeadsWaitingBanner } from '@/components/admin/leads/NewLeadsWaitingBanner';
 import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
@@ -58,9 +58,10 @@ import { SystemCheckInButton } from '@/components/admin/feedback/SystemCheckInFo
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { DiscountAuthBanner } from '@/components/admin/DiscountAuthBanner';
 import { CrmDuplicateTabBanner } from '@/components/admin/CrmDuplicateTabBanner';
-import { DiscountAuthPopup } from '@/components/admin/DiscountAuthPopup';
-import { GlobalAutoDistributeBar } from '@/components/admin/leads/GlobalAutoDistributeBar';
-import { QuickGrantAccessBar } from '@/components/admin/QuickGrantAccessBar';
+const DiscountAuthPopup = lazy(() => import('@/components/admin/DiscountAuthPopup').then(m => ({ default: m.DiscountAuthPopup })));
+import { useIsManagement } from '@/hooks/useIsManagement';
+const GlobalAutoDistributeBar = lazy(() => import('@/components/admin/leads/GlobalAutoDistributeBar').then(m => ({ default: m.GlobalAutoDistributeBar })));
+const QuickGrantAccessBar = lazy(() => import('@/components/admin/QuickGrantAccessBar').then(m => ({ default: m.QuickGrantAccessBar })));
 
 const ManagerOverviewTab = lazy(() => import('@/components/admin/ManagerOverviewTab'));
 const PriceUpdatesTab = lazy(() => import('@/components/admin/PriceUpdatesTab'));
@@ -131,7 +132,7 @@ const CallStatsTab = lazy(() => import('@/components/admin/CallStatsTab').then(m
 const HRTab = lazy(() => import('@/components/admin/hr/HRTab').then(m => ({ default: m.HRTab })));
 const AgentFeedbackTab = lazy(() => import('@/components/admin/feedback/AgentFeedbackTab').then(m => ({ default: m.AgentFeedbackTab })));
 const CollectPaymentsTab = lazy(() => import('@/components/admin/CollectPaymentsTab').then(m => ({ default: m.CollectPaymentsTab })));
-import { CollectPaymentsBanner } from '@/components/admin/CollectPaymentsBanner';
+const CollectPaymentsBanner = lazy(() => import('@/components/admin/CollectPaymentsBanner').then(m => ({ default: m.CollectPaymentsBanner })));
 import { readAdminAccessCache, writeAdminAccessCache, clearAdminAccessCache } from '@/lib/adminAccessCache';
 
 const SalesAgentTargetsTab = lazy(() => import('@/components/admin/SalesAgentTargetsTab').then(m => ({ default: m.SalesAgentTargetsTab })));
@@ -1291,6 +1292,7 @@ const AdminDashboardInner: React.FC<{
 
   const { effectiveRole, effectivePermissions, isImpersonating, viewAsAgent } = useViewAs();
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
+  const { isManagement: serverIsManagement } = useIsManagement();
   const { session } = useAuth();
   const isSuperAdmin = userRole === 'super_admin';
   const currentAdminIdForSurvey = useCurrentAdminId();
@@ -1320,8 +1322,13 @@ const AdminDashboardInner: React.FC<{
       <CrmDuplicateTabBanner />
       <WorkingWeekReminderBanner userRole={displayRole} />
       <DiscountAuthBanner userRole={displayRole} />
-      <DiscountAuthPopup userRole={displayRole} />
-      <ReassignRequestPopup userRole={displayRole} />
+      {/* Management-only popups: not mounted for sales roles, so their queries/realtime never run there */}
+      {(serverIsManagement || ['admin', 'super_admin', 'sales_manager'].includes(displayRole || '')) && (
+        <Suspense fallback={null}>
+          <DiscountAuthPopup userRole={displayRole} />
+          <ReassignRequestPopup userRole={displayRole} />
+        </Suspense>
+      )}
 
       
       
@@ -1410,7 +1417,7 @@ const AdminDashboardInner: React.FC<{
         return (
           <>
             {isManagementAlerts && (
-              <>
+              <Suspense fallback={null}>
                 {/* Background auto-distribute sweep only (no visible bar) —
                     the ON/OFF toggle lives in Lead Allocation. */}
                 <GlobalAutoDistributeBar headless userRole={displayRole} />
@@ -1450,7 +1457,7 @@ const AdminDashboardInner: React.FC<{
                     handleTabChange('new-leads');
                   }
                 }} />
-              </>
+              </Suspense>
             )}
 
             {/* Agent new-lead alerts: stacked floating cards (beep + mute + close) */}
@@ -1460,7 +1467,11 @@ const AdminDashboardInner: React.FC<{
             <StuckCheckoutAlert />
 
             {/* Orange "new complaint — not claim related" pop-up — managers only */}
-            <NonClaimComplaintAlert />
+            {isManagementAlerts && (
+              <Suspense fallback={null}>
+                <NonClaimComplaintAlert />
+              </Suspense>
+            )}
 
             {/* Blue "chat customer wants a person" pop-up — managers and sales agents only */}
             {['admin', 'super_admin', 'sales_manager', 'sales', 'sales_lead'].includes(displayRole || '') && (

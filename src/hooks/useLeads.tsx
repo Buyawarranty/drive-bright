@@ -656,11 +656,21 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
 
       const fetchPagedLeads = async (buildQuery: (from: number, to: number) => any, maxRows: number = MAX_PAGED_LEADS) => {
-        const rows: any[] = [];
-        for (let offset = 0; offset < maxRows; offset += LEADS_PAGE_SIZE) {
-          const { data, error } = await buildQuery(offset, offset + LEADS_PAGE_SIZE - 1);
-          if (error) return { data: rows, error } as any;
-          const page = data || [];
+        // Round 1: first page. If it isn't full we're done (common case: 1 request).
+        const first = await buildQuery(0, LEADS_PAGE_SIZE - 1);
+        if (first.error) return { data: [], error: first.error } as any;
+        const firstPage = first.data || [];
+        if (firstPage.length < LEADS_PAGE_SIZE || maxRows <= LEADS_PAGE_SIZE) {
+          return { data: firstPage.slice(0, maxRows), error: null } as any;
+        }
+        // Round 2: every remaining page in parallel, reassembled in offset order.
+        const offsets: number[] = [];
+        for (let offset = LEADS_PAGE_SIZE; offset < maxRows; offset += LEADS_PAGE_SIZE) offsets.push(offset);
+        const results = await Promise.all(offsets.map(o => buildQuery(o, o + LEADS_PAGE_SIZE - 1)));
+        const rows: any[] = [...firstPage];
+        for (const res of results) {
+          if (res.error) return { data: rows, error: res.error } as any;
+          const page = res.data || [];
           rows.push(...page);
           if (page.length < LEADS_PAGE_SIZE) break;
         }

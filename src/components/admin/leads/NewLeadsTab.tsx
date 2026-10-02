@@ -805,7 +805,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     let cancelled = false;
     const leadIds = visibleLeadIdsKey.split(',');
     const chunks: string[][] = [];
-    for (let i = 0; i < leadIds.length; i += 60) chunks.push(leadIds.slice(i, i + 60));
+    for (let i = 0; i < leadIds.length; i += 250) chunks.push(leadIds.slice(i, i + 250));
     (async () => {
       const results = await Promise.all(
         chunks.map(chunk =>
