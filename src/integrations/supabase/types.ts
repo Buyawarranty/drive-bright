@@ -2265,6 +2265,7 @@ export type Database = {
           created_at: string
           customer_data: Json
           discount_code: string | null
+          fbclid: string | null
           final_amount: number
           gclid: string | null
           google_ads_conversion_status: string | null
@@ -2289,6 +2290,7 @@ export type Database = {
           created_at?: string
           customer_data: Json
           discount_code?: string | null
+          fbclid?: string | null
           final_amount: number
           gclid?: string | null
           google_ads_conversion_status?: string | null
@@ -2313,6 +2315,7 @@ export type Database = {
           created_at?: string
           customer_data?: Json
           discount_code?: string | null
+          fbclid?: string | null
           final_amount?: number
           gclid?: string | null
           google_ads_conversion_status?: string | null

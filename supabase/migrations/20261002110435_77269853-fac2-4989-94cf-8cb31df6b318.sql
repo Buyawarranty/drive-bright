@@ -1,0 +1,1 @@
+ALTER TABLE public.bumper_transactions ADD COLUMN IF NOT EXISTS fbclid text;
