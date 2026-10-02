@@ -1300,6 +1300,49 @@ const AdminDashboardInner: React.FC<{
   navigateToQuoteForm: () => void;
   renderContent: (role: string | null, perms: Record<string, boolean> | null) => React.ReactNode;
   navigate: (path: string, options?: any) => void;
+/** Header "Tabs" menu: searchable list of every tab this user may open, so
+ *  staff can jump between tabs without using the left-hand menu. */
+const HeaderTabsMenu: React.FC<{
+  activeTab: string;
+  onSelect: (tabId: string) => void;
+  canAccessTab: (tabId: string) => boolean;
+}> = ({ activeTab, onSelect, canAccessTab }) => {
+  const [open, setOpen] = useState(false);
+  const tabs = defaultTabs.filter((t) => canAccessTab(t.id));
+  const activeLabel = tabs.find((t) => t.id === activeTab)?.label || 'Tabs';
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1.5" aria-expanded={open}>
+          <LayoutGrid className="h-4 w-4" />
+          <span className="max-w-[140px] truncate">{activeLabel}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[260px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search tabs..." />
+          <CommandList>
+            <CommandEmpty>No tab found.</CommandEmpty>
+            <CommandGroup>
+              {tabs.map((tab) => (
+                <CommandItem
+                  key={tab.id}
+                  value={tab.label}
+                  onSelect={() => { onSelect(tab.id); setOpen(false); }}
+                >
+                  <Check className={activeTab === tab.id ? 'mr-2 h-4 w-4' : 'mr-2 h-4 w-4 opacity-0'} />
+                  {tab.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+const AdminDashboardContent: React.FC<{
   accessFromCache?: boolean;
 }> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate, accessFromCache }) => {
 
