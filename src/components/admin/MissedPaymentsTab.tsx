@@ -20,6 +20,7 @@ type Row = {
   amount: number | null;
   paid: boolean;
   paidAt?: string;
+  failed?: string;
 };
 
 const norm = (s?: string | null) => (s || '').trim().toLowerCase();
@@ -36,9 +37,10 @@ const MissedPaymentsTab: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     const since = new Date(Date.now() - days * 86400000).toISOString();
-    const [clicksRes, bumperRes] = await Promise.all([
+    const [clicksRes, bumperRes, failRes] = await Promise.all([
       supabase.from('payment_button_clicks').select('*').gte('created_at', since).order('created_at', { ascending: false }).limit(2000),
-      supabase.from('bumper_transactions').select('id, created_at, customer_data, vehicle_data, final_amount').gte('created_at', since).order('created_at', { ascending: false }).limit(2000),
+      supabase.from('bumper_transactions').select('id, created_at, customer_data, vehicle_data, final_amount, status').gte('created_at', since).order('created_at', { ascending: false }).limit(2000),
+      (supabase as any).from('stripe_payment_failures').select('*').gte('created_at', since).order('created_at', { ascending: false }).limit(2000),
     ]);
 
     const raw: Row[] = [];
@@ -46,13 +48,19 @@ const MissedPaymentsTab: React.FC = () => {
       raw.push({ key: `c-${c.id}`, clickedAt: c.created_at, method: c.payment_method === 'bumper' ? 'bumper' : 'stripe',
         email: norm(c.email), reg: normReg(c.vehicle_reg), name: '', phone: '', amount: c.amount, paid: false });
     }
+    for (const f of (failRes.data || []) as any[]) {
+      raw.push({ key: `f-${f.id}`, clickedAt: f.created_at, method: 'stripe',
+        email: norm(f.email), reg: normReg(f.vehicle_reg), name: '', phone: f.phone || '', amount: f.amount, paid: false,
+        failed: f.event_type === 'checkout.session.expired' ? 'Abandoned checkout' : `Declined${f.failure_message ? `: ${f.failure_message}` : ''}` });
+    }
     for (const b of bumperRes.data || []) {
       const cd: any = b.customer_data || {};
       const vd: any = b.vehicle_data || {};
       raw.push({ key: `b-${b.id}`, clickedAt: b.created_at, method: 'bumper',
         email: norm(cd.email), reg: normReg(vd.regNumber || vd.reg || cd.vehicle_reg),
         name: [cd.first_name, cd.last_name].filter(Boolean).join(' ') || cd.fullName || cd.name || '',
-        phone: cd.mobile || cd.phone || '', amount: b.final_amount, paid: false });
+        phone: cd.mobile || cd.phone || '', amount: b.final_amount, paid: false,
+        failed: norm((b as any).status) === 'failed' ? 'Bumper declined' : undefined });
     }
 
     // One row per customer (email or reg), keep the latest click, merge details.
@@ -62,7 +70,7 @@ const MissedPaymentsTab: React.FC = () => {
       if (!id) continue;
       const ex = byId.get(id);
       if (!ex) { byId.set(id, r); continue; }
-      ex.name ||= r.name; ex.phone ||= r.phone; ex.reg ||= r.reg; ex.email ||= r.email;
+      ex.name ||= r.name; ex.phone ||= r.phone; ex.reg ||= r.reg; ex.email ||= r.email; ex.failed ||= r.failed;
       if (r.clickedAt > ex.clickedAt) { ex.clickedAt = r.clickedAt; ex.method = r.method; ex.amount = r.amount ?? ex.amount; }
     }
     const list = Array.from(byId.values());
@@ -168,7 +176,9 @@ const MissedPaymentsTab: React.FC = () => {
                 <td className="p-2">
                   {r.paid
                     ? <Badge className="gap-1"><CheckCircle2 className="h-3 w-3" />Payment already made</Badge>
-                    : <Badge variant="destructive">Not paid — call</Badge>}
+                    : r.failed
+                      ? <Badge variant="destructive" title={r.failed}>Payment failed — call{r.failed ? ` (${r.failed.length > 40 ? r.failed.slice(0, 40) + '…' : r.failed})` : ''}</Badge>
+                      : <Badge variant="destructive">Not paid — call</Badge>}
                 </td>
               </tr>
             ))}
