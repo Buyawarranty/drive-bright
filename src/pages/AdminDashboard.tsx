@@ -4,7 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { lazyWithRetry, forceFreshReload } from '@/utils/lazyWithRetry';
 import { SEOHead } from '@/components/SEOHead';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminSidebar, defaultTabs } from '@/components/admin/AdminSidebar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { LayoutGrid, Check } from 'lucide-react';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -1286,6 +1289,48 @@ const AdminDashboard = () => {
   );
 };
 
+/** Header "Tabs" menu: searchable list of every tab this user may open, so
+ *  staff can jump between tabs without using the left-hand menu. */
+const HeaderTabsMenu: React.FC<{
+  activeTab: string;
+  onSelect: (tabId: string) => void;
+  canAccessTab: (tabId: string) => boolean;
+}> = ({ activeTab, onSelect, canAccessTab }) => {
+  const [open, setOpen] = useState(false);
+  const tabs = defaultTabs.filter((t) => canAccessTab(t.id));
+  const activeLabel = tabs.find((t) => t.id === activeTab)?.label || 'Tabs';
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1.5" aria-expanded={open}>
+          <LayoutGrid className="h-4 w-4" />
+          <span className="max-w-[140px] truncate">{activeLabel}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[260px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search tabs..." />
+          <CommandList>
+            <CommandEmpty>No tab found.</CommandEmpty>
+            <CommandGroup>
+              {tabs.map((tab) => (
+                <CommandItem
+                  key={tab.id}
+                  value={tab.label}
+                  onSelect={() => { onSelect(tab.id); setOpen(false); }}
+                >
+                  <Check className={activeTab === tab.id ? 'mr-2 h-4 w-4' : 'mr-2 h-4 w-4 opacity-0'} />
+                  {tab.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 /** Inner component that reads ViewAs context */
 const AdminDashboardInner: React.FC<{
   activeTab: string;
@@ -1359,6 +1404,11 @@ const AdminDashboardInner: React.FC<{
             </div>
 
             <div className="hidden lg:flex items-center space-x-3">
+              <HeaderTabsMenu
+                activeTab={activeTab}
+                onSelect={handleTabChange}
+                canAccessTab={(tabId) => isTabAllowedForRole(tabId, displayRole, displayPermissions)}
+              />
               <GlobalQuickReminderButton />
               {/* View As dropdown - super_admin only */}
               {isSuperAdmin && <ViewAsDropdown />}
@@ -1366,7 +1416,11 @@ const AdminDashboardInner: React.FC<{
 
             <div className="lg:hidden flex items-center space-x-2">
 
-              
+              <HeaderTabsMenu
+                activeTab={activeTab}
+                onSelect={handleTabChange}
+                canAccessTab={(tabId) => isTabAllowedForRole(tabId, displayRole, displayPermissions)}
+              />
               <GlobalQuickReminderButton />
               <SystemCheckInButton />
 
