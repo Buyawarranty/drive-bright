@@ -10,6 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
+import { logPaymentButtonClick } from '@/utils/paymentClickLog';
 import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { getTrackingData, getStoredGclid, getSessionOrUrlGclid, getAttributionGclid, getTrackingSessionId } from '@/utils/gclidCapture';
 import { getUtmPayload } from '@/utils/utmCapture';
@@ -2080,9 +2081,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
     if (effectivePayment === 'monthly') {
       trackBumperCheckoutClick(discountedBumperPrice);
+      logPaymentButtonClick({
+        paymentMethod: 'bumper',
+        amount: discountedBumperPrice,
+        email: customerData.email,
+        vehicleReg: vehicleData?.regNumber,
+      });
       await processBumperCheckout();
     } else {
       trackStripeCheckoutClick(discountedStripePrice);
+      logPaymentButtonClick({
+        paymentMethod: 'stripe',
+        amount: discountedStripePrice,
+        email: customerData.email,
+        vehicleReg: vehicleData?.regNumber,
+      });
       await processStripeCheckout();
     }
   };
