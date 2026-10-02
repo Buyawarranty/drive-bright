@@ -80,7 +80,7 @@
 - [x] Stop 20% off marketing reminders going to customers who already hold active warranty cover (Jenny Beaumont)
 - [x] Renewals: feed every 2h into Renewals + New Leads, covering 60 days ahead and missed active expiries from the previous 180 days
 - [ ] Open Round Robin: plan safe merge into New Leads (sandbox only, no live impact)
-- [ ] Open Round Robin: ONE shared panel — sandbox and Lead Allocation live view render the same component/code; no duplicated green testing version; edits update both at once
+- [x] Open Round Robin: ONE shared panel — sandbox and Lead Allocation live view render the same component/code; no duplicated green testing version; edits update both at once
 - [x] Open Round Robin: temporary per-attempt reservations; unanswered calls return unowned to shared retry, contact assigns the caller; use the supplied lead-desk layout
 
 ## Chatbot answer library (Sep 11)
