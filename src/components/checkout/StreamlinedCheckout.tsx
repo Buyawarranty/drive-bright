@@ -2080,9 +2080,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
     if (effectivePayment === 'monthly') {
       trackBumperCheckoutClick(discountedBumperPrice);
+      logPaymentButtonClick({
+        paymentMethod: 'bumper',
+        amount: discountedBumperPrice,
+        email: customerData.email,
+        vehicleReg: vehicleData?.regNumber,
+      });
       await processBumperCheckout();
     } else {
       trackStripeCheckoutClick(discountedStripePrice);
+      logPaymentButtonClick({
+        paymentMethod: 'stripe',
+        amount: discountedStripePrice,
+        email: customerData.email,
+        vehicleReg: vehicleData?.regNumber,
+      });
       await processStripeCheckout();
     }
   };
