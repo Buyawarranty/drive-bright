@@ -58,6 +58,25 @@ const isRenewalLead = (lead: any): boolean =>
   (lead?.original_source || '').toLowerCase() === 'renewal' ||
   ((lead?.auto_tags || []) as string[]).some((t) => (t || '').toLowerCase() === 'renewal');
 
+/** Parse the renewal due date from a renewal lead's notes ("RENEWAL — policy … expires 08 Oct 2026, 6 days away."). */
+function getRenewalDue(lead: any): { dateStr: string; days: number } | null {
+  if (!isRenewalLead(lead)) return null;
+  const m = (lead.notes || '').match(/expire[ds]\s+(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})/i);
+  if (!m) return null;
+  const due = new Date(`${m[1]} 00:00:00 UTC`);
+  if (isNaN(due.getTime())) return null;
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const get = (t: string) => parts.find(p => p.type === t)?.value || '';
+  const todayUtc = Date.UTC(Number(get('year')), Number(get('month')) - 1, Number(get('day')));
+  const days = Math.round((due.getTime() - todayUtc) / 86400000);
+  const dateStr = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+  }).format(due);
+  return { dateStr, days };
+}
+
 interface LeadTableRowProps {
   lead: Lead;
   tags: LeadTag[];
@@ -965,11 +984,27 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               onOpenChange={setEditInfoOpen}
             />
           )}
-          {isRenewalLead(lead) && (
-            <Badge className="text-[10px] px-1.5 py-0.5 bg-primary text-primary-foreground border-0 flex-shrink-0 uppercase tracking-wide font-bold" title="Renewal — existing customer whose warranty is coming up for renewal">
-              Renewal
-            </Badge>
-          )}
+          {isRenewalLead(lead) && (() => {
+            const due = getRenewalDue(lead);
+            const color = !due
+              ? 'bg-primary text-primary-foreground'
+              : due.days < 0 || due.days <= 7
+                ? 'bg-red-600 text-white'
+                : due.days <= 30
+                  ? 'bg-amber-500 text-white'
+                  : 'bg-primary text-primary-foreground';
+            const label = due
+              ? `Renewal · due ${due.dateStr}${due.days < 0 ? ' (overdue)' : ''}`
+              : 'Renewal';
+            const tip = due
+              ? `Renewal — warranty expires ${due.dateStr}${due.days < 0 ? `, ${Math.abs(due.days)} days overdue` : due.days === 0 ? ', due today' : `, in ${due.days} days`}`
+              : 'Renewal — existing customer whose warranty is coming up for renewal';
+            return (
+              <Badge className={cn('text-[10px] px-1.5 py-0.5 border-0 flex-shrink-0 uppercase tracking-wide font-bold', color)} title={tip}>
+                {label}
+              </Badge>
+            );
+          })()}
           {!isRenewalLead(lead) && !repeatCustomer && !(((lead as any).auto_tags || []) as string[]).some(t => t === 'repeat_customer' || t === 'same_customer_sticky') && (lead as any).manual_entry && <ManualLeadBadge />}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
@@ -1750,11 +1785,27 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               onOpenChange={setEditInfoOpen}
             />
           )}
-          {isRenewalLead(lead) && (
-            <Badge className="text-[10px] px-1.5 py-0.5 bg-primary text-primary-foreground border-0 flex-shrink-0 uppercase tracking-wide font-bold" title="Renewal — existing customer whose warranty is coming up for renewal">
-              Renewal
-            </Badge>
-          )}
+          {isRenewalLead(lead) && (() => {
+            const due = getRenewalDue(lead);
+            const color = !due
+              ? 'bg-primary text-primary-foreground'
+              : due.days < 0 || due.days <= 7
+                ? 'bg-red-600 text-white'
+                : due.days <= 30
+                  ? 'bg-amber-500 text-white'
+                  : 'bg-primary text-primary-foreground';
+            const label = due
+              ? `Renewal · due ${due.dateStr}${due.days < 0 ? ' (overdue)' : ''}`
+              : 'Renewal';
+            const tip = due
+              ? `Renewal — warranty expires ${due.dateStr}${due.days < 0 ? `, ${Math.abs(due.days)} days overdue` : due.days === 0 ? ', due today' : `, in ${due.days} days`}`
+              : 'Renewal — existing customer whose warranty is coming up for renewal';
+            return (
+              <Badge className={cn('text-[10px] px-1.5 py-0.5 border-0 flex-shrink-0 uppercase tracking-wide font-bold', color)} title={tip}>
+                {label}
+              </Badge>
+            );
+          })()}
           {!isRenewalLead(lead) && !repeatCustomer && !(((lead as any).auto_tags || []) as string[]).some(t => t === 'repeat_customer' || t === 'same_customer_sticky') && (lead as any).manual_entry && <ManualLeadBadge />}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
