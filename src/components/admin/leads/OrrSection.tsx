@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { OrrTeamSelectionPanel } from './OrrTeamSelectionPanel';
 import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
-import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
 import { ImportLeadToAgentPanel } from './ImportLeadToAgentPanel';
 import { OrrFallbackToRoundRobinPanel } from './OrrFallbackToRoundRobinPanel';
@@ -189,10 +188,8 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean 
           )}
         </ul>
         <WidgetErrorBoundary label="Open Round Robin pool status">
-          <RollingRoundRobinLivePanel
-            canEdit={isManagement && orrLive === true}
-            readOnly={orrLive !== true}
-          />
+          {/* Same panel as the sandbox, fed by real leads — one shared codebase. */}
+          <OpenRoundRobinTestPanel mode="live" canWrite={isManagement && orrLive === true} />
         </WidgetErrorBoundary>
       </div>
 

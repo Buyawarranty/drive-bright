@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AlertTriangle,
   Bell,
   Check,
   CheckCircle2,
@@ -9,6 +10,7 @@ import {
   Copy,
   FileText,
   FlaskConical,
+  Loader2,
   Mail,
   MessageSquare,
   Phone,
@@ -19,11 +21,13 @@ import {
   RefreshCw,
   StickyNote,
   Trash2,
+  Undo2,
   User,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,6 +36,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useSandboxLiveLeads } from '@/hooks/useSandboxLiveLeads';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { supabase } from '@/integrations/supabase/client';
+import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
 import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
 import { OrrLogicExplainer, DEFAULT_ORR_CADENCE, type OrrCadenceConfig } from './OrrLogicExplainer';
@@ -157,6 +163,13 @@ interface DummyLead {
   notes?: { at: number; by: string; text: string }[];
   /** Which system the lead arrived under. 'rr' leads have no countdown and never move on. */
   source?: 'orr' | 'rr';
+  /** Live-mode only: real payment/source fields pulled from sales_leads. */
+  isPaid?: boolean | null;
+  paymentAmount?: number | null;
+  paymentMethod?: string | null;
+  paymentType?: string | null;
+  paymentDate?: string | null;
+  leadSource?: string | null;
 }
 
 
@@ -617,17 +630,31 @@ const ORR_THEMES: Record<OrrPracticeTeam, OrrTheme> = {
 
 
 /**
- * Open Round Robin — frontend-only dummy test mode.
- * This intentionally does not call Supabase, RPCs, edge functions, or live lead tables.
+ * Open Round Robin — ONE shared panel for the sandbox and the live pool.
+ *
+ * mode='sandbox' (default): frontend-only dummy test mode. It intentionally
+ * does not call Supabase writes, RPCs, edge functions, or live lead tables.
+ *
+ * mode='live': the exact same layout and columns, but fed by the real
+ * sales_leads rows that carry an orr_first_call_deadline, plus the real
+ * open-pool count. Pass/claim/status/dial actions call the same real RPCs the
+ * old live pool panel used, and are only enabled when canWrite is true
+ * (management + the ORR go-live switch on). Until then it is read-only.
  */
-export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ team = 'green' }) => {
+export const OpenRoundRobinTestPanel: React.FC<{
+  team?: OrrPracticeTeam;
+  mode?: 'sandbox' | 'live';
+  canWrite?: boolean;
+}> = ({ team = 'green', mode = 'sandbox', canWrite = false }) => {
+  const isLive = mode === 'live';
   const theme = ORR_THEMES[team];
   const { toast } = useToast();
   const [leads, setLeads] = useState<DummyLead[]>([]);
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState<string>('all');
   const [roleView, setRoleView] = useState<'manager' | 'agent'>('manager');
-  const isManagerView = roleView === 'manager';
+  // Live mode is always the manager view — there is nothing to rehearse as.
+  const isManagerView = isLive ? true : roleView === 'manager';
   // How many agents are "on shift" for this rehearsal (1–4).
   // Default rehearsal: two agents live, which is the everyday picture on the floor.
   const [agentCount, setAgentCount] = useState(2);
@@ -654,7 +681,172 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     loading: liveLoading,
     error: liveError,
     refresh: refreshLive,
-  } = useSandboxLiveLeads(dataSource === 'live', { window: 'recent', limit: 25 });
+  } = useSandboxLiveLeads(!isLive && dataSource === 'live', { window: 'recent', limit: 25 });
+
+  /* ------------------------------------------------------------------
+   * LIVE MODE — real Open Round Robin leads, same query the old live pool
+   * panel used. Writes go through the same real RPCs and only when
+   * canWrite is true (management + ORR switched live).
+   * ------------------------------------------------------------------ */
+  const [liveRows, setLiveRows] = useState<DummyLead[]>([]);
+  const [liveAgents, setLiveAgents] = useState<Record<string, { id: string; name: string }>>({});
+  const [livePoolCount, setLivePoolCount] = useState(0);
+  const [liveBusy, setLiveBusy] = useState(false);
+  const [livePassRunning, setLivePassRunning] = useState(false);
+  const [keepRolling, setKeepRolling] = useState(false);
+  const liveBusyRef = useRef(false);
+
+  const loadLive = useCallback(async () => {
+    if (!isLive) return;
+    setLiveBusy(true);
+    try {
+      const [{ data: rows }, { count }] = await Promise.all([
+        (supabase as any)
+          .from('sales_leads')
+          .select('id, first_name, last_name, email, phone, vehicle_reg, status, lead_source, assigned_to, orr_first_call_deadline, call_count, is_paid, payment_amount, payment_method, payment_type, payment_date, created_at, last_contacted_at')
+          .not('orr_first_call_deadline', 'is', null)
+          .not('assigned_to', 'is', null)
+          .eq('status', 'new')
+          .order('orr_first_call_deadline', { ascending: true })
+          .limit(200),
+        (supabase as any)
+          .from('sales_leads')
+          .select('id', { count: 'exact', head: true })
+          .eq('queue', 'live_open_pool')
+          .is('assigned_to', null)
+          .is('owner_agent', null)
+          .eq('status', 'new'),
+      ]);
+
+      const mapped: DummyLead[] = (rows ?? []).map((row: any) => ({
+        id: row.id as string,
+        firstName: (row.first_name as string) || 'Customer',
+        lastName: (row.last_name as string) || '',
+        email: (row.email as string) || '',
+        status: 'new',
+        displayStatus: ((row.status as string) || 'new') as LeadStatus,
+        assignedTo: (row.assigned_to as string) ?? null,
+        attemptCount: 1,
+        deadlineAt: row.orr_first_call_deadline ? new Date(row.orr_first_call_deadline).getTime() : Date.now(),
+        vehicleReg: (row.vehicle_reg as string) || '',
+        phone: (row.phone as string) || '',
+        createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
+        dials: Number(row.call_count ?? 0),
+        contactedAt: row.last_contacted_at ? new Date(row.last_contacted_at).getTime() : null,
+        dayDials: 0,
+        nextCallAt: null,
+        greenTeamAt: null,
+        followUpDay: 1,
+        chaseComplete: false,
+        history: [],
+        isPaid: row.is_paid ?? null,
+        paymentAmount: row.payment_amount ?? null,
+        paymentMethod: row.payment_method ?? null,
+        paymentType: row.payment_type ?? null,
+        paymentDate: row.payment_date ?? null,
+        leadSource: row.lead_source ?? null,
+      }));
+      setLiveRows(mapped);
+      setLivePoolCount(count ?? 0);
+
+      const ids = Array.from(new Set(mapped.map((l) => l.assignedTo).filter(Boolean))) as string[];
+      if (ids.length) {
+        const { data: users } = await supabase
+          .from('admin_users')
+          .select('id, first_name, last_name, email')
+          .in('id', ids);
+        const map: Record<string, { id: string; name: string }> = {};
+        (users ?? []).forEach((u: any) => {
+          map[u.id] = {
+            id: u.id,
+            name: [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email,
+          };
+        });
+        setLiveAgents(map);
+      }
+    } finally {
+      setLiveBusy(false);
+    }
+  }, [isLive]);
+
+  useEffect(() => {
+    if (isLive) void loadLive();
+  }, [isLive, loadLive]);
+
+  /** Resolve an agent id to a display agent — real names in live mode, dummy names in the sandbox. */
+  const resolveAgent = useCallback(
+    (agentId: string | null): DummyAgent => {
+      if (isLive) {
+        const real = agentId ? liveAgents[agentId] : undefined;
+        return real
+          ? { id: real.id, name: real.name, extension: '', order: 0 }
+          : { id: agentId ?? '', name: 'Agent', extension: '', order: 0 };
+      }
+      return getAgent(agentId);
+    },
+    [isLive, liveAgents],
+  );
+
+  /** Run one real pass: pull back overdue windows, then hand out waiting leads. */
+  const runLivePass = useCallback(
+    async (silent = false) => {
+      if (!isLive) return;
+      if (!canWrite) {
+        if (!silent) {
+          toast({
+            title: 'Read-only view',
+            description: 'Open Round Robin is not switched live — no real lead is handed out or pulled back from here.',
+          });
+        }
+        return;
+      }
+      if (liveBusyRef.current) return;
+      liveBusyRef.current = true;
+      setLivePassRunning(true);
+      try {
+        const { data: reclaimed, error: rErr } = await (supabase as any).rpc('rolling_rr_reclaim_overdue');
+        if (rErr) throw rErr;
+        const { data: assigned, error: aErr } = await (supabase as any).rpc('rolling_rr_distribute', {
+          _batch_cap: 5,
+          _window_minutes: 30,
+        });
+        if (aErr) throw aErr;
+        const rRow = Array.isArray(reclaimed) ? reclaimed[0] : reclaimed;
+        const aRow = Array.isArray(assigned) ? assigned[0] : assigned;
+        const back = rRow?.reclaimed_count ?? 0;
+        const out = aRow?.assigned_count ?? 0;
+        if (!silent || back > 0 || out > 0) {
+          toast({
+            title: 'Rolling pass complete',
+            description: `${out} lead${out === 1 ? '' : 's'} handed out · ${back} pulled back for a missed first call.`,
+          });
+        }
+        await loadLive();
+      } catch (e: any) {
+        if (!silent) {
+          toast({ title: 'Rolling round-robin failed', description: e.message, variant: 'destructive' });
+        }
+        console.error('[rolling rr]', e);
+      } finally {
+        liveBusyRef.current = false;
+        setLivePassRunning(false);
+      }
+    },
+    [isLive, canWrite, loadLive, toast],
+  );
+
+  // "Keep it rolling" — auto pass every minute, only from the tab the manager
+  // is actually looking at (never a background or duplicate CRM tab).
+  useEffect(() => {
+    if (!isLive || !keepRolling || !canWrite) return;
+    const guarded = () => { if (document.hidden || isSecondaryCrmTab()) return; void runLivePass(true); };
+    const kick = window.setTimeout(guarded, 1200);
+    const t = window.setInterval(guarded, 60_000);
+    return () => {
+      window.clearTimeout(kick);
+      window.clearInterval(t);
+    };
+  }, [isLive, keepRolling, canWrite, runLivePass]);
 
   // Manager-editable timing / frequency rules for this practice run.
   const [cadence, setCadence] = useState<OrrCadenceConfig>(DEFAULT_ORR_CADENCE);
@@ -675,9 +867,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   };
 
   // 1s clock + automatic sweep so expired dummy leads never sit around for hours.
+  // Live mode only ticks the countdowns — the real engine is the database RPCs.
   useEffect(() => {
     const clock = window.setInterval(() => {
       setTick((current) => current + 1);
+      if (isLive) return;
       const now = Date.now();
       setLeads((current) => {
         const needsWork = current.some(
@@ -692,21 +886,24 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       });
     }, 1000);
     return () => window.clearInterval(clock);
-  }, []);
+  }, [isLive]);
 
   // Same toolbar controls as the live New Leads page, working on practice leads only.
   const [chromeSearch, setChromeSearch] = useState('');
   const [chromeStatusChip, setChromeStatusChip] = useState<SandboxStatusChip>('all');
   const [chromeSort, setChromeSort] = useState<'newest' | 'oldest'>('newest');
 
+  /** The rows the table renders — real ORR leads in live mode, practice leads in the sandbox. */
+  const effectiveLeads = isLive ? liveRows : leads;
+
   const rosterLeads = useMemo(
     () =>
-      leads.filter((lead) =>
+      effectiveLeads.filter((lead) =>
         simulatedAgentId === 'all'
           ? lead.assignedTo !== null || lead.status === 'queued'
           : lead.assignedTo === simulatedAgentId && !lead.waiting,
       ),
-    [leads, simulatedAgentId],
+    [effectiveLeads, simulatedAgentId],
   );
 
   const chromeLeads = useMemo<SandboxChromeLead[]>(
@@ -753,14 +950,15 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   }, [rosterLeads, chromeSearch, chromeStatusChip, chromeSort, tick]);
 
 
-  const queuedLeads = useMemo(() => leads.filter((lead) => lead.status === 'queued'), [leads]);
+  const queuedLeads = useMemo(() => effectiveLeads.filter((lead) => lead.status === 'queued'), [effectiveLeads]);
 
   /** Everyone holding a live lead means the next arrival has to wait. */
   const allAgentsBusy = useMemo(() => {
+    if (isLive) return false;
     const now = Date.now();
     const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo));
     return roster.every((agent) => busy.has(agent.id));
-  }, [leads, tick, roster]);
+  }, [isLive, leads, tick, roster]);
 
 
   /**
@@ -909,6 +1107,34 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
    * permission on, so nobody can pull leads out of the queue for themselves.
    */
   const claimQueuedLead = (leadId: string) => {
+    if (isLive) {
+      if (!canWrite) {
+        toast({
+          title: 'Read-only view',
+          description: 'Switch Open Round Robin live before claiming real waiting leads.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      void (async () => {
+        const { data: adminId } = await (supabase as any).rpc('current_admin_user_id');
+        if (!adminId) {
+          toast({ title: 'Claim failed', description: 'Could not identify the logged-in manager.', variant: 'destructive' });
+          return;
+        }
+        const { error } = await (supabase as any).rpc('claim_lead_for_agent', {
+          p_lead_id: leadId,
+          p_agent_id: adminId,
+        });
+        if (error) {
+          toast({ title: 'Claim failed', description: error.message, variant: 'destructive' });
+          return;
+        }
+        toast({ title: 'Lead claimed', description: 'The waiting lead is now assigned to you.' });
+        await loadLive();
+      })();
+      return;
+    }
     if (!cadence.allowSelfAssign) {
       toast({
         title: 'You cannot assign this lead to yourself',
@@ -941,6 +1167,21 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   // hands ownership over — the agent must pick an outcome status (Spoken to,
   // Quote sent, etc.) for that to happen.
   const adjustDials = (id: string, delta: number) => {
+    if (isLive) {
+      if (!canWrite) return;
+      void (async () => {
+        const { error } = await (supabase as any).rpc('adjust_sales_lead_call_count', {
+          p_lead_id: id,
+          p_delta: delta,
+        });
+        if (error) {
+          toast({ title: 'Could not update the call count', description: error.message, variant: 'destructive' });
+          return;
+        }
+        await loadLive();
+      })();
+      return;
+    }
     setLeads((current) =>
       current.map((lead) => {
         if (lead.id !== id) return lead;
@@ -983,6 +1224,32 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   };
 
   const updateDisplayStatus = (id: string, status: LeadStatus) => {
+    if (isLive) {
+      if (!canWrite) {
+        toast({
+          title: 'Read-only view',
+          description: 'Switch Open Round Robin live before changing real lead statuses here.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      void (async () => {
+        const { error } = await (supabase as any)
+          .from('sales_leads')
+          .update({
+            status,
+            ...(status !== 'new' ? { last_contacted_at: new Date().toISOString() } : {}),
+          })
+          .eq('id', id);
+        if (error) {
+          toast({ title: 'Could not update the status', description: error.message, variant: 'destructive' });
+          return;
+        }
+        toast({ title: `${statusLabels[status]} recorded` });
+        await loadLive();
+      })();
+      return;
+    }
     // "No answer" is a genuine call attempt, so it runs the chase rules.
     if (status === 'no_answer') {
       recordNoAnswer(id);
@@ -1063,6 +1330,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
 
   const runSweep = () => {
+    if (isLive) {
+      void runLivePass(false);
+      return;
+    }
 
     const now = Date.now();
     setLeads((current) => {
@@ -1434,7 +1705,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
   return (
     <div className="space-y-4">
-      {/* Who is practising — manager/super admin view vs sales agent view */}
+      {/* Who is practising — manager/super admin view vs sales agent view (sandbox only) */}
+      {!isLive && (
       <div className="rounded-xl border border-border bg-card shadow-sm p-3 flex flex-wrap items-center gap-3">
         <span className="text-sm font-semibold text-foreground">Practice as</span>
         <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
@@ -1476,13 +1748,18 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           )}
         </ul>
       </div>
+      )}
 
-      {/* Same page furniture as New Leads, driven by the practice leads only */}
+      {/* Same page furniture as New Leads, driven by the leads shown below */}
       <OrrSandboxLeadsChrome
         leads={chromeLeads}
         liveHeldCount={liveHeldCount}
-        agents={roster.map((agent) => ({ id: agent.id, name: agent.name }))}
-        teamLabel={theme.label}
+        agents={
+          isLive
+            ? Object.values(liveAgents).map((agent) => ({ id: agent.id, name: agent.name }))
+            : roster.map((agent) => ({ id: agent.id, name: agent.name }))
+        }
+        teamLabel={isLive ? 'Live' : theme.label}
         isManagerView={isManagerView}
         search={chromeSearch}
         onSearchChange={setChromeSearch}
@@ -1498,7 +1775,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           setChromeSort('newest');
           if (isManagerView) setSimulatedAgentId('all');
         }}
-        agentName={roster.find((agent) => agent.id === simulatedAgentId)?.name}
+        agentName={
+          isLive
+            ? liveAgents[simulatedAgentId]?.name
+            : roster.find((agent) => agent.id === simulatedAgentId)?.name
+        }
       />
 
       {/* Header card */}
@@ -1506,38 +1787,69 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-start gap-4">
             <div className={cn('h-11 w-11 rounded-xl flex items-center justify-center shrink-0', theme.iconWrap)}>
-              <FlaskConical className={cn('h-5 w-5', theme.icon)} />
+              {isLive ? <Clock className={cn('h-5 w-5', theme.icon)} /> : <FlaskConical className={cn('h-5 w-5', theme.icon)} />}
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                  Open Round Robin practice — {theme.label}
+                  {isLive ? 'Open Round Robin — live pool' : `Open Round Robin practice — ${theme.label}`}
                 </h3>
-                <span className={cn('rounded-full text-[11px] font-medium px-2.5 py-0.5', theme.chip)}>
-                  Practice mode
-                </span>
+                {isLive ? (
+                  <Badge className={cn('text-[10px]', canWrite ? 'bg-teal-600 hover:bg-teal-600' : 'bg-muted text-muted-foreground hover:bg-muted')}>
+                    {canWrite ? 'Live CRM' : 'Read-only view'}
+                  </Badge>
+                ) : (
+                  <span className={cn('rounded-full text-[11px] font-medium px-2.5 py-0.5', theme.chip)}>
+                    Practice mode
+                  </span>
+                )}
 
-                <span className="rounded-full bg-muted text-muted-foreground text-[11px] font-medium px-2.5 py-0.5">
-                  {isManagerView ? 'Manager & super admin view' : 'Sales agent view'}
-                </span>
-                <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[11px] font-medium px-2.5 py-0.5">
-                  Nothing counts
-                </span>
+                {!isLive && (
+                  <span className="rounded-full bg-muted text-muted-foreground text-[11px] font-medium px-2.5 py-0.5">
+                    {isManagerView ? 'Manager & super admin view' : 'Sales agent view'}
+                  </span>
+                )}
+                {!isLive && (
+                  <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[11px] font-medium px-2.5 py-0.5">
+                    Nothing counts
+                  </span>
+                )}
               </div>
               <ul className="text-sm text-muted-foreground list-disc pl-4 space-y-1 leading-relaxed max-w-2xl">
-                <li>
-                  {isManagerView
-                    ? 'Set the shift up, run a scenario and watch the 2-minute first-call window, pass-on, phone column, click-to-dial and copy button.'
-                    : 'Practise your own leads: answer inside the 2-minute window, call, copy the number and let one pass on.'}
-                </li>
-                <li>{dataSource === 'live' ? 'Live leads mode shows a read-only copy of real leads.' : 'Every name here is made up.'}</li>
-                <li>Nothing is written back, no customer is contacted and no agent's figures change.</li>
+                {isLive ? (
+                  <>
+                    <li>Real leads inside their first-call window — the same table and columns as the sandbox.</li>
+                    <li>
+                      {canWrite
+                        ? 'Running a pass hands out waiting leads and pulls back missed first calls — this updates real CRM assignments.'
+                        : 'Read-only while Open Round Robin is not switched live — no real lead is handed out or pulled back.'}
+                    </li>
+                    <li>{livePoolCount} waiting in the open pool · {liveRows.length} in flight.</li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      {isManagerView
+                        ? 'Set the shift up, run a scenario and watch the 2-minute first-call window, pass-on, phone column, click-to-dial and copy button.'
+                        : 'Practise your own leads: answer inside the 2-minute window, call, copy the number and let one pass on.'}
+                    </li>
+                    <li>{dataSource === 'live' ? 'Live leads mode shows a read-only copy of real leads.' : 'Every name here is made up.'}</li>
+                    <li>Nothing is written back, no customer is contacted and no agent's figures change.</li>
+                  </>
+                )}
               </ul>
             </div>
           </div>
+          {isLive && (
+            <label className="flex items-center gap-2 text-xs font-medium cursor-pointer select-none">
+              Keep it rolling
+              <Switch checked={keepRolling} onCheckedChange={setKeepRolling} disabled={!canWrite} />
+            </label>
+          )}
         </div>
 
-        {isManagerView && (
+
+        {isManagerView && !isLive && (
         <div className="mt-5 pt-4 border-t border-border rounded-lg border border-border bg-muted/30 p-3">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-foreground">Agents on shift</span>
@@ -1569,7 +1881,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         )}
 
         {/* PHASE 1 — every situation an agent meets, one click each */}
-        {isManagerView && (
+        {isManagerView && !isLive && (
         <div className="mt-4 rounded-lg border border-border bg-muted/20 p-3">
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -1635,7 +1947,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
 
 
-        {isManagerView && (
+        {isManagerView && !isLive && (
         <div className="mt-5 pt-4 border-t border-border rounded-lg border border-amber-200 bg-amber-50/60 p-3">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-amber-900">Start of day — 09:00 release</span>
@@ -1671,7 +1983,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         )}
 
         <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
-          {isManagerView && (<>
+          {isManagerView && !isLive && (<>
           <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
             <button
               type="button"
@@ -1716,12 +2028,32 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <Plus className="h-3.5 w-3.5 mr-1.5" /> Take this lead
           </Button>
           </>)}
-          <Button size="sm" variant="outline" onClick={() => setTick((current) => current + 1)}>
-            <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh queue
-          </Button>
-          <Button size="sm" variant="outline" onClick={runSweep} disabled={leads.length === 0}>
-            <Play className="h-3.5 w-3.5 mr-1.5" /> I’ll take the next one
-          </Button>
+          {isLive ? (
+            <Button size="sm" variant="outline" onClick={() => void loadLive()} disabled={liveBusy}>
+              <RefreshCw className={cn('h-3.5 w-3.5 mr-1.5', liveBusy && 'animate-spin')} /> Refresh
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" onClick={() => setTick((current) => current + 1)}>
+              <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh queue
+            </Button>
+          )}
+          {isLive ? (
+            <Button
+              size="sm"
+              onClick={() => void runLivePass(false)}
+              disabled={!canWrite || livePassRunning}
+              title={canWrite ? 'Pull back overdue first-call windows, then hand out waiting leads' : 'Read-only until Open Round Robin is switched live'}
+            >
+              {livePassRunning ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Play className="h-3.5 w-3.5 mr-1.5" />}
+              Run Open Round Robin pass
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" onClick={runSweep} disabled={leads.length === 0}>
+              <Play className="h-3.5 w-3.5 mr-1.5" /> I’ll take the next one
+            </Button>
+          )}
+          {!isLive && (
+            <>
           <span
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium',
@@ -1755,7 +2087,9 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             {isPausedReceiving ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5 fill-current" />}
             {isPausedReceiving ? 'Ready for new leads' : 'Focus on current leads'}
           </Button>
-          {isManagerView && (
+            </>
+          )}
+          {isManagerView && !isLive && (
           <Button
             size="sm"
             variant="ghost"
@@ -1770,7 +2104,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       </section>
 
       {/* Rules, timings and editable variables */}
-      {isManagerView && <OrrLogicExplainer config={cadence} onChange={setCadence} teamLabel={theme.label} />}
+      {isManagerView && !isLive && <OrrLogicExplainer config={cadence} onChange={setCadence} teamLabel={theme.label} />}
 
       {allAgentsBusy && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
@@ -1792,6 +2126,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
 
       {/* Agent preview */}
+      {!isLive && (
       <div className="rounded-xl border border-border bg-card shadow-sm p-4 flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
           <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
@@ -1838,6 +2173,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         </div>
 
       </div>
+      )}
 
       {/* Leads */}
       <section className={cn('rounded-xl border-l-4 border-y border-r border-border bg-card shadow-sm overflow-hidden', theme.cardBorder)}>
@@ -1847,14 +2183,26 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
               <Clock className={cn('h-4 w-4', theme.icon)} />
             </div>
             <div>
-              <h4 className="text-base font-semibold text-foreground">Practice New Leads — {theme.label}</h4>
+              <h4 className="text-base font-semibold text-foreground">
+                {isLive ? 'Open Round Robin — live leads' : `Practice New Leads — ${theme.label}`}
+              </h4>
 
               <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
-                <li>A new lead is unowned. The rotation holds it for one salesperson for the current call attempt only.</li>
-                <li>Nobody owns future attempts — if the countdown runs out with no call, it goes straight back into the pool and no attempt is counted.</li>
-                <li>No answer counts as one genuine attempt, leaves your queue and comes back at its next eligible time — the rotation decides who gets it.</li>
-                <li>Weekdays 09:00–18:00, weekends about 10:00–13:00 when staffed. At least 3 hours between attempts.</li>
-                <li>Up to 2 attempts a weekday, normally 1 at a weekend, across 7 contact days.</li>
+                {isLive ? (
+                  <>
+                    <li>These are real leads inside their first-call window, oldest window first.</li>
+                    <li>Run a pass to hand out waiting leads and pull back missed first calls.</li>
+                    <li>{livePoolCount} waiting in the open pool · {liveRows.length} in flight.</li>
+                  </>
+                ) : (
+                  <>
+                    <li>A new lead is unowned. The rotation holds it for one salesperson for the current call attempt only.</li>
+                    <li>Nobody owns future attempts — if the countdown runs out with no call, it goes straight back into the pool and no attempt is counted.</li>
+                    <li>No answer counts as one genuine attempt, leaves your queue and comes back at its next eligible time — the rotation decides who gets it.</li>
+                    <li>Weekdays 09:00–18:00, weekends about 10:00–13:00 when staffed. At least 3 hours between attempts.</li>
+                    <li>Up to 2 attempts a weekday, normally 1 at a weekend, across 7 contact days.</li>
+                  </>
+                )}
               </ul>
             </div>
           </div>
@@ -1871,7 +2219,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         {queuedLeads.length > 0 && (
           <div className="mb-3 rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground space-y-2">
             <div>
-              <strong className="text-foreground">{queuedLeads.length}</strong> practice lead{queuedLeads.length === 1 ? '' : 's'} waiting —
+              <strong className="text-foreground">{isLive ? livePoolCount : queuedLeads.length}</strong> {isLive ? 'lead' : 'practice lead'}{(isLive ? livePoolCount : queuedLeads.length) === 1 ? '' : 's'} waiting —
               everyone currently holds one. They release automatically as windows free up, so no one has to race.
             </div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -1881,18 +2229,24 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                 className="h-7 text-xs"
                 onClick={() => claimQueuedLead(queuedLeads[0].id)}
                 title={
-                  cadence.allowSelfAssign
-                    ? 'Manager permission granted — you may take a waiting lead'
-                    : 'Blocked: only a manager can allow agents to take a waiting lead themselves'
+                  isLive
+                    ? canWrite
+                      ? 'Assign this waiting lead to yourself'
+                      : 'Read-only until Open Round Robin is switched live'
+                    : cadence.allowSelfAssign
+                      ? 'Manager permission granted — you may take a waiting lead'
+                      : 'Blocked: only a manager can allow agents to take a waiting lead themselves'
                 }
               >
                 <Lock className="h-3 w-3 mr-1.5" /> Take a waiting lead myself
               </Button>
-              <span className={cn('text-[11px] font-medium', cadence.allowSelfAssign ? 'text-emerald-700' : 'text-rose-700')}>
-                {cadence.allowSelfAssign
-                  ? 'Self-assign allowed by a manager'
-                  : 'Self-assign blocked — the rotation decides who gets the lead'}
-              </span>
+              {!isLive && (
+                <span className={cn('text-[11px] font-medium', cadence.allowSelfAssign ? 'text-emerald-700' : 'text-rose-700')}>
+                  {cadence.allowSelfAssign
+                    ? 'Self-assign allowed by a manager'
+                    : 'Self-assign blocked — the rotation decides who gets the lead'}
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -1902,9 +2256,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
         {visibleLeads.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-md bg-muted/30">
-            {simulatedAgentId === 'all'
-              ? 'No practice leads yet. Click Take this lead or run the 09:00 release.'
-              : `No practice leads for ${getAgent(simulatedAgentId).name} right now — they may be with another agent. Switch to "Whole team" to see them all.`}
+            {isLive
+              ? 'No leads are inside an Open Round Robin window right now. Run a pass to hand out any that are waiting.'
+              : simulatedAgentId === 'all'
+                ? 'No practice leads yet. Click Take this lead or run the 09:00 release.'
+                : `No practice leads for ${getAgent(simulatedAgentId).name} right now — they may be with another agent. Switch to "Whole team" to see them all.`}
           </div>
         ) : (
           <div className="overflow-x-auto border border-border rounded-md">
@@ -1940,7 +2296,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                   const expired = remainingMs <= 0 && !attempted;
 
                   const ageSec = Math.round((now - lead.createdAt) / 1000);
-                  const agent = getAgent(lead.assignedTo);
+                  const agent = resolveAgent(lead.assignedTo);
                   const orrLead = isOrr(lead);
 
                   return (
@@ -2135,16 +2491,18 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           <a href={`tel:${lead.phone}`} title="Call" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
                             <Phone className="h-3.5 w-3.5" />
                           </a>
-                          <PracticeNotes
-                            notes={lead.notes ?? []}
-                            onAdd={(text) => addPracticeNote(lead.id, text)}
-                          />
+                          {!isLive && (
+                            <PracticeNotes
+                              notes={lead.notes ?? []}
+                              onAdd={(text) => addPracticeNote(lead.id, text)}
+                            />
+                          )}
                           <SendWhatsAppLeadButton
                             leadId={lead.id}
                             phone={lead.phone}
                             firstName={lead.firstName}
-                            practice
-                            onSent={(t) => addPracticeNote(lead.id, `Sent WhatsApp message (${t})`)}
+                            practice={!isLive}
+                            onSent={isLive ? undefined : (t) => addPracticeNote(lead.id, `Sent WhatsApp message (${t})`)}
                           />
                           <span title="Email" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-blue-600">
                             <Mail className="h-3.5 w-3.5" />
@@ -2186,8 +2544,26 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           {lead.vehicleReg}
                         </span>
                       </td>
-                      <td className="px-2 py-2 text-xs text-muted-foreground">—</td>
-                      <td className="px-2 py-2 text-xs text-muted-foreground">—</td>
+                      <td className="px-2 py-2 text-xs whitespace-nowrap">
+                        {isLive ? (
+                          lead.isPaid ? (
+                            <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800">
+                              Paid{lead.paymentAmount != null ? ` £${Number(lead.paymentAmount).toFixed(2)}` : ''}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Unpaid</span>
+                          )
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-2 text-xs whitespace-nowrap">
+                        {isLive && lead.paymentDate ? (
+                          <span className="text-foreground">{formatLeadDate(new Date(lead.paymentDate).getTime())}</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
                         {lead.dials > 0 ? (
                           <div>
@@ -2267,8 +2643,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             Weekdays 09:00–18:00, weekends roughly 10:00–13:00 when staffed. Up to 2 genuine attempts a full weekday and
             normally 1 a weekend day, always at least {MIN_GAP_HOURS} hours apart, across {CONTACT_DAYS} contact days.
             After No answer the lead leaves your queue and returns to Open Round Robin from its next eligible time — waiting
-            leads are fed back a couple at a time, so nothing lands in one batch. Practice leads are reserved privately for
-            one call attempt and wiped when you clear or reload.
+            leads are fed back a couple at a time, so nothing lands in one batch.
+            {isLive
+              ? ' This is the live pool — passes and claims update the real CRM.'
+              : ' Practice leads are reserved privately for one call attempt and wiped when you clear or reload.'}
           </p>
 
 
