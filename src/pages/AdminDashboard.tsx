@@ -31,6 +31,7 @@ import LiveChatQuestionAlert from '@/components/admin/chatbot/LiveChatQuestionAl
 const MissedCallAlertBar = lazy(() => import('@/components/admin/MissedCallAlertBar').then(m => ({ default: m.MissedCallAlertBar })));
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { AlertRailHost } from '@/components/admin/AlertRail';
+const FailedPaymentPopup = lazy(() => import('@/components/admin/FailedPaymentPopup'));
 import { StuckCheckoutAlert } from '@/components/admin/leads/StuckCheckoutAlert';
 import { ChatAgentRequestAlert } from '@/components/admin/leads/ChatAgentRequestAlert';
 const NonClaimComplaintAlert = lazy(() => import('@/components/admin/NonClaimComplaintAlert').then(m => ({ default: m.NonClaimComplaintAlert })));
@@ -1504,6 +1505,9 @@ const AdminDashboardInner: React.FC<{
 
             {/* Sticky left-hand rail host (kept mounted so portalled alerts have a home) */}
             <AlertRailHost />
+            <Suspense fallback={null}>
+              <FailedPaymentPopup onOpenMissedPayments={() => handleTabChange('missed-payments')} />
+            </Suspense>
           </>
         );
       })()}
