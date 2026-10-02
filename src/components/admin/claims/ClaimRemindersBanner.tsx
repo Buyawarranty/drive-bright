@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, BellOff, Clock, Check, AlarmClock, ChevronDown, ChevronUp, Volume2, VolumeX } from 'lucide-react';
+import { Bell, BellOff, Clock, Check, AlarmClock, ChevronDown, ChevronUp, Volume2, VolumeX, X } from 'lucide-react';
 import { format, formatDistanceToNowStrict, isPast } from 'date-fns';
 import {
   ClaimReminder,
@@ -109,6 +109,9 @@ const ReminderRow: React.FC<RowProps> = ({ reminder, onAssign, onSnooze, onMute,
         </Button>
         <Button size="sm" onClick={() => onDone(reminder)}>
           <Check className="h-3.5 w-3.5 mr-1" /> Done
+        </Button>
+        <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Close reminder" title="Close reminder" onClick={() => onDone(reminder)}>
+          <X className="h-4 w-4" />
         </Button>
       </div>
     </div>
