@@ -1404,6 +1404,11 @@ const AdminDashboardInner: React.FC<{
             </div>
 
             <div className="hidden lg:flex items-center space-x-3">
+              <HeaderTabsMenu
+                activeTab={activeTab}
+                onSelect={handleTabChange}
+                canAccessTab={(tabId) => isTabAllowedForRole(tabId, displayRole, displayPermissions)}
+              />
               <GlobalQuickReminderButton />
               {/* View As dropdown - super_admin only */}
               {isSuperAdmin && <ViewAsDropdown />}
@@ -1411,7 +1416,11 @@ const AdminDashboardInner: React.FC<{
 
             <div className="lg:hidden flex items-center space-x-2">
 
-              
+              <HeaderTabsMenu
+                activeTab={activeTab}
+                onSelect={handleTabChange}
+                canAccessTab={(tabId) => isTabAllowedForRole(tabId, displayRole, displayPermissions)}
+              />
               <GlobalQuickReminderButton />
               <SystemCheckInButton />
 
