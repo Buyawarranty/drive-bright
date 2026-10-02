@@ -994,8 +994,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   ? 'bg-amber-500 text-white'
                   : 'bg-primary text-primary-foreground';
             const label = due
-              ? `Renewal · due ${due.dateStr}${due.days < 0 ? ' (overdue)' : ''}`
-              : 'Renewal';
+              ? `RENEWAL DUE — Expiry date: ${due.dateStr}`
+              : 'RENEWAL DUE';
             const tip = due
               ? `Renewal — warranty expires ${due.dateStr}${due.days < 0 ? `, ${Math.abs(due.days)} days overdue` : due.days === 0 ? ', due today' : `, in ${due.days} days`}`
               : 'Renewal — existing customer whose warranty is coming up for renewal';
@@ -1795,8 +1795,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   ? 'bg-amber-500 text-white'
                   : 'bg-primary text-primary-foreground';
             const label = due
-              ? `Renewal · due ${due.dateStr}${due.days < 0 ? ' (overdue)' : ''}`
-              : 'Renewal';
+              ? `RENEWAL DUE — Expiry date: ${due.dateStr}`
+              : 'RENEWAL DUE';
             const tip = due
               ? `Renewal — warranty expires ${due.dateStr}${due.days < 0 ? `, ${Math.abs(due.days)} days overdue` : due.days === 0 ? ', due today' : `, in ${due.days} days`}`
               : 'Renewal — existing customer whose warranty is coming up for renewal';
