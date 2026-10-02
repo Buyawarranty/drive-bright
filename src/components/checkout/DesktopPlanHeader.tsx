@@ -85,7 +85,7 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
           <Car className="w-5 h-5 text-muted-foreground" />
           <span className="text-sm font-semibold text-foreground">{vehicleDisplay}</span>
           {vehicleReg && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded border border-warning bg-warning/10 text-xs font-bold text-foreground tracking-wide">
+            <span className="inline-flex items-center px-2 py-0.5 rounded border border-border bg-muted text-xs font-bold text-foreground tracking-wide">
               {vehicleReg.toUpperCase()}
             </span>
           )}
