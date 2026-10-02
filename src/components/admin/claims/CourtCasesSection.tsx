@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Landmark, Plus, ChevronDown, ChevronRight, ExternalLink, AlertTriangle, Pencil } from 'lucide-react';
+import { Landmark, Plus, ChevronDown, ChevronRight, ExternalLink, AlertTriangle, Pencil, Search, Bell } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { toast } from 'sonner';
 
 export const COURT_CASE_TYPES: { value: string; label: string }[] = [
@@ -97,6 +99,15 @@ export const CourtDeadlinesBanner: React.FC<{ onOpen: () => void }> = ({ onOpen 
   );
 };
 
+const REMINDER_OFFSETS: { days: number; label: string }[] = [
+  { days: 1, label: '1 day before' },
+  { days: 5, label: '5 days before' },
+  { days: 7, label: '1 week before' },
+  { days: 14, label: '2 weeks before' },
+  { days: 30, label: '1 month before' },
+];
+const claimLink = (id: string) => `${window.location.origin}/admin/claims/${id}`;
+
 const empty = { case_type: 'small_claims', registration: '', customer_name: '', case_reference: '', claim_file_url: '', paperwork_deadline: '', hearing_date: '', status: 'open', notes: '' };
 
 export const CourtCasesSection: React.FC = () => {
@@ -107,11 +118,34 @@ export const CourtCasesSection: React.FC = () => {
   const [form, setForm] = useState<typeof empty>(empty);
   const [saving, setSaving] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [foundClaim, setFoundClaim] = useState<{ id: string; name: string | null; email?: string | null } | null>(null);
+  const [lookingUp, setLookingUp] = useState(false);
+  const [reminderDays, setReminderDays] = useState<number[]>([1, 7]);
+  const [reminderTarget, setReminderTarget] = useState<'paperwork' | 'hearing'>('paperwork');
+  const currentAdminId = useCurrentAdminId();
 
-  const openNew = () => { setEditId(null); setForm(empty); setOpen(true); };
+  const lookupReg = async (raw?: string) => {
+    const reg = (raw ?? form.registration).replace(/\s+/g, '').toUpperCase();
+    if (reg.length < 2) return;
+    setLookingUp(true);
+    const { data: claim } = await (supabase as any).from('claims_submissions')
+      .select('id, name, email').ilike('vehicle_registration', reg)
+      .order('created_at', { ascending: false }).limit(1).maybeSingle();
+    setLookingUp(false);
+    if (!claim) { setFoundClaim(null); toast.message('No claim found for that registration — fill details by hand'); return; }
+    setFoundClaim(claim);
+    setForm(f => ({
+      ...f,
+      customer_name: f.customer_name || claim.name || '',
+      claim_file_url: f.claim_file_url || claimLink(claim.id),
+    }));
+  };
+
+  const openNew = () => { setEditId(null); setForm(empty); setFoundClaim(null); setReminderDays([1, 7]); setOpen(true); };
   const openEdit = (c: CourtCase) => {
     setEditId(c.id);
     setForm({ case_type: c.case_type, registration: c.registration, customer_name: c.customer_name || '', case_reference: c.case_reference || '', claim_file_url: c.claim_file_url || '', paperwork_deadline: c.paperwork_deadline || '', hearing_date: c.hearing_date || '', status: c.status, notes: c.notes || '' });
+    setFoundClaim(null); setReminderDays([]);
     setOpen(true);
   };
 
@@ -122,9 +156,9 @@ export const CourtCasesSection: React.FC = () => {
     if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
-    let claim_id: string | null = null;
+    let claim_id: string | null = foundClaim?.id ?? null;
     const { data: claim } = await supabase.from('claims_submissions').select('id, name').ilike('vehicle_registration', reg).order('created_at', { ascending: false }).limit(1).maybeSingle();
-    if (claim) claim_id = (claim as any).id;
+    if (!claim_id && claim) claim_id = (claim as any).id;
     const payload: any = {
       case_type: form.case_type, registration: reg,
       customer_name: form.customer_name.trim() || (claim as any)?.name || null,
@@ -136,9 +170,46 @@ export const CourtCasesSection: React.FC = () => {
       ? (supabase as any).from('claim_court_cases').update(payload).eq('id', editId)
       : (supabase as any).from('claim_court_cases').insert({ ...payload, created_by: u.user?.id });
     const { error } = await q;
+    if (error) { setSaving(false); toast.error('Could not save: ' + error.message); return; }
+
+    // Reminders before the chosen date — shown in the Claims reminders banner (dismissable)
+    const targetDate = reminderTarget === 'hearing' ? payload.hearing_date : payload.paperwork_deadline;
+    let made = 0;
+    if (targetDate && reminderDays.length > 0) {
+      const what = reminderTarget === 'hearing' ? 'Hearing' : 'Paperwork deadline';
+      const rows = reminderDays.map(days => {
+        const due = new Date(targetDate + 'T09:00:00'); due.setDate(due.getDate() - days);
+        return {
+          claim_id, reminder_kind: payload.case_type === 'mediation' ? 'mediation' : payload.case_type === 'court_appeal' ? 'appeal' : 'other',
+          title: `${what} in ${days === 1 ? '1 day' : days === 7 ? '1 week' : days === 14 ? '2 weeks' : days === 30 ? '1 month' : days + ' days'} — ${typeLabel(payload.case_type)} ${reg}`,
+          notes: `${fmt(targetDate)}${payload.case_reference ? ' · Ref ' + payload.case_reference : ''}`,
+          due_at: due.toISOString(), lead_time_minutes: 0, status: 'active',
+          assigned_to: currentAdminId || null, created_by: u.user?.id,
+        };
+      }).filter(r => new Date(r.due_at).getTime() > Date.now() - 86400000);
+      if (rows.length) {
+        const { error: rErr } = await (supabase as any).from('claim_reminders').insert(rows);
+        if (rErr) toast.error('Reminders not saved: ' + rErr.message); else made = rows.length;
+      }
+    }
+
+    // Copy the case details into that claim's notes
+    if (claim_id) {
+      const lines = [
+        `Court case ${editId ? 'updated' : 'registered'}: ${typeLabel(payload.case_type)} — status ${statusLabel(payload.status)}`,
+        payload.case_reference ? `Case reference: ${payload.case_reference}` : null,
+        payload.paperwork_deadline ? `Paperwork deadline: ${fmt(payload.paperwork_deadline)}` : null,
+        payload.hearing_date ? `Hearing date: ${fmt(payload.hearing_date)}` : null,
+        payload.claim_file_url ? `Claim file: ${payload.claim_file_url}` : null,
+        made ? `Reminders set: ${reminderDays.sort((a, b) => b - a).map(d => REMINDER_OFFSETS.find(o => o.days === d)?.label).join(', ')}` : null,
+        payload.notes ? `Notes: ${payload.notes}` : null,
+      ].filter(Boolean).join('\n');
+      await (supabase as any).from('claim_notes').insert({
+        claim_id, note: lines, note_type: 'court_case', created_by: u.user?.id, created_by_name: u.user?.email || null,
+      });
+    }
     setSaving(false);
-    if (error) { toast.error('Could not save: ' + error.message); return; }
-    toast.success(editId ? 'Court case updated' : 'Court case registered');
+    toast.success(`${editId ? 'Court case updated' : 'Court case registered'}${made ? ` · ${made} reminder${made === 1 ? '' : 's'} set` : ''}${claim_id ? ' · added to claim notes' : ''}`);
     setOpen(false); reload();
   };
 
@@ -212,9 +283,20 @@ export const CourtCasesSection: React.FC = () => {
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Registration plate *</Label><Input value={form.registration} onChange={e => setForm(f => ({ ...f, registration: e.target.value.toUpperCase() }))} placeholder="AB12 CDE" /></div>
+              <div><Label>Registration plate *</Label>
+                <div className="flex gap-1">
+                  <Input value={form.registration} onChange={e => setForm(f => ({ ...f, registration: e.target.value.toUpperCase() }))} onBlur={() => !foundClaim && lookupReg()} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); lookupReg(); } }} placeholder="AB12 CDE" />
+                  <Button type="button" size="icon" variant="outline" onClick={() => lookupReg()} disabled={lookingUp} aria-label="Find claim"><Search className="h-4 w-4" /></Button>
+                </div>
+              </div>
               <div><Label>Customer name</Label><Input value={form.customer_name} onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))} placeholder="Filled from claim if blank" /></div>
             </div>
+            {foundClaim && (
+              <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs text-emerald-900 flex items-center gap-2">
+                Claim found: {foundClaim.name || 'customer'}{foundClaim.email ? ` · ${foundClaim.email}` : ''}
+                <a href={claimLink(foundClaim.id)} target="_blank" rel="noopener noreferrer" className="ml-auto inline-flex items-center gap-1 underline">Open claim <ExternalLink className="h-3 w-3" /></a>
+              </div>
+            )}
             <div><Label>Link to original claim file</Label><Input value={form.claim_file_url} onChange={e => setForm(f => ({ ...f, claim_file_url: e.target.value }))} placeholder="https://…" /></div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Court / case reference</Label><Input value={form.case_reference} onChange={e => setForm(f => ({ ...f, case_reference: e.target.value }))} /></div>
@@ -228,6 +310,26 @@ export const CourtCasesSection: React.FC = () => {
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Paperwork deadline</Label><Input type="date" value={form.paperwork_deadline} onChange={e => setForm(f => ({ ...f, paperwork_deadline: e.target.value }))} /></div>
               <div><Label>Hearing date</Label><Input type="date" value={form.hearing_date} onChange={e => setForm(f => ({ ...f, hearing_date: e.target.value }))} /></div>
+            </div>
+            <div className="rounded-md border p-3 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium"><Bell className="h-4 w-4" /> Reminders
+                <Select value={reminderTarget} onValueChange={v => setReminderTarget(v as any)}>
+                  <SelectTrigger className="h-7 w-auto ml-auto text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="paperwork">Before paperwork deadline</SelectItem>
+                    <SelectItem value="hearing">Before hearing date</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {REMINDER_OFFSETS.map(o => (
+                  <label key={o.days} className="flex items-center gap-1.5 text-xs">
+                    <Checkbox checked={reminderDays.includes(o.days)} onCheckedChange={c => setReminderDays(d => c ? [...d, o.days] : d.filter(x => x !== o.days))} />
+                    {o.label}
+                  </label>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground">Each reminder appears in the banner at the top of Claims at 9am on that day. Close it with Done.</p>
             </div>
             <div><Label>Notes</Label><Textarea rows={3} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
           </div>
