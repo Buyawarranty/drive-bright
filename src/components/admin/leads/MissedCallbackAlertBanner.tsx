@@ -83,7 +83,7 @@ export const MissedCallbackAlertBanner: React.FC<Props> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="w-full bg-red-600 text-white shadow-lg border-b-2 border-red-800 animate-in slide-in-from-top-2">
+    <div className="w-full rounded-xl bg-red-600 text-white shadow-sm overflow-hidden animate-in slide-in-from-top-2">
       <div className="max-w-7xl mx-auto flex items-center gap-3 px-4 py-2.5 flex-wrap">
         <AlertTriangle className="h-5 w-5 shrink-0 animate-pulse" />
         <div className="flex-1 min-w-0 text-sm sm:text-base font-medium">

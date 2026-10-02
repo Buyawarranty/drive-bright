@@ -124,7 +124,7 @@ export const QuickGrantAccessBar: React.FC<Props> = ({ userRole }) => {
   };
 
   return (
-    <div className="border-b bg-indigo-50 dark:bg-indigo-950/40">
+    <div className="rounded-xl border border-l-4 border-indigo-200 border-l-indigo-600 bg-indigo-50 dark:bg-indigo-950/40">
       <div className="flex flex-wrap items-center gap-2 px-3 lg:px-6 py-2">
         <Badge variant="secondary" className="gap-1">
           <Sparkles className="h-3 w-3" /> Quick grant

@@ -187,7 +187,7 @@ export const LiveChatQuestionAlert: React.FC = () => {
   };
 
   return (
-    <div className="fixed left-2 top-2 z-[200] w-[340px] max-w-[calc(100vw-1rem)]">
+    <div className="w-full">
       <div className="rounded-lg border-2 border-sky-500 bg-sky-600 shadow-xl">
         <div className="flex items-center gap-2 px-3 py-2 text-white">
           <MessageSquare className="h-4 w-4 shrink-0" />
