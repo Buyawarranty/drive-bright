@@ -2913,49 +2913,54 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Address Section - Always visible */}
             <div id="address-fields" className="mt-8 space-y-4 rounded-lg border border-border bg-card p-5 sm:p-6">
-              <div className="space-y-1">
-                <h2 className="flex items-center gap-2 text-lg font-bold text-[#1a1a1a]">
-                  <Home className="h-5 w-5 text-[#0BA360]" />
-                  Your address
-                </h2>
-                <p className="text-sm text-muted-foreground">Search for your address to continue.</p>
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <h2 className="flex items-center gap-2 text-lg font-bold text-[#1a1a1a]">
+                    <Home className="h-5 w-5 text-[#0BA360]" />
+                    Your address
+                  </h2>
+                  <p className="text-sm text-muted-foreground">Search for your address to continue.</p>
+                </div>
+
+                {/* Confirmed address — Change button sits outside the green card so the address can use full width */}
+                {addressConfirmedComplete && !showAddressDropdown && !isLookingUp && addressData.address_line_1?.trim() && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setAddressConfirmedComplete(false);
+                      setPostcodeInput('');
+                      setShowAddressDropdown(false);
+                      setAddressSuggestions([]);
+                      setShowAddressFields(false);
+                      setManualAddressEntry(false);
+                      setTownAutoFilled(false);
+                      setAddressData(prev => ({ ...prev, address_line_1: '', address_line_2: '', town: '', county: '', postcode: '' }));
+                      setAddressValidated(prev => ({ ...prev, address_line_1: false, town: false, postcode: false }));
+                    }}
+                    className="h-10 flex-shrink-0 rounded-lg border-border bg-white px-4 text-sm font-semibold text-[#1a1a1a]"
+                  >
+                    Change
+                  </Button>
+                )}
               </div>
 
               {/* Confirmed address — green confirmation card replaces the search while confirmed */}
               {addressConfirmedComplete && !showAddressDropdown && !isLookingUp && addressData.address_line_1?.trim() ? (
                 <div className="rounded-lg border border-[#0BA360]/30 bg-[#0BA360]/[0.06] p-4 sm:p-5">
-                  <div className="flex items-start gap-3 sm:items-center">
-                    <span className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#0BA360] sm:mt-0">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#0BA360]">
                       <Check className="h-5 w-5 text-white" />
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-base font-bold leading-snug text-[#1a1a1a] sm:text-lg">
-                        {addressData.address_line_1}{addressData.address_line_2 ? `, ${addressData.address_line_2}` : ''}
-                      </p>
-                      <p className="text-base font-bold leading-snug text-[#1a1a1a] sm:text-lg">
-                        {[addressData.town, addressData.postcode].filter(Boolean).join(', ')}
-                      </p>
-                      <p className="mt-1 text-sm font-medium text-[#0BA360]">Address confirmed</p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setAddressConfirmedComplete(false);
-                        setPostcodeInput('');
-                        setShowAddressDropdown(false);
-                        setAddressSuggestions([]);
-                        setShowAddressFields(false);
-                        setManualAddressEntry(false);
-                        setTownAutoFilled(false);
-                        setAddressData(prev => ({ ...prev, address_line_1: '', address_line_2: '', town: '', county: '', postcode: '' }));
-                        setAddressValidated(prev => ({ ...prev, address_line_1: false, town: false, postcode: false }));
-                      }}
-                      className="h-10 flex-shrink-0 rounded-lg border-border bg-white px-4 text-sm font-semibold text-[#1a1a1a]"
-                    >
-                      Change
-                    </Button>
+                    <p className="min-w-0 text-base font-bold leading-snug text-[#1a1a1a] sm:text-lg">
+                      {[
+                        [addressData.address_line_1, addressData.address_line_2].filter(Boolean).join(' '),
+                        addressData.town,
+                        addressData.postcode
+                      ].filter(Boolean).join(', ')}
+                    </p>
                   </div>
+                  <p className="mt-1 text-sm font-medium text-[#0BA360]">Address confirmed</p>
                 </div>
               ) : (
               <>
