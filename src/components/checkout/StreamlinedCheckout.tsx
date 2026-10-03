@@ -3367,7 +3367,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           value={addressData.town}
                           readOnly
                           disabled
-                          className={`h-11 sm:h-12 text-base pr-10 bg-muted/50 text-muted-foreground cursor-not-allowed ${getAddressInputValidationClass('town')}`}
+                          className="h-11 sm:h-12 text-base pr-10 bg-muted/60 text-muted-foreground border-gray-200 cursor-not-allowed"
                         />
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                       </div>
