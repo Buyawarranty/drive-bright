@@ -3346,23 +3346,34 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     />
                   </div>
 
-                  {/* Town/City — shown as compact confirmation once auto-filled by postcode */}
+                  {/* Town/City — greyed out and locked once auto-filled by postcode; tap Change to override */}
                   {townAutoFilled && addressData.town?.trim() && !addressErrors.town ? (
-                    <div className="flex items-center justify-between gap-3 rounded-lg border border-[#0BA360]/30 bg-[#0BA360]/5 px-3 py-2.5">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                        <span className="text-sm text-[#1F2A44] truncate">
-                          <span className="text-muted-foreground">Town / City:</span>{' '}
-                          <span className="font-semibold">{addressData.town}</span>
-                        </span>
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
+                          Town / City
+                        </Label>
+                        <button
+                          type="button"
+                          onClick={() => setTownAutoFilled(false)}
+                          className="text-xs font-medium text-[#1a1a1a] hover:underline"
+                        >
+                          Change
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setTownAutoFilled(false)}
-                        className="text-xs font-medium text-[#1a1a1a] hover:underline flex-shrink-0"
-                      >
-                        Change
-                      </button>
+                      <div className="relative mt-1.5">
+                        <Input
+                          id="town"
+                          value={addressData.town}
+                          readOnly
+                          disabled
+                          className="h-11 sm:h-12 text-base pr-10 bg-muted/60 text-muted-foreground border-gray-200 cursor-not-allowed"
+                        />
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1.5">
+                        Filled in automatically from your postcode. Tap Change if it looks wrong.
+                      </p>
                     </div>
                   ) : (
                     <div>
