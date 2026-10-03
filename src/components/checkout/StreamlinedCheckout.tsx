@@ -1167,14 +1167,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (!addressComplete) return;
     if (showAddressDropdown || isLookingUp) return;
     if (manualAddressEntry) {
-      // Manual entry: only confirm once the customer has LEFT a field (not
-      // mid-typing) and line 1 looks like a real address (3+ chars).
+      // Manual entry: only confirm once the customer has LEFT the whole manual
+      // form (not just moved from line 1 to line 2 / town) and line 1 looks
+      // like a real address (3+ chars). Wait for focus to settle first.
       if (manualBlurTick === 0) return;
       if ((addressData.address_line_1 || '').trim().length < 3) return;
-      const active = typeof document !== 'undefined' ? document.activeElement?.id : '';
-      if (active === 'address_line_1' || active === 'manual_postcode') return;
-      setAddressConfirmedComplete(true);
-      return;
+      const timer = window.setTimeout(() => {
+        const form = document.getElementById('manual-address-form');
+        const active = document.activeElement;
+        if (form && active && form.contains(active)) return;
+        setAddressConfirmedComplete(true);
+      }, 200);
+      return () => window.clearTimeout(timer);
     }
     // Restored/pre-filled complete address (no lookup in flight, no dropdown).
     if (addressSuggestions.length === 0) {
@@ -3202,7 +3206,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
               {/* Address Fields - Shown after lookup or manual entry click */}
               {showAddressFields && (
-                <div className="space-y-4 rounded-lg border border-border bg-white p-4 sm:p-5">
+                <div
+                  id="manual-address-form"
+                  onBlur={() => setManualBlurTick(t => t + 1)}
+                  className="space-y-4 rounded-lg border border-border bg-white p-4 sm:p-5"
+                >
                   <button
                     type="button"
                     aria-expanded="true"
