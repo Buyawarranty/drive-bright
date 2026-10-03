@@ -164,7 +164,7 @@ export default function ChatbotAnswerLibraryPanel({
     } finally {
       setLoading(false);
     }
-  }, [fromIso, toIso]);
+  }, [fromIso, toIso, onlyUngrounded, onWaitingCount]);
 
   useEffect(() => {
     void load();
