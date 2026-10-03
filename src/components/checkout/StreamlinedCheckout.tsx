@@ -2192,9 +2192,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setAddressTouched(prev => ({ ...prev, postcode: true, address_line_1: true, town: true }));
     setAddressErrors(prev => ({
       ...prev,
-      postcode: pcOk && line1 && town
+      postcode: pcOk
         ? ''
-        : (!visibleSearch ? 'Please enter postcode' : (pc && !ukPc.test(pc.replace(/\s/g, '')) ? 'Please enter a valid UK postcode.' : 'Please enter postcode')),
+        : (!visibleSearch && !pc ? 'Please enter postcode' : (pc && !ukPc.test(pc.replace(/\s/g, '')) ? 'Please enter a valid UK postcode.' : 'Please enter postcode')),
       address_line_1: line1 ? '' : 'Please enter your address.',
       town: town ? '' : 'Enter your town or city.',
     }));
@@ -3318,9 +3318,31 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               setAddressErrors(prev => ({ ...prev, postcode: '' }));
                             }
                           }}
-                          onBlur={() => {
+                          onBlur={async () => {
                             setAddressTouched(prev => ({ ...prev, postcode: true }));
                             validateAddressField('postcode');
+                            const clean = (addressData.postcode || '').replace(/\s/g, '').toUpperCase();
+                            if (!ukPostcodeRegex.test(clean)) return;
+                            try {
+                              const res = await fetch(`https://api.postcodes.io/postcodes/${clean}`);
+                              if (!res.ok) return;
+                              const data = await res.json();
+                              const r = data?.result;
+                              if (!r) return;
+                              const town = r.post_town || r.admin_district || r.parish || '';
+                              const formatted = r.postcode || clean;
+                              setPostcodeInput(formatted);
+                              setAddressData(prev => ({
+                                ...prev,
+                                postcode: formatted,
+                                town: prev.town?.trim() ? prev.town : town,
+                              }));
+                              setAddressValidated(prev => ({ ...prev, postcode: true, town: prev.town || !!town }));
+                              if (town) {
+                                setTownAutoFilled(true);
+                                setAddressErrors(prev => ({ ...prev, postcode: '', town: '' }));
+                              }
+                            } catch { /* manual entry still works */ }
                           }}
                           className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('postcode')}`}
                         />
