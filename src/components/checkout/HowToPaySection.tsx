@@ -299,7 +299,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         <div className="flex items-center gap-2 text-[#1a1a1a]">
           <Shield className="w-4 h-4 text-gray-500 flex-shrink-0" />
           <div>
-            <div className="font-semibold">Powered by Bumper</div>
+            <div className="font-semibold">Powered by {selectedPayment === 'monthly' ? 'Bumper' : 'Stripe'}</div>
             <div className="text-gray-500 text-xs">Safe and secure</div>
           </div>
         </div>
