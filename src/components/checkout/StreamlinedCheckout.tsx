@@ -139,6 +139,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const handleChangeVehicleClick = onUpdateVehicle ? () => setEditVehicleOpen(true) : undefined;
   
   // Pre-populate from Step 2 data in localStorage
+  const [showDobError, setShowDobError] = useState(false);
   const [customerData, setCustomerData] = useState(() => {
     try {
       const savedCustomerData = localStorage.getItem('buyawarranty_customerData');
@@ -2210,8 +2211,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             first_name: firstName,
             last_name: lastName,
             final_amount: finalPrice,
-            customer_dob: customerData.dob_year && customerData.dob_month && customerData.dob_day 
-              ? `${customerData.dob_year}-${customerData.dob_month}-${customerData.dob_day}` : null,
+            customer_dob: toIsoDob({ day: customerData.dob_day || '', month: customerData.dob_month || '', year: customerData.dob_year || '' }),
             // Address fields - mapped for API compatibility
             street: addressData.address_line_1 || '',
             building_name: '',
@@ -2397,8 +2397,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             first_name: firstName,
             last_name: lastName,
             final_amount: finalPrice,
-            customer_dob: customerData.dob_year && customerData.dob_month && customerData.dob_day 
-              ? `${customerData.dob_year}-${customerData.dob_month}-${customerData.dob_day}` : null,
+            customer_dob: toIsoDob({ day: customerData.dob_day || '', month: customerData.dob_month || '', year: customerData.dob_year || '' }),
             // Address fields - mapped for API compatibility
             street: addressData.address_line_1 || '',
             building_name: '',
