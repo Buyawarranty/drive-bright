@@ -9,9 +9,6 @@ import {
   Mail,
   Pencil,
 } from 'lucide-react';
-import {
-  openingHoursLabel,
-} from '@/lib/aiSandbox/openingHours';
 import { WHATSAPP_URL } from '@/constants/contact';
 
 const CALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-callback-request`;
@@ -59,7 +56,7 @@ function validEmail(raw: string): boolean {
   return true;
 }
 
-type Step = 'closed' | 'method' | 'claimsInfo' | 'number' | 'done';
+type Step = 'closed' | 'method' | 'number' | 'done';
 type Preference = 'whatsapp' | 'email';
 type Topic = 'warranty_purchase' | 'general' | 'existing_policy' | 'other';
 
@@ -195,16 +192,9 @@ export function CallMeBackPanel({
             One of our team will {actionSentence}.
           </p>
         </div>
-        <div className="border-t border-emerald-200 pt-4">
-          <p className="flex items-start justify-center gap-2 text-xs leading-relaxed text-muted-foreground">
-            <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-700" />
-            <span>
-              Our team is available <span className="font-semibold text-foreground">{openingHoursLabel}</span>.
-              <br />
-              We'll be in touch as soon as possible.
-            </span>
-          </p>
-        </div>
+        <p className="border-t border-emerald-200 pt-4 text-xs leading-relaxed text-muted-foreground">
+          We'll reply as soon as possible.
+        </p>
         <div className="space-y-2 border-t border-emerald-200 pt-4 text-left">
           <p className="text-xs font-bold text-foreground">Need to change anything?</p>
           <button
@@ -286,9 +276,7 @@ export function CallMeBackPanel({
           <MessageCircle className="h-4 w-4 shrink-0 text-primary" />
           {step === 'method'
             ? 'Get in touch'
-            : step === 'claimsInfo'
-              ? 'Making a claim'
-              : 'No problem!'}
+            : 'No problem!'}
         </p>
         <button
           onClick={() => {
@@ -304,38 +292,6 @@ export function CallMeBackPanel({
 
       {step === 'method' ? (
         methodList
-      ) : step === 'claimsInfo' ? (
-        <div className="space-y-3">
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Our Claims team is open <span className="font-semibold text-foreground">Monday to Friday, 9am to 5pm</span>.
-            The quickest way to start a claim is online:
-          </p>
-          <a
-            href="https://buyawarranty.co.uk/make-a-claim/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-12 w-full items-center justify-center rounded-xl bg-primary text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            Make a claim online
-          </a>
-          <div className="space-y-1.5 text-sm">
-            <a href="tel:03302295045" className="flex items-center gap-2 font-bold text-[#B4501F] underline underline-offset-2">
-              <Phone className="h-4 w-4 shrink-0" />
-              Claims line: 0330 229 5045
-            </a>
-            <a href="mailto:claims@buyawarranty.co.uk" className="flex items-center gap-2 font-bold text-[#B4501F] underline underline-offset-2">
-              <Mail className="h-4 w-4 shrink-0" />
-              claims@buyawarranty.co.uk
-            </a>
-          </div>
-          <button
-            type="button"
-            onClick={() => setStep('number')}
-            className="h-10 w-full rounded-xl border border-input bg-background text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-          >
-            Back
-          </button>
-        </div>
       ) : (
         <form
           onSubmit={(e) => {
@@ -493,10 +449,10 @@ export function CallMeBackPanel({
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setStep('claimsInfo')}
+                onClick={() => setTopic(topic === 'existing_policy' ? null : 'existing_policy')}
                 className="flex h-11 items-center justify-center rounded-xl border border-input bg-background px-3 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
               >
-                Claims
+                Claim or complaint
               </button>
               <button
                 type="button"

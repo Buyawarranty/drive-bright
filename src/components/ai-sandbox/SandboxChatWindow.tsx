@@ -7,7 +7,6 @@ import type { PaymentPeriod } from '@/lib/pricingMatrix';
 import {
   Headset,
   PhoneCall,
-  Phone,
   MessageCircle,
   ShieldCheck,
   CarFront,
@@ -43,9 +42,9 @@ import { Shimmer } from '@/components/ai-elements/shimmer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
-import { isSalesPhoneOpenNow, nextOpeningLabel, salesPhoneHoursLabel } from '@/lib/aiSandbox/openingHours';
+import { nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
-import { SALES_PHONE, SALES_PHONE_TEL, WHATSAPP_URL } from '@/constants/contact';
+import { WHATSAPP_URL } from '@/constants/contact';
 import {
   prepareAttachment,
   CHAT_EMOJIS,
@@ -395,7 +394,6 @@ function PriceOptionsPanel({
   // Once a price has been asked for, the tall option grid folds away so the
   // answer above stays visible — the customer can reopen it to tweak options.
   const [optionsOpen, setOptionsOpen] = useState(true);
-  const salesPhoneOpen = isSalesPhoneOpenNow();
 
   // Chat does persuasion and price; the real cart takes the money. Once we know
   // the reg we can hand the customer straight to plan selection (step 3) with
@@ -618,22 +616,21 @@ function PriceOptionsPanel({
                 onClick={onBookCallback}
                 className="h-11 w-full justify-start gap-3 px-4 font-bold"
               >
-                <PhoneCall className="h-4 w-4 shrink-0" />
-                Book a callback
+                <Mail className="h-4 w-4 shrink-0" />
+                Leave your email address
               </Button>
               <Button asChild size="sm" variant="outline" className="h-11 w-full justify-start gap-3 px-4 font-bold">
                 <a
-                  href={salesPhoneOpen ? SALES_PHONE_TEL : WHATSAPP_URL}
-                  {...(!salesPhoneOpen ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  href={WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  {salesPhoneOpen ? <Phone className="h-4 w-4 shrink-0" /> : <MessageCircle className="h-4 w-4 shrink-0" />}
-                  {salesPhoneOpen ? `Speak to someone · ${SALES_PHONE}` : 'WhatsApp us'}
+                  <MessageCircle className="h-4 w-4 shrink-0" />
+                  WhatsApp us
                 </a>
               </Button>
             </div>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Phone line: {salesPhoneHoursLabel}. Outside these hours, WhatsApp us or book a callback.
-            </p>
+            <p className="text-xs leading-relaxed text-muted-foreground">There is no live chat. Our team will reply by email or WhatsApp.</p>
           </div>
 
         </div>
@@ -1049,7 +1046,7 @@ export function SandboxChatWindow({
     return <div className="flex-1 p-6 text-sm text-muted-foreground">Loading conversation…</div>;
   }
 
-  const waiting = handover?.status === 'waiting' && handover.kind === 'live_handover';
+  const waiting = !isGuest && handover?.status === 'waiting' && handover.kind === 'live_handover';
   const leadCaptured = handover?.kind === 'out_of_hours_lead' || handover?.kind === 'callback_request';
 
   // "Can I speak to a human / live agent?" shows the contact card inline.
@@ -1095,9 +1092,7 @@ export function SandboxChatWindow({
       {(waiting || leadCaptured) && (
         <div className="flex flex-wrap items-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-900">
           <PhoneCall className="h-3.5 w-3.5" />
-          {waiting && isGuest ? (
-            <span className="font-medium">Your live chat request has been sent. A specialist can reply here while you are online.</span>
-          ) : waiting ? (
+          {waiting ? (
             <>
               <span className="font-medium">A warranty specialist has been alerted</span>
               <span>
