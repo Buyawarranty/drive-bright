@@ -2922,7 +2922,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </div>
 
             {/* Address Section - Always visible */}
-            <div id="address-fields" className="mt-8 space-y-4 rounded-lg border border-border bg-card p-5 sm:p-6">
+            <div id="address-fields" className="mt-10 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
                   <h2 className="flex items-center gap-2 text-lg font-bold text-[#1a1a1a]">
@@ -2954,6 +2954,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </Button>
                 )}
               </div>
+              <div className="h-px bg-border" />
 
               {/* Confirmed address — green confirmation card replaces the search while confirmed */}
               {addressConfirmedComplete && !showAddressDropdown && !isLookingUp && addressData.address_line_1?.trim() ? (
