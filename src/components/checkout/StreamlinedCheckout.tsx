@@ -2965,7 +2965,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               ) : (
               <>
 
-              {/* Postcode Lookup - Auto triggers on valid format or blur */}
+              {/* Postcode Lookup - Auto triggers on valid format or blur. Hidden while manual entry is open so there is only one place to type. */}
+              {!manualAddressEntry && (
               <div>
                 <Label className="text-sm font-semibold text-foreground sm:text-base">Postcode, street or town</Label>
                 <div className="relative mt-2">
@@ -3186,6 +3187,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </div>
                 )}
               </div>
+              )}
 
               {/* Address Fields - Shown after lookup or manual entry click */}
               {showAddressFields && (
@@ -3322,7 +3324,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           onChange={(e) => {
                             const raw = e.target.value.toUpperCase();
                             setAddressData(prev => ({ ...prev, postcode: raw }));
-                            setPostcodeInput(raw);
                             setAddressValidated(prev => ({ ...prev, postcode: ukPostcodeRegex.test(raw.replace(/\s/g, '')) }));
                             if (addressErrors.postcode) {
                               setAddressErrors(prev => ({ ...prev, postcode: '' }));
@@ -3341,7 +3342,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               if (!r) return;
                               const town = r.post_town || r.admin_district || r.parish || '';
                               const formatted = r.postcode || clean;
-                              setPostcodeInput(formatted);
                               setAddressData(prev => ({
                                 ...prev,
                                 postcode: formatted,
