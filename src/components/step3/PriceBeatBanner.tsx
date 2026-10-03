@@ -136,23 +136,23 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
           onSubmit={handleSubmit}
           className="px-4 sm:px-5 pb-4 pt-1 border-t border-[#f5e4b0] animate-fade-in"
         >
-          <div className="grid gap-4 sm:grid-cols-2 mt-3">
+          <div className="grid gap-4 grid-cols-1 mt-3">
             <div>
               <label className="block text-[12px] font-semibold text-[#161616] mb-1">
                 Competitor quote
               </label>
               <div className="flex items-stretch rounded-lg border border-gray-200 bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#E8521A]/30 focus-within:border-[#E8521A]">
-                <span className="flex items-center pl-3 pr-1 text-gray-500 font-bold">£</span>
+                <span className="flex items-center pl-3.5 pr-0.5 text-gray-500 font-bold">£</span>
                 <Input
                   type="text"
                   inputMode="numeric"
                   value={competitorPrice}
                   onChange={(e) => setCompetitorPrice(e.target.value.replace(/[^0-9.]/g, ''))}
                   placeholder="e.g. 45"
-                  className="h-11 flex-1 border-0 rounded-none text-sm font-semibold bg-white focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
+                  className="h-11 flex-1 min-w-0 border-0 rounded-none text-sm font-semibold bg-white focus-visible:ring-0 focus-visible:ring-offset-0 pl-1.5 pr-2"
                   disabled={submitting}
                 />
-                <div className="relative border-l border-gray-200">
+                <div className="relative border-l border-gray-200 shrink-0">
                   <select
                     value={priceMode}
                     onChange={(e) => setPriceMode(e.target.value as 'monthly' | 'total')}
