@@ -1128,13 +1128,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const addressComplete = useMemo(() => {
     const ukPostcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
     return !!(
-      postcodeInput.trim() &&
+      (manualAddressEntry || postcodeInput.trim()) &&
       addressData.address_line_1?.trim() &&
       addressData.town?.trim() &&
       addressData.postcode?.trim() &&
       ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))
     );
-  }, [addressData, postcodeInput]);
+  }, [addressData, postcodeInput, manualAddressEntry]);
   
   // Count missing address fields
   const addressFieldsMissing = useMemo(() => {
@@ -1736,7 +1736,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         break;
       case 'postcode':
         // Nothing typed and nothing picked — the customer skipped the address entirely.
-        if (!postcodeInput.trim() || !addressData.postcode?.trim()) {
+        if ((!manualAddressEntry && !postcodeInput.trim()) || !addressData.postcode?.trim()) {
           error = 'Please enter postcode';
           isValid = false;
         } else if (!ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))) {
@@ -1807,7 +1807,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (
       addressValidated[field] &&
       addressData[field as keyof typeof addressData]?.trim() &&
-      (field !== 'postcode' || (postcodeInput.trim() && addressComplete))
+      (field !== 'postcode' || ((manualAddressEntry || postcodeInput.trim()) && addressComplete))
     ) {
       return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
     }
@@ -2187,7 +2187,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     const pc = (addressData.postcode || '').trim();
     const line1 = (addressData.address_line_1 || '').trim();
     const town = (addressData.town || '').trim();
-    const pcOk = !!visibleSearch && !!pc && ukPc.test(pc.replace(/\s/g, ''));
+    // In manual entry the top search box is hidden, so the manual postcode alone counts.
+    const pcOk = (manualAddressEntry || !!visibleSearch) && !!pc && ukPc.test(pc.replace(/\s/g, ''));
 
     if (pcOk && line1 && town) return true;
 
