@@ -3207,6 +3207,58 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <ChevronUp className="h-5 w-5 text-muted-foreground" />
                   </button>
 
+                  {/* Postcode — first, so the town can be auto-filled from it */}
+                  <div>
+                    <Label htmlFor="manual_postcode" className="text-sm font-medium text-foreground/80">
+                      Postcode *
+                    </Label>
+                    <div className="relative mt-1.5">
+                      <Input
+                        id="manual_postcode"
+                        type="text"
+                        placeholder="e.g. B11 2BU"
+                        value={addressData.postcode || ''}
+                        onChange={(e) => {
+                          const raw = e.target.value.toUpperCase();
+                          setAddressData(prev => ({ ...prev, postcode: raw }));
+                          setAddressValidated(prev => ({ ...prev, postcode: ukPostcodeRegex.test(raw.replace(/\s/g, '')) }));
+                          if (addressErrors.postcode) {
+                            setAddressErrors(prev => ({ ...prev, postcode: '' }));
+                          }
+                        }}
+                        onBlur={async () => {
+                          setAddressTouched(prev => ({ ...prev, postcode: true }));
+                          validateAddressField('postcode');
+                          const clean = (addressData.postcode || '').replace(/\s/g, '').toUpperCase();
+                          if (!ukPostcodeRegex.test(clean)) return;
+                          try {
+                            const res = await fetch(`https://api.postcodes.io/postcodes/${clean}`);
+                            if (!res.ok) return;
+                            const data = await res.json();
+                            const r = data?.result;
+                            if (!r) return;
+                            const town = r.post_town || r.admin_district || r.parish || '';
+                            const formatted = r.postcode || clean;
+                            setAddressData(prev => ({
+                              ...prev,
+                              postcode: formatted,
+                              town: prev.town?.trim() ? prev.town : town,
+                            }));
+                            setAddressValidated(prev => ({ ...prev, postcode: true, town: prev.town || !!town }));
+                            if (town) {
+                              setTownAutoFilled(true);
+                              setAddressErrors(prev => ({ ...prev, postcode: '', town: '' }));
+                            }
+                          } catch { /* manual entry still works */ }
+                        }}
+                        className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('postcode')}`}
+                      />
+                      {addressData.postcode?.trim() && !addressErrors.postcode && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                      )}
+                    </div>
+                  </div>
+
                   {/* Address Line 1 */}
                   <div>
                     <Label htmlFor="address_line_1" className="text-sm font-medium text-foreground/80">
@@ -3256,7 +3308,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {/* Town/City — shown as compact confirmation once auto-filled by postcode */}
                   {townAutoFilled && addressData.town?.trim() && !addressErrors.town ? (
                     <div className="flex items-center justify-between gap-3 rounded-lg border border-[#0BA360]/30 bg-[#0BA360]/5 px-3 py-2.5">
@@ -3310,58 +3361,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       )}
                     </div>
                     )}
-                    {/* Postcode */}
-                    <div>
-                      <Label htmlFor="manual_postcode" className="text-sm font-medium text-foreground/80">
-                        Postcode *
-                      </Label>
-                      <div className="relative mt-1.5">
-                        <Input
-                          id="manual_postcode"
-                          type="text"
-                          placeholder="e.g. B11 2BU"
-                          value={addressData.postcode || ''}
-                          onChange={(e) => {
-                            const raw = e.target.value.toUpperCase();
-                            setAddressData(prev => ({ ...prev, postcode: raw }));
-                            setAddressValidated(prev => ({ ...prev, postcode: ukPostcodeRegex.test(raw.replace(/\s/g, '')) }));
-                            if (addressErrors.postcode) {
-                              setAddressErrors(prev => ({ ...prev, postcode: '' }));
-                            }
-                          }}
-                          onBlur={async () => {
-                            setAddressTouched(prev => ({ ...prev, postcode: true }));
-                            validateAddressField('postcode');
-                            const clean = (addressData.postcode || '').replace(/\s/g, '').toUpperCase();
-                            if (!ukPostcodeRegex.test(clean)) return;
-                            try {
-                              const res = await fetch(`https://api.postcodes.io/postcodes/${clean}`);
-                              if (!res.ok) return;
-                              const data = await res.json();
-                              const r = data?.result;
-                              if (!r) return;
-                              const town = r.post_town || r.admin_district || r.parish || '';
-                              const formatted = r.postcode || clean;
-                              setAddressData(prev => ({
-                                ...prev,
-                                postcode: formatted,
-                                town: prev.town?.trim() ? prev.town : town,
-                              }));
-                              setAddressValidated(prev => ({ ...prev, postcode: true, town: prev.town || !!town }));
-                              if (town) {
-                                setTownAutoFilled(true);
-                                setAddressErrors(prev => ({ ...prev, postcode: '', town: '' }));
-                              }
-                            } catch { /* manual entry still works */ }
-                          }}
-                          className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('postcode')}`}
-                        />
-                        {addressData.postcode?.trim() && !addressErrors.postcode && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Switch back to postcode lookup — keeps anything already typed */}
                   <Button
