@@ -31,6 +31,7 @@ export const ALERT_RAIL_ORDER = {
   stuckCheckout: 20,
   chatAgentRequest: 25,
   complaintAlert: 30,
+  priceBeat: 22,
 } as const;
 
 const TONE: Record<RecentAlertTone, { card: string; dot: string }> = {
