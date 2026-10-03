@@ -137,6 +137,9 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
               <p className="text-sm text-[#0BA360] font-semibold mt-1">
                 Save £{Math.max(monthlyPaidTotal - fullPrice, Math.round(fullPrice * 0.1))} vs monthly payments
               </p>
+              <p className="text-sm text-[#0BA360] font-semibold mt-0.5">
+                = {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day over your full cover term
+              </p>
             </div>
 
             {/* Benefits */}
