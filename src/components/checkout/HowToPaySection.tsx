@@ -281,7 +281,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
       </div>
 
       {/* Trust strip footer — Secure · Cooling-off · Bumper */}
-      <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm">
+      <div className="mt-4 sm:mt-5 grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 text-xs sm:text-sm">
         <div className="flex items-center gap-2 text-[#1a1a1a]">
           <Lock className="w-4 h-4 text-gray-500 flex-shrink-0" />
           <div>
@@ -292,7 +292,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         <div className="flex items-center gap-2 text-[#1a1a1a]">
           <Clock className="w-4 h-4 text-gray-500 flex-shrink-0" />
           <div>
-            <div className="font-semibold">14-day cooling-off period</div>
+            <div className="font-semibold">14-day cooling-off</div>
             <div className="text-gray-500 text-xs">Change your mind, no problem</div>
           </div>
         </div>
