@@ -190,7 +190,7 @@ export default function BumperDobPage({
                 size="lg"
                 disabled={Boolean(validationError) || isLoading}
                 onClick={onContinue}
-                className="mt-5 h-13 w-full text-base font-bold"
+                className="mt-5 h-14 w-full text-base font-bold"
               >
                 {isLoading ? 'Connecting securely…' : <>Continue to eligibility check <ArrowRight className="h-5 w-5" /></>}
               </Button>
