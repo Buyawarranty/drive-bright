@@ -58,12 +58,13 @@ function validEmail(raw: string): boolean {
 
 type Step = 'closed' | 'method' | 'number' | 'done';
 type Preference = 'whatsapp' | 'email';
-type Topic = 'warranty_purchase' | 'general' | 'existing_policy' | 'other';
+type Topic = 'warranty_purchase' | 'general' | 'existing_policy' | 'claims_complaints' | 'other';
 
 const TOPIC_SENTENCE: Record<Topic, string> = {
   warranty_purchase: 'warranty purchase',
   general: 'general enquiry',
   existing_policy: 'existing policy question',
+  claims_complaints: 'claim or complaint',
   other: '',
 };
 
@@ -449,8 +450,13 @@ export function CallMeBackPanel({
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setTopic(topic === 'existing_policy' ? null : 'existing_policy')}
-                className="flex h-11 items-center justify-center rounded-xl border border-input bg-background px-3 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+                onClick={() => setTopic(topic === 'claims_complaints' ? null : 'claims_complaints')}
+                aria-pressed={topic === 'claims_complaints'}
+                className={`flex h-11 items-center justify-center rounded-xl border px-3 text-sm font-bold transition-colors ${
+                  topic === 'claims_complaints'
+                    ? 'border-primary/50 bg-[#FDEBDF] text-foreground'
+                    : 'border-input bg-background text-foreground hover:border-primary/40 hover:bg-muted'
+                }`}
               >
                 Claim or complaint
               </button>

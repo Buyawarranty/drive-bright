@@ -76,7 +76,7 @@ GROUNDING — THE MOST IMPORTANT RULE:
 - Defaults when the customer has no preference: 2 year cover, £2,000 claim limit, £100 excess, £70 per hour labour rate.
 - Payment: card payment in full (Stripe) or interest free monthly instalments (Bumper, subject to their checks).
 - The chat shows a "Build your price" panel where the customer picks term, claim limit, excess and labour rate. When they send a combination, price EXACTLY that combination with get_indicative_price. Put the total price on the first line in bold, then the monthly instalment amount on the next line if available, and keep the rest to one short sentence.
-- NEVER ASK FOR NAME OR EMAIL IN THE SAME REPLY AS A PRICE, and never say "when you're ready to proceed, what is your full name and email". Do not end a price reply by asking "Would you like to go ahead?" or any similar commitment question. The interface gives three low-pressure choices: continue with payment, book a callback, or speak to someone during phone opening hours (WhatsApp outside those hours). End after the helpful price explanation, without adding another sales question.
+- NEVER ASK FOR NAME OR EMAIL IN THE SAME REPLY AS A PRICE, and never say "when you're ready to proceed, what is your full name and email". Do not end a price reply by asking "Would you like to go ahead?" or any similar commitment question. The interface gives three low-pressure choices: continue with payment, leave an email address, or WhatsApp us. End after the helpful price explanation, without adding another sales question.
 - Only ask for their name and email AFTER they have seen the plan and clearly said they want to go ahead (for example "I'll take it", "how do I pay", "send me the link", "yes let's do it") or after they have looked at the cover and asked a follow-up that shows they are buying. Ask gently and in one short line: "I'll just need your name and email to set that up." Never ask twice, never chase, and never block on a name.
 - Once you have those details, call create_test_payment_link with method "stripe" for card or "bumper" for monthly instalments and give them the link straight away.
 - You are running in a SANDBOX. Any payment link you create is a TEST link and cannot take a real payment. Say this whenever you send one.
@@ -928,7 +928,7 @@ Deno.serve(async (req) => {
 
       check_availability: tool({
         description:
-          "Check the team's opening hours and whether they are open right now. There is no live chat handover — use this only to tell the customer when the team will call, WhatsApp or email them back.",
+          "Check the team's opening hours and whether they are open right now. There is no live chat handover. Contact choices are WhatsApp or leaving an email address.",
         inputSchema: z.object({}),
         execute: async () => {
           const state = availability();
@@ -952,7 +952,7 @@ Deno.serve(async (req) => {
           registration: z.string().nullable(),
           cover_summary: z.string().nullable(),
           quoted_price: z.number().nullable(),
-          notes: z.string().nullable().describe("Anything the specialist should know before calling"),
+          notes: z.string().nullable().describe("Anything the team should know before replying by WhatsApp or email"),
         }),
         execute: async (args) => {
           if (!args.customer_email && !args.customer_phone) {
@@ -1031,7 +1031,7 @@ Deno.serve(async (req) => {
             lead_id: data.id,
             pipeline_lead: pipeline,
             next_open: state.next_open,
-            note: "Details saved. Tell the customer the team will call, WhatsApp or email them back (shortly if open, otherwise at the next opening time) and offer to keep helping here meanwhile.",
+            note: "Details saved. Tell the customer the team will reply by WhatsApp or email, and offer to keep helping here meanwhile.",
           });
         },
 
