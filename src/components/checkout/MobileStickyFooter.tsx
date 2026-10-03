@@ -188,8 +188,8 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
               <span className="text-[13px] font-semibold text-foreground">View payment options</span>
               <ChevronDown
                 className={cn(
-                  'h-4 w-4 text-primary transition-transform duration-200',
-                  expanded && 'rotate-180'
+                  'h-5 w-5 text-primary transition-transform duration-200',
+                  !expanded && 'rotate-180'
                 )}
               />
             </button>
