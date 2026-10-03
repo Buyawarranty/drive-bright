@@ -393,6 +393,23 @@ serve(async (req) => {
       }]
     };
 
+    // UNVERIFIED: best-effort DOB pre-fill for Bumper's hosted page.
+    // `additional_data` is excluded from the signature, so this cannot break signing.
+    // The `date_of_birth` key is a guess — confirm against Bumper's API docs / sandbox.
+    const rawDob = typeof customerData?.customer_dob === 'string' ? customerData.customer_dob : '';
+    const customerDob = /^\d{4}-\d{2}-\d{2}$/.test(rawDob) ? rawDob : null;
+    if (customerDob) {
+      const existing = (bumperRequestData as any).additional_data;
+      (bumperRequestData as any).additional_data = {
+        ...(existing && typeof existing === 'object' ? existing : {}),
+        date_of_birth: customerDob,
+      };
+    }
+    logStep("Customer DOB pass-through (unverified additional_data.date_of_birth)", {
+      dobPresent: !!customerDob,
+      dobSent: !!customerDob,
+    });
+
     // Remove sensitive data from logs
     const loggableData = { ...bumperRequestData };
     if ('api_key' in loggableData) delete (loggableData as any).api_key;
