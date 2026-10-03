@@ -1175,22 +1175,25 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }
   }, [addressComplete, addressConfirmedComplete, manualAddressEntry, showAddressDropdown, isLookingUp, addressSuggestions.length]);
 
-  // Auto-scroll to "Confirm your current mileage" once personal details AND a
-  // fully confirmed address (picked in full or every field completed) are in place,
-  // so the customer confirms mileage before reaching the payment section.
+  // Auto-scroll once personal details AND a fully confirmed address (picked in
+  // full or every field completed) are in place. If mileage still needs
+  // confirming, stop at "Confirm your current mileage"; if mileage is already
+  // valid (e.g. confirmed earlier, or the last name was the final field), go
+  // straight to the payment options.
   const hasAutoScrolledToPayRef = React.useRef(false);
   useEffect(() => {
     if (hasAutoScrolledToPayRef.current) return;
     if (personalDetailsComplete && addressComplete && addressConfirmedComplete && !showAddressDropdown && !isLookingUp) {
       hasAutoScrolledToPayRef.current = true;
       setTimeout(() => {
-        const mileageSection = document.getElementById('mileage-confirm-section');
-        if (mileageSection) {
-          mileageSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const targetId = mileageValueValid ? 'how-to-pay-section' : 'mileage-confirm-section';
+        const target = document.getElementById(targetId);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: mileageValueValid ? 'start' : 'center' });
         }
       }, 300);
     }
-  }, [personalDetailsComplete, addressComplete, addressConfirmedComplete, showAddressDropdown, isLookingUp]);
+  }, [personalDetailsComplete, addressComplete, addressConfirmedComplete, showAddressDropdown, isLookingUp, mileageValueValid]);
 
   // Track if component has been mounted (for bfcache handling)
   const hasMountedRef = React.useRef(false);
@@ -1291,6 +1294,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (!addressComplete || !addressConfirmedComplete) return;
     if (showAddressDropdown || isLookingUp) return;
 
+    // If mileage is already valid there is nothing to confirm here — leave the
+    // once-per-session scroll to the effect above so it can take the customer
+    // straight to the payment options when their details are complete.
+    if (mileageValueValid) return;
+
     // Only trigger once per session
     if (hasAutoScrolledToPaymentRef.current) return;
 
@@ -1314,7 +1322,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
       }, 300);
     }
-  }, [addressComplete, addressConfirmedComplete, showAddressDropdown, isLookingUp, addressData.postcode, addressData.address_line_1, addressData.town]);
+  }, [addressComplete, addressConfirmedComplete, showAddressDropdown, isLookingUp, addressData.postcode, addressData.address_line_1, addressData.town, mileageValueValid]);
 
   // Auto-validate pre-filled fields from Step 2
   useEffect(() => {
