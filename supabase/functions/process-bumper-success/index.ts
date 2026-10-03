@@ -467,7 +467,9 @@ serve(async (req) => {
       customerData: {
         ...customerData,
         // Ensure Bumper order ID is stored for payment method identification
-        bumper_order_id: transactionId
+        bumper_order_id: transactionId,
+        // DOB collected on our step 4 "One last detail" box (persisted to customers.customer_dob)
+        customer_dob: customerData?.customer_dob || null
       },
       vehicleData: vehicleData,
       paymentType: originalWarrantyDuration, // Use original warranty duration, not Bumper payment frequency
@@ -502,6 +504,7 @@ serve(async (req) => {
         fbclid: bumperFbclid,
         // CRITICAL: Include start_date in metadata as backup
         start_date: selectedStartDate,
+        customer_dob: customerData?.customer_dob || null,
         // Vehicle details for metadata - ensure these are populated
         vehicle_reg: vehicleData?.regNumber || vehicleData?.registration || customerData?.vehicle_reg,
         vehicle_make: vehicleData?.make || customerData?.vehicle_make,
@@ -525,6 +528,8 @@ serve(async (req) => {
         addon_consequential: addOnFields.consequential ? 'true' : 'false'
       }
     };
+
+    logStep("Customer DOB from Bumper transaction", { hasDob: !!customerData?.customer_dob });
 
     logStep("Calling handle-successful-payment", { 
       email: customerData?.email,
