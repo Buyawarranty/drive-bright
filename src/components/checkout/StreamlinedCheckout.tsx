@@ -1968,6 +1968,26 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       return;
     }
 
+    // Address must be picked from the suggestions list or fully entered by hand.
+    // Typing a postcode alone (with the suggestion list still open) is not enough.
+    if (validateForm() && (!addressConfirmedComplete || showAddressDropdown)) {
+      setAddressExpanded(true);
+      setTimeout(() => {
+        const el = document.getElementById('postcode-lookup') || document.getElementById('address-fields');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          (el as HTMLInputElement).focus?.();
+        }
+      }, 200);
+      toast.error('Please select your address from the list, or enter it manually, to continue.', {
+        id: 'checkout-required-fields',
+        duration: 6000,
+        closeButton: true,
+        dismissible: true,
+      });
+      return;
+    }
+
     if (!validateForm()) {
       if (!personalDetailsComplete) setDetailsOpen(true);
       // Also expand address section if address fields are incomplete
