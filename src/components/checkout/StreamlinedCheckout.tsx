@@ -1798,7 +1798,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const getAddressInputValidationClass = (field: string) => {
     // The lookup is only complete after the customer has selected or manually
     // entered a full address. A recognised postcode by itself must never look done.
-    if (field === 'postcode' && showValidation && (!addressComplete || !addressConfirmedComplete || showAddressDropdown)) {
+    // In manual entry each field stands on its own, so the postcode box only
+    // turns red for its own error — never because other fields are unfinished.
+    if (field === 'postcode' && !manualAddressEntry && showValidation && (!addressComplete || !addressConfirmedComplete || showAddressDropdown)) {
       return 'border-2 border-[#FF385C] ring-2 ring-[#FF385C]/25 bg-[#FF385C]/5 focus:ring-[#FF385C]/40 focus:border-[#FF385C]';
     }
     if ((showValidation || addressTouched[field]) && addressErrors[field]) {
@@ -3287,6 +3289,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                       )}
                     </div>
+                    {(showValidation || addressTouched.postcode) && addressErrors.postcode && (
+                      <p className="text-[#FF385C] text-sm mt-1.5 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        {addressErrors.postcode}
+                      </p>
+                    )}
                   </div>
 
                   {/* Address Line 1 */}
