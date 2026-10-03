@@ -6,3 +6,4 @@
 - Route renewal leads only to active agents with the Renewals workstream; prefer the original seller, otherwise use longest-waiting rotation so new starters never receive catch-up batches.
 - Auto-create renewal leads only when there is no claim, cancellation, or refund history; claim/cancel/refund renewals wait in Renewal approval and enter New Leads only after a recorded management approval, because management decides whether to re-offer cover.
 - Keep the sales phone availability rule separate from live-chat presence: phone calls are offered Mon–Fri 9am–6pm and Sat 12pm–4pm UK time, with callback/WhatsApp outside those hours.
+- Keep Bumper date-of-birth collection as a dedicated checkout substep after Step 4 validation and before the external eligibility handoff, so payment pricing and provider logic remain shared with Step 4.
