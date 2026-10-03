@@ -293,6 +293,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [showAddressDropdown, setShowAddressDropdown] = useState(false);
   const postcodeLookupTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  // Bumped whenever an address is picked so an older lookup still in flight
+  // can never reopen the list and undo the customer's choice.
+  const lookupSeqRef = React.useRef(0);
   
   // UK postcode regex for validation
   const ukPostcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
@@ -301,6 +304,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const performPostcodeLookup = useCallback(async (postcode: string) => {
     const cleanPostcode = postcode.replace(/\s/g, '').toUpperCase();
     if (!ukPostcodeRegex.test(cleanPostcode)) return;
+    const seq = ++lookupSeqRef.current;
     
     setIsLookingUp(true);
     setAddressLookupFailed(false);
@@ -333,6 +337,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             town_or_city: r.town_or_city || r.town || r.posttown || '',
             formatted_address: r.formatted_address || r.address || '',
           }));
+        if (seq !== lookupSeqRef.current) return;
         if (!pcError && rows.length > 0) {
           const displayPostcode = rows[0].postcode || postcode;
           const lookupTown = rows[0].town_or_city || '';
@@ -361,6 +366,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       }
 
       const response = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
+      if (seq !== lookupSeqRef.current) return;
       
       if (response.ok) {
         const data = await response.json();
@@ -490,6 +496,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Populate every address field once the customer picks their final address
   const handleSelectLookupAddress = useCallback((addr: any) => {
     // Full address chosen — the address is now genuinely complete.
+    lookupSeqRef.current += 1;
+    if (postcodeLookupTimeoutRef.current) clearTimeout(postcodeLookupTimeoutRef.current);
+    setIsLookingUp(false);
     setAddressConfirmedComplete(true);
     const line1 = addr.line_1 || '';
     const line2 = [addr.line_2, addr.line_3].filter(Boolean).join(', ');
@@ -3056,7 +3065,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     onBlur={() => {
                       // Also trigger on blur if valid format and not already looking up
                       const cleanValue = postcodeInput.replace(/\s/g, '');
-                      if (ukPostcodeRegex.test(cleanValue) && !isLookingUp && !showAddressFields) {
+                      if (ukPostcodeRegex.test(cleanValue) && !isLookingUp && !showAddressFields && !showAddressDropdown && addressSuggestions.length === 0 && !addressConfirmedComplete) {
                         performPostcodeLookup(postcodeInput);
                       }
                       // Once an address has been picked (or manual entry opened) the
@@ -3117,6 +3126,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           key={`${addr.__container ? addr.label : addr.formatted_address}-${i}`}
                           type="button"
                           variant="ghost"
+                          onMouseDown={(event) => event.preventDefault()}
                           onClick={() => {
                             if (addr.__container) {
                               if (addr.retrieveId) {
