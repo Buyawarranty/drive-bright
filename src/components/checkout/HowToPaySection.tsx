@@ -89,7 +89,8 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
     <section className="bg-white rounded-2xl border border-[#E5E5E5] p-5 sm:p-7">
       {/* Header */}
       <div className="mb-5">
-        <h2 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Choose how you want to pay</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-[#1a1a1a]">Choose how you want to pay</h2>
+        <p className="text-sm text-gray-500 mt-1">Select the option that works best for you.</p>
       </div>
 
       {/* Payment Cards - Vertical on mobile, horizontal (side-by-side) on desktop */}
@@ -134,10 +135,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 <span className="text-sm text-[#1a1a1a] font-medium">today</span>
               </div>
               <p className="text-sm text-[#0BA360] font-semibold mt-1">
-                Save £{Math.max(monthlyPaidTotal - fullPrice, Math.round(fullPrice * 0.1))} overall vs monthly payments
-              </p>
-              <p className="text-sm text-[#0BA360] font-medium mt-1">
-                = {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day over your full cover term
+                Save £{Math.max(monthlyPaidTotal - fullPrice, Math.round(fullPrice * 0.1))} vs monthly payments
               </p>
             </div>
 
@@ -149,11 +147,11 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
               </div>
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
-                <span>Best value option</span>
+                <span>No ongoing payments</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
-                <span>No ongoing payments</span>
+                <span>Best value option</span>
               </div>
             </div>
           </div>
@@ -195,18 +193,18 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         >
           {/* Title row with radio */}
           <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
+            <div className="flex min-w-0 items-center gap-2 flex-wrap">
               {/* Radio indicator */}
               <div
-                className={`h-7 w-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                   selectedPayment === 'monthly' ? 'border-primary' : 'border-muted-foreground'
                 }`}
               >
-                {selectedPayment === 'monthly' && <span className="h-4 w-4 rounded-full bg-primary" />}
+                {selectedPayment === 'monthly' && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-foreground">Spread the cost</h3>
+              <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Spread the cost</h3>
             </div>
-            <span className="flex-shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs sm:text-sm font-bold text-primary-foreground">0% APR</span>
+            <span className="flex-shrink-0 bg-primary text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">0% APR</span>
           </div>
 
           {/* Price + benefits row */}
