@@ -2907,14 +2907,53 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </div>
 
             {/* Address Section - Always visible */}
-            <div id="address-fields" className="mt-8 space-y-4 rounded-lg border border-border bg-card px-4 py-5 shadow-sm sm:px-7 sm:py-7">
+            <div id="address-fields" className="mt-8 space-y-4 rounded-lg border border-border bg-card p-5 sm:p-6">
               <div className="space-y-1">
-                <h2 className="flex items-center gap-3 text-xl font-bold text-foreground sm:text-2xl">
-                  <Home className="h-7 w-7 text-[hsl(var(--success))]" />
+                <h2 className="flex items-center gap-2 text-lg font-bold text-[#1a1a1a]">
+                  <Home className="h-5 w-5 text-[#0BA360]" />
                   Your address
                 </h2>
-                <p className="text-sm text-muted-foreground sm:text-base">Search for your address to continue.</p>
+                <p className="text-sm text-muted-foreground">Search for your address to continue.</p>
               </div>
+
+              {/* Confirmed address — green confirmation card replaces the search while confirmed */}
+              {addressConfirmedComplete && !showAddressDropdown && !isLookingUp && addressData.address_line_1?.trim() ? (
+                <div className="rounded-lg border border-[#0BA360]/30 bg-[#0BA360]/[0.06] p-4 sm:p-5">
+                  <div className="flex items-start gap-3 sm:items-center">
+                    <span className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#0BA360] sm:mt-0">
+                      <Check className="h-5 w-5 text-white" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-base font-bold leading-snug text-[#1a1a1a] sm:text-lg">
+                        {addressData.address_line_1}{addressData.address_line_2 ? `, ${addressData.address_line_2}` : ''}
+                      </p>
+                      <p className="text-base font-bold leading-snug text-[#1a1a1a] sm:text-lg">
+                        {[addressData.town, addressData.postcode].filter(Boolean).join(', ')}
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-[#0BA360]">Address confirmed</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setAddressConfirmedComplete(false);
+                        setPostcodeInput('');
+                        setShowAddressDropdown(false);
+                        setAddressSuggestions([]);
+                        setShowAddressFields(false);
+                        setManualAddressEntry(false);
+                        setTownAutoFilled(false);
+                        setAddressData(prev => ({ ...prev, address_line_1: '', address_line_2: '', town: '', county: '', postcode: '' }));
+                        setAddressValidated(prev => ({ ...prev, address_line_1: false, town: false, postcode: false }));
+                      }}
+                      className="h-10 flex-shrink-0 rounded-lg border-border bg-white px-4 text-sm font-semibold text-[#1a1a1a]"
+                    >
+                      Change
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+              <>
 
               {/* Postcode Lookup - Auto triggers on valid format or blur */}
               <div>
