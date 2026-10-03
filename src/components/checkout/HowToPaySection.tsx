@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, Check, Tag, X, Shield, CalendarDays } from 'lucide-react';
+import { Lock, Check, Tag, X, Shield, CalendarDays, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
@@ -208,54 +208,54 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           </div>
 
           {/* Price + benefits row */}
-          <div className="mt-4 flex flex-col gap-5 sm:pl-10">
+          <div className="mt-4 flex flex-col gap-4 sm:pl-7">
             <div>
-              <div className="mb-4 flex items-center gap-2 font-bold text-primary">
-                <CalendarDays className="h-5 w-5 flex-shrink-0" strokeWidth={2.5} />
-                <span className="text-base sm:text-lg">12 monthly instalments</span>
+              <div className="flex items-center gap-2 font-bold text-primary">
+                <CalendarDays className="h-4 w-4 flex-shrink-0" strokeWidth={2.5} />
+                <span className="text-sm sm:text-base">12 monthly instalments</span>
               </div>
-              <div className="flex items-baseline gap-3">
-                <span className="text-5xl sm:text-6xl font-extrabold text-primary leading-none">
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-extrabold text-primary leading-none tracking-tight">
                   £{monthlyPrice}
                 </span>
-                <span className="text-xl text-foreground font-bold">today</span>
+                <span className="text-sm text-foreground font-medium">today</span>
               </div>
-              <p className="mt-2 text-base sm:text-lg text-primary font-bold">
+              <p className="mt-1 text-sm text-primary font-semibold">
                 Your first of 12 monthly instalments
               </p>
             </div>
 
-            <div className="border-t border-border pt-4">
-              <p className="text-base sm:text-lg text-foreground">
+            <div className="border-t border-border pt-3">
+              <p className="text-sm text-foreground">
                 Then 11 monthly instalments of £{monthlyPrice}
               </p>
-              <div className="mt-4 grid grid-cols-2 rounded-lg border border-border bg-secondary/70 px-4 py-3">
+              <div className="mt-3 grid grid-cols-2 rounded-lg border border-border bg-secondary/70 px-3 py-2.5">
                 <div className="border-r border-border pr-3">
-                  <span className="block text-xs font-bold uppercase text-muted-foreground">Today</span>
-                  <strong className="mt-1 block text-xl text-foreground">£{monthlyPrice}</strong>
-                  <span className="text-sm text-muted-foreground">First instalment</span>
+                  <span className="block text-[10px] font-bold uppercase text-muted-foreground">Today</span>
+                  <strong className="mt-0.5 block text-lg text-foreground">£{monthlyPrice}</strong>
+                  <span className="text-xs text-muted-foreground">First instalment</span>
                 </div>
-                <div className="pl-4">
-                  <span className="block text-xs font-bold uppercase text-muted-foreground">After today</span>
-                  <strong className="mt-1 block text-xl text-foreground">11 × £{monthlyPrice}</strong>
-                  <span className="text-sm text-muted-foreground">Monthly instalments</span>
+                <div className="pl-3">
+                  <span className="block text-[10px] font-bold uppercase text-muted-foreground">After today</span>
+                  <strong className="mt-0.5 block text-lg text-foreground">11 × £{monthlyPrice}</strong>
+                  <span className="text-xs text-muted-foreground">Monthly instalments</span>
                 </div>
               </div>
-              <p className="mt-4 text-lg font-bold text-primary">£{monthlyPaidTotal} total payable · 0% APR</p>
+              <p className="mt-3 text-sm sm:text-base font-bold text-primary">£{monthlyPaidTotal} total payable · 0% APR</p>
             </div>
 
             {/* Benefits */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-base text-foreground">
-                <Check className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={3} />
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" strokeWidth={3} />
                 <span>No large upfront payment</span>
               </div>
-              <div className="flex items-center gap-3 text-base text-foreground">
-                <Check className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={3} />
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" strokeWidth={3} />
                 <span>Soft eligibility check only</span>
               </div>
-              <div className="flex items-center gap-3 text-base text-foreground">
-                <Check className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={3} />
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" strokeWidth={3} />
                 <span>No impact on your credit score</span>
               </div>
             </div>
@@ -285,8 +285,8 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         </div>
       </div>
 
-      {/* Trust strip footer (Secure · UK support) — two side-by-side on mobile and desktop */}
-      <div className="mt-5 grid grid-cols-2 gap-3 text-xs sm:text-sm">
+      {/* Trust strip footer — Secure · Cooling-off · Bumper */}
+      <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm">
         <div className="flex items-center gap-2 text-[#1a1a1a]">
           <Lock className="w-4 h-4 text-gray-500 flex-shrink-0" />
           <div>
@@ -295,12 +295,18 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-2 text-[#1a1a1a]">
-          <svg className="w-4 h-4 text-[#FF6B00] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1 1 0 0 0-1.02.24l-2.2 2.2a15.05 15.05 0 0 1-6.59-6.59l2.2-2.2a1 1 0 0 0 .25-1.02A11.36 11.36 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1c0 9.39 7.61 17 17 17a1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"/></svg>
+          <Clock className="w-4 h-4 text-gray-500 flex-shrink-0" />
           <div>
-            <div className="font-semibold">UK support</div>
-            <a href="tel:03302295040" className="text-[#FF6B00] text-xs font-semibold hover:underline">0330 229 5040</a>
+            <div className="font-semibold">14-day cooling-off period</div>
+            <div className="text-gray-500 text-xs">Change your mind, no problem</div>
           </div>
-
+        </div>
+        <div className="flex items-center gap-2 text-[#1a1a1a]">
+          <Shield className="w-4 h-4 text-gray-500 flex-shrink-0" />
+          <div>
+            <div className="font-semibold">Powered by Bumper</div>
+            <div className="text-gray-500 text-xs">Safe and secure</div>
+          </div>
         </div>
       </div>
 
