@@ -2907,14 +2907,53 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </div>
 
             {/* Address Section - Always visible */}
-            <div id="address-fields" className="mt-8 space-y-4 rounded-lg border border-border bg-card px-4 py-5 shadow-sm sm:px-7 sm:py-7">
+            <div id="address-fields" className="mt-8 space-y-4 rounded-lg border border-border bg-card p-5 sm:p-6">
               <div className="space-y-1">
-                <h2 className="flex items-center gap-3 text-xl font-bold text-foreground sm:text-2xl">
-                  <Home className="h-7 w-7 text-[hsl(var(--success))]" />
+                <h2 className="flex items-center gap-2 text-lg font-bold text-[#1a1a1a]">
+                  <Home className="h-5 w-5 text-[#0BA360]" />
                   Your address
                 </h2>
-                <p className="text-sm text-muted-foreground sm:text-base">Search for your address to continue.</p>
+                <p className="text-sm text-muted-foreground">Search for your address to continue.</p>
               </div>
+
+              {/* Confirmed address — green confirmation card replaces the search while confirmed */}
+              {addressConfirmedComplete && !showAddressDropdown && !isLookingUp && addressData.address_line_1?.trim() ? (
+                <div className="rounded-lg border border-[#0BA360]/30 bg-[#0BA360]/[0.06] p-4 sm:p-5">
+                  <div className="flex items-start gap-3 sm:items-center">
+                    <span className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#0BA360] sm:mt-0">
+                      <Check className="h-5 w-5 text-white" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-base font-bold leading-snug text-[#1a1a1a] sm:text-lg">
+                        {addressData.address_line_1}{addressData.address_line_2 ? `, ${addressData.address_line_2}` : ''}
+                      </p>
+                      <p className="text-base font-bold leading-snug text-[#1a1a1a] sm:text-lg">
+                        {[addressData.town, addressData.postcode].filter(Boolean).join(', ')}
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-[#0BA360]">Address confirmed</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setAddressConfirmedComplete(false);
+                        setPostcodeInput('');
+                        setShowAddressDropdown(false);
+                        setAddressSuggestions([]);
+                        setShowAddressFields(false);
+                        setManualAddressEntry(false);
+                        setTownAutoFilled(false);
+                        setAddressData(prev => ({ ...prev, address_line_1: '', address_line_2: '', town: '', county: '', postcode: '' }));
+                        setAddressValidated(prev => ({ ...prev, address_line_1: false, town: false, postcode: false }));
+                      }}
+                      className="h-10 flex-shrink-0 rounded-lg border-border bg-white px-4 text-sm font-semibold text-[#1a1a1a]"
+                    >
+                      Change
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+              <>
 
               {/* Postcode Lookup - Auto triggers on valid format or blur */}
               <div>
@@ -3003,7 +3042,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     }}
 
                     placeholder="Start typing your address"
-                    className={`h-14 rounded-lg pl-12 pr-12 text-base sm:h-16 sm:text-lg focus-visible:border-primary focus-visible:ring-primary ${getAddressInputValidationClass('postcode')}`}
+                    className={`h-11 rounded-lg bg-[#0BA360]/[0.07] pl-12 pr-12 text-base sm:h-12 focus-visible:border-primary focus-visible:ring-primary ${getAddressInputValidationClass('postcode')}`}
                   />
 
                   {isLookingUp ? (
@@ -3140,22 +3179,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
               {/* Address Fields - Shown after lookup or manual entry click */}
               {showAddressFields && (
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-center justify-end">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAddressFields(false);
-                        setManualAddressEntry(false);
-                        setShowAddressDropdown(false);
-                        setAddressSuggestions([]);
-                      }}
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-[#1a1a1a] hover:underline"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                      Search a different address
-                    </button>
-                  </div>
+                <div className="space-y-4 rounded-lg border border-border bg-white p-4 sm:p-5">
+                  <button
+                    type="button"
+                    aria-expanded="true"
+                    onClick={() => {
+                      setShowAddressFields(false);
+                      setManualAddressEntry(false);
+                      setShowAddressDropdown(false);
+                      setAddressSuggestions([]);
+                    }}
+                    className="flex w-full items-center justify-between"
+                  >
+                    <span className="text-base font-bold text-[#1a1a1a] sm:text-lg">Enter address manually</span>
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  </button>
 
                   {/* Address Line 1 */}
                   <div>
@@ -3165,7 +3203,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <div className="relative mt-1.5">
                       <Input
                         id="address_line_1"
-                        placeholder="e.g. 123 High Street"
+                        placeholder="e.g. 133 Blythswood Road"
                         value={addressData.address_line_1}
                         onChange={(e) => {
                           setAddressData(prev => ({ ...prev, address_line_1: e.target.value }));
@@ -3206,6 +3244,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     />
                   </div>
 
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {/* Town/City — shown as compact confirmation once auto-filled by postcode */}
                   {townAutoFilled && addressData.town?.trim() && !addressErrors.town ? (
                     <div className="flex items-center justify-between gap-3 rounded-lg border border-[#0BA360]/30 bg-[#0BA360]/5 px-3 py-2.5">
@@ -3232,7 +3271,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       <div className="relative mt-1.5">
                         <Input
                           id="town"
-                          placeholder="e.g. London"
+                          placeholder="e.g. Birmingham"
                           value={addressData.town}
                           onChange={(e) => {
                             setAddressData(prev => ({ ...prev, town: e.target.value }));
@@ -3258,8 +3297,42 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         </p>
                       )}
                     </div>
-                  )}
+                    )}
+                    {/* Postcode */}
+                    <div>
+                      <Label htmlFor="manual_postcode" className="text-sm font-medium text-foreground/80">
+                        Postcode *
+                      </Label>
+                      <div className="relative mt-1.5">
+                        <Input
+                          id="manual_postcode"
+                          type="text"
+                          placeholder="e.g. B11 2BU"
+                          value={addressData.postcode || ''}
+                          onChange={(e) => {
+                            const raw = e.target.value.toUpperCase();
+                            setAddressData(prev => ({ ...prev, postcode: raw }));
+                            setPostcodeInput(raw);
+                            setAddressValidated(prev => ({ ...prev, postcode: ukPostcodeRegex.test(raw.replace(/\s/g, '')) }));
+                            if (addressErrors.postcode) {
+                              setAddressErrors(prev => ({ ...prev, postcode: '' }));
+                            }
+                          }}
+                          onBlur={() => {
+                            setAddressTouched(prev => ({ ...prev, postcode: true }));
+                            validateAddressField('postcode');
+                          }}
+                          className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('postcode')}`}
+                        />
+                        {addressData.postcode?.trim() && !addressErrors.postcode && (
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              )}
+              </>
               )}
             </div>
 
