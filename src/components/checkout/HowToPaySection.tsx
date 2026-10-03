@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, Check, Tag, X, Shield, CalendarDays, Clock } from 'lucide-react';
+import { Lock, Check, Tag, X, Shield, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
