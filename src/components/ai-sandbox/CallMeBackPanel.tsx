@@ -7,7 +7,6 @@ import {
   ChevronDown,
   MessageCircle,
   Mail,
-  Phone,
   Pencil,
 } from 'lucide-react';
 import { WHATSAPP_URL } from '@/constants/contact';
