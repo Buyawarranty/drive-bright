@@ -629,9 +629,23 @@ serve(async (req) => {
 
     if (bumperData?.data?.redirect_url) {
       logStep("Bumper application created successfully", { redirect_url: bumperData.data.redirect_url, token: bumperData.token });
-      
+
+      // Skip Bumper's "How would you like to pay?" screen: the customer has
+      // already chosen monthly + entered DOB on our page, so deep-link
+      // straight to the PayMonthly eligibility check (same token/query).
+      let finalUrl = bumperData.data.redirect_url as string;
+      try {
+        const u = new URL(finalUrl);
+        if (/^\/pay\/?$/.test(u.pathname)) {
+          u.pathname = "/pay/paymonthly/eligibility";
+          finalUrl = u.toString();
+        }
+      } catch { /* keep original */ }
+      logStep("Final Bumper redirect", { finalUrl });
+
       return new Response(JSON.stringify({ 
-        url: bumperData.data.redirect_url,
+        url: finalUrl,
+        original_url: bumperData.data.redirect_url,
         token: bumperData.token,
         source: 'bumper'
       }), {
