@@ -1763,7 +1763,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const validateForm = (): boolean => {
-    const requiredFields = ['first_name', 'last_name', 'dob', 'email', 'phone', 'mileage'];
+    // DOB is collected and validated on the separate Bumper DOB page, not here.
+    const requiredFields = ['first_name', 'last_name', 'email', 'phone', 'mileage'];
     let allValid = true;
     
     requiredFields.forEach(field => {
