@@ -3207,6 +3207,33 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <ChevronUp className="h-5 w-5 text-muted-foreground" />
                   </button>
 
+                  {/* Switch back to postcode lookup — keeps anything already typed */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const typedPostcode = (addressData.postcode || '').trim();
+                      setManualAddressEntry(false);
+                      setShowAddressFields(false);
+                      setShowAddressDropdown(false);
+                      setAddressSuggestions([]);
+                      setAddressConfirmedComplete(false);
+                      hasAutoScrolledToPayRef.current = false;
+                      hasAutoScrolledToPaymentRef.current = false;
+                      if (typedPostcode) {
+                        setPostcodeInput(typedPostcode);
+                        const clean = typedPostcode.replace(/\s/g, '');
+                        if (ukPostcodeRegex.test(clean)) {
+                          performPostcodeLookup(typedPostcode);
+                        }
+                      }
+                    }}
+                    className="w-full h-11 justify-center gap-2 border-[#0BA360]/40 bg-[#0BA360]/5 text-sm font-semibold text-[#1F2A44] hover:bg-[#0BA360]/10 sm:text-base"
+                  >
+                    <Search className="h-4 w-4 text-[#0BA360]" />
+                    Search by postcode instead
+                  </Button>
+
                   {/* Postcode — first, so the town can be auto-filled from it */}
                   <div>
                     <Label htmlFor="manual_postcode" className="text-sm font-medium text-foreground/80">
@@ -3364,30 +3391,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     </div>
                     )}
 
-                  {/* Switch back to postcode lookup — keeps anything already typed */}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      const typedPostcode = (addressData.postcode || '').trim();
-                      setManualAddressEntry(false);
-                      setShowAddressFields(false);
-                      setAddressConfirmedComplete(false);
-                      hasAutoScrolledToPayRef.current = false;
-                      hasAutoScrolledToPaymentRef.current = false;
-                      if (typedPostcode) {
-                        setPostcodeInput(typedPostcode);
-                        const clean = typedPostcode.replace(/\s/g, '');
-                        if (ukPostcodeRegex.test(clean)) {
-                          performPostcodeLookup(typedPostcode);
-                        }
-                      }
-                    }}
-                    className="h-auto justify-start gap-2 p-0 text-sm font-medium text-foreground underline underline-offset-2 hover:bg-transparent sm:text-base"
-                  >
-                    <Search className="h-4 w-4" />
-                    Search by postcode instead
-                  </Button>
                 </div>
               )}
               </>
