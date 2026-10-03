@@ -212,7 +212,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             <div>
               <div className="flex items-center gap-2 font-bold text-primary">
                 <CalendarDays className="h-4 w-4 flex-shrink-0" strokeWidth={2.5} />
-                <span className="text-sm sm:text-base">12 monthly instalments</span>
+                <span className="text-sm sm:text-base">12 instalments</span>
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl sm:text-4xl font-extrabold text-primary leading-none tracking-tight">
@@ -220,9 +220,6 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 </span>
                 <span className="text-sm text-foreground font-medium">today</span>
               </div>
-              <p className="mt-1 text-sm text-primary font-semibold">
-                Your first of 12 monthly instalments
-              </p>
             </div>
 
             <div className="border-t border-border pt-3">
