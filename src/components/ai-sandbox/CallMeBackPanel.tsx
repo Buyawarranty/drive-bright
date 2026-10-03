@@ -11,7 +11,13 @@ import {
   Mail,
   Pencil,
 } from 'lucide-react';
-import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
+import {
+  isSalesPhoneOpenNow,
+  isTeamOpenNow,
+  nextOpeningLabel,
+  openingHoursLabel,
+  salesPhoneHoursLabel,
+} from '@/lib/aiSandbox/openingHours';
 import { SALES_PHONE, SALES_PHONE_TEL, WHATSAPP_URL } from '@/constants/contact';
 
 const CALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-callback-request`;
@@ -108,6 +114,7 @@ export function CallMeBackPanel({
   const [submitting, setSubmitting] = useState(false);
 
   const open = isTeamOpenNow();
+  const salesPhoneOpen = isSalesPhoneOpenNow();
   const isEmail = preference === 'email';
   const isWhatsApp = preference === 'whatsapp';
   const isValid = useMemo(() => (isEmail ? validEmail(email) : validUkPhone(phone)), [isEmail, email, phone]);
@@ -170,13 +177,15 @@ export function CallMeBackPanel({
           Chat with a specialist now
         </button>
       )}
-      <a
-        href={SALES_PHONE_TEL}
-        className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
-      >
-        <Phone className="h-4 w-4 shrink-0 text-[#B4501F]" />
-        Call us · {SALES_PHONE}
-      </a>
+      {salesPhoneOpen && (
+        <a
+          href={SALES_PHONE_TEL}
+          className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+        >
+          <Phone className="h-4 w-4 shrink-0 text-[#B4501F]" />
+          Call us · {SALES_PHONE}
+        </a>
+      )}
       <a
         href={WHATSAPP_URL}
         target="_blank"
@@ -197,11 +206,13 @@ export function CallMeBackPanel({
       <p className="flex items-start gap-1.5 pt-1 text-xs leading-relaxed text-muted-foreground">
         <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         <span>
-          {open
+          {salesPhoneOpen
+            ? `Call us now, WhatsApp us or request a callback (${salesPhoneHoursLabel}).`
+            : open
             ? agentLive
-              ? `A specialist is on duty now, or you can call, WhatsApp or request a callback (${openingHoursLabel}).`
-              : `Call or WhatsApp us now, or request a callback (${openingHoursLabel}).`
-            : `Our team is available ${openingHoursLabel}. You can WhatsApp us now or request a callback ${nextOpeningLabel()}.`}
+              ? `A specialist is on duty now. You can also WhatsApp us or request a callback.`
+              : `You can WhatsApp us now or request a callback.`
+            : `The phone line is open ${salesPhoneHoursLabel}. You can WhatsApp us now or request a callback ${nextOpeningLabel()}.`}
         </span>
       </p>
     </div>

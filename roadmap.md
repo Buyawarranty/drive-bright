@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Miles pricing replies: remove the pushy “go ahead?” close and show Continue with payment, Book a callback, and in-hours phone/out-of-hours WhatsApp choices
+
 - [x] Mobile bottom call-to-action bar: retain normal bottom padding and add iPhone safe-area spacing so both actions remain fully visible
 
 - [x] Claims: Bumper PayBetter tag hidden from non-management (management only); tag also lights up when the customer's payment source is PayBetter
