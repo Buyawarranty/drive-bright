@@ -3242,7 +3242,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             setAddressData(prev => ({
                               ...prev,
                               postcode: formatted,
-                              town: prev.town?.trim() ? prev.town : town,
+                              // Always refresh the town from the looked-up postcode so a
+                              // stale town from a previous postcode is never kept.
+                              town: town || prev.town,
                             }));
                             setAddressValidated(prev => ({ ...prev, postcode: true, town: prev.town || !!town }));
                             if (town) {
@@ -3253,7 +3255,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         }}
                         className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('postcode')}`}
                       />
-                      {addressData.postcode?.trim() && !addressErrors.postcode && (
+                      {addressValidated.postcode && !addressErrors.postcode && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                       )}
                     </div>
