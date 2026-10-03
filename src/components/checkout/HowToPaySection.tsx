@@ -220,7 +220,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
             <div className="border-t border-border pt-3">
               <p className="text-sm text-foreground">
-                Then 11 monthly instalments of £{monthlyPrice}
+                Then <strong className="font-bold">11 monthly</strong> instalments of <strong className="font-bold">£{monthlyPrice}</strong>
               </p>
               <div className="mt-3 grid grid-cols-2 rounded-lg border border-border bg-secondary/70 px-3 py-2.5">
                 <div className="border-r border-border pr-3">
