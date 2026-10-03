@@ -273,7 +273,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     Processing...
                   </span>
                 ) : (
-                  <span>Continue with monthly payments</span>
+                  <span>Pay £{monthlyPrice} today</span>
                 )}
               </Button>
             </div>
