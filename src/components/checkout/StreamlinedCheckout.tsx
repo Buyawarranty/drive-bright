@@ -49,6 +49,8 @@ import DesktopPlanHeader from '@/components/checkout/DesktopPlanHeader';
 import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { minimumPriceForCodes } from '@/lib/testPromoBypass';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
+import { validateCustomerDob, toIsoDob } from '@/lib/customerDob';
+import BumperDobBox from './BumperDobBox';
 
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -1682,6 +1684,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
         break;
       }
+      case 'dob': {
+        // Only required for the Bumper monthly plan (soft search needs it).
+        if (selectedPaymentRef.current === 'monthly' && !isPaymentAssist) {
+          const dobError = validateCustomerDob({
+            day: customerData.dob_day || '',
+            month: customerData.dob_month || '',
+            year: customerData.dob_year || '',
+          });
+          if (dobError) {
+            error = dobError;
+            isValid = false;
+          }
+        }
+        break;
+      }
     }
 
     setFieldErrors(prev => ({ ...prev, [field]: error }));
@@ -1946,6 +1963,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         className: 'border-2 border-red-500 shadow-2xl',
       });
       return;
+    }
+
+    // Bumper monthly: DOB is collected on our page so Bumper doesn't ask again.
+    if (effectivePayment === 'monthly' && !isPaymentAssist) {
+      const dobError = validateCustomerDob({
+        day: customerData.dob_day || '',
+        month: customerData.dob_month || '',
+        year: customerData.dob_year || '',
+      });
+      if (dobError) {
+        setShowDobError(true);
+        scrollToSection(document.getElementById('bumper-dob-section'));
+        toast.error(dobError, { duration: 5000, className: 'border-2 border-red-500 shadow-2xl' });
+        return;
+      }
     }
     
     if (!validateForm()) {
@@ -3518,6 +3550,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               hideTrustpilot={showEmbeddedCheckout && selectedPayment === 'full' && !!stripeClientSecret}
               hidePromoCode={true}
             />
+            {selectedPayment === 'monthly' && !isPaymentAssist && (
+              <BumperDobBox
+                day={customerData.dob_day || ''}
+                month={customerData.dob_month || ''}
+                year={customerData.dob_year || ''}
+                onChange={(next) => setCustomerData((prev: any) => ({ ...prev, ...next }))}
+                onContinue={() => processPayment('monthly')}
+                isLoading={isLoading}
+                showError={showDobError}
+              />
+            )}
           </div>
 
           {/* 14-day guarantee now inside HowToPaySection */}
