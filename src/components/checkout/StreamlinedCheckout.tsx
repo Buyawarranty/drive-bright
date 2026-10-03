@@ -50,7 +50,7 @@ import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { minimumPriceForCodes } from '@/lib/testPromoBypass';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
 import { validateCustomerDob, toIsoDob } from '@/lib/customerDob';
-import BumperDobBox from './BumperDobBox';
+import BumperDobPage from './BumperDobPage';
 
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -140,6 +140,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Pre-populate from Step 2 data in localStorage
   const [showDobError, setShowDobError] = useState(false);
+  const [showBumperDobPage, setShowBumperDobPage] = useState(false);
   const [customerData, setCustomerData] = useState(() => {
     try {
       const savedCustomerData = localStorage.getItem('buyawarranty_customerData');
@@ -1966,21 +1967,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       return;
     }
 
-    // Bumper monthly: DOB is collected on our page so Bumper doesn't ask again.
-    if (effectivePayment === 'monthly' && !isPaymentAssist) {
-      const dobError = validateCustomerDob({
-        day: customerData.dob_day || '',
-        month: customerData.dob_month || '',
-        year: customerData.dob_year || '',
-      });
-      if (dobError) {
-        setShowDobError(true);
-        scrollToSection(document.getElementById('bumper-dob-section'));
-        toast.error(dobError, { duration: 5000, className: 'border-2 border-red-500 shadow-2xl' });
-        return;
-      }
-    }
-    
     if (!validateForm()) {
       if (!personalDetailsComplete) setDetailsOpen(true);
       // Also expand address section if address fields are incomplete
@@ -2113,6 +2099,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackFormSubmission('customer_details', { payment_method: effectivePayment });
 
     if (effectivePayment === 'monthly') {
+      if (!isPaymentAssist) {
+        setIsLoading(false);
+        setShowDobError(false);
+        setShowBumperDobPage(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
       trackBumperCheckoutClick(discountedBumperPrice);
       logPaymentButtonClick({
         paymentMethod: 'bumper',
@@ -2131,6 +2124,30 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       });
       await processStripeCheckout();
     }
+  };
+
+  const continueFromBumperDob = async () => {
+    const dobError = validateCustomerDob({
+      day: customerData.dob_day || '',
+      month: customerData.dob_month || '',
+      year: customerData.dob_year || '',
+    });
+    if (dobError) {
+      setShowDobError(true);
+      toast.error(dobError, { duration: 5000 });
+      return;
+    }
+
+    setShowDobError(false);
+    setIsLoading(true);
+    trackBumperCheckoutClick(discountedBumperPrice);
+    logPaymentButtonClick({
+      paymentMethod: 'bumper',
+      amount: discountedBumperPrice,
+      email: customerData.email,
+      vehicleReg: vehicleData?.regNumber,
+    });
+    await processBumperCheckout();
   };
 
   // FINAL HARD GATE — no payment provider may be reached without a full address.
@@ -2572,6 +2589,35 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </p>
         </div>
       </div>
+    );
+  }
+
+  if (showBumperDobPage && !isPaymentAssist) {
+    return (
+      <BumperDobPage
+        day={customerData.dob_day || ''}
+        month={customerData.dob_month || ''}
+        year={customerData.dob_year || ''}
+        onChange={(next) => setCustomerData((previous: any) => ({ ...previous, ...next }))}
+        onBack={() => {
+          setShowBumperDobPage(false);
+          setShowDobError(false);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onContinue={continueFromBumperDob}
+        isLoading={isLoading}
+        showError={showDobError}
+        monthlyPrice={discountedMonthlyPrice}
+        totalPrice={displayBumperTotal}
+        vehicleReg={vehicleData.regNumber}
+        vehicleName={[vehicleData.year, vehicleData.make, vehicleData.model].filter(Boolean).join(' ')}
+        duration={getDurationText()}
+        planName={formatPlanName()}
+        claimLimit={updatedPricingData.claimLimit || 2000}
+        excess={updatedPricingData.voluntaryExcess ?? 100}
+        labourRate={pricingData.labourRate || 50}
+        startDate={startDate}
+      />
     );
   }
 
@@ -3549,17 +3595,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               hideTrustpilot={showEmbeddedCheckout && selectedPayment === 'full' && !!stripeClientSecret}
               hidePromoCode={true}
             />
-            {selectedPayment === 'monthly' && !isPaymentAssist && (
-              <BumperDobBox
-                day={customerData.dob_day || ''}
-                month={customerData.dob_month || ''}
-                year={customerData.dob_year || ''}
-                onChange={(next) => setCustomerData((prev: any) => ({ ...prev, ...next }))}
-                onContinue={() => processPayment('monthly')}
-                isLoading={isLoading}
-                showError={showDobError}
-              />
-            )}
           </div>
 
           {/* 14-day guarantee now inside HowToPaySection */}
