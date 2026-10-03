@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  PhoneCall,
-  Phone,
   Check,
   Loader2,
   X,
@@ -12,13 +10,9 @@ import {
   Pencil,
 } from 'lucide-react';
 import {
-  isSalesPhoneOpenNow,
-  isTeamOpenNow,
-  nextOpeningLabel,
   openingHoursLabel,
-  salesPhoneHoursLabel,
 } from '@/lib/aiSandbox/openingHours';
-import { SALES_PHONE, SALES_PHONE_TEL, WHATSAPP_URL } from '@/constants/contact';
+import { WHATSAPP_URL } from '@/constants/contact';
 
 const CALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-callback-request`;
 
@@ -66,7 +60,7 @@ function validEmail(raw: string): boolean {
 }
 
 type Step = 'closed' | 'method' | 'claimsInfo' | 'number' | 'done';
-type Preference = 'call' | 'whatsapp' | 'email';
+type Preference = 'whatsapp' | 'email';
 type Topic = 'warranty_purchase' | 'general' | 'existing_policy' | 'other';
 
 const TOPIC_SENTENCE: Record<Topic, string> = {
@@ -85,8 +79,6 @@ export function CallMeBackPanel({
   compact: _compact = false,
   asChip = false,
   autoOpen = false,
-  agentLive = false,
-  onRequestLiveChat,
 }: {
   guestToken?: string;
   threadId?: string;
@@ -99,22 +91,17 @@ export function CallMeBackPanel({
   asChip?: boolean;
   /** Render expanded straight away (inline in the chat stream). */
   autoOpen?: boolean;
-  /** True only while a staff member has switched themselves on duty. */
-  agentLive?: boolean;
-  onRequestLiveChat?: () => void;
 }) {
   const [step, setStep] = useState<Step>(autoOpen ? 'method' : 'closed');
   const [collapsed, setCollapsed] = useState(!autoOpen);
   const [touched, setTouched] = useState(false);
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [preference, setPreference] = useState<Preference>('call');
+  const [preference, setPreference] = useState<Preference>('email');
   const [topic, setTopic] = useState<Topic | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const open = isTeamOpenNow();
-  const salesPhoneOpen = isSalesPhoneOpenNow();
   const isEmail = preference === 'email';
   const isWhatsApp = preference === 'whatsapp';
   const isValid = useMemo(() => (isEmail ? validEmail(email) : validUkPhone(phone)), [isEmail, email, phone]);
@@ -142,16 +129,16 @@ export function CallMeBackPanel({
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) {
-        setError(data?.message ?? "We couldn't save that - please call 0330 229 5040.");
+        setError(data?.message ?? "We couldn't save that. Please try again or WhatsApp us.");
         return;
       }
       if (data.suppressed) {
-        setError(data.message ?? "Please give us a ring on 0330 229 5040 and we'll help straight away.");
+        setError(data.message ?? 'Please WhatsApp us and we’ll help as soon as possible.');
         return;
       }
       setStep('done');
     } catch {
-      setError('Network problem - please try again, or call 0330 229 5040.');
+      setError('Network problem. Please try again or WhatsApp us.');
     } finally {
       setSubmitting(false);
     }
@@ -167,25 +154,6 @@ export function CallMeBackPanel({
   const methodList = (
     <div className="space-y-2">
       <p className="text-sm font-bold text-foreground">How would you like to get in touch?</p>
-      {agentLive && onRequestLiveChat && (
-        <button
-          type="button"
-          onClick={onRequestLiveChat}
-          className="flex h-12 w-full items-center gap-3 rounded-xl border border-primary bg-primary px-4 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          <MessageCircle className="h-4 w-4 shrink-0" />
-          Chat with a specialist now
-        </button>
-      )}
-      {salesPhoneOpen && (
-        <a
-          href={SALES_PHONE_TEL}
-          className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
-        >
-          <Phone className="h-4 w-4 shrink-0 text-[#B4501F]" />
-          Call us · {SALES_PHONE}
-        </a>
-      )}
       <a
         href={WHATSAPP_URL}
         target="_blank"
@@ -197,23 +165,15 @@ export function CallMeBackPanel({
       </a>
       <button
         type="button"
-        onClick={() => pickMethod('call')}
+        onClick={() => pickMethod('email')}
         className="flex h-12 w-full items-center gap-3 rounded-xl border border-primary/50 bg-[#FDEBDF] px-4 text-sm font-bold text-foreground transition-colors hover:bg-[#FBE0CE]"
       >
-        <PhoneCall className="h-4 w-4 shrink-0 text-[#B4501F]" />
-        Request a callback
+        <Mail className="h-4 w-4 shrink-0 text-[#B4501F]" />
+        Leave your email address
       </button>
       <p className="flex items-start gap-1.5 pt-1 text-xs leading-relaxed text-muted-foreground">
         <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-        <span>
-          {salesPhoneOpen
-            ? `Call us now, WhatsApp us or request a callback (${salesPhoneHoursLabel}).`
-            : open
-            ? agentLive
-              ? `A specialist is on duty now. You can also WhatsApp us or request a callback.`
-              : `You can WhatsApp us now or request a callback.`
-            : `The phone line is open ${salesPhoneHoursLabel}. You can WhatsApp us now or request a callback ${nextOpeningLabel()}.`}
-        </span>
+        <span>WhatsApp us now, or leave your email address and our team will reply.</span>
       </p>
     </div>
   );
@@ -277,7 +237,7 @@ export function CallMeBackPanel({
         <button
           type="button"
           onClick={() => setStep('method')}
-          title="All our agents are busy - leave your number or email and we'll call, WhatsApp or email you back"
+          title="Leave your email address or WhatsApp us"
           className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
         >
           <MessageCircle className="h-4 w-4 shrink-0 text-[#B4501F]" />
@@ -296,7 +256,7 @@ export function CallMeBackPanel({
         >
           <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
           <span className="flex-1 truncate text-xs font-bold text-foreground">
-            All our agents are busy - leave your number or email and we'll get back to you
+             Leave your email address or WhatsApp us
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
         </button>
@@ -389,14 +349,13 @@ export function CallMeBackPanel({
           className="space-y-3"
         >
           <p className="text-sm leading-relaxed text-muted-foreground">
-            I can arrange for a specialist to get back to you.
+             Leave your email address and our team will reply, or WhatsApp us instead.
           </p>
 
           <div className="space-y-2">
             <span className="block text-sm font-bold text-foreground">How would you like us to contact you?</span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {([
-                { key: 'call' as Preference, label: 'Call me', Icon: PhoneCall },
                 { key: 'whatsapp' as Preference, label: 'WhatsApp me', Icon: MessageCircle },
                 { key: 'email' as Preference, label: 'Email me', Icon: Mail },
               ]).map(({ key, label, Icon }) => (
@@ -499,7 +458,7 @@ export function CallMeBackPanel({
             <p className="text-xs leading-relaxed text-muted-foreground">
               {isEmail
                 ? "We'll use this email to get back to you."
-                : `We'll use this number to ${isWhatsApp ? 'message' : 'call'} you back.`}
+                : "We'll use this number to message you on WhatsApp."}
             </p>
           </div>
 
@@ -579,9 +538,7 @@ export function CallMeBackPanel({
               'Request my email'
             ) : isWhatsApp ? (
               'Request my WhatsApp'
-            ) : (
-              'Request my callback'
-            )}
+            ) : null}
           </button>
         </form>
       )}

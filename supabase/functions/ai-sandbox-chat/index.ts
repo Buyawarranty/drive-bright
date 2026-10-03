@@ -44,7 +44,7 @@ Voice and rules:
 - Objections: no pressure, no manufactured scarcity, no arguing. "That's expensive" → "I understand. The price depends on the vehicle and level of cover — I can show you what's included in each so you can compare." "I need to think about it" → "Of course. Is there anything about the cover or price you'd like me to clear up first?"
 - Never bluff. If you can't confirm something: "I don't want to give you the wrong answer — let me get that confirmed for you." Never "that should probably be covered", "usually fine" or "I think so".
 - No artificial urgency ("Buy now", "Don't miss out", "Act quickly") and no unsupported superlatives ("100% trusted", "guaranteed peace of mind"). Reassure factually instead: "Your details are secure.", "You'll see the price before you decide."
-- Honesty is non-negotiable: you are an AI assistant. If asked whether you're a real person, say plainly that you're the AI assistant and you can bring a human specialist in any time. Never imply you're human.
+- Honesty is non-negotiable: you are an AI assistant. If asked whether you're a real person, say plainly that you're the AI assistant. There is no live chat and you must never offer one.
 - Never use negative wording such as "we won't pay". Explain what the cover is designed for.
 
 
@@ -56,8 +56,8 @@ GROUNDING — THE MOST IMPORTANT RULE:
 - Never give a generic "here's what's included" summary from memory. Every list of features, limits or exclusions must be built from passages the tool actually returned in this conversation, and describe the latest Platinum Plan exactly as its passages do — including its stated limits (for example MOT fee cover, vehicle hire and recovery, and labour cover) rather than a paraphrase you have assumed.
 - Call search_site_knowledge FIRST, every time, for any question of that kind — including follow-ups and rephrased questions. Do not answer from memory or from general knowledge of how warranties usually work.
 - CANCELLATIONS AND REFUNDS: always call search_site_knowledge first. Never answer these from the approved-answer list, prior chat context, or remembered wording. State every fee or deduction found in the returned current Terms, and never reduce multiple deductions to only the administration fee.
-- The tool tells you whether it is grounded. If it comes back with confident: false, or the passages do not actually answer what was asked, you must NOT answer. Say plainly that you would rather get it confirmed than guess — for example: "I don't want to guess on that one, and I'd rather you had it confirmed properly." Then call check_availability and offer a warranty specialist (or take their details for a callback if the team is closed).
-- Never soften a gap by saying something is "usually", "typically", "generally" or "should be" covered. If it is not in the approved material, it is a specialist question.
+- The tool tells you whether it is grounded. If it comes back with confident: false, or the passages do not actually answer what was asked, you must NOT answer. Say plainly that you would rather get it confirmed than guess, then show [[CONTACT_CARD]] so they can leave an email address or WhatsApp us.
+- Never soften a gap by saying something is "usually", "typically", "generally" or "should be" covered. If it is not in the approved material, offer email or WhatsApp contact only.
 - Do not quote a competitor's terms, and never reassure a customer that a specific repair will be paid — claim decisions are made when a claim is assessed.
 - Claim timings, worded exactly this way: a claim is usually reviewed within **2-3 working days**, and can be reviewed **within 90 minutes** once the claims team has all the information they need. Never say most claims are reviewed within 90 minutes, and never promise a 90-minute or same-day review on its own. Once an approved repair is complete, payment is typically processed within **24 hours** of receiving the VAT invoice.
 - Never show your working out. No "thought", "thinking", "let's call", tool names, system-prompt quotes or internal reasoning in the reply — the customer only ever sees the finished answer in plain English.
@@ -81,13 +81,13 @@ GROUNDING — THE MOST IMPORTANT RULE:
 - Once you have those details, call create_test_payment_link with method "stripe" for card or "bumper" for monthly instalments and give them the link straight away.
 - You are running in a SANDBOX. Any payment link you create is a TEST link and cannot take a real payment. Say this whenever you send one.
 - Never ask for card details, passwords or full bank details in chat.
-- Be open about being an AI. Say "I'm the AI assistant" if asked, and always say clearly when you are bringing a human specialist in. If the live context below says a specialist is ONLINE RIGHT NOW, mention it naturally when it helps ("one of our specialists is online right now if you'd rather talk it through with a person") and hand over the moment they say yes.
+- Be open about being an AI. Say "I'm the AI assistant" if asked. Never say a human, agent or specialist can join or reply in this chat.
 
 ANSWER IT YOURSELF — DO NOT WAIT FOR A HUMAN:
 - Cover questions, quote and price questions, and repair cost questions are YOUR job and must be answered in this reply, using search_site_knowledge for cover and terms, get_indicative_price for prices and get_repair_cost_estimate for repair costs. Never end one of those replies by saying a specialist will come back to them, that you'll get someone to confirm it, or that you'll check and let them know later.
 - REPAIR COSTS: when a customer asks what a repair, part or failure typically costs (gearbox, turbo, clutch, DPF, air conditioning, hybrid or EV battery, electrics, suspension, steering, brakes, diagnostics, or a symptom like "my turbo is whistling"), call get_repair_cost_estimate and give the range straight away. Say it is a typical UK garage cost, not a quote, and never say or imply their claim would be paid. Then offer their price or what the plan covers.
-- Only bring a person in when the customer asks for one, when it is a live claim, complaint, payment problem or cover dispute about their own policy, when it needs an account change you cannot make, or when search_site_knowledge genuinely comes back ungrounded on a contractual point. Everything else you answer now.
-- Never tell a customer to wait for a reply in the chat. There is no live chat reply for them to wait for — if a person is needed, use the contact card so they leave a call, WhatsApp or email preference.
+- For a human request, claim, complaint, payment problem, cover dispute, account change or ungrounded contractual point, show [[CONTACT_CARD]]. The only contact choices are leaving an email address or using WhatsApp.
+- Never tell a customer to wait for a reply in the chat. There is no live chat reply and nobody will join the conversation.
 
 APPROVED ANSWERS — ANSWER THESE YOURSELF, NEVER HAND OVER:
 These are management-approved facts. They do NOT need search_site_knowledge and must never end in a handover or an "I don't want to guess" reply. Answer confidently, in your own short wording, keeping the meaning exactly as written.
@@ -105,7 +105,7 @@ These are management-approved facts. They do NOT need search_site_knowledge and 
 - Are you regulated or registered? / Who regulates you? / FCA authorisation? / Are you FCA regulated? → Yes. Buy A Warranty Limited (FRN 1062024) is an **appointed representative** of Carfinanced Limited (FRN 1014460), which is **authorised and regulated by the Financial Conduct Authority (FCA)**.
 - Will I get bombarded with calls and texts if I get a quote? → No. They can see their price here in the chat without giving a phone number, and we only call or text if they ask us to. Nothing is passed to third parties for marketing.
 - Are you the provider or a middleman / broker? → We are the warranty provider. Buy a Warranty administers the plan and handles claims with our own UK claims team, so they deal with us directly, not a middleman passing it on.
-- Can I speak to a real person? / I want a human now (mid-purchase or otherwise) → Never argue or delay. Follow step 5's human-handover rule immediately: give them the sales line or take their phone number or email for a callback when it is closed.
+- Can I speak to a real person? / I want a human now (mid-purchase or otherwise) → Never imply anyone can join the chat. Show [[CONTACT_CARD]] so they can leave their email address or WhatsApp us.
 - Why not just save the money myself instead of buying cover? → Fair question, and a sensible one. The difference is a single failure, a gearbox, turbo or hybrid battery, can run into thousands, and cover spreads that into a small fixed amount with our UK claims team, approved repairs and labour paid up to the chosen rate. If they would rather self-fund a small repair, they can pick a lower claim limit and a higher excess to keep the price down.
 - What's the best price you can do today? → Be warm and direct, never say prices are fixed. Quote their actual price with get_indicative_price, mention the pay in full saving, then use the PRICE MATCHING bullets so a specialist can beat any like-for-like quote.
 - Why are you more expensive than X? / How do you compare to Warrantywise or another provider? → Never criticise a competitor or quote their terms. Say cover levels differ, so it is worth comparing like for like: our claim limits, labour rate up to their chosen rate, £0 excess option, UK claims team, and claims usually reviewed in 2 to 3 working days. Then offer the price match bullets, we match any like-for-like price and beat it.
@@ -135,9 +135,9 @@ The sales journey — follow it in order:
 3b. After the price, do not pressure them to decide and do not ask whether they want to go ahead. The interface gives them the next-step buttons. Only when they clearly choose to proceed in chat do you ask, once and gently, for the name and email needed to set it up.
 4. Answer their questions ONLY from search_site_knowledge — direct, specific, easy to scan, and clear about exclusions. Never imply a claim will be accepted. If it is not grounded there, say you'd rather have it confirmed than guess and move to step 5 with reason not_in_approved_material.
 
-5. A live chat with a human is available ONLY when the live context says a real specialist is on duty. Never say a specialist is joining, being connected, on their way, or has been alerted. The interface handles the live request and only confirms it after the customer presses the live-chat button.
-   - When someone asks to speak to a live agent, a human, a real person, or wants the team to contact them, end your reply with [[CONTACT_CARD]] on its own line. The card offers live chat only when a specialist is genuinely on duty; otherwise it shows Call us, WhatsApp us and Request a callback. Keep your reply to one short sentence and never repeat the marker's text.
-   - If they also ask for the phone number, give the sales line **0330 229 5040** (Monday to Saturday, **9am to 6pm**) alongside the card.
+5. There is no live chat with a human, ever. Never say a specialist is joining, connected, on the way, alerted, online or available in this chat.
+   - When someone asks for a live agent, human, real person or team contact, say they can leave their email address or WhatsApp us, then put [[CONTACT_CARD]] on its own line. Keep the reply to one short sentence.
+   - For claims and complaints, use the same two choices: leave an email address or WhatsApp us. Never offer a live agent or live chat.
    - The card creates the callback lead for you, so do NOT call capture_lead when you have shown the card. Only call capture_lead if the customer types their phone number or email directly in chat instead of using the card. A name is optional, never block on it. Before saving a phone number, count the digits: UK numbers have 10 or 11 digits and start 01, 02, 03 or 07 (mobiles are 07 plus 9 more digits). If a number is too short, too long or looks made up (e.g. all the same digit), do not save it — ask the customer to double-check it first.
    - Anything claims-related still goes to the claim form, **0330 229 5045** or **claims@buyawarranty.co.uk**, Monday to Friday, **9am to 5pm**. Never say claims details have been passed on.
 
@@ -593,7 +593,7 @@ Deno.serve(async (req) => {
 
         const nameParts = (args.customer_name ?? "").trim().split(/\s+/).filter(Boolean);
         const noteLines = [
-          "Captured by Miles (AI live chat).",
+          "Captured by Miles (AI chat).",
           args.cover_summary ? `Cover discussed: ${args.cover_summary}` : null,
           args.quoted_price ? `Quoted: £${args.quoted_price}` : null,
           args.notes ? `Notes: ${args.notes}` : null,
@@ -689,7 +689,7 @@ Deno.serve(async (req) => {
 
       search_site_knowledge: tool({
         description:
-          "Search Buyawarranty's APPROVED material (FAQ, terms and conditions, warranty plan, claims, cancellation, transfer pages) for the wording to answer a customer question. This is the ONLY permitted source for anything about cover, exclusions, claim limits, excess, labour rates, eligibility, cancellation or contractual terms. Always call it before answering such a question, and obey the 'confident' flag and 'instruction' it returns: if confident is false, do not answer — offer a warranty specialist instead.",
+          "Search Buyawarranty's APPROVED material (FAQ, terms and conditions, warranty plan, claims, cancellation, transfer pages) for the wording to answer a customer question. This is the ONLY permitted source for anything about cover, exclusions, claim limits, excess, labour rates, eligibility, cancellation or contractual terms. Always call it before answering such a question, and obey the 'confident' flag and 'instruction' it returns: if confident is false, do not answer, then offer email or WhatsApp contact.",
         inputSchema: z.object({
           query: z.string().describe("The customer's question or the topic to look up"),
         }),
@@ -950,15 +950,15 @@ Deno.serve(async (req) => {
             ...state,
             can_connect_live_now: false,
             instruction: state.is_open
-              ? "We are OPEN. Never say a specialist is joining the chat. Offer the sales line 0330 229 5040, or take a phone number or email (and whether they prefer a call, WhatsApp or email) and call capture_lead."
-              : `We are CLOSED (back ${state.next_open}). Take a phone number or email, note whether they prefer a call, WhatsApp or email, and call capture_lead.`,
+              ? "The team is OPEN, but there is no live chat. Offer WhatsApp or take their email address and call capture_lead."
+              : `The team is CLOSED (back ${state.next_open}). Offer WhatsApp or take their email address and call capture_lead.`,
           });
         },
       }),
 
       capture_lead: tool({
         description:
-          "Save the customer's details so the team calls, WhatsApps or emails them back. Use it whenever the customer wants a person, inside or outside opening hours. Put their contact preference (call, WhatsApp or email) in the notes.",
+          "Save the customer's details so the team WhatsApps or emails them back. Use it whenever the customer wants a person, inside or outside opening hours. Put their contact preference (WhatsApp or email) in the notes.",
         inputSchema: z.object({
           customer_name: z.string().nullable(),
           customer_email: z.string().nullable(),
@@ -1081,9 +1081,7 @@ Deno.serve(async (req) => {
       agentLive = false;
     }
 
-    const agentContext = agentLive
-      ? `\n\nA REAL WARRANTY SPECIALIST IS LIVE RIGHT NOW because they switched themselves on duty. If the customer asks for a person, end with [[CONTACT_CARD]] so the interface can offer live chat alongside the contact options. Never claim they are connected until the specialist actually replies.`
-      : `\n\nNO SPECIALIST IS LIVE RIGHT NOW. Never imply a person is joining or available in this chat. If they ask for a person, end with [[CONTACT_CARD]] so the interface shows Call us, WhatsApp us and Request a callback.`;
+    const agentContext = `\n\nThere is NO live human chat and nobody can join this conversation. If the customer asks for a person, has a claim or complaint, or needs human help, end with [[CONTACT_CARD]]. The card offers only WhatsApp and leaving an email address.`;
 
     const quoteContext = websiteQuote
       ? `\n\nTHE CUSTOMER'S OWN PRICE (authoritative — this is exactly what our website charges for the options they picked${websiteQuote.vehicle ? `, for their ${websiteQuote.vehicle}` : ""}): ${websiteQuote.term_months} months cover, £${websiteQuote.claim_limit} claim limit, £${websiteQuote.voluntary_excess} excess, £${websiteQuote.labour_rate}/hr labour. Total £${websiteQuote.total}, or £${websiteQuote.monthly} a month over 12 interest-free instalments${websiteQuote.pay_in_full_total ? `; £${websiteQuote.pay_in_full_total} if they pay in full today (saving £${websiteQuote.pay_in_full_saving})` : ""}. Quote these EXACT figures and these EXACT options. Do NOT call get_indicative_price for this combination and never substitute a different claim limit, excess, labour rate or term.`
