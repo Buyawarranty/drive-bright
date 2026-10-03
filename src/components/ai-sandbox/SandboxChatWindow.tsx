@@ -7,6 +7,8 @@ import type { PaymentPeriod } from '@/lib/pricingMatrix';
 import {
   Headset,
   PhoneCall,
+  Phone,
+  MessageCircle,
   ShieldCheck,
   CarFront,
   UserRound,
@@ -41,8 +43,9 @@ import { Shimmer } from '@/components/ai-elements/shimmer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
-import { nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
+import { isSalesPhoneOpenNow, nextOpeningLabel, salesPhoneHoursLabel } from '@/lib/aiSandbox/openingHours';
 import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
+import { SALES_PHONE, SALES_PHONE_TEL, WHATSAPP_URL } from '@/constants/contact';
 import { useLiveAgentAvailable } from '@/hooks/useLiveAgentAvailable';
 import {
   prepareAttachment,
@@ -375,6 +378,7 @@ function PriceOptionsPanel({
   agentLive,
   agentNames,
   onTalkToAgent,
+  onBookCallback,
 }: {
   disabled?: boolean;
   onSend: (text: string, extraBody?: Record<string, unknown>) => void;
@@ -388,6 +392,7 @@ function PriceOptionsPanel({
   agentLive?: boolean;
   agentNames?: string[];
   onTalkToAgent?: () => void;
+  onBookCallback?: () => void;
 }) {
   const [term, setTerm] = useState(24);
   const [limit, setLimit] = useState(2000);
@@ -400,6 +405,7 @@ function PriceOptionsPanel({
   // Once a price has been asked for, the tall option grid folds away so the
   // answer above stays visible — the customer can reopen it to tweak options.
   const [optionsOpen, setOptionsOpen] = useState(true);
+  const salesPhoneOpen = isSalesPhoneOpenNow();
 
   // Chat does persuasion and price; the real cart takes the money. Once we know
   // the reg we can hand the customer straight to plan selection (step 3) with
@@ -602,72 +608,42 @@ function PriceOptionsPanel({
             <TrustAndInfoAccordion variant="mobile" />
           </div>
 
-          {/* Payment options */}
+          {/* Clear, low-pressure next steps after a price. */}
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-foreground">Choose how to pay</p>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <p className="text-sm font-semibold text-foreground">What would you like to do next?</p>
+            <div className="grid gap-2">
               <Button
-                size="sm"
-                disabled={disabled}
-                onClick={() => setPending('monthly')}
-                className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#FF6B00] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#E85F00]"
-              >
-                <span className="text-left leading-tight">
-                  <span className="block text-sm">Pay monthly — 0% APR</span>
-                  {quoted?.monthly && <span className="block text-xs font-normal opacity-90">{quoted.monthly}/month</span>}
-                </span>
-                <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
-              </Button>
-
-              <Button
-                asChild
                 size="sm"
                 disabled={disabled || !checkoutHref}
-                className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#0BA360] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#099455]"
+                onClick={continueToCheckout}
+                className="h-11 w-full justify-between gap-2 bg-primary px-4 font-bold text-primary-foreground"
               >
-                <a href={checkoutHref || undefined}>
-                  <span className="text-left leading-tight">
-                    <span className="block text-sm">Continue to checkout</span>
-                    {quoted?.total && <span className="block text-xs font-normal opacity-90">Pay in full today — {quoted.total}</span>}
-                  </span>
-                  <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
+                <span>Continue with payment</span>
+                <ArrowRight className="h-5 w-5 shrink-0" strokeWidth={2.5} />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={disabled}
+                onClick={onBookCallback}
+                className="h-11 w-full justify-start gap-3 px-4 font-bold"
+              >
+                <PhoneCall className="h-4 w-4 shrink-0" />
+                Book a callback
+              </Button>
+              <Button asChild size="sm" variant="outline" className="h-11 w-full justify-start gap-3 px-4 font-bold">
+                <a
+                  href={salesPhoneOpen ? SALES_PHONE_TEL : WHATSAPP_URL}
+                  {...(!salesPhoneOpen ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                >
+                  {salesPhoneOpen ? <Phone className="h-4 w-4 shrink-0" /> : <MessageCircle className="h-4 w-4 shrink-0" />}
+                  {salesPhoneOpen ? `Speak to someone · ${SALES_PHONE}` : 'WhatsApp us'}
                 </a>
               </Button>
             </div>
-          </div>
-
-          {/* Continue on website */}
-          <div className="rounded-xl border border-dashed border-border bg-muted/40 p-4">
-            <p className="text-sm font-semibold text-foreground">Or continue on our website</p>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              {reg
-                ? <>We'll open your quote with <strong className="text-foreground">{reg}</strong> already filled in — choose your cover and pay securely there. This chat stays open if you need help.</>
-                : <>Open the full quote page to choose your cover and pay securely. This chat stays open if you need help.</>}
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Phone line: {salesPhoneHoursLabel}. Outside these hours, WhatsApp us or book a callback.
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3 h-auto min-h-10 w-full justify-between gap-2 border-2 border-[#0BA360] bg-background px-4 py-2 font-bold text-[#0BA360] hover:bg-[#0BA360]/10 hover:text-[#0BA360]"
-              onClick={(e) => {
-                if (checkoutHref) {
-                  e.preventDefault();
-                  continueToCheckout();
-                }
-              }}
-              asChild={!checkoutHref}
-            >
-              {checkoutHref ? (
-                <span className="flex w-full items-center justify-between gap-2">
-                  Open my quote on the website
-                  <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
-                </span>
-              ) : (
-                <a href="/">
-                  <span>Go to the quote page</span>
-                  <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
-                </a>
-              )}
-            </Button>
           </div>
 
           {/* Prefer a person? Only ever shown while a specialist is really live. */}
@@ -1538,6 +1514,7 @@ export function SandboxChatWindow({
                 agentLive={agentLive}
                 agentNames={agentNames}
                 onTalkToAgent={agentLive ? () => void requestLiveAgent() : () => setContactOpen(true)}
+                onBookCallback={() => setContactOpen(true)}
               />
             </div>
           )}
