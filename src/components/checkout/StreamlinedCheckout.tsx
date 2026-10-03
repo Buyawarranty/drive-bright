@@ -1791,7 +1791,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const getAddressInputValidationClass = (field: string) => {
     // The lookup is only complete after the customer has selected or manually
     // entered a full address. A recognised postcode by itself must never look done.
-    if (field === 'postcode' && showValidation && !addressComplete) {
+    if (field === 'postcode' && showValidation && (!addressComplete || !addressConfirmedComplete || showAddressDropdown)) {
       return 'border-2 border-[#FF385C] ring-2 ring-[#FF385C]/25 bg-[#FF385C]/5 focus:ring-[#FF385C]/40 focus:border-[#FF385C]';
     }
     if ((showValidation || addressTouched[field]) && addressErrors[field]) {
@@ -3073,7 +3073,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {showValidation && !addressErrors.postcode && !addressData.address_line_1?.trim() && (
                   <p className="text-[#FF385C] text-sm font-medium mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    Please enter postcode
+                    {showAddressDropdown && addressSuggestions.length > 0
+                      ? 'Please select your address from the list, or enter it manually, to continue.'
+                      : 'Please enter your postcode, street or town to find your address.'}
                   </p>
                 )}
                 
