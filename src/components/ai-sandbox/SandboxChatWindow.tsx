@@ -8,6 +8,7 @@ import {
   Headset,
   PhoneCall,
   MessageCircle,
+  Mail,
   ShieldCheck,
   CarFront,
   UserRound,
