@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, Check, Tag, X, Shield } from 'lucide-react';
+import { Lock, Check, Tag, X, Shield, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
@@ -189,61 +189,76 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('monthly'); } }}
           className={`w-full sm:flex-1 sm:flex sm:flex-col text-left rounded-2xl p-5 sm:p-6 border-2 transition-all cursor-pointer ${
             selectedPayment === 'monthly'
-              ? 'bg-[#FFF4EC] border-[#FF6B00] shadow-[0_4px_20px_-8px_rgba(255,107,0,0.4)]'
-              : 'bg-white border-[#E5E5E5] hover:border-gray-300 hover:bg-[#FFF4EC]/50'
+              ? 'bg-primary/5 border-primary shadow-sm'
+              : 'bg-card border-border hover:border-primary/60 hover:bg-primary/5'
           }`}
         >
           {/* Title row with radio */}
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex min-w-0 items-center gap-3">
               {/* Radio indicator */}
               <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedPayment === 'monthly' ? 'border-[#FF6B00]' : 'border-gray-400'
+                className={`h-7 w-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  selectedPayment === 'monthly' ? 'border-primary' : 'border-muted-foreground'
                 }`}
               >
-                {selectedPayment === 'monthly' && <span className="w-2.5 h-2.5 rounded-full bg-[#FF6B00]" />}
+                {selectedPayment === 'monthly' && <span className="h-4 w-4 rounded-full bg-primary" />}
               </div>
-              <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Spread the cost</h3>
-              <span className="bg-[#FF6B00] text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">
-                0% APR
-              </span>
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground">Spread the cost</h3>
             </div>
+            <span className="flex-shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs sm:text-sm font-bold text-primary-foreground">0% APR</span>
           </div>
 
           {/* Price + benefits row */}
-          <div className="mt-4 flex flex-col gap-4">
-            <div className="pl-7">
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-extrabold text-[#FF6B00] leading-none tracking-tight">
+          <div className="mt-4 flex flex-col gap-5 sm:pl-10">
+            <div>
+              <div className="mb-4 flex items-center gap-2 font-bold text-primary">
+                <CalendarDays className="h-5 w-5 flex-shrink-0" strokeWidth={2.5} />
+                <span className="text-base sm:text-lg">12 monthly instalments</span>
+              </div>
+              <div className="flex items-baseline gap-3">
+                <span className="text-5xl sm:text-6xl font-extrabold text-primary leading-none">
                   £{monthlyPrice}
                 </span>
-                <span className="text-sm text-[#1a1a1a] font-medium">today</span>
+                <span className="text-xl text-foreground font-bold">today</span>
               </div>
-              <p className="text-sm text-[#1a1a1a] font-medium mt-1">
-                Then 11 monthly payments of £{monthlyPrice}
-              </p>
-              <p className="text-sm text-[#FF6B00] font-semibold mt-1">
-                £{monthlyPaidTotal} total payable
-              </p>
-              <p className="text-sm text-[#FF6B00] font-medium mt-1">
-                = {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day over your full cover term
+              <p className="mt-2 text-base sm:text-lg text-primary font-bold">
+                Your first of 12 monthly instalments
               </p>
             </div>
 
-            {/* Benefits */}
-            <div className="space-y-1.5 pl-7">
-              <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                <Check className="w-4 h-4 text-[#FF6B00] flex-shrink-0" strokeWidth={3} />
-                <span>0% APR</span>
+            <div className="border-t border-border pt-4">
+              <p className="text-base sm:text-lg text-foreground">
+                Then 11 monthly instalments of £{monthlyPrice}
+              </p>
+              <div className="mt-4 grid grid-cols-2 rounded-lg border border-border bg-secondary/70 px-4 py-3">
+                <div className="border-r border-border pr-3">
+                  <span className="block text-xs font-bold uppercase text-muted-foreground">Today</span>
+                  <strong className="mt-1 block text-xl text-foreground">£{monthlyPrice}</strong>
+                  <span className="text-sm text-muted-foreground">First instalment</span>
+                </div>
+                <div className="pl-4">
+                  <span className="block text-xs font-bold uppercase text-muted-foreground">After today</span>
+                  <strong className="mt-1 block text-xl text-foreground">11 × £{monthlyPrice}</strong>
+                  <span className="text-sm text-muted-foreground">Monthly instalments</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                <Check className="w-4 h-4 text-[#FF6B00] flex-shrink-0" strokeWidth={3} />
+              <p className="mt-4 text-lg font-bold text-primary">£{monthlyPaidTotal} total payable · 0% APR</p>
+            </div>
+
+            {/* Benefits */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 text-base text-foreground">
+                <Check className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={3} />
                 <span>No large upfront payment</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                <Check className="w-4 h-4 text-[#FF6B00] flex-shrink-0" strokeWidth={3} />
-                <span>Soft credit check only</span>
+              <div className="flex items-center gap-3 text-base text-foreground">
+                <Check className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={3} />
+                <span>Soft eligibility check only</span>
+              </div>
+              <div className="flex items-center gap-3 text-base text-foreground">
+                <Check className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={3} />
+                <span>No impact on your credit score</span>
               </div>
             </div>
           </div>
@@ -255,7 +270,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 type="button"
                 onClick={(e) => handlePayInside('monthly', e)}
                 disabled={isLoading}
-                className="w-full py-5 text-sm sm:text-base font-bold rounded-xl bg-[#FF6B00] hover:bg-[#e56000] text-white animate-breathing"
+                className="w-full py-5 text-sm sm:text-base font-bold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground animate-breathing"
               >
                 {isLoading && selectedPayment === 'monthly' ? (
                   <span className="flex items-center justify-center gap-2">
@@ -263,7 +278,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     Processing...
                   </span>
                 ) : (
-                  <span>Pay £{monthlyPrice} today</span>
+                  <span>Continue with monthly payments</span>
                 )}
               </Button>
             </div>
