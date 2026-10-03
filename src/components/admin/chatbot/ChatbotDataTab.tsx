@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { Bot, MessageSquare, Car, PoundSterling, PhoneCall, UserPlus, RefreshCw, Download, ExternalLink, Eraser, ClipboardCopy, FileText } from 'lucide-react';
+import { Bot, Bell, MessageSquare, Car, PoundSterling, PhoneCall, UserPlus, RefreshCw, Download, ExternalLink, Eraser, ClipboardCopy, FileText } from 'lucide-react';
 import { buildChatbotTrainingBrief } from '@/lib/chatbotTrainingBrief';
 import ChatConversationsPanel from './ChatConversationsPanel';
 import ChatActionQueuePanel from './ChatActionQueuePanel';
@@ -70,6 +70,8 @@ export default function ChatbotDataTab() {
   const fromIso = activeRange?.from ? new Date(new Date(activeRange.from).setHours(0, 0, 0, 0)).toISOString() : null;
   const toIso = activeRange?.to ? new Date(new Date(activeRange.to).setHours(23, 59, 59, 999)).toISOString() : null;
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('conversations');
+  const [unansweredCount, setUnansweredCount] = useState(0);
   // Opened straight from a chat pop-up: land on the conversation itself.
   const deepLinkThread = useMemo(() => {
     try {
@@ -310,7 +312,9 @@ export default function ChatbotDataTab() {
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         <StatCard icon={MessageSquare} label="Conversations" value={stats.threads} />
         <StatCard icon={MessageSquare} label="Customer messages" value={stats.byType.customer_message ?? 0} />
-        <StatCard icon={Bot} label="Questions asked" value={stats.byType.question ?? 0} hint={`${stats.unanswered} not in approved material`} />
+        <button type="button" className="text-left" onClick={() => setActiveTab('unanswered')}>
+          <StatCard icon={Bot} label="Questions asked" value={stats.byType.question ?? 0} hint={`${stats.unanswered} not in approved material — view list`} />
+        </button>
         <StatCard icon={Car} label="Vehicles looked up" value={stats.byType.vehicle_interest ?? 0} />
         <StatCard icon={PoundSterling} label="Prices quoted" value={stats.byType.price_quoted ?? 0} hint={stats.avgPrice ? `avg £${stats.avgPrice}` : undefined} />
         <StatCard icon={UserPlus} label="Leads captured" value={stats.byType.lead_captured ?? 0} hint={`${stats.byType.handover ?? 0} asked for a human`} />
@@ -323,8 +327,26 @@ export default function ChatbotDataTab() {
         className="max-w-md"
       />
 
-      <Tabs defaultValue="conversations">
-        <TabsList>
+      {unansweredCount > 0 && activeTab !== 'unanswered' && (
+        <div className="flex flex-wrap items-center gap-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-900">
+          <Bell className="h-4 w-4" />
+          <span>
+            <strong>{unansweredCount}</strong> customer question{unansweredCount === 1 ? '' : 's'} Miles could not answer from approved material still need an answer.
+          </span>
+          <Button size="sm" variant="outline" className="ml-auto border-red-300" onClick={() => setActiveTab('unanswered')}>
+            Add answers
+          </Button>
+        </div>
+      )}
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="unanswered" className="gap-1.5">
+            Unanswered questions
+            {unansweredCount > 0 && (
+              <span className="rounded-full bg-red-600 px-1.5 text-[10px] font-bold leading-4 text-white">{unansweredCount}</span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="queue">Action queue</TabsTrigger>
           <TabsTrigger value="conversations">Conversations &amp; leads</TabsTrigger>
           <TabsTrigger value="response">Reply times &amp; missed chats</TabsTrigger>
@@ -334,6 +356,14 @@ export default function ChatbotDataTab() {
           <TabsTrigger value="vehicles">Vehicles &amp; prices</TabsTrigger>
           <TabsTrigger value="raw">Raw activity</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="unanswered" forceMount className="pt-4 data-[state=inactive]:hidden">
+          <p className="mb-3 text-sm text-muted-foreground">
+            Questions customers asked that Miles could not answer from the approved plan documents. Write the answer once and save it —
+            Miles uses your wording from then on and the question drops off this list.
+          </p>
+          <ChatbotAnswerLibraryPanel fromIso={fromIso} toIso={toIso} onlyUngrounded onWaitingCount={setUnansweredCount} />
+        </TabsContent>
 
         <TabsContent value="queue" className="pt-4">
           <ChatActionQueuePanel rangeDays="all" />

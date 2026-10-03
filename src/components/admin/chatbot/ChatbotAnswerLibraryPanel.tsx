@@ -56,7 +56,18 @@ const similar = (question: string, row: LibraryRow) => {
   return (hits / asked.length) * 0.7 + (hits / bank.size) * 0.3;
 };
 
-export default function ChatbotAnswerLibraryPanel({ fromIso, toIso }: { fromIso?: string | null; toIso?: string | null }) {
+export default function ChatbotAnswerLibraryPanel({
+  fromIso,
+  toIso,
+  onlyUngrounded = false,
+  onWaitingCount,
+}: {
+  fromIso?: string | null;
+  toIso?: string | null;
+  /** Show only questions Miles could not answer from approved material. */
+  onlyUngrounded?: boolean;
+  onWaitingCount?: (n: number) => void;
+}) {
   const adminId = useRealAdminId();
   const [rows, setRows] = useState<LibraryRow[]>([]);
   const [asked, setAsked] = useState<Asked[]>([]);
@@ -144,14 +155,16 @@ export default function ChatbotAnswerLibraryPanel({ fromIso, toIso }: { fromIso?
 
       const pending = [...map.values()]
         .filter((a) => !library.some((r) => r.status === 'approved' && similar(a.question, r) >= 0.34))
+        .filter((a) => !onlyUngrounded || !a.grounded)
         .sort((a, b) => (a.grounded === b.grounded ? b.count - a.count : a.grounded ? 1 : -1));
       setAsked(pending);
+      onWaitingCount?.(pending.filter((a) => !a.grounded).length);
     } catch (e: any) {
       toast.error(e?.message || 'Could not load the answer library');
     } finally {
       setLoading(false);
     }
-  }, [fromIso, toIso]);
+  }, [fromIso, toIso, onlyUngrounded, onWaitingCount]);
 
   useEffect(() => {
     void load();
