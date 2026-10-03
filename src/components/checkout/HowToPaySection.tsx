@@ -238,22 +238,21 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   <span className="text-xs text-muted-foreground">Monthly instalments</span>
                 </div>
               </div>
-              <p className="mt-3 text-sm sm:text-base font-bold text-primary">£{monthlyPaidTotal} total payable · 0% APR</p>
             </div>
 
             {/* Benefits */}
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" strokeWidth={3} />
-                <span>No large upfront payment</span>
+                <span>Soft check 0% APR</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" strokeWidth={3} />
-                <span>Soft eligibility check only</span>
+                <span>£{monthlyPaidTotal} total payable</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" strokeWidth={3} />
-                <span>No impact on your credit score</span>
+                <span>No impact on credit score</span>
               </div>
             </div>
           </div>
