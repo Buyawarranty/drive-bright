@@ -45,7 +45,7 @@ import { Button } from '@/components/ui/button';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
 import { nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
-import { WHATSAPP_URL } from '@/constants/contact';
+import { SALES_PHONE, SALES_PHONE_TEL, WHATSAPP_URL } from '@/constants/contact';
 import {
   prepareAttachment,
   CHAT_EMOJIS,
@@ -613,6 +613,17 @@ function PriceOptionsPanel({
               <Button
                 size="sm"
                 variant="outline"
+                className="h-11 w-full justify-start gap-3 px-4 font-bold"
+                asChild
+              >
+                <a href={SALES_PHONE_TEL}>
+                  <Phone className="h-4 w-4 shrink-0" />
+                  Call us on {SALES_PHONE}
+                </a>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
                 disabled={disabled}
                 onClick={onBookCallback}
                 className="h-11 w-full justify-start gap-3 px-4 font-bold"
@@ -631,7 +642,7 @@ function PriceOptionsPanel({
                 </a>
               </Button>
             </div>
-            <p className="text-xs leading-relaxed text-muted-foreground">There is no live chat. Our team will reply by email or WhatsApp.</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">For sales enquiries, call Mon–Fri 9am–6pm or Sat 12pm–4pm. You can also use email or WhatsApp.</p>
           </div>
 
         </div>
