@@ -286,6 +286,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // lookup, or every field filled manually / restored complete. A partial
   // Postcoder fill (postcode + town only) must never trigger the auto-scroll.
   const [addressConfirmedComplete, setAddressConfirmedComplete] = useState(false);
+  const [manualBlurTick, setManualBlurTick] = useState(0);
   // Postcode/street/town search input — starts empty even if an address was restored
   const [postcodeInput, setPostcodeInput] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -1166,6 +1167,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (!addressComplete) return;
     if (showAddressDropdown || isLookingUp) return;
     if (manualAddressEntry) {
+      // Manual entry: only confirm once the customer has LEFT a field (not
+      // mid-typing) and line 1 looks like a real address (3+ chars).
+      if (manualBlurTick === 0) return;
+      if ((addressData.address_line_1 || '').trim().length < 3) return;
+      const active = typeof document !== 'undefined' ? document.activeElement?.id : '';
+      if (active === 'address_line_1' || active === 'manual_postcode') return;
       setAddressConfirmedComplete(true);
       return;
     }
@@ -1173,7 +1180,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (addressSuggestions.length === 0) {
       setAddressConfirmedComplete(true);
     }
-  }, [addressComplete, addressConfirmedComplete, manualAddressEntry, showAddressDropdown, isLookingUp, addressSuggestions.length]);
+  }, [addressComplete, addressConfirmedComplete, manualAddressEntry, showAddressDropdown, isLookingUp, addressSuggestions.length, manualBlurTick, addressData.address_line_1]);
 
   // Auto-scroll straight to "Choose how you want to pay" once personal details
   // AND a fully confirmed address (picked in full or every field completed) are
@@ -3257,6 +3264,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           }
                         }}
                         onBlur={async () => {
+                          setManualBlurTick(t => t + 1);
                           setAddressTouched(prev => ({ ...prev, postcode: true }));
                           validateAddressField('postcode');
                           const clean = (addressData.postcode || '').replace(/\s/g, '').toUpperCase();
@@ -3315,6 +3323,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           }
                         }}
                         onBlur={() => {
+                          setManualBlurTick(t => t + 1);
                           setAddressTouched(prev => ({ ...prev, address_line_1: true }));
                           validateAddressField('address_line_1');
                         }}
