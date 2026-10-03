@@ -1175,17 +1175,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }
   }, [addressComplete, addressConfirmedComplete, manualAddressEntry, showAddressDropdown, isLookingUp, addressSuggestions.length]);
 
-  // Auto-scroll to "Choose how you want to pay" only once personal details AND a
-  // fully confirmed address (picked in full or every field completed) are in place.
+  // Auto-scroll to "Confirm your current mileage" once personal details AND a
+  // fully confirmed address (picked in full or every field completed) are in place,
+  // so the customer confirms mileage before reaching the payment section.
   const hasAutoScrolledToPayRef = React.useRef(false);
   useEffect(() => {
     if (hasAutoScrolledToPayRef.current) return;
     if (personalDetailsComplete && addressComplete && addressConfirmedComplete && !showAddressDropdown && !isLookingUp) {
       hasAutoScrolledToPayRef.current = true;
       setTimeout(() => {
-        const paySection = document.getElementById('how-to-pay-section');
-        if (paySection) {
-          paySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const mileageSection = document.getElementById('mileage-confirm-section');
+        if (mileageSection) {
+          mileageSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 300);
     }
@@ -1284,7 +1285,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackStripeCheckoutPageLoad();
   }, []);
 
-  // Auto-scroll to "How to Pay" section when the address is fully confirmed
+  // Auto-scroll to "Confirm your current mileage" when the address is fully confirmed
   useEffect(() => {
     // Only if address is complete AND confirmed (full pick or all fields filled)
     if (!addressComplete || !addressConfirmedComplete) return;
@@ -1304,10 +1305,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
       // Small delay to ensure DOM is updated
       setTimeout(() => {
-        if (howToPayRef.current) {
-          howToPayRef.current.scrollIntoView({
+        const mileageSection = document.getElementById('mileage-confirm-section');
+        if (mileageSection) {
+          mileageSection.scrollIntoView({
             behavior: 'smooth',
-            block: 'start'
+            block: 'center'
           });
         }
       }, 300);
@@ -3235,7 +3237,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </div>
 
             {/* Mileage */}
-             <div>
+             <div id="mileage-confirm-section" className="scroll-mt-24">
               <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-1">
                 Confirm your current mileage
               </Label>
