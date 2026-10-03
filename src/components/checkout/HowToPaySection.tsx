@@ -210,11 +210,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           {/* Price + benefits row */}
           <div className="mt-4 flex flex-col gap-4 sm:pl-7">
             <div>
-              <div className="flex items-center gap-2 font-bold text-primary">
-                <CalendarDays className="h-4 w-4 flex-shrink-0" strokeWidth={2.5} />
-                <span className="text-sm sm:text-base">12 instalments</span>
-              </div>
-              <div className="mt-2 flex items-baseline gap-2">
+              <div className="flex items-baseline gap-2">
                 <span className="text-3xl sm:text-4xl font-extrabold text-primary leading-none tracking-tight">
                   £{monthlyPrice}
                 </span>
