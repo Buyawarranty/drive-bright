@@ -2906,18 +2906,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </div>
             </div>
 
-            {/* Section Divider - Your Address */}
-            <div className="mt-10 mb-6">
-              <h2 className="text-lg font-bold text-[#1a1a1a] flex items-center gap-2"><Home className="w-5 h-5 text-[#0BA360]" /> Your address</h2>
-              <div className="h-px bg-border mt-3" />
-            </div>
-
             {/* Address Section - Always visible */}
-            <div id="address-fields" className="space-y-4">
+            <div id="address-fields" className="mt-8 space-y-4 rounded-lg border border-border bg-card px-4 py-5 shadow-sm sm:px-7 sm:py-7">
+              <div className="space-y-1">
+                <h2 className="flex items-center gap-3 text-xl font-bold text-foreground sm:text-2xl">
+                  <Home className="h-7 w-7 text-[hsl(var(--success))]" />
+                  Your address
+                </h2>
+                <p className="text-sm text-muted-foreground sm:text-base">Search for your address to continue.</p>
+              </div>
+
               {/* Postcode Lookup - Auto triggers on valid format or blur */}
               <div>
-                <Label className="text-sm font-medium text-foreground/80">Postcode, street or town *</Label>
-                <div className="relative mt-1.5">
+                <Label className="text-sm font-semibold text-foreground sm:text-base">Postcode, street or town</Label>
+                <div className="relative mt-2">
+                  <Search className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="postcode-lookup"
                     type="text"
@@ -2999,14 +3002,36 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       }
                     }}
 
-                    placeholder="e.g. SW1A 1AA or High Street, Bath"
-                    className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('postcode')}`}
+                    placeholder="Start typing your address"
+                    className={`h-14 rounded-lg pl-12 pr-12 text-base sm:h-16 sm:text-lg focus-visible:border-primary focus-visible:ring-primary ${getAddressInputValidationClass('postcode')}`}
                   />
 
                   {isLookingUp ? (
-                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-spin" />
+                    <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-muted-foreground" />
                   ) : postcodeInput.trim() && addressComplete && addressValidated.postcode && !addressErrors.postcode ? (
-                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
+                    <Check className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[hsl(var(--success))]" />
+                  ) : postcodeInput.trim() ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="Clear address search"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => {
+                        setPostcodeInput('');
+                        setAddressSuggestions([]);
+                        setShowAddressDropdown(false);
+                        setAddressLookupFailed(false);
+                        setAddressConfirmedComplete(false);
+                        if (!manualAddressEntry) {
+                          setShowAddressFields(false);
+                          setAddressData(prev => ({ ...prev, address_line_1: '', address_line_2: '', town: '', county: '', postcode: '' }));
+                        }
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-muted"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   ) : null}
                 </div>
                 
@@ -3020,15 +3045,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                 {/* Address picker — drill into a street or town, then pick the address */}
                 {showAddressDropdown && addressSuggestions.length > 0 && (
-                  <div className="mt-2 rounded-lg border border-border bg-background shadow-sm">
-                    <p className="px-3 py-2 text-xs font-medium text-muted-foreground border-b border-border">
-                      Select your address ({addressSuggestions.length} found)
-                    </p>
-                    <div className="max-h-56 overflow-auto">
+                  <div className="mt-2 overflow-hidden rounded-lg border border-border bg-background shadow-sm">
+                    <div className="max-h-80 overflow-auto p-1.5 sm:max-h-96">
                       {addressSuggestions.map((addr: any, i: number) => (
-                        <button
+                        <Button
                           key={`${addr.__container ? addr.label : addr.formatted_address}-${i}`}
                           type="button"
+                          variant="ghost"
                           onClick={() => {
                             if (addr.__container) {
                               if (addr.retrieveId) {
@@ -3043,20 +3066,26 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               handleSelectLookupAddress(addr);
                             }
                           }}
-                          className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b border-border/60 last:border-b-0 flex items-center justify-between gap-2"
+                          className="h-auto min-h-16 w-full justify-start gap-3 whitespace-normal rounded-md px-3 py-3 text-left hover:bg-primary/10 sm:min-h-20 sm:px-4"
                         >
-                          <span className="min-w-0 truncate">
-                            {addr.__container
-                              ? addr.label
-                              : addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                          <MapPin className="h-5 w-5 shrink-0 text-foreground/75" />
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-semibold text-foreground sm:text-base">
+                              {addr.__container ? addr.label : addr.line_1 || addr.formatted_address}
+                            </span>
+                            {!addr.__container && (addr.town_or_city || addr.postcode) && (
+                              <span className="mt-0.5 block text-sm font-normal text-muted-foreground sm:text-base">
+                                {[addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                              </span>
+                            )}
                           </span>
                           {addr.__container && (
-                            <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+                            <span className="flex flex-shrink-0 items-center gap-1 text-xs text-muted-foreground">
                               {addr.count} addresses
                               <ChevronRight className="w-3.5 h-3.5" />
                             </span>
                           )}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
@@ -3083,8 +3112,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 
                 {/* Enter your address link */}
                 {!showAddressFields && !isLookingUp && (
-                  <button
+                  <div className="mt-7 border-t border-border pt-5">
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => {
                       setShowAddressFields(true);
                       setManualAddressEntry(true);
@@ -3098,10 +3129,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         setAddressValidated(prev => ({ ...prev, postcode: true }));
                       }
                     }}
-                    className="mt-2 text-sm text-[#1a1a1a] underline font-medium"
+                    className="h-auto justify-start gap-2 p-0 text-sm font-medium text-foreground underline underline-offset-2 hover:bg-transparent sm:text-base"
                   >
-                    Enter your address manually
-                  </button>
+                    Can't find your address? Enter it manually
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  </div>
                 )}
               </div>
 
