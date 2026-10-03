@@ -120,7 +120,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
               </div>
               <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Pay in full</h3>
               <span className="bg-[#0BA360] text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">
-                Recommended
+                Save 10%
               </span>
             </div>
           </div>
