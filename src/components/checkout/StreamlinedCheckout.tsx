@@ -3325,7 +3325,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       )}
                     </div>
                     {(showValidation || addressTouched.address_line_1) && addressErrors.address_line_1 && (
-                      <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                      <p className="text-[#FF385C] text-sm mt-1.5 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
                         {addressErrors.address_line_1}
                       </p>
@@ -3392,7 +3392,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         )}
                       </div>
                       {(showValidation || addressTouched.town) && addressErrors.town && (
-                        <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                        <p className="text-[#FF385C] text-sm mt-1.5 flex items-center gap-1">
                           <AlertCircle className="w-3.5 h-3.5" />
                           {addressErrors.town}
                         </p>
