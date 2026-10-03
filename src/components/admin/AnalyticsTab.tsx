@@ -19,6 +19,7 @@ import { DailyAgentRevenuePanel } from './analytics/DailyAgentRevenuePanel';
 import { SalesByHourPanel } from './analytics/SalesByHourPanel';
 import { SalesByWeekdayPanel } from './analytics/SalesByWeekdayPanel';
 import { AgentSalesVsLeadsPanel } from './analytics/AgentSalesVsLeadsPanel';
+import { StaffingVsSalesPanel } from './analytics/StaffingVsSalesPanel';
 import { CustomerDemographicsPanel } from './analytics/CustomerDemographicsPanel';
 import { PriceConversionAovPanel } from './analytics/PriceConversionAovPanel';
 import { LeadsToSalesRatioPanel } from './analytics/LeadsToSalesRatioPanel';
@@ -147,6 +148,7 @@ const ANALYTICS_QUICK_LINKS = [
   { id: 'best-selling-days', label: 'Best selling days', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
   { id: 'weekend-leads-stats', label: 'Weekend leads stats', className: 'bg-amber-300/50 text-amber-900 border-amber-200/50 hover:bg-amber-400/50' },
   { id: 'agent-sales-vs-leads', label: 'Agent sales vs leads', className: 'bg-amber-300/50 text-amber-900 border-amber-200/50 hover:bg-amber-400/50' },
+  { id: 'staffing-vs-sales', label: 'Staffing vs sales', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
   { id: 'month-projection', label: 'Month projection', className: 'bg-lime-300/50 text-lime-900 border-lime-200/50 hover:bg-lime-400/50' },
   { id: 'duration-mix', label: 'Duration mix', className: 'bg-sky-300/50 text-sky-900 border-sky-200/50 hover:bg-sky-400/50' },
   { id: 'per-year-value', label: 'Per-year value', className: 'bg-blue-300/50 text-blue-900 border-blue-200/50 hover:bg-blue-400/50' },
@@ -1653,6 +1655,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         <AnalyticsSectionHeading id="agent-sales-vs-leads" title="Agent sales vs leads" description="Per-agent warranties sold per day, week or month against the leads they were given, with conversion and AOV." accent="border-amber-500/60" />
 
         <AgentSalesVsLeadsPanel />
+
+        <AnalyticsSectionHeading id="staffing-vs-sales" title="Staffing vs sales" description="How many agents were online each day, week or month against the sales made — does more cover on the phones mean more sales?" accent="border-violet-500/60" />
+
+        <StaffingVsSalesPanel />
 
 
 
