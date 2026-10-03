@@ -358,6 +358,34 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
           <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
         ) : (
           <>
+            {/* Simple view: just leads in vs sales made, nothing else */}
+            <div className="rounded-lg border p-3 space-y-1">
+              <p className="text-sm font-semibold">Leads in vs sales made</p>
+              <p className="text-xs text-muted-foreground">
+                The two bars side by side for each day — tall blue bar, tiny green bar means leads are coming in but not being converted.
+              </p>
+              <ResponsiveContainer width="100%" height={240}>
+                <ComposedChart data={rows} barGap={2}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    formatter={(value: number, name: string) =>
+                      name === 'leads'
+                        ? [Number(value).toLocaleString('en-GB'), 'Leads in']
+                        : [Number(value).toLocaleString('en-GB'), 'Sales made']
+                    }
+                    labelStyle={{ fontWeight: 'bold' }}
+                    contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                  />
+                  <Legend formatter={(v) => (v === 'leads' ? 'Leads in' : 'Sales made')} />
+                  <Bar dataKey="leads" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="sales" fill="#10b981" radius={[4, 4, 0, 0]} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+
+            <p className="text-sm font-semibold pt-2">Full detail — leads, sales, revenue and spend</p>
             <ResponsiveContainer width="100%" height={320}>
               <ComposedChart data={rows}>
                 <CartesianGrid strokeDasharray="3 3" />
