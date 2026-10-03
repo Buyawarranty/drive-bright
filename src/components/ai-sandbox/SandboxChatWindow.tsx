@@ -7,6 +7,7 @@ import type { PaymentPeriod } from '@/lib/pricingMatrix';
 import {
   Headset,
   PhoneCall,
+  Phone,
   MessageCircle,
   Mail,
   ShieldCheck,
