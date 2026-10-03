@@ -7,8 +7,8 @@ import type { PaymentPeriod } from '@/lib/pricingMatrix';
 import {
   Headset,
   PhoneCall,
-  Phone,
   MessageCircle,
+  Mail,
   ShieldCheck,
   CarFront,
   UserRound,
@@ -43,10 +43,9 @@ import { Shimmer } from '@/components/ai-elements/shimmer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
-import { isSalesPhoneOpenNow, nextOpeningLabel, salesPhoneHoursLabel } from '@/lib/aiSandbox/openingHours';
+import { nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
-import { SALES_PHONE, SALES_PHONE_TEL, WHATSAPP_URL } from '@/constants/contact';
-import { useLiveAgentAvailable } from '@/hooks/useLiveAgentAvailable';
+import { WHATSAPP_URL } from '@/constants/contact';
 import {
   prepareAttachment,
   CHAT_EMOJIS,
@@ -58,8 +57,6 @@ import TrustAndInfoAccordion from '@/components/step3/TrustAndInfoAccordion';
 
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-chat`;
-const LIVE_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-live-agent-request`;
-
 const AGENT_PREFIX = '(Warranty specialist)';
 const CONTACT_CARD_MARKER = '[[CONTACT_CARD]]';
 const HUMAN_INTENT = /\b(speak|talk|chat)\b[^.!?]{0,30}\b(human|agent|person|someone|advisor|specialist)\b|\blive agent\b|\breal person\b|\bsomeone real\b|\ba human\b|\bhuman please\b/i;
@@ -375,9 +372,6 @@ function PriceOptionsPanel({
   mileage,
   vehicle,
   lastAssistantText,
-  agentLive,
-  agentNames,
-  onTalkToAgent,
   onBookCallback,
 }: {
   disabled?: boolean;
@@ -388,10 +382,6 @@ function PriceOptionsPanel({
   /** DVLA details for the reg, so the panel prices exactly like the website. */
   vehicle?: Record<string, any> | null;
   lastAssistantText?: string | null;
-  /** True only while a specialist has switched themselves on as live. */
-  agentLive?: boolean;
-  agentNames?: string[];
-  onTalkToAgent?: () => void;
   onBookCallback?: () => void;
 }) {
   const [term, setTerm] = useState(24);
@@ -405,7 +395,6 @@ function PriceOptionsPanel({
   // Once a price has been asked for, the tall option grid folds away so the
   // answer above stays visible — the customer can reopen it to tweak options.
   const [optionsOpen, setOptionsOpen] = useState(true);
-  const salesPhoneOpen = isSalesPhoneOpenNow();
 
   // Chat does persuasion and price; the real cart takes the money. Once we know
   // the reg we can hand the customer straight to plan selection (step 3) with
@@ -628,54 +617,23 @@ function PriceOptionsPanel({
                 onClick={onBookCallback}
                 className="h-11 w-full justify-start gap-3 px-4 font-bold"
               >
-                <PhoneCall className="h-4 w-4 shrink-0" />
-                Book a callback
+                <Mail className="h-4 w-4 shrink-0" />
+                Leave your email address
               </Button>
               <Button asChild size="sm" variant="outline" className="h-11 w-full justify-start gap-3 px-4 font-bold">
                 <a
-                  href={salesPhoneOpen ? SALES_PHONE_TEL : WHATSAPP_URL}
-                  {...(!salesPhoneOpen ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  href={WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  {salesPhoneOpen ? <Phone className="h-4 w-4 shrink-0" /> : <MessageCircle className="h-4 w-4 shrink-0" />}
-                  {salesPhoneOpen ? `Speak to someone · ${SALES_PHONE}` : 'WhatsApp us'}
+                  <MessageCircle className="h-4 w-4 shrink-0" />
+                  WhatsApp us
                 </a>
               </Button>
             </div>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Phone line: {salesPhoneHoursLabel}. Outside these hours, WhatsApp us or book a callback.
-            </p>
+            <p className="text-xs leading-relaxed text-muted-foreground">There is no live chat. Our team will reply by email or WhatsApp.</p>
           </div>
 
-          {/* Prefer a person? Only ever shown while a specialist is really live. */}
-          {agentLive && (
-            <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
-              <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                <span className="relative flex h-2.5 w-2.5 shrink-0">
-                  <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-emerald-500 opacity-70" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600" />
-                </span>
-                {agentNames?.length
-                  ? `${agentNames.join(', ')} ${agentNames.length > 1 ? 'are' : 'is'} available now`
-                  : 'A warranty specialist is available now'}
-              </p>
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Would you rather go through this with a person? Ask a specialist to call you back — no need to start again.
-              </p>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={disabled}
-                onClick={onTalkToAgent}
-                className="mt-3 h-auto min-h-10 w-full justify-between gap-2 border-2 border-primary bg-background px-4 py-2 font-bold text-primary hover:bg-primary/10 hover:text-primary"
-              >
-                <span className="flex items-center gap-2">
-                  <PhoneCall className="h-4 w-4 shrink-0" />
-                  Chat with a specialist now
-                </span>
-                <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
-              </Button>
-            </div>
-          )}
         </div>
       )}
 
@@ -760,10 +718,6 @@ export function SandboxChatWindow({
   const [pricePanelOpen, setPricePanelOpen] = useState(true);
   // Opened when the customer asks for a person from the quote card / live banner.
   const [contactOpen, setContactOpen] = useState(false);
-  const [requestingLiveAgent, setRequestingLiveAgent] = useState(false);
-  const [liveRequestError, setLiveRequestError] = useState<string | null>(null);
-  // Only offer a real person while a specialist has switched themselves live.
-  const { live: agentLive, names: agentNames } = useLiveAgentAvailable();
   const [quoteStartOpen, setQuoteStartOpen] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
   // Keeps a stable "sent at" time per message so stamps don't jump on re-render.
@@ -776,70 +730,6 @@ export function SandboxChatWindow({
     return now;
   };
 
-
-  // Website visitor: keep listening for replies typed by a real person in the
-  // CRM. Whatever a specialist sends there drops straight into this chat box
-  // while the visitor is still here, so the conversation carries on live.
-  const seenAgentIdsRef = useRef<Set<string>>(new Set());
-  const lastAgentAtRef = useRef<string | null>(null);
-  const [specialistJoined, setSpecialistJoined] = useState(false);
-
-  useEffect(() => {
-    if (!isGuest || !guestToken) return;
-    let active = true;
-
-    const poll = async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-live-reply`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'poll',
-              guestToken,
-              since: lastAgentAtRef.current,
-            }),
-          },
-        );
-        const data = await res.json().catch(() => null);
-        if (!active || !data?.ok || !Array.isArray(data.messages)) return;
-        const fresh = (data.messages as Array<{ id: string; text: string; created_at: string }>)
-          .filter((m) => m.text && !seenAgentIdsRef.current.has(m.id));
-        if (fresh.length === 0) return;
-        for (const m of fresh) {
-          seenAgentIdsRef.current.add(m.id);
-          if (!lastAgentAtRef.current || m.created_at > lastAgentAtRef.current) {
-            lastAgentAtRef.current = m.created_at;
-          }
-        }
-        setSpecialistJoined(true);
-        
-        setMessages((prev) => [
-          ...prev,
-          ...fresh.map(
-            (m) =>
-              ({
-                id: `agent-${m.id}`,
-                role: 'assistant',
-                parts: [{ type: 'text', text: m.text }],
-                metadata: { sender: 'agent' as Sender },
-              }) as UIMessage,
-          ),
-        ]);
-      } catch {
-        /* transient — try again on the next tick */
-      }
-    };
-
-    void poll();
-    const t = window.setInterval(poll, 5000);
-    return () => {
-      active = false;
-      window.clearInterval(t);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isGuest, guestToken]);
 
   useEffect(() => {
     if (isGuest || !threadId) return;
@@ -1133,43 +1023,6 @@ export function SandboxChatWindow({
     sendMessage({ text: trimmed }, extraBody ? { body: extraBody } : undefined);
   };
 
-  const requestLiveAgent = async () => {
-    if (!isGuest || !guestToken || !agentLive || requestingLiveAgent) return;
-    setRequestingLiveAgent(true);
-    setLiveRequestError(null);
-    try {
-      const response = await fetch(LIVE_AGENT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          guestToken,
-          registration: detectedReg,
-          source: source ?? 'website-chat',
-        }),
-      });
-      const data = await response.json().catch(() => null);
-      if (!response.ok || !data?.ok) {
-        setLiveRequestError(data?.message ?? 'No specialist is available right now. Please use one of the options below.');
-        return;
-      }
-      setHandover({
-        id: data.handover_id,
-        kind: 'live_handover',
-        status: 'waiting',
-        reason: 'live_agent_requested',
-        customer_name: null,
-        cover_summary: null,
-        quoted_price: null,
-        created_at: new Date().toISOString(),
-      });
-      setContactOpen(false);
-    } catch {
-      setLiveRequestError('No specialist is available right now. Please use one of the options below.');
-    } finally {
-      setRequestingLiveAgent(false);
-    }
-  };
-
   // There is no live-agent handover: customers either call us, or leave a
   // number and the team calls or WhatsApps them back (CallMeBackPanel).
 
@@ -1194,7 +1047,7 @@ export function SandboxChatWindow({
     return <div className="flex-1 p-6 text-sm text-muted-foreground">Loading conversation…</div>;
   }
 
-  const waiting = handover?.status === 'waiting' && handover.kind === 'live_handover';
+  const waiting = !isGuest && handover?.status === 'waiting' && handover.kind === 'live_handover';
   const leadCaptured = handover?.kind === 'out_of_hours_lead' || handover?.kind === 'callback_request';
 
   // "Can I speak to a human / live agent?" shows the contact card inline.
@@ -1237,46 +1090,10 @@ export function SandboxChatWindow({
         </div>
       )}
 
-      {/* Only shown while an agent has switched themselves live in the admin area. */}
-      {!agentMode && agentLive && !specialistJoined && !leadCaptured && !waiting && (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 bg-emerald-50 px-4 py-2">
-          <p className="flex items-center gap-2 text-xs font-semibold text-emerald-900">
-            <span className="relative flex h-2 w-2 shrink-0">
-              <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-emerald-500 opacity-70" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
-            </span>
-            {agentNames.length
-              ? `${agentNames.join(', ')} ${agentNames.length > 1 ? 'are' : 'is'} available now — prefer to speak to a person?`
-              : 'A warranty specialist is available now — prefer to speak to a person?'}
-          </p>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 border-emerald-600 bg-white px-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
-            onClick={() => void requestLiveAgent()}
-            disabled={requestingLiveAgent}
-          >
-            <Headset className="mr-1.5 h-3.5 w-3.5" />
-            {requestingLiveAgent ? 'Requesting…' : 'Chat with specialist'}
-          </Button>
-        </div>
-      )}
-
-       {!agentMode && specialistJoined && (
-         <div className="border-b border-border bg-background px-4 py-2.5">
-           <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
-             <Headset className="h-3.5 w-3.5 shrink-0 text-primary" />
-             A warranty specialist has replied in this chat.
-           </p>
-         </div>
-       )}
-
       {(waiting || leadCaptured) && (
         <div className="flex flex-wrap items-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-900">
           <PhoneCall className="h-3.5 w-3.5" />
-          {waiting && isGuest ? (
-            <span className="font-medium">Your live chat request has been sent. A specialist can reply here while you are online.</span>
-          ) : waiting ? (
+          {waiting ? (
             <>
               <span className="font-medium">A warranty specialist has been alerted</span>
               <span>
@@ -1495,8 +1312,6 @@ export function SandboxChatWindow({
                 source={source}
                 compact={compact}
                 registration={detectedReg}
-                agentLive={agentLive}
-                onRequestLiveChat={() => void requestLiveAgent()}
               />
             </div>
           )}
@@ -1511,16 +1326,9 @@ export function SandboxChatWindow({
                 mileage={detectedMileage}
                 vehicle={quoteVehicle}
                 lastAssistantText={lastAssistantText}
-                agentLive={agentLive}
-                agentNames={agentNames}
-                onTalkToAgent={agentLive ? () => void requestLiveAgent() : () => setContactOpen(true)}
                 onBookCallback={() => setContactOpen(true)}
               />
             </div>
-          )}
-
-          {liveRequestError && (
-            <p className="px-3 pb-2 text-sm font-medium text-destructive">{liveRequestError}</p>
           )}
 
           {!agentMode && hasPriceQuote && !pricePanelOpen && (
