@@ -2201,13 +2201,35 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     const pc = (addressData.postcode || '').trim();
     const line1 = (addressData.address_line_1 || '').trim();
     const town = (addressData.town || '').trim();
-    // In manual entry the top search box is hidden, so the manual postcode alone counts.
-    const pcOk = (manualAddressEntry || !!visibleSearch) && !!pc && ukPc.test(pc.replace(/\s/g, ''));
+    // The stored postcode is what counts. (Previously the visible search box also
+    // had to be non-empty, which falsely blocked restored / confirmed addresses
+    // whose search box starts empty.)
+    const pcOk = !!pc && ukPc.test(pc.replace(/\s/g, ''));
+    // Suggestion list still open and nothing picked yet.
+    const pickPending = !manualAddressEntry && showAddressDropdown && addressSuggestions.length > 0;
 
-    if (pcOk && line1 && town) return true;
+    if (pcOk && line1 && town && !pickPending) return true;
 
     setShowValidation(true);
     setAddressExpanded(true);
+    setIsLoading(false);
+
+    if (pickPending && !line1) {
+      setAddressPickReminder(true);
+      setTimeout(() => {
+        const el = document.getElementById('address-suggestions') || document.getElementById('postcode-lookup');
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+      toast.error('Please tap your address in the list to continue.', {
+        id: 'checkout-address-required',
+        duration: 6000,
+        closeButton: true,
+        dismissible: true,
+        className: 'border-2 border-[#FF385C] shadow-2xl',
+      });
+      return false;
+    }
+
     if (manualAddressEntry || visibleSearch) setShowAddressFields(true);
     setAddressTouched(prev => ({ ...prev, postcode: true, address_line_1: true, town: true }));
     setAddressErrors(prev => ({
@@ -2219,7 +2241,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       town: town ? '' : 'Enter your town or city.',
     }));
     setAddressValidated(prev => ({ ...prev, postcode: pcOk, address_line_1: !!line1, town: !!town }));
-    setIsLoading(false);
 
     // Scroll to the field that needs attention. The address section may have
     // just been expanded, so retry a few times until the element is in the DOM.
@@ -2240,13 +2261,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     };
     setTimeout(tryScroll, 150);
 
-    toast.error('Please enter postcode and select your address to continue.', {
-      id: 'checkout-address-required',
-      duration: 6000,
-      closeButton: true,
-      dismissible: true,
-      className: 'border-2 border-[#FF385C] shadow-2xl',
-    });
+    toast.error(
+      pcOk && !line1
+        ? 'Please select your address from the list, or enter it manually, to continue.'
+        : 'Please enter postcode and select your address to continue.',
+      {
+        id: 'checkout-address-required',
+        duration: 6000,
+        closeButton: true,
+        dismissible: true,
+        className: 'border-2 border-[#FF385C] shadow-2xl',
+      },
+    );
     return false;
   };
 
