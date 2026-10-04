@@ -1994,7 +1994,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (validateForm() && (!addressConfirmedComplete || showAddressDropdown)) {
       setAddressExpanded(true);
       setTimeout(() => {
-        const el = document.getElementById('postcode-lookup') || document.getElementById('address-fields');
+        if (showAddressDropdown) setAddressPickReminder(true);
+        const el = (showAddressDropdown && document.getElementById('address-suggestions')) || document.getElementById('postcode-lookup') || document.getElementById('address-fields');
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           (el as HTMLInputElement).focus?.();
