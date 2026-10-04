@@ -2214,7 +2214,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setAddressExpanded(true);
     setIsLoading(false);
 
-    if (pickPending && !line1) {
+    if (pickPending) {
       setAddressPickReminder(true);
       setTimeout(() => {
         const el = document.getElementById('address-suggestions') || document.getElementById('postcode-lookup');
