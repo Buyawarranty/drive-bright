@@ -2215,13 +2215,24 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setAddressValidated(prev => ({ ...prev, postcode: pcOk, address_line_1: !!line1, town: !!town }));
     setIsLoading(false);
 
-    setTimeout(() => {
-      const el = document.getElementById(!pcOk ? 'postcode-lookup' : !line1 ? 'address_line_1' : 'town');
+    // Scroll to the field that needs attention. The address section may have
+    // just been expanded, so retry a few times until the element is in the DOM.
+    const targetId = !pcOk
+      ? (manualAddressEntry ? 'manual_postcode' : 'postcode-lookup')
+      : !line1
+        ? 'address_line_1'
+        : 'town';
+    let attempts = 0;
+    const tryScroll = () => {
+      const el = document.getElementById(targetId) || document.getElementById('address-fields');
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        (el as HTMLInputElement).focus?.();
+        if (el.id !== 'address-fields') (el as HTMLInputElement).focus?.({ preventScroll: true });
+        return;
       }
-    }, 100);
+      if (++attempts < 6) setTimeout(tryScroll, 150);
+    };
+    setTimeout(tryScroll, 150);
 
     toast.error('Please enter postcode and select your address to continue.', {
       id: 'checkout-address-required',
