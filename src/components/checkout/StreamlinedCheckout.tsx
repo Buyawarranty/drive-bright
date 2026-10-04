@@ -744,6 +744,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // appears automatically for 5+ digit values (>= 10,000). Anything lower requires
   // an explicit "yes, this is correct" tick from the customer.
   const [mileageConfirmedLow, setMileageConfirmedLow] = useState(false);
+  const [showMileageWhy, setShowMileageWhy] = useState(false);
   // Over-150,000-mile callback request modal
   const [showHighMileageCallback, setShowHighMileageCallback] = useState(false);
   
@@ -3746,10 +3747,22 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 </div>
               )}
 
-              {/* Helper text */}
-              <p className="text-muted-foreground mt-3 text-xs">
-                Your mileage helps us confirm the right cover for your vehicle.
-              </p>
+              {/* Why we ask — collapsible explainer */}
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowMileageWhy(v => !v)}
+                  className="text-sm font-semibold text-brand-orange hover:underline inline-flex items-center gap-1"
+                >
+                  Why we ask for this
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </button>
+                {showMileageWhy && (
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    Your mileage helps us confirm the right cover for your vehicle. We compare it with your last MOT reading so your warranty price and cover level are accurate.
+                  </p>
+                )}
+              </div>
 
 
               {/* High Mileage Surcharge Banner */}
