@@ -29,8 +29,31 @@ export const redirectToStripeWithBackGuard = (stripeUrl: string) => {
   // button to return to checkout. We just redirect to Stripe directly.
   try {
     sessionStorage.removeItem(STORAGE_KEY);
+    // Mark that the next back-navigation event is a return from an external
+    // payment redirect (Stripe/Bumper), not an intentional in-funnel back press.
+    sessionStorage.setItem(EXTERNAL_REDIRECT_KEY, JSON.stringify({ ts: Date.now() }));
   } catch { /* noop */ }
   window.location.href = stripeUrl;
+};
+
+const EXTERNAL_REDIRECT_KEY = 'baw_external_redirect_pending';
+
+/**
+ * One-shot check: returns true once if we just came back from an external
+ * payment redirect (set right before redirecting away). The flag is consumed
+ * (removed) on read and expires after 10 minutes so a stale flag from an
+ * abandoned session can't suppress a real back press later.
+ */
+export const consumeExternalRedirectReturnFlag = (): boolean => {
+  try {
+    const raw = sessionStorage.getItem(EXTERNAL_REDIRECT_KEY);
+    if (!raw) return false;
+    sessionStorage.removeItem(EXTERNAL_REDIRECT_KEY);
+    const parsed = JSON.parse(raw) as { ts: number };
+    return Date.now() - parsed.ts < 10 * 60 * 1000;
+  } catch {
+    return false;
+  }
 };
 
 export const readStripeBackGuard = (): GuardPayload | null => {
