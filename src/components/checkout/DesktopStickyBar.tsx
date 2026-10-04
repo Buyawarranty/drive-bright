@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, Lock, Shield, Tag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowRight, Lock, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DesktopStickyBarProps {
@@ -84,48 +83,9 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   const yearWord = paymentType === '12months' ? '1-Year' : paymentType === '24months' ? '2-Year' : '3-Year';
   const planLabel = duration || `${yearWord} Platinum Cover`;
 
-  const Card = ({
-    type,
-    title,
-    children,
-  }: {
-    type: 'monthly' | 'full';
-    title: string;
-    children: React.ReactNode;
-  }) => {
-    const isSelected = selectedPayment === type;
-    const accent = type === 'monthly' ? '#FF6B00' : '#0BA360';
-    const selectedBg = type === 'monthly' ? '#FFE9D6' : '#E6F7EF';
-    return (
-      <button
-        type="button"
-        onClick={() => onPaymentChange?.(type)}
-        className={cn(
-          'relative text-left rounded-xl border-2 transition-all flex-1 px-3 py-2',
-          isSelected ? '' : 'bg-white border-gray-200'
-        )}
-        style={isSelected ? { backgroundColor: selectedBg, borderColor: accent } : undefined}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <span className="text-sm font-bold text-gray-900">{title}</span>
-          <span
-            className={cn(
-              'mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0',
-              isSelected ? '' : 'border-gray-400 bg-white'
-            )}
-            style={isSelected ? { borderColor: accent } : undefined}
-          >
-            {isSelected && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: accent }} />}
-          </span>
-        </div>
-        {children}
-      </button>
-    );
-  };
-
   return (
-    <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] border-t border-gray-200 z-50">
-      <div className="max-w-2xl mx-auto px-4 py-2.5">
+    <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-6px_24px_rgba(0,0,0,0.10)] z-50">
+      <div className="max-w-7xl mx-auto px-6 py-2.5">
         {validationError && (
           <div
             role="alert"
@@ -136,78 +96,101 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
           </div>
         )}
 
-        {/* Header row */}
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <div className="flex items-baseline gap-2 leading-tight">
-            <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Your cover</span>
-            <span className="text-sm font-bold text-black">{planLabel}</span>
-          </div>
+        <div className={cn('flex items-center gap-5', isPulsing && 'animate-pulse')}>
+          {/* Trustpilot */}
           <a
             href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 hover:opacity-80 transition-opacity flex-shrink-0"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0"
           >
-            <span className="text-xs font-bold text-gray-900">Excellent</span>
-            <div className="flex gap-0.5">
-              {[0, 1, 2, 3, 4].map(i => (
-                <span key={i} className="inline-flex w-3 h-3 bg-[#00B67A] items-center justify-center">
-                  <svg viewBox="0 0 24 24" className="w-2 h-2 fill-white">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                </span>
-              ))}
-            </div>
-            <span className="text-[10px] text-gray-500 ml-0.5">Trustpilot</span>
-          </a>
-        </div>
-
-        {/* Two payment cards */}
-        <div className={cn('flex gap-2 mb-2', isPulsing && 'animate-pulse')}>
-          <Card type="full" title="Pay in Full">
-            <div className="mt-0.5">
-              <span className="text-xl font-extrabold text-[#0BA360]">£{fullPrice}</span>
-            </div>
-            <p className="text-xs font-semibold text-gray-900 mt-0.5">Pay in full</p>
-            {savings > 0 && (
-              <p className="text-[11px] text-gray-700 flex items-center gap-1 mt-0.5">
-                <Tag className="w-3 h-3" />
-                Save £{savings}
-              </p>
-            )}
-          </Card>
-
-          <Card type="monthly" title="Pay Monthly">
-            <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-xl font-extrabold text-gray-900">£{monthlyPrice}</span>
-              <span className="text-xs text-gray-700">/ month</span>
-            </div>
-            <p className="text-xs font-semibold text-gray-900 mt-0.5">Paid over 12 months</p>
-            <p className="text-[11px] text-gray-600">Equal to {dayLabel}/day</p>
-          </Card>
-        </div>
-
-        {/* CTA */}
-        <Button
-          onClick={onPayClick}
-          disabled={isLoading}
-          aria-label={ctaLabel}
-          className="w-full bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold py-3 rounded-xl text-sm gap-2 animate-breathing"
-        >
-          {isLoading ? (
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Processing...
+            <span className="w-8 h-8 rounded-full bg-[#E6F7EF] flex items-center justify-center">
+              <Shield className="w-4 h-4 text-[#0BA360]" />
             </span>
-          ) : (
-            <>{ctaLabel} <ArrowRight className="w-4 h-4" strokeWidth={3} /></>
-          )}
-        </Button>
+            <span className="leading-tight">
+              <span className="block text-sm font-bold text-gray-900">Excellent</span>
+              <span className="flex gap-0.5 my-0.5">
+                {[0, 1, 2, 3, 4].map(i => (
+                  <span key={i} className="inline-flex w-3 h-3 bg-[#00B67A] items-center justify-center">
+                    <svg viewBox="0 0 24 24" className="w-2 h-2 fill-white">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  </span>
+                ))}
+              </span>
+              <span className="block text-[10px] text-gray-500">4.8 out of 5</span>
+            </span>
+          </a>
 
-        {/* Reassurance */}
-        <p className="text-center text-[11px] text-gray-600 mt-1.5">
-          *14-day cooling-off <span className="text-gray-400">|</span> For your peace of mind <span className="text-gray-400">|</span> <Lock className="w-3 h-3 inline -mt-0.5" /> Secure checkout
-        </p>
+          <div className="h-10 w-px bg-gray-200 flex-shrink-0" />
+
+          {/* Cover label */}
+          <div className="leading-tight flex-shrink-0">
+            <span className="block text-[10px] font-bold text-[#FF6B00] tracking-wider uppercase">Your cover</span>
+            <span className="block text-sm font-bold text-gray-900">{planLabel}</span>
+          </div>
+
+          <div className="h-10 w-px bg-gray-200 flex-shrink-0" />
+
+          {/* Monthly option */}
+          <button
+            type="button"
+            onClick={() => onPaymentChange?.('monthly')}
+            className={cn(
+              'text-left leading-tight rounded-lg px-3 py-1.5 transition-all flex-shrink-0 border-2',
+              selectedPayment === 'monthly'
+                ? 'border-[#FF6B00] bg-[#FFF4EC]'
+                : 'border-transparent hover:bg-gray-50'
+            )}
+          >
+            <span className="block text-lg font-extrabold text-gray-900">
+              £{monthlyPrice}
+              <span className="text-xs font-semibold text-gray-600">/month</span>
+            </span>
+            <span className="block text-[11px] text-gray-600">Equal to {dayLabel}/day</span>
+            <span className="block text-[11px] text-gray-600">Paid over 12 months</span>
+          </button>
+
+          {/* Pay in full pill */}
+          <button
+            type="button"
+            onClick={() => onPaymentChange?.('full')}
+            className={cn(
+              'text-left rounded-xl px-4 py-2 transition-all flex-shrink-0 border-2 leading-tight',
+              selectedPayment === 'full'
+                ? 'border-[#0BA360] bg-[#E6F7EF]'
+                : 'border-transparent bg-[#F0FAF5] hover:bg-[#E6F7EF]'
+            )}
+          >
+            <span className="block text-sm font-bold text-gray-900">Pay in full £{fullPrice}</span>
+            {savings > 0 && (
+              <span className="block text-[11px] font-semibold text-[#0BA360]">Save £{savings} vs monthly</span>
+            )}
+          </button>
+
+          {/* CTA */}
+          <div className="flex flex-col items-center flex-shrink-0 ml-auto">
+            <button
+              onClick={onPayClick}
+              disabled={isLoading}
+              aria-label={ctaLabel}
+              className="bg-[#FF6B00] hover:bg-[#e55f00] disabled:opacity-60 text-white font-bold px-8 py-3 rounded-full text-sm flex items-center gap-2 animate-breathing"
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Processing...
+                </span>
+              ) : (
+                <>{ctaLabel} <ArrowRight className="w-4 h-4" strokeWidth={3} /></>
+              )}
+            </button>
+            <span className="flex items-center gap-1 mt-1 text-[11px] text-gray-500">
+              <Lock className="w-3 h-3" />
+              Secure checkout
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
