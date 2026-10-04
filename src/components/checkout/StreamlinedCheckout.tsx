@@ -3793,9 +3793,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </section>
 
           {/* Promo Code — placed below the Vehicle section, not part of it */}
-          <div className="mt-6 bg-[#FFFBF0] border border-[#FFD980] rounded-xl p-4">
+          <div className="mt-6 bg-[#F5F7FA] border border-[#E5E9F0] rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Tag className="w-4 h-4 text-[#FF8C00]" />
+              <Tag className="w-4 h-4 text-[#FF6A00]" />
               <span className="text-sm font-bold text-[#1a1a1a]">Have a promo code?</span>
             </div>
             <div className="flex gap-2">
