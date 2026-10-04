@@ -103,13 +103,15 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
             href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:opacity-80 transition-opacity flex-shrink-0"
+            className="hover:opacity-80 transition-opacity flex-shrink-0 flex flex-col items-start leading-tight"
           >
+            <span className="text-xs font-bold text-gray-900">Excellent</span>
             <img
               src={trustpilotLogo}
               alt="Trustpilot — rated Excellent, 4.8 out of 5"
-              className="h-11 w-auto"
+              className="h-6 w-auto mt-0.5"
             />
+            <span className="text-[10px] text-gray-600 mt-0.5">4.8 out of 5</span>
           </a>
 
           <div className="h-10 w-px bg-gray-200 flex-shrink-0" />
