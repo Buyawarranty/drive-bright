@@ -3465,13 +3465,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               <h3 className="text-xl font-bold text-[#1a1a1a] mb-1">
                 {isEditingMileage ? 'Enter your current mileage' : 'What is your current mileage?'}
               </h3>
-              <p className="mb-4 text-sm text-muted-foreground">
-                {numericMotMileage > 0
-                  ? `Your last MOT recorded ${numericMotMileage.toLocaleString('en-GB')} miles${motDateLabel ? ` on ${motDateLabel}` : ''}. Please enter your current mileage if it has increased since then.`
-                  : storedCustomerMileage
+              {!(numericMotMileage > 0) && (
+                <p className="mb-4 text-sm text-muted-foreground">
+                  {storedCustomerMileage
                     ? "This is the mileage you gave us when you got your quote. Update it if it's changed."
                     : 'Up to 150,000 miles.'}
-              </p>
+                </p>
+              )}
 
               {motMileage ? (
                 <div className="mb-5 flex items-center gap-3 rounded-xl bg-[#F5F7FA] px-4 py-3.5">
