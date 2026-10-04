@@ -292,6 +292,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+  // Set when the customer leaves the search box while the suggestion list is
+  // still open without picking an address — shows a pink "pick your address" nudge.
+  const [addressPickReminder, setAddressPickReminder] = useState(false);
+  useEffect(() => {
+    if (!showAddressDropdown) setAddressPickReminder(false);
+  }, [showAddressDropdown]);
   const postcodeLookupTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   // Bumped whenever an address is picked so an older lookup still in flight
   // can never reopen the list and undo the customer's choice.
@@ -1988,7 +1994,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (validateForm() && (!addressConfirmedComplete || showAddressDropdown)) {
       setAddressExpanded(true);
       setTimeout(() => {
-        const el = document.getElementById('postcode-lookup') || document.getElementById('address-fields');
+        if (showAddressDropdown) setAddressPickReminder(true);
+        const el = (showAddressDropdown && document.getElementById('address-suggestions')) || document.getElementById('postcode-lookup') || document.getElementById('address-fields');
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           (el as HTMLInputElement).focus?.();
@@ -2195,13 +2202,35 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     const pc = (addressData.postcode || '').trim();
     const line1 = (addressData.address_line_1 || '').trim();
     const town = (addressData.town || '').trim();
-    // In manual entry the top search box is hidden, so the manual postcode alone counts.
-    const pcOk = (manualAddressEntry || !!visibleSearch) && !!pc && ukPc.test(pc.replace(/\s/g, ''));
+    // The stored postcode is what counts. (Previously the visible search box also
+    // had to be non-empty, which falsely blocked restored / confirmed addresses
+    // whose search box starts empty.)
+    const pcOk = !!pc && ukPc.test(pc.replace(/\s/g, ''));
+    // Suggestion list still open and nothing picked yet.
+    const pickPending = !manualAddressEntry && showAddressDropdown && addressSuggestions.length > 0;
 
-    if (pcOk && line1 && town) return true;
+    if (pcOk && line1 && town && !pickPending) return true;
 
     setShowValidation(true);
     setAddressExpanded(true);
+    setIsLoading(false);
+
+    if (pickPending) {
+      setAddressPickReminder(true);
+      setTimeout(() => {
+        const el = document.getElementById('address-suggestions') || document.getElementById('postcode-lookup');
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+      toast.error('Please tap your address in the list to continue.', {
+        id: 'checkout-address-required',
+        duration: 6000,
+        closeButton: true,
+        dismissible: true,
+        className: 'border-2 border-[#FF385C] shadow-2xl',
+      });
+      return false;
+    }
+
     if (manualAddressEntry || visibleSearch) setShowAddressFields(true);
     setAddressTouched(prev => ({ ...prev, postcode: true, address_line_1: true, town: true }));
     setAddressErrors(prev => ({
@@ -2213,7 +2242,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       town: town ? '' : 'Enter your town or city.',
     }));
     setAddressValidated(prev => ({ ...prev, postcode: pcOk, address_line_1: !!line1, town: !!town }));
-    setIsLoading(false);
 
     // Scroll to the field that needs attention. The address section may have
     // just been expanded, so retry a few times until the element is in the DOM.
@@ -2234,13 +2262,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     };
     setTimeout(tryScroll, 150);
 
-    toast.error('Please enter postcode and select your address to continue.', {
-      id: 'checkout-address-required',
-      duration: 6000,
-      closeButton: true,
-      dismissible: true,
-      className: 'border-2 border-[#FF385C] shadow-2xl',
-    });
+    toast.error(
+      pcOk && !line1
+        ? 'Please select your address from the list, or enter it manually, to continue.'
+        : 'Please enter postcode and select your address to continue.',
+      {
+        id: 'checkout-address-required',
+        duration: 6000,
+        closeButton: true,
+        dismissible: true,
+        className: 'border-2 border-[#FF385C] shadow-2xl',
+      },
+    );
     return false;
   };
 
@@ -3060,6 +3093,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       }
                     }}
                     onBlur={() => {
+                      // Left the search box with the list still open and nothing picked —
+                      // nudge them to tap their address (suggestion clicks keep focus, so
+                      // this only fires when they genuinely move on).
+                      if (showAddressDropdown && addressSuggestions.length > 0) {
+                        setAddressPickReminder(true);
+                      }
                       // Also trigger on blur if valid format and not already looking up
                       const cleanValue = postcodeInput.replace(/\s/g, '');
                       if (ukPostcodeRegex.test(cleanValue) && !isLookingUp && !showAddressFields && !showAddressDropdown && addressSuggestions.length === 0 && !addressConfirmedComplete) {
@@ -3116,7 +3155,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                 {/* Address picker — drill into a street or town, then pick the address */}
                 {showAddressDropdown && addressSuggestions.length > 0 && (
-                  <div className="mt-2 overflow-hidden rounded-lg border border-border bg-background shadow-sm">
+                  <>
+                  <p
+                    className={`mt-2 flex items-center gap-1.5 text-sm font-semibold ${
+                      addressPickReminder || showValidation ? 'text-[#FF385C]' : 'text-foreground'
+                    }`}
+                    role={addressPickReminder || showValidation ? 'alert' : undefined}
+                  >
+                    {addressPickReminder || showValidation ? (
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <MapPin className="h-4 w-4 shrink-0 text-[#0BA360]" />
+                    )}
+                    {addressPickReminder || showValidation
+                      ? 'Tap your address below to confirm it — or enter it manually.'
+                      : `Select your address (${addressSuggestions.length} found)`}
+                  </p>
+                  <div
+                    id="address-suggestions"
+                    className={`mt-2 overflow-hidden rounded-lg border bg-background shadow-sm transition-colors ${
+                      addressPickReminder || showValidation ? 'border-2 border-[#FF385C]' : 'border-border'
+                    }`}
+                  >
                     <div className="max-h-80 overflow-auto p-1.5 sm:max-h-96">
                       {addressSuggestions.map((addr: any, i: number) => (
                         <Button
@@ -3161,6 +3221,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       ))}
                     </div>
                   </div>
+                  </>
                 )}
 
 
@@ -3172,13 +3233,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </p>
                 )}
 
-                {/* Nothing picked from the lookup yet — the customer must still choose an address */}
-                {showValidation && !addressErrors.postcode && !addressData.address_line_1?.trim() && (
+                {/* Nothing typed / found yet — the customer must still search for an address */}
+                {showValidation && !addressErrors.postcode && !addressData.address_line_1?.trim() && !(showAddressDropdown && addressSuggestions.length > 0) && (
                   <p className="text-[#FF385C] text-sm font-medium mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    {showAddressDropdown && addressSuggestions.length > 0
-                      ? 'Please select your address from the list, or enter it manually, to continue.'
-                      : 'Please enter your postcode, street or town to find your address.'}
+                    Please enter your postcode, street or town to find your address.
                   </p>
                 )}
                 
