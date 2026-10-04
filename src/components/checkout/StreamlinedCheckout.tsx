@@ -3220,6 +3220,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       ))}
                     </div>
                   </div>
+                  </>
                 )}
 
 
