@@ -842,21 +842,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return `e.g. ${rounded.toLocaleString('en-GB')}`;
   }, [numericMotMileage, motDate]);
 
-  // Numeric suggestion (MOT + ~12k/yr since MOT, rounded to nearest 1,000).
-  // NOT capped at 150,000 — capping used to hide vehicles that are actually
-  // over the eligibility limit behind a "Use 150,000" button.
-  const suggestedMileage = useMemo(() => {
-    if (!numericMotMileage) return 0;
-    let estimated = numericMotMileage;
-    if (motDate) {
-      const motTime = new Date(motDate).getTime();
-      if (!isNaN(motTime)) {
-        const years = (Date.now() - motTime) / (365.25 * 24 * 60 * 60 * 1000);
-        if (years > 0) estimated = numericMotMileage + years * 12000;
-      }
-    }
-    return Math.round(estimated / 1000) * 1000;
-  }, [numericMotMileage, motDate]);
 
   // Last MOT odometer reading already exceeds our 150,000-mile limit — the
   // vehicle is not eligible for online cover whatever the customer types.
@@ -3716,26 +3701,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-sm font-medium text-amber-900">
-                        That looks lower than your last MOT ({numericMotMileage.toLocaleString('en-GB')} miles).
-                        {suggestedMileage > numericMotMileage && (
-                          <> Did you mean <span className="font-semibold">{suggestedMileage.toLocaleString('en-GB')}</span>?</>
-                        )}
+                        That looks lower than your last MOT ({numericMotMileage.toLocaleString('en-GB')} miles). Which one is right?
                       </p>
                       <div className="flex flex-wrap gap-2 mt-2">
-                        {suggestedMileage > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleInputChange('mileage', String(suggestedMileage));
-                              setValidatedFields(prev => ({ ...prev, mileage: true }));
-                              setMileagePreFilled(true);
-                              setMotWarningDismissed(true);
-                            }}
-                            className="px-3 py-1.5 rounded-md bg-brand-orange hover:bg-brand-orange/90 text-white text-sm font-semibold transition-colors"
-                          >
-                            Use {suggestedMileage.toLocaleString('en-GB')}
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setValidatedFields(prev => ({ ...prev, mileage: true }));
+                            setMileagePreFilled(true);
+                            setMotWarningDismissed(true);
+                          }}
+                          className="px-3 py-1.5 rounded-md bg-brand-orange hover:bg-brand-orange/90 text-white text-sm font-semibold transition-colors"
+                        >
+                          Use {Number(customerData.mileage).toLocaleString('en-GB')}
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -3746,7 +3725,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           }}
                           className="px-3 py-1.5 rounded-md bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 text-sm font-semibold transition-colors"
                         >
-                          Keep {numericMotMileage.toLocaleString('en-GB')}
+                          Use MOT reading {numericMotMileage.toLocaleString('en-GB')}
                         </button>
                       </div>
                     </div>
