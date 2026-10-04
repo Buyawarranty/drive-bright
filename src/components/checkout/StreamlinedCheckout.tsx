@@ -3092,6 +3092,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       }
                     }}
                     onBlur={() => {
+                      // Left the search box with the list still open and nothing picked —
+                      // nudge them to tap their address (suggestion clicks keep focus, so
+                      // this only fires when they genuinely move on).
+                      if (showAddressDropdown && addressSuggestions.length > 0) {
+                        setAddressPickReminder(true);
+                      }
                       // Also trigger on blur if valid format and not already looking up
                       const cleanValue = postcodeInput.replace(/\s/g, '');
                       if (ukPostcodeRegex.test(cleanValue) && !isLookingUp && !showAddressFields && !showAddressDropdown && addressSuggestions.length === 0 && !addressConfirmedComplete) {
@@ -3148,7 +3154,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                 {/* Address picker — drill into a street or town, then pick the address */}
                 {showAddressDropdown && addressSuggestions.length > 0 && (
-                  <div className="mt-2 overflow-hidden rounded-lg border border-border bg-background shadow-sm">
+                  <>
+                  <p
+                    className={`mt-2 flex items-center gap-1.5 text-sm font-semibold ${
+                      addressPickReminder || showValidation ? 'text-[#FF385C]' : 'text-foreground'
+                    }`}
+                    role={addressPickReminder || showValidation ? 'alert' : undefined}
+                  >
+                    {addressPickReminder || showValidation ? (
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <MapPin className="h-4 w-4 shrink-0 text-[#0BA360]" />
+                    )}
+                    {addressPickReminder || showValidation
+                      ? 'Tap your address below to confirm it — or enter it manually.'
+                      : `Select your address (${addressSuggestions.length} found)`}
+                  </p>
+                  <div
+                    id="address-suggestions"
+                    className={`mt-2 overflow-hidden rounded-lg border bg-background shadow-sm transition-colors ${
+                      addressPickReminder || showValidation ? 'border-2 border-[#FF385C]' : 'border-border'
+                    }`}
+                  >
                     <div className="max-h-80 overflow-auto p-1.5 sm:max-h-96">
                       {addressSuggestions.map((addr: any, i: number) => (
                         <Button
@@ -3204,13 +3231,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </p>
                 )}
 
-                {/* Nothing picked from the lookup yet — the customer must still choose an address */}
-                {showValidation && !addressErrors.postcode && !addressData.address_line_1?.trim() && (
+                {/* Nothing typed / found yet — the customer must still search for an address */}
+                {showValidation && !addressErrors.postcode && !addressData.address_line_1?.trim() && !(showAddressDropdown && addressSuggestions.length > 0) && (
                   <p className="text-[#FF385C] text-sm font-medium mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    {showAddressDropdown && addressSuggestions.length > 0
-                      ? 'Please select your address from the list, or enter it manually, to continue.'
-                      : 'Please enter your postcode, street or town to find your address.'}
+                    Please enter your postcode, street or town to find your address.
                   </p>
                 )}
                 
