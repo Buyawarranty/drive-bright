@@ -973,12 +973,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
                 </Command>
               </PopoverContent>
             </Popover>
-            {(() => {
-              // Team filter chips removed from the sidebar (unused); clear any
-              // persisted selection so lead tabs never keep a hidden filter.
-              try { window.localStorage.removeItem('admin.teamFilter'); } catch { /* ignore */ }
-              return null;
-            })()}
           </div>
         )}
         {!collapsed && <div id={SIDEBAR_ALERTS_ANCHOR_ID} className="hidden lg:block shrink-0" />}
