@@ -101,21 +101,21 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
         type="button"
         onClick={() => onPaymentChange?.(type)}
         className={cn(
-          'relative text-left rounded-2xl border-2 transition-all flex-1 px-4 py-3 md:px-5 md:py-4',
+          'relative text-left rounded-xl border-2 transition-all flex-1 px-3 py-2',
           isSelected ? '' : 'bg-white border-gray-200'
         )}
         style={isSelected ? { backgroundColor: selectedBg, borderColor: accent } : undefined}
       >
         <div className="flex items-start justify-between gap-2">
-          <span className="text-base md:text-lg font-bold text-gray-900">{title}</span>
+          <span className="text-sm font-bold text-gray-900">{title}</span>
           <span
             className={cn(
-              'mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0',
+              'mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0',
               isSelected ? '' : 'border-gray-400 bg-white'
             )}
             style={isSelected ? { borderColor: accent } : undefined}
           >
-            {isSelected && <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: accent }} />}
+            {isSelected && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: accent }} />}
           </span>
         </div>
         {children}
