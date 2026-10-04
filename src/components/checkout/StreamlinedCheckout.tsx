@@ -3811,7 +3811,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 type="button"
                 onClick={applyPromoCode}
                 disabled={!promoCodeInput.trim() || isValidatingPromoCode || appliedDiscountCodes.length > 0}
-                className="h-11 px-5 bg-[#FF8C00] hover:bg-[#e57e00] text-white font-semibold"
+                className="h-11 px-5 bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold"
               >
                 {isValidatingPromoCode ? 'Checking...' : 'Apply'}
               </Button>
