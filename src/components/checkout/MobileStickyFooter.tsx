@@ -3,6 +3,7 @@ import { Lock, ArrowRight, Tag, CreditCard, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import trustpilotLogo from '@/assets/trustpilot-logo.png.asset.json';
 
 interface MobileStickyFooterProps {
   selectedPayment: 'monthly' | 'full' | null;
