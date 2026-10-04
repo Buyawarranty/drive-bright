@@ -842,21 +842,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return `e.g. ${rounded.toLocaleString('en-GB')}`;
   }, [numericMotMileage, motDate]);
 
-  // Numeric suggestion (MOT + ~12k/yr since MOT, rounded to nearest 1,000).
-  // NOT capped at 150,000 — capping used to hide vehicles that are actually
-  // over the eligibility limit behind a "Use 150,000" button.
-  const suggestedMileage = useMemo(() => {
-    if (!numericMotMileage) return 0;
-    let estimated = numericMotMileage;
-    if (motDate) {
-      const motTime = new Date(motDate).getTime();
-      if (!isNaN(motTime)) {
-        const years = (Date.now() - motTime) / (365.25 * 24 * 60 * 60 * 1000);
-        if (years > 0) estimated = numericMotMileage + years * 12000;
-      }
-    }
-    return Math.round(estimated / 1000) * 1000;
-  }, [numericMotMileage, motDate]);
 
   // Last MOT odometer reading already exceeds our 150,000-mile limit — the
   // vehicle is not eligible for online cover whatever the customer types.
