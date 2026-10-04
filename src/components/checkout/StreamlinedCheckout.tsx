@@ -3453,110 +3453,162 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Mileage */}
              <div id="mileage-confirm-section" className="scroll-mt-24">
-              <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-1">
-                Confirm your current mileage
-              </Label>
-              <p className="mb-3 text-sm text-muted-foreground">
+              {(() => {
+                const enteredMiles = Number(customerData.mileage) || 0;
+                const milesSinceMot = numericMotMileage > 0 && enteredMiles > numericMotMileage
+                  ? enteredMiles - numericMotMileage
+                  : 0;
+                const isEditingMileage = numericMotMileage > 0 && !!customerData.mileage && !mileagePreFilled && enteredMiles !== numericMotMileage;
+                return (
+              <>
+              <h3 className="text-xl font-bold text-[#1a1a1a] mb-1">
+                {isEditingMileage ? 'Enter your current mileage' : 'What is your current mileage?'}
+              </h3>
+              <p className="mb-4 text-sm text-muted-foreground">
                 {numericMotMileage > 0
-                  ? "We've suggested this using your latest MOT record."
+                  ? `Your last MOT recorded ${numericMotMileage.toLocaleString('en-GB')} miles${motDateLabel ? ` on ${motDateLabel}` : ''}. Please enter your current mileage if it has increased since then.`
                   : storedCustomerMileage
                     ? "This is the mileage you gave us when you got your quote. Update it if it's changed."
                     : 'Up to 150,000 miles.'}
               </p>
 
-              {numericMotMileage > 0 && (
-                <p className="mb-4 text-sm text-muted-foreground">
-                  Last recorded at your MOT{motDateLabel ? ` on ${motDateLabel}` : ''}. Update it if your current mileage is different.
-                </p>
-              )}
               {motMileage ? (
-                <p className="mb-4 text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-4 py-2.5 inline-block">
-                  Last recorded MOT: <span className="font-semibold text-[#0F1B3D]">{numericMotMileage.toLocaleString('en-GB')} miles</span>
-                  {quotedFromMotMileage && (
-                    <span className="block mt-1 text-[#0BA360] font-medium">
-                      Your price is locked in — updating this won't change it.
-                    </span>
-                  )}
-                </p>
+                <div className="mb-5 flex items-center gap-3 rounded-xl bg-[#F5F7FA] px-4 py-3.5">
+                  <FileText className="w-6 h-6 text-[#0BA360] flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Last recorded MOT mileage</p>
+                    <p className="text-lg font-bold text-[#1a1a1a] leading-tight">{numericMotMileage.toLocaleString('en-GB')} miles</p>
+                    {motDateLabel && (
+                      <p className="text-xs text-muted-foreground">Recorded on {motDateLabel}</p>
+                    )}
+                  </div>
+                </div>
               ) : null}
-
 
               <div className="flex flex-col gap-3">
 
-                <div className="relative">
-                  {motLoading ? (
-                    <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
-                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Fetching from MOT history...</span>
-                    </div>
+                <div>
+                  <Label htmlFor="mileage" className="block text-sm font-semibold text-foreground mb-1.5">
+                    Current mileage
+                  </Label>
+                  <div className="relative">
+                    {motLoading ? (
+                      <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Fetching from MOT history...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Input
+                          id="mileage"
+                          type="text"
+                          inputMode="numeric"
+                          placeholder={estimatedMileagePlaceholder}
+                          value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
+                          onChange={(e) => {
+                            const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                            handleInputChange('mileage', rawValue);
+                            setMileagePreFilled(false);
+                            setMotWarningDismissed(false);
+                            // Any change invalidates a previous low-mileage confirmation.
+                            setMileageConfirmedLow(false);
+                          }}
+                          onBlur={() => handleFieldBlur('mileage')}
+                          required
+                          className={`h-11 sm:h-12 text-base pr-10 ${
+                            Number(customerData.mileage) > 150000
+                              ? 'border-2 border-[#F0A500] bg-[#FFF8E5]'
+                              : isEditingMileage
+                                ? 'border-2 border-brand-orange'
+                                : getInputValidationClass('mileage')
+                          }`}
+                        />
+                        {mileageValueValid && !showMotWarning && !isEditingMileage && (
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
+                        )}
+                      </>
+                    )}
+                  </div>
+                  {isEditingMileage && milesSinceMot > 0 ? (
+                    <p className="text-sm text-brand-orange font-medium mt-1.5">
+                      About {milesSinceMot.toLocaleString('en-GB')} miles since your last MOT
+                    </p>
                   ) : (
-                    <>
-                      <Input
-                        id="mileage"
-                        type="text"
-                        inputMode="numeric"
-                        placeholder={estimatedMileagePlaceholder}
-                        value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
-                        onChange={(e) => {
-                          const rawValue = e.target.value.replace(/[^0-9]/g, '');
-                          handleInputChange('mileage', rawValue);
-                          setMileagePreFilled(false);
-                          setMotWarningDismissed(false);
-                          // Any change invalidates a previous low-mileage confirmation.
-                          setMileageConfirmedLow(false);
-                        }}
-                        onBlur={() => handleFieldBlur('mileage')}
-                        required
-                        className={`h-11 sm:h-12 text-base pr-10 ${Number(customerData.mileage) > 150000 ? 'border-2 border-[#F0A500] bg-[#FFF8E5]' : getInputValidationClass('mileage')}`}
-                      />
-                      {mileageValueValid && !showMotWarning && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
-                      )}
-                    </>
+                    <p className="text-xs text-muted-foreground mt-1.5">
+                      Please enter the mileage your vehicle has now.
+                    </p>
                   )}
                 </div>
+
                 {numericMotMileage > 0 && (
-                  <div className="mt-1">
-                    <p className="text-sm font-medium mb-2 text-[#1F2A44]">
-                      Or roughly how many miles since your MOT?
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {mileageQuickSelectOptions.map(option => {
-                        const pillLabel = option.delta === 0
-                          ? 'Same as MOT'
-                          : `+${option.delta.toLocaleString('en-GB')}`;
-                        const isSelected = String(customerData.mileage) === String(option.value);
-                        return (
-                          <button
-                            type="button"
-                            key={option.delta}
-                            onClick={() => {
-                              handleInputChange('mileage', String(option.value));
-                              setValidatedFields(prev => ({ ...prev, mileage: true }));
-                              setMileagePreFilled(option.delta === 0);
-                              // Quick-select picks are trusted (they're MOT-derived).
-                              setMileageConfirmedLow(true);
-                            }}
-                            className={`px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-all ${
-                              isSelected
-                                ? 'border-brand-orange bg-brand-orange/10 text-[#1F2A44]'
-                                : 'border-[#CFD4DB] bg-white text-[#1F2A44] hover:border-[#1F2A44] hover:bg-muted/30'
-                            }`}
-                          >
-                            {pillLabel}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {mileageValueValid && !showMotWarning && (
-                      <p className="mt-2 text-sm text-[#0BA360] flex items-center gap-1.5">
-                        <Check className="w-4 h-4" />
-                        We'll use approximately {Number(customerData.mileage).toLocaleString('en-GB')} miles.
-                      </p>
-                    )}
+                  <div className="flex flex-wrap gap-2">
+                    {mileageQuickSelectOptions.map(option => {
+                      const pillLabel = option.delta === 0
+                        ? 'Same as MOT'
+                        : `+${option.delta.toLocaleString('en-GB')}`;
+                      const isSelected = String(customerData.mileage) === String(option.value);
+                      return (
+                        <button
+                          type="button"
+                          key={option.delta}
+                          onClick={() => {
+                            handleInputChange('mileage', String(option.value));
+                            setValidatedFields(prev => ({ ...prev, mileage: true }));
+                            setMileagePreFilled(option.delta === 0);
+                            // Quick-select picks are trusted (they're MOT-derived).
+                            setMileageConfirmedLow(true);
+                          }}
+                          className={`flex-1 min-w-[90px] px-4 py-2.5 rounded-lg border-2 text-sm font-semibold transition-all ${
+                            isSelected
+                              ? 'border-brand-orange bg-brand-orange/10 text-[#1F2A44]'
+                              : 'border-[#CFD4DB] bg-white text-[#1F2A44] hover:border-[#1F2A44] hover:bg-muted/30'
+                          }`}
+                        >
+                          {pillLabel}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {quotedFromMotMileage && (
+                  <p className="flex items-center gap-2 rounded-lg bg-[#0BA360]/10 px-3.5 py-2.5 text-sm font-medium text-[#0BA360]">
+                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    Your price is locked in — updating your mileage won't change it.
+                  </p>
+                )}
+
+                {isEditingMileage && mileageValueValid && !showMotWarning && (
+                  <div className="flex flex-col items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValidatedFields(prev => ({ ...prev, mileage: true }));
+                        setMileagePreFilled(false);
+                        toast.success(`We'll use ${enteredMiles.toLocaleString('en-GB')} miles.`);
+                      }}
+                      className="w-full px-5 py-3.5 rounded-xl bg-brand-orange text-white text-base font-bold hover:opacity-90 transition-opacity"
+                    >
+                      Use {enteredMiles.toLocaleString('en-GB')} miles
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleInputChange('mileage', String(numericMotMileage));
+                        setValidatedFields(prev => ({ ...prev, mileage: true }));
+                        setMileagePreFilled(true);
+                        setMileageConfirmedLow(true);
+                      }}
+                      className="text-sm font-semibold text-brand-orange hover:underline"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 )}
               </div>
+              </>
+                );
+              })()}
 
               {/* 4-digit confirmation: requires an explicit tick before we accept sub-10,000 mileages */}
               {customerData.mileage &&
