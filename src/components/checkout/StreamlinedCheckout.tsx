@@ -3556,8 +3556,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           onClick={() => {
                             handleInputChange('mileage', String(option.value));
                             setValidatedFields(prev => ({ ...prev, mileage: true }));
-                            setMileagePreFilled(option.delta === 0);
-                            // Quick-select picks are trusted (they're MOT-derived).
+                            // Trusted MOT-derived pick: apply straight away, no second confirmation.
+                            setMileagePreFilled(true);
                             setMileageConfirmedLow(true);
                           }}
                           className={`flex-1 min-w-[90px] px-4 py-2.5 rounded-lg border-2 text-sm font-semibold transition-all ${
@@ -3728,19 +3728,25 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             onClick={() => {
                               handleInputChange('mileage', String(suggestedMileage));
                               setValidatedFields(prev => ({ ...prev, mileage: true }));
+                              setMileagePreFilled(true);
                               setMotWarningDismissed(true);
                             }}
-                            className="px-3 py-1.5 rounded-md bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold transition-colors"
+                            className="px-3 py-1.5 rounded-md bg-brand-orange hover:bg-brand-orange/90 text-white text-sm font-semibold transition-colors"
                           >
                             Use {suggestedMileage.toLocaleString('en-GB')}
                           </button>
                         )}
                         <button
                           type="button"
-                          onClick={() => setMotWarningDismissed(true)}
+                          onClick={() => {
+                            handleInputChange('mileage', String(numericMotMileage));
+                            setValidatedFields(prev => ({ ...prev, mileage: true }));
+                            setMileagePreFilled(true);
+                            setMotWarningDismissed(true);
+                          }}
                           className="px-3 py-1.5 rounded-md bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 text-sm font-semibold transition-colors"
                         >
-                          Keep {enteredMileageNumber.toLocaleString('en-GB')}
+                          Keep {numericMotMileage.toLocaleString('en-GB')}
                         </button>
                       </div>
                     </div>
