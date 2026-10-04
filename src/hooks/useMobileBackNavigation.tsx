@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { trackEvent } from '@/utils/analytics';
+import { consumeExternalRedirectReturnFlag } from '@/lib/stripeBackGuard';
 
 interface UseMobileBackNavigationProps {
   currentStep: number;
@@ -114,7 +115,18 @@ export const useMobileBackNavigation = ({
     
     // CRITICAL: Synchronously push guard entry FIRST to prevent browser exit
     window.history.pushState({ step, guard: true, immediate: true, ts: now }, '', window.location.href);
-    
+
+    // RETURNING FROM AN EXTERNAL PAYMENT REDIRECT (Stripe/Bumper): this
+    // popstate is the browser coming back to us, not an intentional in-funnel
+    // back press — stay on the current step instead of decrementing.
+    if (consumeExternalRedirectReturnFlag()) {
+      console.log('📱 Return from external payment redirect — staying on step', step);
+      window.history.replaceState({ step }, '', `${window.location.pathname}?step=${step}`);
+      pushGuardEntries(step, 3);
+      isHandlingBackRef.current = false;
+      return;
+    }
+
     // If we're in the process of leaving (user confirmed), go to step 1
     if (isLeavingRef.current) {
       console.log('📱 User confirmed leave, going to step 1');
