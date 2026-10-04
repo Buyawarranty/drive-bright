@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, Lock, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import trustpilotLogo from '@/assets/trustpilot-logo.png';
 
 interface DesktopStickyBarProps {
   selectedPayment: 'monthly' | 'full';
@@ -102,24 +103,13 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
             href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0"
+            className="hover:opacity-80 transition-opacity flex-shrink-0"
           >
-            <span className="w-8 h-8 rounded-full bg-[#E6F7EF] flex items-center justify-center">
-              <Shield className="w-4 h-4 text-[#0BA360]" />
-            </span>
-            <span className="leading-tight">
-              <span className="block text-sm font-bold text-gray-900">Excellent</span>
-              <span className="flex gap-0.5 my-0.5">
-                {[0, 1, 2, 3, 4].map(i => (
-                  <span key={i} className="inline-flex w-3 h-3 bg-[#00B67A] items-center justify-center">
-                    <svg viewBox="0 0 24 24" className="w-2 h-2 fill-white">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  </span>
-                ))}
-              </span>
-              <span className="block text-[10px] text-gray-500">4.8 out of 5</span>
-            </span>
+            <img
+              src={trustpilotLogo}
+              alt="Trustpilot — rated Excellent, 4.8 out of 5"
+              className="h-11 w-auto"
+            />
           </a>
 
           <div className="h-10 w-px bg-gray-200 flex-shrink-0" />

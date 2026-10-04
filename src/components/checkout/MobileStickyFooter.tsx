@@ -3,6 +3,7 @@ import { Lock, ArrowRight, Tag, CreditCard, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import trustpilotLogo from '@/assets/trustpilot-logo.png';
 
 interface MobileStickyFooterProps {
   selectedPayment: 'monthly' | 'full' | null;
@@ -204,19 +205,13 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-muted/60 hover:opacity-80 flex-shrink-0"
+                  className="inline-flex items-center hover:opacity-80 flex-shrink-0"
                 >
-                  <span className="text-[13px] font-bold text-foreground">Excellent</span>
-                  <div className="flex gap-[3px]">
-                    {[0, 1, 2, 3, 4].map(i => (
-                      <span key={i} className="inline-flex w-[18px] h-[18px] bg-[#00B67A] items-center justify-center">
-                        <svg viewBox="0 0 24 24" className="w-3 h-3 fill-white">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                      </span>
-                    ))}
-                  </div>
-                  <span className="text-[11px] text-muted-foreground font-medium">Trustpilot</span>
+                  <img
+                    src={trustpilotLogo}
+                    alt="Trustpilot — rated Excellent, 4.8 out of 5"
+                    className="h-7 w-auto"
+                  />
                 </a>
               </div>
 
