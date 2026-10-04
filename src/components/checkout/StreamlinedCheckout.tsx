@@ -3502,6 +3502,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       <>
                         <Input
                           id="mileage"
+                          onFocus={(e) => e.target.select()}
                           type="text"
                           inputMode="numeric"
                           placeholder={estimatedMileagePlaceholder}
