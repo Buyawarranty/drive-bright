@@ -66,8 +66,6 @@ import {
   getVisibleExcessOptions,
   getExcessBracketBasis,
   getLabourRateOptions,
-  getWebReferencePrice,
-  MAX_WEB_DISCOUNT_VS_GRID_PCT,
   MARKETING_SAVINGS,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
@@ -7268,19 +7266,6 @@ Questions? Call 0330 229 5040`;
                   const fullPence = currentPrice.payInFullPrice > 0 && totalCoverDays > 0
                     ? Math.round((currentPrice.payInFullPrice * 100) / totalCoverDays) : 0;
                   const fmtPerDay = (p: number) => p >= 100 ? `£${(p / 100).toFixed(2)}/day` : `${p}p/day`;
-                  const gridTotal = displayedTotalPrice;
-                  // Web price always follows the UNDISCOUNTED grid price — agent
-                  // discounts / overrides on this page never change the online price.
-                  const undiscountedGridTotal =
-                    Math.ceil(Number(basePrice.monthlyPrice || 0) * 12) || Number(basePrice.totalPrice || 0);
-                  const web = getWebReferencePrice(undiscountedGridTotal);
-                  // Exactly what the customer sees on the website for this cover:
-                  // Step 3 monthly = ceil(web total / 12) over 12 payments, and
-                  // pay in full = web total minus the 10% online discount.
-                  const webMonthly = web.price > 0 ? Math.ceil(web.price / 12) : 0;
-                  const webMonthlyTotal = webMonthly * 12;
-                  const webPayInFull = Math.max(0, web.price - Math.floor(web.price * 0.1));
-
                   return (
                 <div className={cn(
                   "fixed bottom-0 z-50 px-4 lg:px-6 pb-2 pt-1",
@@ -7315,7 +7300,7 @@ Questions? Call 0330 229 5040`;
                       </Button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2.5 xl:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-2.5">
 
 
                       {/* 1 — Monthly */}
@@ -7370,59 +7355,6 @@ Questions? Call 0330 229 5040`;
                         </label>
                       </div>
 
-                      {/* 3–4 — Like-for-like Step 2 vs website comparison */}
-                      <div
-                        className="col-span-2 rounded-lg border-2 border-amber-300 bg-amber-50 px-3 py-2.5 xl:col-span-2"
-                        title={`Like-for-like comparison for this cover. Monthly: Step 2 £${instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}/mo and website £${webMonthly}/mo. Pay in full: Step 2 £${currentPrice.payInFullPrice} and website £${webPayInFull}. Website monthly total £${webMonthlyTotal}. Web total £${web.price} is ${web.discountPct}% below the undiscounted grid price of £${undiscountedGridTotal} (capped at ${MAX_WEB_DISCOUNT_VS_GRID_PCT}%). Agent discounts on this page do not change the online price.`}
-                      >
-                        <div className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-amber-700">
-                          Step 2 and live website comparison <Info className="h-3 w-3 text-amber-500" />
-                        </div>
-                        <div className="mt-2 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
-                          <div>
-                            <div className="text-[11px] font-semibold text-amber-800">Step 2 monthly</div>
-                            <div className="mt-1 text-2xl font-extrabold leading-none text-amber-900">
-                              £{payLaterActive ? selectedYearlyAmount : instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}<span className="text-sm font-semibold text-amber-700">/{payLaterActive ? 'year' : 'mo'}</span>
-                            </div>
-                            <div className="mt-1 text-[11px] text-amber-800">
-                              {payLaterActive ? 'BAW PayLater yearly collection' : `${instalmentCount} payments · total £${instalmentScheduleTotal(monthlyTotal, instalmentCount, longPlanRatio)}`}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[11px] font-semibold text-amber-800">Website monthly</div>
-                            <div className="mt-1 text-2xl font-extrabold leading-none text-amber-900">
-                              £{webMonthly}<span className="text-sm font-semibold text-amber-700">/mo</span>
-                            </div>
-                            <div className="mt-1 text-[11px] text-amber-800">12 payments · total £{webMonthlyTotal}</div>
-                          </div>
-                          <div className="border-t border-amber-200 pt-2">
-                            <div className="text-[11px] font-semibold text-amber-800">Step 2 pay in full</div>
-                            <div className="mt-1 text-2xl font-extrabold leading-none text-amber-900">£{currentPrice.payInFullPrice}</div>
-                          </div>
-                          <div className="border-t border-amber-200 pt-2">
-                            <div className="text-[11px] font-semibold text-amber-800">Website pay in full</div>
-                            <div className="mt-1 text-2xl font-extrabold leading-none text-amber-900">£{webPayInFull}</div>
-                          </div>
-                        </div>
-                        <div className="mt-2 text-[11px] text-amber-700/80">
-                          {web.discountPct}% below grid · Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr
-                        </div>
-                        {instalmentCount !== 12 && (
-                          <div className="mt-1 text-[11px] font-semibold text-amber-700">
-                            +£{instalmentScheduleTotal(gridTotal, instalmentCount, longPlanRatio) - instalmentScheduleTotal(gridTotal, 12, longPlanRatio)} vs 12-instalment plan
-                          </div>
-                        )}
-                        {priceMatchMode && priceMatchCompetitorPrice && (
-                          <div className="mt-1 text-[11px] font-semibold text-sky-700">
-                            Matched vs {priceMatchCompany === 'Other' ? (priceMatchOtherName || 'competitor') : (priceMatchCompany || 'competitor')} £{Math.round(priceMatchCompetitorPrice)}
-                            {priceMatchSavedTotal !== null && priceMatchSavedTotal === displayedTotalPrice ? (
-                              <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">✓ Saved</span>
-                            ) : (
-                              <span className="ml-1 text-[10px] font-bold text-amber-700">Not saved</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
                     </div>
                   </div>
                 </div>
