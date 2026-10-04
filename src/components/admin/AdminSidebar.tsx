@@ -27,6 +27,10 @@ import { CSS } from '@dnd-kit/utilities';
 import { SIDEBAR_ALERTS_ANCHOR_ID } from './AlertRail';
 import { useNewLeadAlert } from '@/hooks/useNewLeadAlert';
 
+// Team filter chips removed from the sidebar (unused); clear any persisted
+// selection so lead tabs never keep a hidden filter applied.
+try { window.localStorage.removeItem('admin.teamFilter'); } catch { /* ignore */ }
+
 const FreshLeadBubble: React.FC<{ compact?: boolean }> = ({ compact }) => {
   const { lead } = useNewLeadAlert();
   if (!lead) return null;
