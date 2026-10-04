@@ -3716,26 +3716,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-sm font-medium text-amber-900">
-                        That looks lower than your last MOT ({numericMotMileage.toLocaleString('en-GB')} miles).
-                        {suggestedMileage > numericMotMileage && (
-                          <> Did you mean <span className="font-semibold">{suggestedMileage.toLocaleString('en-GB')}</span>?</>
-                        )}
+                        That looks lower than your last MOT ({numericMotMileage.toLocaleString('en-GB')} miles). Which one is right?
                       </p>
                       <div className="flex flex-wrap gap-2 mt-2">
-                        {suggestedMileage > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleInputChange('mileage', String(suggestedMileage));
-                              setValidatedFields(prev => ({ ...prev, mileage: true }));
-                              setMileagePreFilled(true);
-                              setMotWarningDismissed(true);
-                            }}
-                            className="px-3 py-1.5 rounded-md bg-brand-orange hover:bg-brand-orange/90 text-white text-sm font-semibold transition-colors"
-                          >
-                            Use {suggestedMileage.toLocaleString('en-GB')}
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setValidatedFields(prev => ({ ...prev, mileage: true }));
+                            setMileagePreFilled(true);
+                            setMotWarningDismissed(true);
+                          }}
+                          className="px-3 py-1.5 rounded-md bg-brand-orange hover:bg-brand-orange/90 text-white text-sm font-semibold transition-colors"
+                        >
+                          Use {Number(customerData.mileage).toLocaleString('en-GB')}
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -3746,7 +3740,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           }}
                           className="px-3 py-1.5 rounded-md bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 text-sm font-semibold transition-colors"
                         >
-                          Keep {numericMotMileage.toLocaleString('en-GB')}
+                          Use MOT reading {numericMotMileage.toLocaleString('en-GB')}
                         </button>
                       </div>
                     </div>
