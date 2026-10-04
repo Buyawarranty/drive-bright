@@ -208,7 +208,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                   className="inline-flex items-center hover:opacity-80 flex-shrink-0"
                 >
                   <img
-                    src={trustpilotLogo.url}
+                    src={trustpilotLogo}
                     alt="Trustpilot — rated Excellent, 4.8 out of 5"
                     className="h-7 w-auto"
                   />

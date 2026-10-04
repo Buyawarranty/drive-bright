@@ -106,7 +106,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
             className="hover:opacity-80 transition-opacity flex-shrink-0"
           >
             <img
-              src={trustpilotLogo.url}
+              src={trustpilotLogo}
               alt="Trustpilot — rated Excellent, 4.8 out of 5"
               className="h-11 w-auto"
             />
