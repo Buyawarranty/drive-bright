@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, Lock, Shield } from 'lucide-react';
+import { Lock, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DesktopStickyBarProps {
