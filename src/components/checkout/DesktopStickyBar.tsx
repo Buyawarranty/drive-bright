@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, Lock, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import trustpilotLogo from '@/assets/trustpilot-logo.png.asset.json';
+import trustpilotLogo from '@/assets/trustpilot-logo.png';
 
 interface DesktopStickyBarProps {
   selectedPayment: 'monthly' | 'full';
