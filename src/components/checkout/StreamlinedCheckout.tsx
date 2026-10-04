@@ -292,6 +292,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+  // Set when the customer leaves the search box while the suggestion list is
+  // still open without picking an address — shows a pink "pick your address" nudge.
+  const [addressPickReminder, setAddressPickReminder] = useState(false);
+  useEffect(() => {
+    if (!showAddressDropdown) setAddressPickReminder(false);
+  }, [showAddressDropdown]);
   const postcodeLookupTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   // Bumped whenever an address is picked so an older lookup still in flight
   // can never reopen the list and undo the customer's choice.
