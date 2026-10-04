@@ -30,6 +30,7 @@ const DiscountsOffers: React.FC = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [showSelectModal, setShowSelectModal] = useState(false);
   const codesRef = useRef<HTMLDivElement>(null);
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     const fetchCodes = async () => {
@@ -100,7 +101,7 @@ const DiscountsOffers: React.FC = () => {
   const offerCatalogSchema = {
     "@context": "https://schema.org",
     "@type": "OfferCatalog",
-    "name": "Buy A Warranty Discount Codes & Offers 2026",
+    "name": `Buy A Warranty Discount Codes & Offers ${currentYear}`,
     "description": "Active discount codes, promo codes and special offers for vehicle warranty plans from Buy A Warranty UK. Save on car, van, EV and motorbike warranties.",
     "url": "https://buyawarranty.co.uk/discount-promo-offers/",
     "provider": {
@@ -172,7 +173,7 @@ const DiscountsOffers: React.FC = () => {
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "Buy A Warranty Discount Codes & Promo Offers 2026",
+    "name": `Buy A Warranty Discount Codes & Promo Offers ${currentYear}`,
     "description": "Find active Buy A Warranty discount codes and promo offers. Save on car, van, EV and motorbike warranty plans. Codes updated regularly.",
     "url": "https://buyawarranty.co.uk/discount-promo-offers/",
     "isPartOf": {
@@ -205,9 +206,9 @@ const DiscountsOffers: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="Car Warranty Discount Codes 2026 | Buy A Warranty"
-        description="Active Buy A Warranty promo codes & discount codes for 2026. Save up to £50 on car, van, EV & motorbike warranties. Copy a promo code and apply at checkout — limited availability."
-        keywords="buy a warranty discount code, buyawarranty promo code, car warranty promo code UK, buy a warranty voucher code, vehicle warranty discount code, warranty coupon code, buy a warranty offers, car warranty deal UK, buyawarranty discount, warranty promo code 2026, car warranty discount, promo code car warranty"
+        title={`Car Warranty Discount Codes ${currentYear} | Buy A Warranty`}
+        description={`Active Buy A Warranty promo codes & discount codes for ${currentYear}. Save up to £50 on car, van, EV & motorbike warranties. Copy a promo code and apply at checkout — limited availability.`}
+        keywords={`buy a warranty discount code, buyawarranty promo code, car warranty promo code UK, buy a warranty voucher code, vehicle warranty discount code, warranty coupon code, buy a warranty offers, car warranty deal UK, buyawarranty discount, warranty promo code ${currentYear}, car warranty discount, promo code car warranty`}
         canonical="https://buyawarranty.co.uk/discount-promo-offers/"
       />
 
