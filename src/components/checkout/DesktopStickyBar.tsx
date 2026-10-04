@@ -78,7 +78,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
     );
   }
 
-  const pencePerDay = Math.round((monthlyPrice * 12) / 365);
+  const pencePerDay = Math.round((monthlyPrice * 12 * 100) / 365);
   const dayLabel = pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`;
 
   const yearWord = paymentType === '12months' ? '1-Year' : paymentType === '24months' ? '2-Year' : '3-Year';
