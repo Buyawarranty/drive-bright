@@ -24,9 +24,12 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { SidebarTeamSwitcher } from './SidebarTeamSwitcher';
 import { SIDEBAR_ALERTS_ANCHOR_ID } from './AlertRail';
 import { useNewLeadAlert } from '@/hooks/useNewLeadAlert';
+
+// Team filter chips removed from the sidebar (unused); clear any persisted
+// selection so lead tabs never keep a hidden filter applied.
+try { window.localStorage.removeItem('admin.teamFilter'); } catch { /* ignore */ }
 
 const FreshLeadBubble: React.FC<{ compact?: boolean }> = ({ compact }) => {
   const { lead } = useNewLeadAlert();
@@ -974,7 +977,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
                 </Command>
               </PopoverContent>
             </Popover>
-            <SidebarTeamSwitcher userRole={userRole} />
           </div>
         )}
         {!collapsed && <div id={SIDEBAR_ALERTS_ANCHOR_ID} className="hidden lg:block shrink-0" />}
