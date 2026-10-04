@@ -3518,7 +3518,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               ? 'border-2 border-[#F0A500] bg-[#FFF8E5]'
                               : isEditingMileage
                                 ? 'border-2 border-brand-orange'
-                                : getInputValidationClass('mileage')
+                                : (getInputValidationClass('mileage') || 'bg-[#F5F7FA] border border-[#E5E9F0] focus:bg-white focus:border-[#0BA360]/50')
                           }`}
                         />
                         {mileageValueValid && !showMotWarning && !isEditingMileage && (
