@@ -64,7 +64,7 @@ export const CHAT_TOPIC_ORDER: ChatTopicKey[] = [
 const fromPickedTopic = (raw: string): ChatTopicKey | null => {
   const text = raw.toLowerCase();
   if (!text) return null;
-  if (text.includes('claim')) return 'claim';
+  if (text.includes('claim') && !/claim\s*limit/.test(text) && (/^\W*(a\s+|existing\s+|new\s+|make\s+a\s+)?claims?\b/.test(text.trim()) || CLAIM_INTENT.some((re) => re.test(text)))) return 'claim';
   if (text.includes('warranty purchase') || text.includes('quote')) return 'sale';
   if (text.includes('existing policy') || text.includes('existing customer')) return 'existing_customer';
   if (text.includes('cancel') || text.includes('refund')) return 'cancellation';
