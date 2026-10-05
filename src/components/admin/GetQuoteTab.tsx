@@ -9506,16 +9506,25 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         the final Confirm step) so the agent is told about a missing address
                         or deferred-payment date before reaching the preview screen, which
                         never displays address fields. */}
-                    {(!paymentSource || !paymentAmount || !hasCompleteAddress() || (deferredMode && !deferredPaymentDueDate)) && (
+                    {(() => {
+                      // An empty amount box means "record the quoted price" — the same
+                      // figure the summary card already shows as Amount to record.
+                      const quotedFallback = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : Math.round(currentPrice.totalPrice || 0);
+                      const amountOk = !!paymentAmount || quotedFallback > 0;
+                      const missing = [
+                        !paymentSource && 'a payment source',
+                        !amountOk && 'the amount received',
+                        !saleCreditAgentId && 'the sales agent',
+                        !hasCompleteAddress() && "the customer's address",
+                        deferredMode && !deferredPaymentDueDate && 'the date the customer will pay',
+                      ].filter(Boolean);
+                      return (
+                        <>
+                    {missing.length > 0 && (
                       <div className="w-full text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2 flex items-center gap-2">
                         <span>⚠️</span>
                         <span>
-                          Before you can preview, please provide: {[
-                            !paymentSource && 'a payment source',
-                            !paymentAmount && 'the amount received',
-                            !hasCompleteAddress() && "the customer's address",
-                            deferredMode && !deferredPaymentDueDate && 'the date the customer will pay',
-                          ].filter(Boolean).join(', ')}.
+                          Before you can preview, please provide: {missing.join(', ')}.
                         </span>
                       </div>
                     )}
@@ -9527,8 +9536,11 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         Cancel
                       </Button>
                       <Button
-                        onClick={() => setExternalPaymentStep('preview')}
-                        disabled={!paymentSource || !paymentAmount || !saleCreditAgentId || !hasCompleteAddress() || (deferredMode && !deferredPaymentDueDate)}
+                        onClick={() => {
+                          if (!paymentAmount && quotedFallback > 0) setPaymentAmount(quotedFallback.toString());
+                          setExternalPaymentStep('preview');
+                        }}
+                        disabled={missing.length > 0}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Eye className="w-4 h-4 mr-2" />
