@@ -2808,6 +2808,28 @@ export const CustomersTab = ({
     }
   };
 
+  // Inline payment-type change from the Payment column. Anyone with admin-panel
+  // access except plain sales agents can correct the payment route (managers,
+  // accounts managers, admin, etc.). Only purchase_source changes — webhook
+  // records, revenue and analytics classification stay untouched.
+  const handleUpdatePaymentSource = async (customerId: string, newSource: string) => {
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .update({ purchase_source: newSource })
+        .eq('id', customerId);
+      if (error) throw error;
+
+      setCustomers(prev => prev.map(c => (c.id === customerId ? { ...c, purchase_source: newSource } : c)));
+      setFilteredCustomers(prev => prev.map(c => (c.id === customerId ? { ...c, purchase_source: newSource } : c)));
+      toast.success('Payment type updated');
+    } catch (error) {
+      console.error('Error updating payment type:', error);
+      toast.error('Failed to update payment type');
+    }
+  };
+
+
   const sendBulkReminderEmails = async () => {
     if (selectedIncompleteCustomers.length === 0) {
       toast.error('Please select at least one customer');
