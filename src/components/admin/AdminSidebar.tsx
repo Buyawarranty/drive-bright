@@ -905,7 +905,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
             </button>
           </div>
         ) : (
-          <div className="p-4 lg:p-6 border-b space-y-3 shrink-0">
+          <div className="p-3 lg:p-4 border-b space-y-3 shrink-0">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h2 className="text-lg lg:text-xl font-bold text-gray-800">Admin Panel</h2>
