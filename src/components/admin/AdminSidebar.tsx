@@ -877,7 +877,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
       {/* Sidebar */}
       <div className={cn(
-        'fixed left-0 top-[104px] h-[calc(100vh-104px)] bg-white shadow-lg border-r z-40 transform transition-all duration-300 ease-in-out overflow-hidden flex flex-col',
+        'fixed left-0 top-11 h-[calc(100vh-44px)] bg-white shadow-lg border-r z-40 transform transition-all duration-300 ease-in-out overflow-hidden flex flex-col',
         collapsed ? 'lg:w-14 w-64' : 'w-64',
         isOpen ? 'translate-x-0' : '-translate-x-full',
         'lg:translate-x-0',
