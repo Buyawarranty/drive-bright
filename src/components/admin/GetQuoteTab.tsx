@@ -570,9 +570,20 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
 
   const priceMatchEvidenced = priceMatchMode && !!priceMatchProofPath && !!priceMatchCompetitor.trim();
+  // A management-approved discount request for THIS registration lets the agent
+  // sell down to the approved price (never lower). The £299 hard floor still applies.
+  const approvedAuthPrice = (() => {
+    if (!approvedDiscountRequest) return null;
+    const plate = (approvedDiscountRequest.registration_plate || '').replace(/\s/g, '').toUpperCase();
+    const current = (regNumber || '').replace(/\s/g, '').toUpperCase();
+    if (!plate || plate !== current) return null;
+    const p = Number(approvedDiscountRequest.requested_price);
+    return Number.isFinite(p) && p > 0 ? p : 0;
+  })();
   const isUnderAbsoluteMin = (total: unknown) => {
     if (isManagementRole) return false; // Management may sell below the net floor (logged)
     const v = typeof total === 'number' ? total : parseFloat(String(total ?? '').replace(/[^0-9.]/g, ''));
+    if (approvedAuthPrice !== null && Number.isFinite(v) && v >= approvedAuthPrice - 0.01) return false;
     return Number.isFinite(v) && v > 0 && v < ABSOLUTE_MIN_TOTAL - 0.01;
   };
 
