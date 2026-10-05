@@ -3702,12 +3702,17 @@ Questions? Call 0330 229 5040`;
     // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
 
-    // HARD £299 floor (13 Sep 2026): no sale below £299 under any circumstances
-    // — management overrides and price matches included. Website motorbikes excepted.
-    if (isUnderHardAbsoluteMin(confirmedAmount, isMotorbikeQuote)) {
+    // HARD £399 floor (5 Oct 2026): no sale below £399 unless authorised —
+    // management, an approved discount authorisation at this price, or an
+    // evidenced price match. Website motorbikes excepted.
+    const authorisedBelowHardFloor =
+      isManagementRole ||
+      priceMatchEvidenced ||
+      (approvedAuthPrice !== null && Number.isFinite(confirmedAmount) && confirmedAmount >= approvedAuthPrice - 0.01);
+    if (!authorisedBelowHardFloor && isUnderHardAbsoluteMin(confirmedAmount, isMotorbikeQuote)) {
       toast({
-        title: "£299 absolute minimum",
-        description: "No sale can be confirmed below £299 under any circumstances. Only website motorbike warranties may go lower.",
+        title: "£399 absolute minimum",
+        description: "No sale can be confirmed below £399 without authorisation from management, an approved discount request, or an evidenced price match. Only website motorbike warranties may go lower.",
         variant: "destructive",
       });
       return;
