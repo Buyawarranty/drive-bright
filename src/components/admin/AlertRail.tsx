@@ -25,6 +25,7 @@ export const ALERT_RAIL_ORDER = {
   missedCallback: 8,
   reminders: 35,
   collectPayments: 40,
+  authorisationNeeded: 3,
   discountPaymentPending: 38,
   quickGrant: 45,
   newLeadPopup: 10,

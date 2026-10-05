@@ -19,6 +19,7 @@ export const POPUP_TYPES: { id: string; label: string; description: string; defa
   { id: 'incoming_call', label: 'Incoming calls', description: 'Live incoming call', defaultRoles: MANAGEMENT_ROLES },
   { id: 'reminders', label: 'Reminders due', description: 'Lead and customer reminders falling due', defaultRoles: MANAGEMENT_ROLES },
   { id: 'collect_payments', label: 'Payments to collect', description: 'Part-payments and PayLater collections due', defaultRoles: MANAGEMENT_ROLES },
+  { id: 'discount_auth_needed', label: 'Authorisation needed', description: 'Agent price/discount requests to authorise', defaultRoles: MANAGEMENT_ROLES },
   { id: 'discount_payment_pending', label: 'Authorised discount · payment pending', description: 'Over-30% discounts approved but not yet paid', defaultRoles: MANAGEMENT_ROLES },
   { id: 'quick_grant', label: 'Access requests', description: 'Staff asking for access', defaultRoles: MANAGEMENT_ROLES },
 ];
