@@ -1457,7 +1457,6 @@ const AdminDashboardInner: React.FC<{
                 </AlertRailSlot>
               )}
               {show('collect_payments') && <AlertRailSlot order={ALERT_RAIL_ORDER.collectPayments}><CollectPaymentsBanner userRole={userRole} onNavigate={handleTabChange} /></AlertRailSlot>}
-              {show('quick_grant') && <AlertRailSlot order={ALERT_RAIL_ORDER.quickGrant}><QuickGrantAccessBar userRole={displayRole} /></AlertRailSlot>}
             </Suspense>
 
             {show('new_leads') && <NewLeadAlerts />}
