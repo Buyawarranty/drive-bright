@@ -65,7 +65,6 @@ import { CrmDuplicateTabBanner } from '@/components/admin/CrmDuplicateTabBanner'
 const DiscountAuthPopup = lazy(() => import('@/components/admin/DiscountAuthPopup').then(m => ({ default: m.DiscountAuthPopup })));
 import { useIsManagement } from '@/hooks/useIsManagement';
 const GlobalAutoDistributeBar = lazy(() => import('@/components/admin/leads/GlobalAutoDistributeBar').then(m => ({ default: m.GlobalAutoDistributeBar })));
-const QuickGrantAccessBar = lazy(() => import('@/components/admin/QuickGrantAccessBar').then(m => ({ default: m.QuickGrantAccessBar })));
 
 const ManagerOverviewTab = lazy(() => import('@/components/admin/ManagerOverviewTab'));
 const PriceUpdatesTab = lazy(() => import('@/components/admin/PriceUpdatesTab'));
@@ -1457,7 +1456,6 @@ const AdminDashboardInner: React.FC<{
                 </AlertRailSlot>
               )}
               {show('collect_payments') && <AlertRailSlot order={ALERT_RAIL_ORDER.collectPayments}><CollectPaymentsBanner userRole={userRole} onNavigate={handleTabChange} /></AlertRailSlot>}
-              {show('quick_grant') && <AlertRailSlot order={ALERT_RAIL_ORDER.quickGrant}><QuickGrantAccessBar userRole={displayRole} /></AlertRailSlot>}
             </Suspense>
 
             {show('new_leads') && <NewLeadAlerts />}
