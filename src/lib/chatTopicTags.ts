@@ -64,7 +64,7 @@ export const CHAT_TOPIC_ORDER: ChatTopicKey[] = [
 const fromPickedTopic = (raw: string): ChatTopicKey | null => {
   const text = raw.toLowerCase();
   if (!text) return null;
-  if (text.includes('claim')) return 'claim';
+  if (text.includes('claim') && !/claim\s*limit/.test(text) && (/^\W*(a\s+|existing\s+|new\s+|make\s+a\s+)?claims?\b/.test(text.trim()) || CLAIM_INTENT.some((re) => re.test(text)))) return 'claim';
   if (text.includes('warranty purchase') || text.includes('quote')) return 'sale';
   if (text.includes('existing policy') || text.includes('existing customer')) return 'existing_customer';
   if (text.includes('cancel') || text.includes('refund')) return 'cancellation';
@@ -74,6 +74,20 @@ const fromPickedTopic = (raw: string): ChatTopicKey | null => {
 };
 
 const has = (text: string, words: string[]) => words.some((w) => text.includes(w));
+
+const CLAIM_INTENT: RegExp[] = [
+  /\b(make|making|submit|submitting|start|starting|open|opening|raise|raising|log|logging|file|filing|put in|lodge)\s+(a\s+|an\s+|my\s+)?claim\b/,
+  /\b(want|need|like|wish|going|trying|have)\s+to\s+claim\b/,
+  /\bclaim\s+(for|on)\s+(my|the|a)\s+(car|vehicle|van|bike|motorbike|repair|gearbox|engine|clutch|turbo)\b/,
+  /\bmy\s+(current\s+|open\s+|existing\s+)?claim\b/,
+  /\bclaim\s+(number|reference|ref|status|update|form|was|has been|is)\b/,
+  /\b(chase|chasing|update on|progress of|status of)\s+(a\s+|my\s+|the\s+)?claim\b/,
+  /\bmy car (has |just )?(broken down|broke down)\b/,
+  /\b(car|vehicle|van) (has |just )?(broken down|broke down)\b/,
+];
+
+/** True only when the text shows the customer wants to make or chase a claim. */
+export const hasClaimIntent = (raw: string) => CLAIM_INTENT.some((re) => re.test((raw || '').toLowerCase()));
 
 /**
  * @param customerText everything the customer typed in the chat
@@ -85,9 +99,9 @@ export const classifyChatTopic = (customerText: string, handoverHint?: string | 
 
   const text = (customerText || '').toLowerCase();
 
-  if (has(text, ['claim', 'broken down', 'broke down', 'repair', 'garage', 'fault', 'gearbox', 'clutch', 'engine light', 'turbo', 'warning light'])) {
-    return TAGS.claim;
-  }
+  // "Claim" on its own usually means the claim limit / what a plan covers.
+  // Only tag Claim when the customer clearly wants to make or chase a claim.
+  if (CLAIM_INTENT.some((re) => re.test(text))) return TAGS.claim;
   if (has(text, ['cancel', 'refund', 'money back', 'stop my policy'])) return TAGS.cancellation;
   if (has(text, ['complaint', 'complain', 'ombudsman', 'unhappy', 'disgusted', 'appeal'])) return TAGS.complaint;
   if (has(text, ['my policy', 'my warranty', 'my cover', 'renew', 'renewal', 'i am a customer', 'existing customer', 'my documents', 'my certificate', 'change my', 'transfer'])) {
