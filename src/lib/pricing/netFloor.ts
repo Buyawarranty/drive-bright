@@ -30,14 +30,15 @@ import { getAbsoluteMinimumTotal, type PaymentPeriod, type PricingSurface } from
 export const GLOBAL_ABSOLUTE_MIN_TOTAL = 399;
 
 /**
- * HARD absolute minimum (13 Sep 2026): no sale, on any surface, confirmed by
- * anyone — including management overrides, approved authorisations and
- * evidenced price matches — may ever complete below £299. The ONLY exception
- * is motorbikes on the website (half-price floor £199.50).
+ * HARD absolute minimum (5 Oct 2026): no sale, on any surface, may complete
+ * below £399 unless it is authorised — management, an approved discount
+ * authorisation, or an evidenced price match. Unauthorised sales are blocked
+ * at £399 (1 year), £769 (2 year) and £1,099 (3 year). The ONLY blanket
+ * exception is motorbikes on the website (half-price floor £199.50).
  */
-export const HARD_ABSOLUTE_MIN_TOTAL = 299;
+export const HARD_ABSOLUTE_MIN_TOTAL = 399;
 
-/** True when a non-motorbike sale amount breaches the hard £299 absolute minimum. */
+/** True when a non-motorbike sale amount breaches the hard £399 absolute minimum. */
 export function isUnderHardAbsoluteMin(amount: unknown, isMotorbike?: boolean): boolean {
   if (isMotorbike) return false;
   const v = typeof amount === 'number'
