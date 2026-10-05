@@ -21,7 +21,7 @@ import { lookupVehicleByReg } from '@/lib/vehicleLookup';
 import { quoteAuditStamp } from '@/lib/pricing/historicalPricing';
 import { globalMinTotalFor, loadRiskBandConfig } from '@/lib/pricing/vehicleRiskBands';
 import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, RotateCcw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check, Lock as LockIcon, Ban, CalendarDays, Sparkles, LifeBuoy, AlertTriangle, Clock } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, RotateCcw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check, Lock as LockIcon, Ban, CalendarDays, Sparkles, LifeBuoy, AlertTriangle, Clock, Home, Search } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 const DuplicateWarrantyDialog = lazy(() => import('./DuplicateWarrantyDialog').then(m => ({ default: m.DuplicateWarrantyDialog })));
 const QuotesSentPanel = lazy(() => import('./QuotesSentPanel').then(m => ({ default: m.QuotesSentPanel })));
@@ -745,6 +745,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [skipAddressDetails, setSkipAddressDetails] = useState(false);
   // Address fields stay hidden until an address is picked from postcode lookup (or manual entry)
   const [showAddressFields, setShowAddressFields] = useState(false);
+  const [manualAddressEntry, setManualAddressEntry] = useState(false);
   
   // Editable customer fields for external payment dialog
   const [editableCustomerName, setEditableCustomerName] = useState('');
@@ -812,7 +813,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.customerBuildingNumber === 'string') setCustomerBuildingNumber(d.customerBuildingNumber);
       if (typeof d.customerCounty === 'string') setCustomerCounty(d.customerCounty);
       // Address is always compulsory now — never restore a "skip address" flag.
-      if (d.customerPostcode || d.customerStreet) setShowAddressFields(true);
+      if ((d.customerPostcode || d.customerStreet) && !(d.customerBuildingNumber && d.customerStreet && d.customerTown && d.customerPostcode)) {
+        setShowAddressFields(true);
+        setManualAddressEntry(true);
+      }
       // NOTE: intentionally not restoring customMonthlyPrice / customFullPrice /
       // quotedPriceOverride here — otherwise a refresh keeps figures stuck on
       // the previous quote even after starting a new one.
@@ -3473,6 +3477,7 @@ Questions? Call 0330 229 5040`;
     setCustomerCounty('');
     setSkipAddressDetails(false);
     setShowAddressFields(false);
+    setManualAddressEntry(false);
     
     setShowConfirmPaymentDialog(true);
   };
@@ -4411,6 +4416,7 @@ Questions? Call 0330 229 5040`;
     setCustomerCounty('');
     setSkipAddressDetails(false);
     setShowAddressFields(false);
+    setManualAddressEntry(false);
     setPaymentType('24months');
     setExcessAmount(100);
     setClaimLimit(2000);
@@ -8590,139 +8596,129 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                     )}
                   </div>
 
-                  {/* Address Section - Collapsible */}
-                  <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => toggleSection('address')}
-                      className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg">📍</span>
-                        <div className="text-left">
-                          <h4 className="font-semibold text-gray-800 text-sm">Customer Address</h4>
-                          {!expandedSections.address && (
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              {customerPostcode ? `${customerBuildingNumber} ${customerStreet}, ${customerPostcode}` : 'Required — not entered yet'}
-                            </p>
-                          )}
+                  {/* Address — mirrors the customer-facing Step 4 search and confirmation states. */}
+                  <section id="customer-address-section" className="bg-card border border-border rounded-lg shadow-sm p-5 sm:p-6">
+                    <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
+                      <div>
+                        <h4 className="flex items-center gap-2 text-lg font-bold text-foreground">
+                          <Home className="h-5 w-5 text-success" />
+                          Your address
+                        </h4>
+                        <p className="mt-1 text-sm text-muted-foreground">Search for the customer's address to continue.</p>
+                      </div>
+                      {hasCompleteAddress() && !manualAddressEntry && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setCustomerPostcode('');
+                            setCustomerStreet('');
+                            setCustomerTown('');
+                            setCustomerBuildingNumber('');
+                            setCustomerCounty('');
+                            setShowAddressFields(false);
+                            setManualAddressEntry(false);
+                          }}
+                          className="shrink-0"
+                        >
+                          Change
+                        </Button>
+                      )}
+                    </div>
+
+                    {hasCompleteAddress() && !manualAddressEntry ? (
+                      <div className="mt-5 rounded-lg border border-success/30 bg-success/5 p-4 sm:p-5">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
+                            <Check className="h-5 w-5" />
+                          </span>
+                          <p className="text-base font-bold leading-snug text-foreground sm:text-lg">
+                            {[`${customerBuildingNumber} ${customerStreet}`.trim(), customerTown, customerPostcode].filter(Boolean).join(', ')}
+                          </p>
                         </div>
+                        <p className="mt-2 text-sm font-semibold text-success">Address confirmed</p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-blue-600 font-medium">
-                          {expandedSections.address ? 'Close' : 'Edit'}
-                        </span>
-                        <ChevronDown className={cn(
-                          "w-4 h-4 text-gray-400 transition-transform",
-                          expandedSections.address && "rotate-180"
-                        )} />
-                      </div>
-                    </button>
-                    
-                    {expandedSections.address && (
-                      <div className="px-4 pb-4 pt-0 border-t border-gray-100">
-                        {true && (
-                          <div className="space-y-4 pt-4">
-                            <div className="space-y-1.5">
-                              <Label className="text-sm font-semibold text-gray-900">Postcode, street or town <span className="text-red-600">*</span></Label>
-                              <AddressAutocomplete
-                                placeholder="e.g. SW1A 1AA or High Street, Bath"
-                                className={!customerPostcode.trim() ? 'border-2 border-red-400 focus-visible:border-red-500' : ''}
-                                onAddressSelect={(address: AddressData) => {
-                                  const parts = splitAddressLine(address.line_1, address.line_2, address.building_number, address.building_name);
-                                  if (parts.buildingNumberOrName) setCustomerBuildingNumber(parts.buildingNumberOrName);
-                                  if (parts.street) setCustomerStreet(parts.street);
-                                  if (address.town) setCustomerTown(address.town);
-                                  if (address.county) setCustomerCounty(address.county);
-                                  if (address.postcode) setCustomerPostcode(address.postcode.toUpperCase());
-                                  setShowAddressFields(true);
-                                }}
-                              />
-                              {!customerPostcode.trim() && (
-                                <p className="text-xs text-red-600">Address is required — search and select the customer's address.</p>
-                              )}
+                    ) : (
+                      <div className="mt-5 space-y-5">
+                        {!manualAddressEntry && (
+                          <>
+                            <div className="space-y-2">
+                              <Label className="text-base font-semibold text-foreground">Postcode, street or town</Label>
+                              <div className="relative">
+                                <Search className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                                <AddressAutocomplete
+                                  placeholder="Start typing the customer's address"
+                                  className="h-12 bg-muted/60 pl-12 text-base"
+                                  onAddressSelect={(address: AddressData) => {
+                                    const parts = splitAddressLine(address.line_1, address.line_2, address.building_number, address.building_name);
+                                    setCustomerBuildingNumber(parts.buildingNumberOrName || '');
+                                    setCustomerStreet(parts.street || '');
+                                    setCustomerTown(address.town || '');
+                                    setCustomerCounty(address.county || '');
+                                    setCustomerPostcode((address.postcode || '').toUpperCase());
+                                    setShowAddressFields(false);
+                                    setManualAddressEntry(false);
+                                  }}
+                                />
+                              </div>
                             </div>
-
-                            {!showAddressFields && (
-                              <button
+                            <div className="border-t border-border pt-4">
+                              <Button
                                 type="button"
-                                onClick={() => setShowAddressFields(true)}
-                                className="text-sm font-semibold text-gray-900 hover:underline"
+                                variant="link"
+                                onClick={() => {
+                                  setShowAddressFields(true);
+                                  setManualAddressEntry(true);
+                                }}
+                                className="h-auto p-0 text-sm font-semibold text-foreground underline underline-offset-4"
                               >
-                                Enter your address manually
-                              </button>
-                            )}
-
-
-                            {showAddressFields && (
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-1.5">
-                                <Label className="text-xs font-medium text-gray-600">House/Building Number <span className="text-red-600">*</span></Label>
-                                <Input
-                                  value={customerBuildingNumber}
-                                  onChange={(e) => setCustomerBuildingNumber(e.target.value)}
-                                  placeholder="e.g. 42"
-                                  className={cn(
-                                    "bg-gray-50 focus:bg-white transition-colors",
-                                    customerBuildingNumber.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
-                                  )}
-                                />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs font-medium text-gray-600">Street <span className="text-red-600">*</span></Label>
-                                <Input
-                                  value={customerStreet}
-                                  onChange={(e) => setCustomerStreet(e.target.value)}
-                                  placeholder="e.g. High Street"
-                                  className={cn(
-                                    "bg-gray-50 focus:bg-white transition-colors",
-                                    customerStreet.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
-                                  )}
-                                />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs font-medium text-gray-600">Town/City <span className="text-red-600">*</span></Label>
-                                <Input
-                                  value={customerTown}
-                                  onChange={(e) => setCustomerTown(e.target.value)}
-                                  placeholder="e.g. Manchester"
-                                  className={cn(
-                                    "bg-gray-50 focus:bg-white transition-colors",
-                                    customerTown.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
-                                  )}
-                                />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs font-medium text-gray-600">County</Label>
-                                <Input
-                                  value={customerCounty}
-                                  onChange={(e) => setCustomerCounty(e.target.value)}
-                                  placeholder="e.g. Greater Manchester"
-                                  className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                                />
-                              </div>
-
-                              <div className="space-y-1.5">
-                                <Label className="text-xs font-medium text-gray-600">Postcode <span className="text-red-600">*</span></Label>
-                                <Input
-                                  value={customerPostcode}
-                                  onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
-                                  placeholder="e.g. M1 1AA"
-                                  className={cn(
-                                    "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors uppercase",
-                                    !customerPostcode.trim() && "border-2 border-red-400 focus:border-red-500"
-                                  )}
-                                />
-                              </div>
+                                Can't find the address? Enter it manually
+                                <ChevronRight className="ml-1 h-4 w-4" />
+                              </Button>
                             </div>
-                            )}
-                          </div>
+                          </>
                         )}
 
-
+                        {showAddressFields && manualAddressEntry && (
+                          <div className="space-y-4">
+                            <Button
+                              type="button"
+                              variant="link"
+                              onClick={() => {
+                                setShowAddressFields(false);
+                                setManualAddressEntry(false);
+                              }}
+                              className="h-auto p-0 text-sm font-semibold"
+                            >
+                              Search for the address instead
+                            </Button>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                              <div className="space-y-1.5">
+                                <Label>Postcode *</Label>
+                                <Input value={customerPostcode} onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())} placeholder="e.g. M1 1AA" className="uppercase" />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label>House/Building Number *</Label>
+                                <Input value={customerBuildingNumber} onChange={(e) => setCustomerBuildingNumber(e.target.value)} placeholder="e.g. 42" />
+                              </div>
+                              <div className="space-y-1.5 sm:col-span-2">
+                                <Label>Street *</Label>
+                                <Input value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} placeholder="e.g. High Street" />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label>Town/City *</Label>
+                                <Input value={customerTown} onChange={(e) => setCustomerTown(e.target.value)} placeholder="e.g. Manchester" />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label>County</Label>
+                                <Input value={customerCounty} onChange={(e) => setCustomerCounty(e.target.value)} placeholder="e.g. Greater Manchester" />
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
+                  </section>
 
                   {/* Policy Configuration - Collapsible & Editable */}
                   <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
