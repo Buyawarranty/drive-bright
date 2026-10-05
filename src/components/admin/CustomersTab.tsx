@@ -6842,6 +6842,22 @@ Please log in and change your password after first login.`;
                               💰 PAYMENT DUE £{Number((customer as any).balance_due_amount || 0)}
                             </Badge>
                           )}
+                          {(customer as any).deferred_status === 'pending_payment' && (() => {
+                            const startD = (customer as any).deferred_start_date;
+                            const dueD = (customer as any).deferred_payment_due_date;
+                            const fmt = (d: string) => {
+                              const p = new Date(d);
+                              return isNaN(p.getTime()) ? d : format(p, 'd MMM');
+                            };
+                            return (
+                              <Badge
+                                className="bg-purple-600 text-white text-[10px] px-1.5 py-0 h-4 font-bold animate-pulse"
+                                title={`Pay later order — warranty starts ${startD ? fmt(startD) : 'TBC'} and payment is due ${dueD ? fmt(dueD) : 'TBC'}. Cover activates only when payment is received.`}
+                              >
+                                💳 PAYMENT PENDING · STARTS {startD ? fmt(startD).toUpperCase() : 'TBC'}
+                              </Badge>
+                            );
+                          })()}
                           {isDueToday(customer) && (
                             <Badge className="bg-orange-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold animate-pulse">
                               🔔 DUE TODAY
