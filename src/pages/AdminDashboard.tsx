@@ -135,6 +135,7 @@ const CallStatsTab = lazy(() => import('@/components/admin/CallStatsTab').then(m
 const HRTab = lazy(() => import('@/components/admin/hr/HRTab').then(m => ({ default: m.HRTab })));
 const AgentFeedbackTab = lazy(() => import('@/components/admin/feedback/AgentFeedbackTab').then(m => ({ default: m.AgentFeedbackTab })));
 const CollectPaymentsTab = lazy(() => import('@/components/admin/CollectPaymentsTab').then(m => ({ default: m.CollectPaymentsTab })));
+const DiscountPaymentPendingAlert = lazy(() => import('@/components/admin/DiscountPaymentPendingAlert'));
 const CollectPaymentsBanner = lazy(() => import('@/components/admin/CollectPaymentsBanner').then(m => ({ default: m.CollectPaymentsBanner })));
 import { readAdminAccessCache, writeAdminAccessCache, clearAdminAccessCache } from '@/lib/adminAccessCache';
 
@@ -1455,6 +1456,7 @@ const AdminDashboardInner: React.FC<{
                   <ReminderDuePopup activeTab={activeTab} onNavigate={(leadId, type) => { if (type === 'customer') handleTabChange('customers'); else handleTabChange('new-leads'); }} />
                 </AlertRailSlot>
               )}
+              {show('discount_payment_pending') && <AlertRailSlot order={ALERT_RAIL_ORDER.discountPaymentPending}><DiscountPaymentPendingAlert userRole={userRole} /></AlertRailSlot>}
               {show('collect_payments') && <AlertRailSlot order={ALERT_RAIL_ORDER.collectPayments}><CollectPaymentsBanner userRole={userRole} onNavigate={handleTabChange} /></AlertRailSlot>}
             </Suspense>
 
