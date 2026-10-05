@@ -772,15 +772,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     // Prevent double-click race condition
     if (isConfirming) return;
 
-    // HARD £299 floor (13 Sep 2026): nobody — not even management, an approved
-    // authorisation or an evidenced price match — may confirm a non-motorbike
-    // sale below £299.
+    // HARD £399 floor (5 Oct 2026): no non-motorbike sale below £399 unless
+    // authorised — management, an approved discount authorisation at this
+    // price, or an evidenced price match.
     const hardAmount = parseFloat(paymentAmount);
     const isMotorbikeSale = /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || ''));
-    if (isUnderHardAbsoluteMin(hardAmount, isMotorbikeSale)) {
+    const authorisedBelowHardFloor = isManagementRole || hasApprovedAuth || priceMatchReady;
+    if (!authorisedBelowHardFloor && isUnderHardAbsoluteMin(hardAmount, isMotorbikeSale)) {
       toast({
-        title: "£299 absolute minimum",
-        description: "No sale can be confirmed below £299 under any circumstances. Only website motorbike warranties may go lower.",
+        title: "£399 absolute minimum",
+        description: "No sale can be confirmed below £399 without authorisation from management, an approved discount request, or an evidenced price match. Only website motorbike warranties may go lower.",
         variant: "destructive",
       });
       return;
