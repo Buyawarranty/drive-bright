@@ -99,3 +99,4 @@
 - [ ] SEO: consider 'Buy A Warranty' first in discount page title for Google
 - [ ] Sticky bar: make Step 4 bar match Step 3 design; only CTA text differs (Continue to checkout vs Pay securely)
 - [ ] Step 4 mileage section: simplify to two states (default + change-open) per MILEAGE.png; no extra border, flows like other sections; desktop+mobile
+- [x] Customer Management: Payment column pill is now a dropdown so permitted staff (managers, accounts managers, etc.) can change the payment type inline

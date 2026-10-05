@@ -2808,6 +2808,28 @@ export const CustomersTab = ({
     }
   };
 
+  // Inline payment-type change from the Payment column. Anyone with admin-panel
+  // access except plain sales agents can correct the payment route (managers,
+  // accounts managers, admin, etc.). Only purchase_source changes — webhook
+  // records, revenue and analytics classification stay untouched.
+  const handleUpdatePaymentSource = async (customerId: string, newSource: string) => {
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .update({ purchase_source: newSource })
+        .eq('id', customerId);
+      if (error) throw error;
+
+      setCustomers(prev => prev.map(c => (c.id === customerId ? { ...c, purchase_source: newSource } : c)));
+      setFilteredCustomers(prev => prev.map(c => (c.id === customerId ? { ...c, purchase_source: newSource } : c)));
+      toast.success('Payment type updated');
+    } catch (error) {
+      console.error('Error updating payment type:', error);
+      toast.error('Failed to update payment type');
+    }
+  };
+
+
   const sendBulkReminderEmails = async () => {
     if (selectedIncompleteCustomers.length === 0) {
       toast.error('Please select at least one customer');
@@ -7024,24 +7046,65 @@ Please log in and change your password after first login.`;
                       dealer: 'Dealer Portal',
                     };
                     const sourceLabel = SOURCE_LABELS[String((customer as any).purchase_source || '').toLowerCase()];
-                    const routeLabel =
+                    const webhookLabel =
                       customer.bumper_order_id ? 'Bumper' :
-                      customer.stripe_session_id ? 'Stripe' :
+                      customer.stripe_session_id ? 'Stripe' : null;
+                    // A saved purchase_source (including a manual override from this
+                    // column) wins over the webhook-derived route so the payment
+                    // type stays editable.
+                    const routeLabel =
                       sourceLabel ??
+                      webhookLabel ??
                       quoteRoute ??
                       (customer.is_manual_entry ? 'Manual' : 'N/A');
                     const agentTaken = !customer.bumper_order_id && !customer.stripe_session_id;
+                    const canEditPaymentType = !isSalesAgent;
 
                     return (
                     <TableCell>
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-1">
-                          <Badge
-                            variant={routeLabel === 'Manual' ? 'secondary' : 'outline'}
-                            title={agentTaken && quoteRoute ? `Paid via ${quoteRoute} on an agent quote — no webhook record on the customer row` : undefined}
-                          >
-                            {routeLabel}
-                          </Badge>
+                          {canEditPaymentType ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  title="Click to change payment type"
+                                >
+                                  <Badge variant={routeLabel === 'Manual' ? 'secondary' : 'outline'} className="cursor-pointer">
+                                    {routeLabel}
+                                    <ChevronDown className="ml-0.5 h-3 w-3 opacity-60" />
+                                  </Badge>
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start">
+                                {[
+                                  { value: 'stripe', label: 'Stripe' },
+                                  { value: 'payment_assist', label: 'Payment Assist' },
+                                  { value: 'bumper', label: 'Bumper' },
+                                  { value: 'paypal', label: 'PayPal' },
+                                  { value: 'bank_transfer', label: 'Bank Transfer' },
+                                  { value: 'phone_card', label: 'Phone Card' },
+                                  { value: 'other', label: 'Other / Manual' },
+                                ].map(opt => (
+                                  <DropdownMenuItem
+                                    key={opt.value}
+                                    onClick={() => handleUpdatePaymentSource(customer.id, opt.value)}
+                                  >
+                                    {opt.label}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : (
+                            <Badge
+                              variant={routeLabel === 'Manual' ? 'secondary' : 'outline'}
+                              title={agentTaken && quoteRoute ? `Paid via ${quoteRoute} on an agent quote — no webhook record on the customer row` : undefined}
+                            >
+                              {routeLabel}
+                            </Badge>
+                          )}
                           {agentTaken && quoteRoute && (
                             <span className="text-[10px] text-muted-foreground">agent</span>
                           )}
