@@ -27,7 +27,6 @@ export const ALERT_RAIL_ORDER = {
   collectPayments: 40,
   authorisationNeeded: 3,
   discountPaymentPending: 38,
-  quickGrant: 45,
   newLeadPopup: 10,
   whatsappHotLead: 15,
   stuckCheckout: 20,
