@@ -440,7 +440,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   // motorbikes) block a confirmation; discounts above 30% are always allowed,
   // flagged and logged.
   const discountBlocked =
-    priceBlockEnabled && underNetFloor && !isManagementRole && !hasApprovedAuth && !priceMatchReady;
+    priceBlockEnabled && underNetFloor && !isManagementRole && !hasApprovedAuth;
 
 
 
@@ -777,7 +777,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     // price, or an evidenced price match.
     const hardAmount = parseFloat(paymentAmount);
     const isMotorbikeSale = /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || ''));
-    const authorisedBelowHardFloor = isManagementRole || hasApprovedAuth || priceMatchReady;
+    const authorisedBelowHardFloor = isManagementRole || hasApprovedAuth;
     if (!authorisedBelowHardFloor && isUnderHardAbsoluteMin(hardAmount, isMotorbikeSale)) {
       toast({
         title: "£399 absolute minimum",
