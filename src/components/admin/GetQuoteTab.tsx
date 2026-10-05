@@ -9547,6 +9547,9 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         Preview Before Submit
                       </Button>
                     </div>
+                        </>
+                      );
+                    })()}
                   </>
                 ) : externalPaymentStep === 'preview' ? (
                   <>
