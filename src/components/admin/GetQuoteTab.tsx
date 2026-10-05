@@ -570,6 +570,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
 
   const priceMatchEvidenced = priceMatchMode && !!priceMatchProofPath && !!priceMatchCompetitor.trim();
+  // Below-floor price matches need manager authorisation: evidence alone never exempts an agent.
+  const priceMatchFloorExempt = priceMatchEvidenced && isManagementRole;
   // A management-approved discount request for THIS registration lets the agent
   // sell down to the approved price (never lower). The £399 hard floor still applies.
   const approvedAuthPrice = (() => {
@@ -1508,7 +1510,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // may not drop the payable figure under the floor either.
   const absoluteMinBlocked =
     (isUnderAbsoluteMin(displayedTotalPrice) || isUnderAbsoluteMin(displayedPayInFullPrice)) &&
-    !priceMatchEvidenced;
+    !priceMatchFloorExempt;
 
   /**
    * How much the agent has actually taken off the quoted total right now, and
@@ -3577,7 +3579,7 @@ Questions? Call 0330 229 5040`;
       warrantyStartDate !== undefined &&
       paymentConfirmed === true &&
       hasCompleteAddress() &&
-      !(isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced)
+      !(isUnderAbsoluteMin(paymentAmount) && !priceMatchFloorExempt)
     );
   };
 
@@ -3589,7 +3591,7 @@ Questions? Call 0330 229 5040`;
     if (warrantyStartDate === undefined) issues.push('the warranty start date');
     if (!hasCompleteAddress()) issues.push("the customer's address (building number, street, town and postcode)");
     if (!paymentConfirmed) issues.push('the "I confirm" checkbox');
-    if (isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced) {
+    if (isUnderAbsoluteMin(paymentAmount) && !priceMatchFloorExempt) {
       issues.push('price match evidence (the amount is below the minimum allowed price)');
     }
     return issues;
@@ -3686,7 +3688,7 @@ Questions? Call 0330 229 5040`;
     const floorCheckAmount = payLaterActiveForFloor
       ? payLaterFinalTotal(displayedTotalPrice, payLaterYears(paymentType))
       : parseFloat(paymentAmount);
-    if (isUnderAbsoluteMin(floorCheckAmount) && !priceMatchEvidenced) {
+    if (isUnderAbsoluteMin(floorCheckAmount) && !priceMatchFloorExempt) {
       toast({
         title: `Minimum ${MIN_TERM_LABEL} warranty price is £${ABSOLUTE_MIN_TOTAL}`,
         description: payLaterActiveForFloor
@@ -3707,7 +3709,7 @@ Questions? Call 0330 229 5040`;
     // evidenced price match. Website motorbikes excepted.
     const authorisedBelowHardFloor =
       isManagementRole ||
-      priceMatchEvidenced ||
+      priceMatchFloorExempt ||
       (approvedAuthPrice !== null && Number.isFinite(confirmedAmount) && confirmedAmount >= approvedAuthPrice - 0.01);
     if (!authorisedBelowHardFloor && isUnderHardAbsoluteMin(confirmedAmount, isMotorbikeQuote)) {
       toast({
@@ -6770,7 +6772,7 @@ Questions? Call 0330 229 5040`;
                         const overCap = impliedPct > effectiveMaxDiscountPct + 0.01;
                         // Hard net floor: even an allowed discount (incl. the full 30%)
                         // can never take the sale below the minimum sellable price.
-                        const underFloor = !priceMatchEvidenced && isUnderAbsoluteMin(newTotal);
+                        const underFloor = !priceMatchFloorExempt && isUnderAbsoluteMin(newTotal);
 
                         const currentTotalNum = parseFloat(customFullPrice);
                         const isActive = !isNaN(currentTotalNum) && Math.abs(currentTotalNum - newTotal) < 0.5 && isPriceOverridden;
