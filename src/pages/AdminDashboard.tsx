@@ -1407,7 +1407,7 @@ const AdminDashboardInner: React.FC<{
       </div>
       </header>
 
-      {/* Banner rail: the sidebar is fixed from 104px down, so every top banner
+      {/* Banner rail: the sidebar is fixed directly below the 44px top bar, so every top banner
           is inset by the sidebar width on desktop — nothing is ever cut off. */}
       <div className={sidebarCollapsed ? 'lg:pl-14' : 'lg:pl-64'}>
       {/* Live chat opening-hours bar — every member of staff, claims included */}
@@ -1511,7 +1511,7 @@ const AdminDashboardInner: React.FC<{
             onSelect={handleTabChange}
             canAccessTab={(tabId) => isTabAllowedForRole(tabId, displayRole, displayPermissions)}
           />
-          <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
+          <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-44px)]">
             <TabErrorBoundary
               key={`${activeTab}:${tabRetryKey}`}
               tabKey={activeTab}
