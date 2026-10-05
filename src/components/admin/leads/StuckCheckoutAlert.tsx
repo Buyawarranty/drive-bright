@@ -177,7 +177,7 @@ export const StuckCheckoutAlert: React.FC = () => {
   };
 
   const dismiss = (id: string) => {
-    { const r: any = (rows as any[]).find((x: any) => x.id === id); if (r) pushRecentAlert({ key: `stuck-${id}`, title: 'Checkout stuck', detail: `${r.customer_name || r.customer_email || r.customer_phone || 'Customer'}${r.vehicle_reg ? ' – ' + r.vehicle_reg : ''}`, tone: 'amber' }); }
+    { const r: any = (rows as any[]).find((x: any) => x.id === id); if (r) pushRecentAlert({ key: `stuck-${id}`, title: 'Checkout stuck', detail: `${r.customer_name || r.customer_email || r.customer_phone || 'Customer'}${r.vehicle_reg ? ' – ' + r.vehicle_reg : ''}`, tone: 'red' }); }
     setDismissedIds((prev) => {
       const next = [...new Set([...prev, id])].slice(-200);
       try { localStorage.setItem(DISMISSED_IDS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
@@ -195,28 +195,28 @@ export const StuckCheckoutAlert: React.FC = () => {
 
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.stuckCheckout}>
-      <div className="rounded-xl border border-amber-200 border-l-4 border-l-amber-500 bg-amber-50 text-gray-900 shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-red-700 border-l-4 border-l-red-800 bg-red-600 text-white shadow-sm overflow-hidden">
         <div className="flex items-start justify-between gap-2 px-3 py-2">
           <button
             onClick={() => setExpanded((v) => !v)}
             className="flex items-start gap-2 text-left min-w-0"
           >
-            <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+            <AlertTriangle className="h-4 w-4 text-white mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-sm font-bold leading-tight text-gray-900">
+              <p className="text-sm font-bold leading-tight text-white">
                 {live.length === 1 ? 'Customer stuck on checkout' : `${live.length} customers stuck on checkout`}
               </p>
-              <p className="text-[11px] text-gray-900">{readyToCall} ready to call now</p>
+              <p className="text-[11px] text-white">{readyToCall} ready to call now</p>
             </div>
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
           </button>
           <button
             onClick={dismissAll}
-            className="p-1 rounded hover:bg-amber-100 shrink-0"
+            className="p-1 rounded hover:bg-red-700 shrink-0"
             title="Close"
             aria-label="Close stuck checkout alert"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5 text-white" />
           </button>
         </div>
 
