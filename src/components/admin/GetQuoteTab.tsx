@@ -571,7 +571,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
   const priceMatchEvidenced = priceMatchMode && !!priceMatchProofPath && !!priceMatchCompetitor.trim();
   // A management-approved discount request for THIS registration lets the agent
-  // sell down to the approved price (never lower). The £299 hard floor still applies.
+  // sell down to the approved price (never lower). The £399 hard floor still applies.
   const approvedAuthPrice = (() => {
     if (!approvedDiscountRequest) return null;
     const plate = (approvedDiscountRequest.registration_plate || '').replace(/\s/g, '').toUpperCase();
