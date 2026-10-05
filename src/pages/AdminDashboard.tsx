@@ -62,7 +62,7 @@ import { SystemCheckInButton } from '@/components/admin/feedback/SystemCheckInFo
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { DiscountAuthBanner } from '@/components/admin/DiscountAuthBanner';
 import { CrmDuplicateTabBanner } from '@/components/admin/CrmDuplicateTabBanner';
-const DiscountAuthPopup = lazy(() => import('@/components/admin/DiscountAuthPopup').then(m => ({ default: m.DiscountAuthPopup })));
+const AuthorisationNeededAlert = lazy(() => import('@/components/admin/AuthorisationNeededAlert').then(m => ({ default: m.AuthorisationNeededAlert })));
 import { useIsManagement } from '@/hooks/useIsManagement';
 const GlobalAutoDistributeBar = lazy(() => import('@/components/admin/leads/GlobalAutoDistributeBar').then(m => ({ default: m.GlobalAutoDistributeBar })));
 
@@ -1339,7 +1339,6 @@ const AdminDashboardInner: React.FC<{
       {/* Management-only popups: not mounted for sales roles, so their queries/realtime never run there */}
       {(serverIsManagement || ['admin', 'super_admin', 'sales_manager'].includes(displayRole || '')) && (
         <Suspense fallback={null}>
-          <DiscountAuthPopup userRole={displayRole} />
           <ReassignRequestPopup userRole={displayRole} />
         </Suspense>
       )}
@@ -1456,6 +1455,7 @@ const AdminDashboardInner: React.FC<{
                   <ReminderDuePopup activeTab={activeTab} onNavigate={(leadId, type) => { if (type === 'customer') handleTabChange('customers'); else handleTabChange('new-leads'); }} />
                 </AlertRailSlot>
               )}
+              {show('discount_auth_needed') && <AlertRailSlot order={ALERT_RAIL_ORDER.authorisationNeeded}><AuthorisationNeededAlert userRole={userRole} /></AlertRailSlot>}
               {show('discount_payment_pending') && <AlertRailSlot order={ALERT_RAIL_ORDER.discountPaymentPending}><DiscountPaymentPendingAlert userRole={userRole} /></AlertRailSlot>}
               {show('collect_payments') && <AlertRailSlot order={ALERT_RAIL_ORDER.collectPayments}><CollectPaymentsBanner userRole={userRole} onNavigate={handleTabChange} /></AlertRailSlot>}
             </Suspense>

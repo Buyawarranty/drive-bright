@@ -31,7 +31,7 @@ export const DiscountAuthBanner: React.FC<{ userRole?: string | null }> = ({ use
     }
   };
 
-  const showManagement = isManagement && pending.length > 0;
+  const showManagement = false; // Management now authorise from the Live Alerts card
   if (!showManagement && myDecided.length === 0) return null;
 
   return (
