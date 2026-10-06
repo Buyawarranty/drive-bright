@@ -1,22 +1,11 @@
 import React from 'react';
-import LeadTeamsTab from '@/components/admin/LeadTeamsTab';
+import OrrSandboxTabView from '@/components/admin/leads/OrrSandboxTabView';
 
 /**
- * Open Round Robin tab: renders Lead Allocation and jumps straight to the
- * Open Round Robin section at the bottom of that page.
+ * Legacy Open Round Robin tab URLs use the dedicated sandbox view.
  */
 export const OrrTabView: React.FC<{ onNavigateToTab?: (tab: string) => void }> = ({ onNavigateToTab }) => {
-  React.useEffect(() => {
-    if (window.location.hash !== '#open-round-robin') {
-      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#open-round-robin`);
-    }
-    const t = window.setTimeout(() => {
-      document.getElementById('open-round-robin')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 400);
-    return () => window.clearTimeout(t);
-  }, []);
-
-  return <LeadTeamsTab onNavigateToTab={onNavigateToTab} />;
+  return <OrrSandboxTabView onNavigateToTab={onNavigateToTab} />;
 };
 
 export default OrrTabView;

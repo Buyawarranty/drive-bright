@@ -1101,8 +1101,7 @@ const AdminDashboard = () => {
           );
         }
         return <LeadTeamsTab onNavigateToTab={handleTabChange} />;
-      // Open Round Robin (live controls + sandbox) now lives inside Lead Allocation.
-      // Both old tab URLs render Lead Allocation so no bookmark breaks.
+      // Legacy ORR bookmarks use the dedicated sandbox, not Lead Allocation.
       case 'open-round-robin':
       case 'orr-test-lab':
         if (!isTabAllowedForRole('lead-teams', effectiveUserRole, effectiveUserPermissions)) {
