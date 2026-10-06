@@ -1347,7 +1347,7 @@ const AdminDashboardInner: React.FC<{
       {/* Admin-only slim bar. The public marketing nav (What's Covered / FAQs /
           WhatsApp / Get my quote) is intentionally NOT rendered here — the admin
           dashboard must show one navigation row only. */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
+      <header className={`bg-white shadow-sm sticky top-0 z-50 ${sidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'} transition-[margin] duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-11">
             <div className="flex items-center gap-3">
