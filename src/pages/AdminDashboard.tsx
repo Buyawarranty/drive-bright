@@ -75,6 +75,7 @@ const SmsTrackingTab = lazy(() => import('@/components/admin/SmsTrackingTab'));
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
 const ChatbotDataTab = lazy(() => import('@/components/admin/chatbot/ChatbotDataTab'));
 const WhatsAppLeadsTab = lazy(() => import('@/components/admin/whatsapp/WhatsAppLeadsTab'));
+const WhatsAppHotLeadAlertsGlobal = lazy(() => import('@/components/admin/whatsapp/WhatsAppHotLeadAlertsGlobal'));
 const SemrushSeoTab = lazy(() => import('@/components/admin/semrush/SemrushSeoTab'));
 const ContactSubmissionsTab = lazy(() => import('@/components/admin/ContactSubmissionsTab'));
 const ComplaintsTab = lazy(() => import('@/components/admin/ComplaintsTab'));
@@ -1456,6 +1457,9 @@ const AdminDashboardInner: React.FC<{
               )}
               {show('discount_auth_needed') && <AlertRailSlot order={ALERT_RAIL_ORDER.authorisationNeeded}><AuthorisationNeededAlert userRole={userRole} /></AlertRailSlot>}
               {show('discount_payment_pending') && <AlertRailSlot order={ALERT_RAIL_ORDER.discountPaymentPending}><DiscountPaymentPendingAlert userRole={userRole} /></AlertRailSlot>}
+              {isManagementAlerts && show('whatsapp_hot_lead') && (
+                <WhatsAppHotLeadAlertsGlobal onOpenChat={() => handleTabChange('whatsapp-leads')} />
+              )}
             </Suspense>
 
             {show('new_leads') && <NewLeadAlerts />}
