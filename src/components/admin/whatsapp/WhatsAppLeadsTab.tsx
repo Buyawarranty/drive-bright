@@ -13,7 +13,6 @@ import WhatsAppLeadCard from './WhatsAppLeadCard';
 import { tagChipClass, useTagsByConversation, useWhatsAppTagList } from '@/hooks/useWhatsAppTags';
 import WhatsAppConversationPanel from './WhatsAppConversationPanel';
 import WhatsAppManagerDashboard from './WhatsAppManagerDashboard';
-import WhatsAppHotLeadAlerts from './WhatsAppHotLeadAlerts';
 import WhatsAppLeadImport from './WhatsAppLeadImport';
 import WhatsAppBulkTemplateSend from './WhatsAppBulkTemplateSend';
 import WhatsAppTemplateStats from './WhatsAppTemplateStats';
