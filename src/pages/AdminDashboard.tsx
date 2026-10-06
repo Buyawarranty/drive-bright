@@ -1456,6 +1456,9 @@ const AdminDashboardInner: React.FC<{
               )}
               {show('discount_auth_needed') && <AlertRailSlot order={ALERT_RAIL_ORDER.authorisationNeeded}><AuthorisationNeededAlert userRole={userRole} /></AlertRailSlot>}
               {show('discount_payment_pending') && <AlertRailSlot order={ALERT_RAIL_ORDER.discountPaymentPending}><DiscountPaymentPendingAlert userRole={userRole} /></AlertRailSlot>}
+              {isManagementAlerts && show('whatsapp_hot_lead') && (
+                <WhatsAppHotLeadAlertsGlobal onOpenChat={() => handleTabChange('whatsapp-leads')} />
+              )}
             </Suspense>
 
             {show('new_leads') && <NewLeadAlerts />}

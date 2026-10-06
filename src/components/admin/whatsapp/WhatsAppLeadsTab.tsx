@@ -114,12 +114,7 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
 
   return (
     <div className="space-y-4">
-      <WhatsAppHotLeadAlerts
-        conversations={conversations}
-        currentAdminId={adminId}
-        onOpen={(id) => setSelectedId(id)}
-        onTake={(id) => void handleTake(id)}
-      />
+      {/* Hot-lead alerts now render globally in the Live Alerts rail (WhatsAppHotLeadAlertsGlobal) */}
 
       <div className="rounded-xl border bg-card p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
