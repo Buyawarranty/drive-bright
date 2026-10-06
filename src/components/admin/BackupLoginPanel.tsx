@@ -11,7 +11,7 @@ import { ReassignSaleButton } from '@/components/admin/scoreboard/ReassignSaleBu
 
 
 // Sections the backup login can never open.
-export const BACKUP_BLOCKED_TABS = ['analytics', 'lead-teams', 'open-round-robin', 'orr-test-lab', 'vehicle-stats'];
+export const BACKUP_BLOCKED_TABS = ['analytics', 'lead-teams', 'open-round-robin', 'orr-test-lab', 'orr-sandbox', 'vehicle-stats'];
 const BLOCKED_LABELS = ['Analytics', 'Lead Allocation', 'Open Round Robin', 'ORR Test Lab', 'Vehicle Intelligence'];
 
 interface BackupLoginPanelProps {
