@@ -85,6 +85,11 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
             <p className="mt-1 text-xs text-gray-600">
               {c.display_name || prettyWhatsAppPhone(c.phone)} · {prettyWhatsAppPhone(c.phone)}
             </p>
+            {c.lead_id && ownerByLeadId[c.lead_id] ? (
+              <p className="mt-1 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+                {ownerByLeadId[c.lead_id]}'s lead
+              </p>
+            ) : null}
             <p className="mt-1 line-clamp-2 text-xs text-gray-600">{c.last_message_preview}</p>
             <div className="mt-2 flex gap-2">
               <Button size="sm" className="bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => onTake(c.id)}>
