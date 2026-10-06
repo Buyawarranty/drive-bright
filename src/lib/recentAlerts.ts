@@ -8,6 +8,7 @@ export interface RecentAlert {
   key: string;
   title: string;
   detail: string;
+  details?: string[];
   tone: RecentAlertTone;
   at: number;
 }
