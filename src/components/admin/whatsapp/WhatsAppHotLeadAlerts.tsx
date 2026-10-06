@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { pushRecentAlert } from '@/lib/recentAlerts';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
@@ -24,6 +25,7 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
   onTake,
 }) => {
   const [dismissed, setDismissed] = useState<string[]>([]);
+  const [ownerByLeadId, setOwnerByLeadId] = useState<Record<string, string>>({});
 
   const hot = useMemo(
     () =>
@@ -32,6 +34,33 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
         .slice(0, 3),
     [conversations, dismissed],
   );
+
+  // Tag each card with the agent who owns the matching lead (if any).
+  useEffect(() => {
+    const leadIds = [...new Set(hot.map((c) => c.lead_id).filter(Boolean))] as string[];
+    const missing = leadIds.filter((id) => !(id in ownerByLeadId));
+    if (!missing.length) return;
+    let cancelled = false;
+    (async () => {
+      const { data: leads } = await supabase
+        .from('sales_leads')
+        .select('id, assigned_to')
+        .in('id', missing);
+      const ownerIds = [...new Set((leads || []).map((l: any) => l.assigned_to).filter(Boolean))];
+      const { data: admins } = ownerIds.length
+        ? await supabase.from('admin_users').select('id, first_name, last_name, email').in('id', ownerIds as string[])
+        : { data: [] as any[] };
+      if (cancelled) return;
+      const nameOf = (id?: string | null) => {
+        const a: any = (admins || []).find((x: any) => x.id === id);
+        return a ? [a.first_name, a.last_name].filter(Boolean).join(' ') || a.email : '';
+      };
+      const next: Record<string, string> = {};
+      for (const l of leads || []) next[(l as any).id] = nameOf((l as any).assigned_to);
+      setOwnerByLeadId((prev) => ({ ...prev, ...next }));
+    })();
+    return () => { cancelled = true; };
+  }, [hot, ownerByLeadId]);
 
   if (!currentAdminId || hot.length === 0) return null;
 
@@ -56,6 +85,11 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
             <p className="mt-1 text-xs text-gray-600">
               {c.display_name || prettyWhatsAppPhone(c.phone)} · {prettyWhatsAppPhone(c.phone)}
             </p>
+            {c.lead_id && ownerByLeadId[c.lead_id] ? (
+              <p className="mt-1 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+                {ownerByLeadId[c.lead_id]}'s lead
+              </p>
+            ) : null}
             <p className="mt-1 line-clamp-2 text-xs text-gray-600">{c.last_message_preview}</p>
             <div className="mt-2 flex gap-2">
               <Button size="sm" className="bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => onTake(c.id)}>
