@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Remove duplicate ORR section and jump link from Lead Allocation; preserve the dedicated sandbox and reuse it for legacy ORR bookmarks without changing activation or routing data.
 
 - [x] Remove payment-collection sidebar alert and confirm Quick grant has no remaining render path.
 - [x] Make checkout-stuck Recent alerts red/white and expandable; active alert keeps expandable customer details. Recent expansion verified in isolation; signed-in dashboard check unavailable with externally managed sign-in.
@@ -86,7 +87,7 @@
 - [x] Stop 20% off marketing reminders going to customers who already hold active warranty cover (Jenny Beaumont)
 - [x] Renewals: feed every 2h into Renewals + New Leads, covering 60 days ahead and missed active expiries from the previous 180 days
 - [ ] Open Round Robin: plan safe merge into New Leads (sandbox only, no live impact)
-- [x] Open Round Robin: ONE shared panel — sandbox and Lead Allocation live view render the same component/code; no duplicated green testing version; edits update both at once
+- [x] Open Round Robin: one dedicated sandbox panel; duplicate Lead Allocation section removed, with legacy ORR bookmarks using the sandbox view
 - [x] Open Round Robin: temporary per-attempt reservations; unanswered calls return unowned to shared retry, contact assigns the caller; use the supplied lead-desk layout
 
 ## Chatbot answer library (Sep 11)

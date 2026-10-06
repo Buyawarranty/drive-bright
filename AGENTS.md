@@ -1,4 +1,5 @@
 # Project architecture rules
+- Render ORR controls through the dedicated sandbox view and reuse it for legacy ORR tab URLs; Lead Allocation must not mount the ORR section, avoiding duplicate controls.
 
 - Store company-wide monthly Analytics revenue goals in `monthly_revenue_targets`; keep them separate from per-agent `sales_targets` because they measure different scopes.
 - Multi-year Quotes & Orders offers only 12 monthly instalments or BAW PayLater; PayLater records and credits one yearly payment at collection because uncollected future years are not revenue.

@@ -45,7 +45,6 @@ import { SaveOnlineSaleAllocationPanel } from './leads/SaveOnlineSaleAllocationP
 
 
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
-import { OrrSection } from './leads/OrrSection';
 import { ImportLeadToAgentPanel } from './leads/ImportLeadToAgentPanel';
 
 import { useViewAs } from '@/contexts/ViewAsContext';
@@ -69,7 +68,6 @@ const QUICK_LINKS = [
 
   { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
   { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
-  { id: 'open-round-robin', label: 'Open Round Robin', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
   { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-300/50 text-rose-900 border-rose-200/50 hover:bg-rose-400/50' },
   { id: 'recovery-audit', label: 'Recover leads', className: 'bg-cyan-300/50 text-cyan-900 border-cyan-200/50 hover:bg-cyan-400/50' },
 ];
@@ -433,7 +431,6 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         )}
       </div>
 
-      {/* Open Round Robin now lives at the very bottom of this page. */}
 
 
 
@@ -477,11 +474,6 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         </div>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          OPEN ROUND ROBIN — last section on the page so it can never
-          interfere with the live Round Robin controls above.
-         ───────────────────────────────────────────────────────────── */}
-      <OrrSection isManagement={isManagement} />
 
 
 
