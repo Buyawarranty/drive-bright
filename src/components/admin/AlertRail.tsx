@@ -91,7 +91,7 @@ const RecentAlerts: React.FC = () => {
                 <Button type="button" variant="ghost" size="icon-sm" aria-label="Remove from recent" onClick={() => removeRecentAlert(a.key)} className="h-6 w-6 shrink-0 hover:bg-destructive-foreground/10 hover:text-destructive-foreground"><X /></Button>
               </div>
               {expandedKeys.includes(a.key) && <div className="border-t border-destructive-foreground/30 px-2 py-2 text-[11px] space-y-1 break-words">
-                {(a.details?.length ? a.details : [a.detail]).map((detail, index) => <p key={index}>{detail}</p>)}
+                {(a.details?.length ? a.details : [a.detail]).map((detail, index) => <div key={index}>{detail}</div>)}
               </div>}
             </div>
           ) : (

@@ -220,10 +220,10 @@ export const StuckCheckoutAlert: React.FC = () => {
           >
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-sm font-bold leading-tight">
+              <p className="text-sm font-bold leading-tight text-destructive-foreground">
                 {live.length === 1 ? 'Customer stuck on checkout' : `${live.length} customers stuck on checkout`}
               </p>
-              <p className="text-[11px]">{readyToCall} ready to call now</p>
+              <p className="text-[11px] text-destructive-foreground">{readyToCall} ready to call now</p>
             </div>
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
           </Button>
@@ -254,13 +254,13 @@ export const StuckCheckoutAlert: React.FC = () => {
                 <li key={r.id} className="px-3 py-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">
+                      <p className="text-sm font-semibold break-words text-destructive-foreground">
                         {r.customer_name || r.customer_email || r.customer_phone || 'Customer'}
                       </p>
-                      <p className="text-[11px] font-medium break-words">
+                      <p className="text-[11px] font-medium break-words text-destructive-foreground">
                         {SIGNAL_LABELS[r.signal_type] || r.signal_type} · came in {cameInAt(r.created_at)} · {timeAgo(r.created_at)}
                       </p>
-                      <p className="text-[11px] break-words">
+                      <p className="text-[11px] break-words text-destructive-foreground">
                         {[r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null, r.plan_name, r.amount ? `£${r.amount}` : null]
                           .filter(Boolean)
                           .join(' · ')}
