@@ -8,6 +8,7 @@ import { getContactCadence } from '@/lib/checkoutContactCadence';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { Button } from '@/components/ui/button';
 
 const DISMISSED_IDS_KEY = 'stuck-checkout-alert-dismissed-ids';
 
@@ -177,7 +178,19 @@ export const StuckCheckoutAlert: React.FC = () => {
   };
 
   const dismiss = (id: string) => {
-    { const r: any = (rows as any[]).find((x: any) => x.id === id); if (r) pushRecentAlert({ key: `stuck-${id}`, title: 'Checkout stuck', detail: `${r.customer_name || r.customer_email || r.customer_phone || 'Customer'}${r.vehicle_reg ? ' – ' + r.vehicle_reg : ''}`, tone: 'red' }); }
+    const r = rows.find((row) => row.id === id);
+    if (r) pushRecentAlert({
+      key: `stuck-${id}`, title: 'Checkout stuck',
+      detail: `${r.customer_name || r.customer_email || r.customer_phone || 'Customer'}${r.vehicle_reg ? ' – ' + r.vehicle_reg : ''}`,
+      tone: 'red',
+      details: [
+        `${SIGNAL_LABELS[r.signal_type] || r.signal_type} · came in ${cameInAt(r.created_at)}`,
+        [r.vehicle_reg, r.plan_name, r.amount ? `£${r.amount}` : null].filter(Boolean).join(' · '),
+        r.customer_phone ? formatUkPhone(r.customer_phone) : '',
+        r.customer_email || '',
+        ownerName(owners[r.id]) ? `Lead with ${ownerName(owners[r.id])}` : 'No lead owner',
+      ].filter(Boolean),
+    });
     setDismissedIds((prev) => {
       const next = [...new Set([...prev, id])].slice(-200);
       try { localStorage.setItem(DISMISSED_IDS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
@@ -195,34 +208,41 @@ export const StuckCheckoutAlert: React.FC = () => {
 
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.stuckCheckout}>
-      <div className="rounded-xl border border-red-700 border-l-4 border-l-red-800 bg-red-600 text-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-destructive border-l-4 bg-destructive text-destructive-foreground shadow-sm overflow-hidden">
         <div className="flex items-start justify-between gap-2 px-3 py-2">
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            aria-expanded={expanded}
+            aria-controls="stuck-checkout-details"
             onClick={() => setExpanded((v) => !v)}
-            className="flex items-start gap-2 text-left min-w-0"
+            className="h-auto flex-1 items-start gap-2 whitespace-normal p-0 text-left min-w-0 hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
           >
-            <AlertTriangle className="h-4 w-4 text-white mt-0.5 shrink-0" />
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-sm font-bold leading-tight text-white">
+              <p className="text-sm font-bold leading-tight text-destructive-foreground">
                 {live.length === 1 ? 'Customer stuck on checkout' : `${live.length} customers stuck on checkout`}
               </p>
-              <p className="text-[11px] text-white">{readyToCall} ready to call now</p>
+              <p className="text-[11px] text-destructive-foreground">{readyToCall} ready to call now</p>
             </div>
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={dismissAll}
-            className="p-1 rounded hover:bg-red-700 shrink-0"
+            className="h-6 w-6 p-1 shrink-0 hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
             title="Close"
             aria-label="Close stuck checkout alert"
           >
-            <X className="h-3.5 w-3.5 text-white" />
-          </button>
+            <X className="h-3.5 w-3.5" />
+          </Button>
         </div>
 
         {expanded && (
-          <ul className="bg-white text-gray-900 divide-y divide-red-100 max-h-[45vh] overflow-y-auto">
-            {live.slice(0, 6).map((r) => {
+          <ul id="stuck-checkout-details" className="divide-y divide-destructive-foreground/30 max-h-[45vh] overflow-y-auto">
+            {live.map((r) => {
               const cadence = getContactCadence(r.created_at);
               const phone = (r.customer_phone || '').replace(/\s/g, '');
               const mailto = r.customer_email
@@ -234,13 +254,13 @@ export const StuckCheckoutAlert: React.FC = () => {
                 <li key={r.id} className="px-3 py-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">
+                      <p className="text-sm font-semibold break-words text-destructive-foreground">
                         {r.customer_name || r.customer_email || r.customer_phone || 'Customer'}
                       </p>
-                      <p className="text-[11px] text-red-700 font-medium truncate">
+                      <p className="text-[11px] font-medium break-words text-destructive-foreground">
                         {SIGNAL_LABELS[r.signal_type] || r.signal_type} · came in {cameInAt(r.created_at)} · {timeAgo(r.created_at)}
                       </p>
-                      <p className="text-[11px] text-gray-600 truncate">
+                      <p className="text-[11px] break-words text-destructive-foreground">
                         {[r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null, r.plan_name, r.amount ? `£${r.amount}` : null]
                           .filter(Boolean)
                           .join(' · ')}
@@ -307,9 +327,6 @@ export const StuckCheckoutAlert: React.FC = () => {
                 </li>
               );
             })}
-            {live.length > 6 && (
-              <li className="px-3 py-1.5 text-[11px] text-gray-600">+{live.length - 6} more waiting</li>
-            )}
           </ul>
         )}
       </div>

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Bell, ChevronDown, ChevronUp, Plus, X } from 'lucide-react';
 import { readRecentAlerts, removeRecentAlert, RECENT_ALERTS_EVENT, type RecentAlert, type RecentAlertTone } from '@/lib/recentAlerts';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
+import { Button } from '@/components/ui/button';
 
 /**
  * Live Alerts panel for the admin dashboard.
@@ -24,7 +25,6 @@ export const ALERT_RAIL_ORDER = {
   missedCall: 6,
   missedCallback: 8,
   reminders: 35,
-  collectPayments: 40,
   authorisationNeeded: 3,
   discountPaymentPending: 38,
   newLeadPopup: 10,
@@ -56,6 +56,7 @@ const RecentAlerts: React.FC = () => {
   const [list, setList] = React.useState<RecentAlert[]>(() => readRecentAlerts());
   const [all, setAll] = React.useState(false);
   const [open, setOpen] = React.useState(true);
+  const [expandedKeys, setExpandedKeys] = React.useState<string[]>([]);
   const [, tick] = React.useState(0);
   React.useEffect(() => {
     const on = () => setList(readRecentAlerts());
@@ -76,7 +77,24 @@ const RecentAlerts: React.FC = () => {
       </button>
       {open && (
         <div className="flex flex-col gap-1.5">
-          {shown.map((a) => (
+          {shown.map((a) => a.key.startsWith('stuck-') ? (
+            <div key={a.key} className="rounded-lg border border-destructive bg-destructive text-destructive-foreground overflow-hidden">
+              <div className="flex items-start gap-1 p-2">
+                <Button type="button" variant="ghost" aria-expanded={expandedKeys.includes(a.key)} aria-label={`Expand ${a.title}: ${a.detail}`} onClick={() => setExpandedKeys((keys) => keys.includes(a.key) ? keys.filter((key) => key !== a.key) : [...keys, a.key])} className="h-auto min-w-0 flex-1 justify-start whitespace-normal p-0 text-left hover:bg-destructive-foreground/10 hover:text-destructive-foreground">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-semibold">{a.title}</div>
+                    <div className="text-[11px] font-normal break-words">{a.detail}</div>
+                    <div className="text-[10px] font-normal opacity-80">{ago(a.at)}</div>
+                  </div>
+                  {expandedKeys.includes(a.key) ? <ChevronUp /> : <ChevronDown />}
+                </Button>
+                <Button type="button" variant="ghost" size="icon-sm" aria-label="Remove from recent" onClick={() => removeRecentAlert(a.key)} className="h-6 w-6 shrink-0 hover:bg-destructive-foreground/10 hover:text-destructive-foreground"><X /></Button>
+              </div>
+              {expandedKeys.includes(a.key) && <div className="border-t border-destructive-foreground/30 px-2 py-2 text-[11px] space-y-1 break-words">
+                {(a.details?.length ? a.details : [a.detail]).map((detail, index) => <div key={index}>{detail}</div>)}
+              </div>}
+            </div>
+          ) : (
             <div key={a.key} className={`relative flex items-start gap-2 rounded-lg border px-2 py-1.5 ${TONE[a.tone].card}`}>
               <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${TONE[a.tone].dot}`} />
               <div className="min-w-0 flex-1 pr-4">
@@ -224,7 +242,7 @@ export const AlertRailHost: React.FC = () => {
     </div>
   );
 
-  return createPortal(panel, inSidebar ? anchor! : document.body);
+  return createPortal(panel, inSidebar && anchor ? anchor : document.body);
 };
 
 interface SlotProps {

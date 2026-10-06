@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Remove payment-collection sidebar alert and confirm Quick grant has no remaining render path.
+- [x] Make checkout-stuck Recent alerts red/white and expandable; active alert keeps expandable customer details. Recent expansion verified in isolation; signed-in dashboard check unavailable with externally managed sign-in.
+
 - [x] Miles pricing replies: remove the pushy “go ahead?” close and show Continue with payment, Book a callback, and in-hours phone/out-of-hours WhatsApp choices
 - [x] Miles contact replies: remove live-agent chat and offer only WhatsApp or leaving an email address, including claims and complaints
 
