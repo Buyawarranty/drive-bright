@@ -246,25 +246,36 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const pageEnd = Math.min(pageStart + PAGE_SIZE, totalCount);
   const pagedLeads = useMemo(() => sortedLeads.slice(pageStart, pageEnd), [sortedLeads, pageStart, pageEnd]);
 
+  // Defer row-decoration fetches until shortly after the page settles: the
+  // leads table paints and becomes interactive first, badges fill in ~150ms
+  // later instead of competing with the core list on every page turn.
+  const [decorationsReady, setDecorationsReady] = useState(false);
+  useEffect(() => {
+    setDecorationsReady(false);
+    if (pagedLeads.length === 0) return;
+    const t = setTimeout(() => setDecorationsReady(true), 150);
+    return () => clearTimeout(t);
+  }, [pagedLeads]);
+
   // Note-count badges: fetch only for the rows actually on screen. Fetching for
   // every loaded lead (thousands, now that agents default to "all") made the
   // request too large and the badges silently came back empty.
-  const pagedLeadIds = useMemo(() => pagedLeads.map(l => l.id), [pagedLeads]);
+  const pagedLeadIds = useMemo(() => (decorationsReady ? pagedLeads.map(l => l.id) : []), [pagedLeads, decorationsReady]);
   const noteCounts = useLeadNoteCounts(pagedLeadIds);
 
   // Row decoration lookups follow the visible page only (200 rows) instead of
   // every loaded lead. Totals, filters and tiles are unaffected.
-  const pagedLeadEmails = useMemo(() => pagedLeads.map(l => l.email), [pagedLeads]);
+  const pagedLeadEmails = useMemo(() => (decorationsReady ? pagedLeads.map(l => l.email) : []), [pagedLeads, decorationsReady]);
   const { quotesByEmail } = useLeadQuotes(pagedLeadEmails);
   const { activityByEmail } = useCustomerActivity(pagedLeadEmails);
   const { repeatByLeadId } = useRepeatCustomers(
     useMemo(
-      () => pagedLeads.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, phone: l.phone, first_name: l.first_name, last_name: l.last_name, created_at: l.created_at })),
-      [pagedLeads]
+      () => (decorationsReady ? pagedLeads.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, phone: l.phone, first_name: l.first_name, last_name: l.last_name, created_at: l.created_at })) : []),
+      [pagedLeads, decorationsReady]
     )
   );
   const { responseByLead } = useLeadResponseTime(
-    useMemo(() => pagedLeads.map(l => ({ id: l.id, created_at: l.created_at })), [pagedLeads])
+    useMemo(() => (decorationsReady ? pagedLeads.map(l => ({ id: l.id, created_at: l.created_at })) : []), [pagedLeads, decorationsReady])
   );
   const { activityByLead: pagedActivityByLead } = useAgentActivity(pagedLeadIds);
   const activityByLead = useMemo(
