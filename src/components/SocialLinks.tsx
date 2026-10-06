@@ -1,7 +1,7 @@
 import React from 'react';
-import { Facebook, Instagram } from 'lucide-react';
+import { Facebook, Instagram, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { FACEBOOK_URL, INSTAGRAM_URL, TIKTOK_URL } from '@/constants/social';
+import { FACEBOOK_URL, INSTAGRAM_URL, TIKTOK_URL, YOUTUBE_URL } from '@/constants/social';
 
 const TikTokIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg
@@ -58,6 +58,15 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ variant = 'dark', className }
         className={linkBase}
       >
         <TikTokIcon className="w-5 h-5 sm:w-4 sm:h-4" />
+      </a>
+      <a
+        href={YOUTUBE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Buy a Warranty on YouTube"
+        className={linkBase}
+      >
+        <Youtube className="w-5 h-5 sm:w-4 sm:h-4" />
       </a>
     </div>
   );
