@@ -944,6 +944,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           />
           <Button
             size="sm"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={handleSaveNote}
             disabled={!quickNoteValue.trim() || isSaving || hookIsSaving}
             className="h-9 px-4"

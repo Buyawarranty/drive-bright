@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.trg_sales_leads_recompute_call_count_on_insert() FROM PUBLIC, anon, authenticated;

@@ -1,0 +1,1 @@
+SELECT public.recompute_sales_lead_call_count(id) FROM public.sales_leads WHERE id IN ('9e23eb8f-4b4f-4d78-9d48-8e41ae496182','2eeb05f4-7b67-474d-be08-f20fa182b97f','5b5be5f4-8264-4ebc-acca-65070fda0472','463bd67d-096f-493e-9742-4cb5515257cb','1b4be5ad-2d83-4dca-8365-b6f0248f96f7','c69c2e64-e619-4c98-ba65-078a39059e02');
