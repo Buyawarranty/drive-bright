@@ -1105,15 +1105,11 @@ const AdminDashboard = () => {
       // Both old tab URLs render Lead Allocation so no bookmark breaks.
       case 'open-round-robin':
       case 'orr-test-lab':
+      case 'orr-sandbox': // removed tab — old bookmarks land on Lead Allocation's Open Round Robin
         if (!isTabAllowedForRole('lead-teams', effectiveUserRole, effectiveUserPermissions)) {
           return <AccessDenied label="Lead Allocation" />;
         }
         return <OrrTabView onNavigateToTab={handleTabChange} />;
-      case 'orr-sandbox':
-        if (!isTabAllowedForRole('lead-teams', effectiveUserRole, effectiveUserPermissions)) {
-          return <AccessDenied label="Open Round Robin Sandbox" />;
-        }
-        return <OrrSandboxTabView onNavigateToTab={handleTabChange} userRole={effectiveUserRole} />;
 
 
 

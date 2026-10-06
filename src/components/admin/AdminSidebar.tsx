@@ -386,13 +386,6 @@ export const defaultTabs: Tab[] = [
     description: 'Open Round Robin setup, go-live switch and practice lab (management only)'
   },
   {
-    id: 'orr-sandbox',
-    label: 'Open Round Robin Sandbox',
-    icon: Users,
-    description: 'The New Leads page with real live leads, allocated by Open Round Robin — practice only'
-  },
-
-  {
 
     id: 'price-updates',
     label: 'Price Updates',
