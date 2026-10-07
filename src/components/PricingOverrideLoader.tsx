@@ -35,10 +35,11 @@ export default function PricingOverrideLoader() {
 
     (async () => {
       try {
-        const { data, error } = await supabase
-          .from('pricing_vehicle_rules')
-          .select('id, vehicle, min_one_year, treatment, covered')
-          .order('sort_order', { ascending: true });
+        // Public read goes through a protected lookup; the table itself is staff-only.
+        const { data, error } = await (supabase as any).rpc('get_public_vehicle_pricing_rules') as {
+          data: { id: string; vehicle: string; min_one_year: number | null; treatment: string; covered: boolean | null }[] | null;
+          error: unknown;
+        };
         if (cancelled || error || !data) return;
         setVehiclePricingRules(
           data.map(r => ({

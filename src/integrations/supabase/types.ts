@@ -14990,6 +14990,16 @@ export type Database = {
         | { Args: { p_exclude_agent_id?: string }; Returns: string }
       get_next_sales_user: { Args: never; Returns: string }
       get_next_warranty_serial: { Args: never; Returns: number }
+      get_public_vehicle_pricing_rules: {
+        Args: never
+        Returns: {
+          covered: boolean
+          id: string
+          min_one_year: number
+          treatment: string
+          vehicle: string
+        }[]
+      }
       get_scoreboard_reconciliation: {
         Args: { p_end: string; p_start: string }
         Returns: {
