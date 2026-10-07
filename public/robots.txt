@@ -84,6 +84,16 @@ Allow: /
 User-agent: xAI
 Allow: /
 
+User-agent: GrokBot
+Allow: /
+
+User-agent: Grok
+Allow: /
+
+# Google Gemini (user-triggered fetches)
+User-agent: Google-CloudVertexBot
+Allow: /
+
 # ---------- Traditional Search Engines ----------
 User-agent: Googlebot
 Allow: /
