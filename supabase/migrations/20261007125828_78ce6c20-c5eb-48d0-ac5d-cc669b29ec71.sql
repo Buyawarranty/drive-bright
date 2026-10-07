@@ -1,0 +1,1 @@
+ALTER POLICY "Authenticated read trader pricing" ON public.trader_pricing_config TO authenticated USING (public.is_staff((SELECT auth.uid())));
