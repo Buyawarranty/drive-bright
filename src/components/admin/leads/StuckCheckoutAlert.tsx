@@ -8,6 +8,7 @@ import { getContactCadence } from '@/lib/checkoutContactCadence';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useIsManagement } from '@/hooks/useIsManagement';
 import { Button } from '@/components/ui/button';
 
 const DISMISSED_IDS_KEY = 'stuck-checkout-alert-dismissed-ids';
@@ -81,11 +82,16 @@ export const StuckCheckoutAlert: React.FC = () => {
   const [expanded, setExpanded] = useState(true);
   const [owners, setOwners] = useState<OwnerMap>({});
   const myAdminId = useCurrentAdminId();
+  const { isManagement } = useIsManagement();
+  const [showAllRows, setShowAllRows] = useState(false);
 
   const load = useCallback(async () => {
     // Only show genuinely fresh cases — anything older than 3 hours is stale
     // and belongs in the normal lead follow-up flow, not a live pop-up.
-    const since = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+    // Management keep alerts until they close them (max 24h, so overnight
+    // cases stack up for the morning).
+    const windowHours = isManagement ? 24 : 3;
+    const since = new Date(Date.now() - windowHours * 60 * 60 * 1000).toISOString();
     const { data } = await supabase
       .from('checkout_struggle_alerts')
       .select('id, signal_type, status, created_at, customer_name, customer_email, customer_phone, vehicle_reg, device_type, payment_method, plan_name, amount')
@@ -94,7 +100,7 @@ export const StuckCheckoutAlert: React.FC = () => {
       .order('created_at', { ascending: false })
       .limit(50);
     setRows((data as StuckRow[]) || []);
-  }, []);
+  }, [isManagement]);
 
   useEffect(() => {
     load();
@@ -242,7 +248,7 @@ export const StuckCheckoutAlert: React.FC = () => {
 
         {expanded && (
           <ul id="stuck-checkout-details" className="divide-y divide-destructive-foreground/30 max-h-[45vh] overflow-y-auto">
-            {live.map((r) => {
+            {(showAllRows ? live : live.slice(0, 1)).map((r) => {
               const cadence = getContactCadence(r.created_at);
               const phone = (r.customer_phone || '').replace(/\s/g, '');
               const mailto = r.customer_email
@@ -328,6 +334,11 @@ export const StuckCheckoutAlert: React.FC = () => {
               );
             })}
           </ul>
+        )}
+        {expanded && live.length > 1 && (
+          <Button type="button" variant="ghost" aria-expanded={showAllRows} onClick={() => setShowAllRows((v) => !v)} className="h-auto w-full rounded-none border-t border-destructive-foreground/30 py-1.5 text-xs font-semibold text-destructive-foreground hover:bg-destructive-foreground/10 hover:text-destructive-foreground">
+            {showAllRows ? <>Show less <ChevronUp /></> : <>See {live.length - 1} more <ChevronDown /></>}
+          </Button>
         )}
       </div>
     </AlertRailSlot>

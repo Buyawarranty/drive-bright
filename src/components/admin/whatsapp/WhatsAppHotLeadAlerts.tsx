@@ -25,13 +25,13 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
   onTake,
 }) => {
   const [dismissed, setDismissed] = useState<string[]>([]);
+  const [showAll, setShowAll] = useState(false);
   const [ownerByLeadId, setOwnerByLeadId] = useState<Record<string, string>>({});
 
   const hot = useMemo(
     () =>
       conversations
-        .filter((c) => c.heat === 'hot' && !c.assigned_to && c.is_open && !dismissed.includes(c.id))
-        .slice(0, 3),
+        .filter((c) => c.heat === 'hot' && !c.assigned_to && c.is_open && !dismissed.includes(c.id)),
     [conversations, dismissed],
   );
 
@@ -67,7 +67,7 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.whatsappHotLead}>
       <div className="space-y-2">
-        {hot.map((c) => (
+        {(showAll ? hot : hot.slice(0, 1)).map((c) => (
           <div key={c.id} className="rounded-xl border border-emerald-200 border-l-4 border-l-emerald-600 bg-emerald-50 p-3 text-gray-900 shadow-sm">
             <div className="flex items-start justify-between gap-2">
               <p className="text-sm font-bold text-gray-900">
