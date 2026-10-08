@@ -106,6 +106,11 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
             </div>
           </div>
         ))}
+        {hot.length > 1 && (
+          <Button type="button" variant="ghost" size="sm" aria-expanded={showAll} onClick={() => setShowAll((v) => !v)} className="w-full border border-emerald-200 bg-emerald-100 text-xs font-semibold text-emerald-900 hover:bg-emerald-200">
+            {showAll ? 'Show less' : `See ${hot.length - 1} more WhatsApp lead${hot.length - 1 === 1 ? '' : 's'}`}
+          </Button>
+        )}
       </div>
     </AlertRailSlot>
   );

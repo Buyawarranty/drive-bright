@@ -254,6 +254,11 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
             })}
           </ul>
         )}
+        {expanded && live.length > 1 && (
+          <button type="button" aria-expanded={showAllRows} onClick={() => setShowAllRows((v) => !v)} className="flex w-full items-center justify-center gap-1 border-t border-blue-200 bg-blue-100 py-1.5 text-xs font-semibold text-gray-900 hover:bg-blue-200">
+            {showAllRows ? <>Show less <ChevronUp className="h-3.5 w-3.5" /></> : <>See {live.length - 1} more <ChevronDown className="h-3.5 w-3.5" /></>}
+          </button>
+        )}
       </div>
     </AlertRailSlot>
   );
