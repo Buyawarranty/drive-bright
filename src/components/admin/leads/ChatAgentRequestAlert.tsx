@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { MessagesSquare, Phone, Mail, X, ChevronDown, ChevronUp, Car } from 'lucide-react';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 const DISMISSED_IDS_KEY = 'chat-agent-request-dismissed-ids';
 
@@ -45,6 +46,8 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
   const [info, setInfo] = useState<Record<string, { question: string; topic: ChatTopic }>>({});
   const [dismissedIds, setDismissedIds] = useState<string[]>(() => readDismissed());
   const [expanded, setExpanded] = useState(true);
+  const [showAllRows, setShowAllRows] = useState(false);
+  const { isManagement } = useIsManagement();
 
   const load = useCallback(async () => {
     const { data: tag } = await supabase
@@ -56,7 +59,7 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
       setRows([]);
       return;
     }
-    const since = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+    const since = new Date(Date.now() - (isManagement ? 24 : 3) * 60 * 60 * 1000).toISOString();
     const { data: assigns } = await supabase
       .from('lead_tag_assignments')
       .select('lead_id')
@@ -104,7 +107,7 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
       next[leadId] = { question: lastCustomerQuestion(arr), topic: topicForConversation(arr) };
     });
     setInfo(next);
-  }, []);
+  }, [isManagement]);
 
   useEffect(() => {
     load();
@@ -169,7 +172,7 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
 
         {expanded && (
           <ul className="bg-white text-gray-900 divide-y divide-blue-100 max-h-[45vh] overflow-y-auto">
-            {live.slice(0, 6).map((r) => {
+            {(showAllRows ? live : live.slice(0, 1)).map((r) => {
               const name = [r.first_name, r.last_name].filter(Boolean).join(' ').trim();
               const phone = (r.phone || '').replace(/\s/g, '');
               const mailto = r.email
@@ -250,6 +253,11 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
               );
             })}
           </ul>
+        )}
+        {expanded && live.length > 1 && (
+          <button type="button" aria-expanded={showAllRows} onClick={() => setShowAllRows((v) => !v)} className="flex w-full items-center justify-center gap-1 border-t border-blue-200 bg-blue-100 py-1.5 text-xs font-semibold text-gray-900 hover:bg-blue-200">
+            {showAllRows ? <>Show less <ChevronUp className="h-3.5 w-3.5" /></> : <>See {live.length - 1} more <ChevronDown className="h-3.5 w-3.5" /></>}
+          </button>
         )}
       </div>
     </AlertRailSlot>

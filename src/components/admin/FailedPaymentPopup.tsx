@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { pushRecentAlert } from '@/lib/recentAlerts';
-import { X, CreditCard, Phone } from 'lucide-react';
-import { AlertRailSlot } from '@/components/admin/AlertRail';
+import { X, CreditCard, Phone, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { useFailedPayments } from '@/hooks/useFailedPayments';
 
 const HIDDEN_KEY = 'bw:failed-payment-hidden';
@@ -12,7 +12,10 @@ export const FailedPaymentPopup: React.FC<{ onOpenMissedPayments?: () => void }>
   const [since] = useState(() => Date.now() - 24 * 3600 * 1000);
   const { items } = useFailedPayments(since);
   const [hidden, setHidden] = useState<Set<string>>(() => new Set(loadHidden()));
-  const shown = useMemo(() => items.filter(i => !hidden.has(i.key)).slice(0, 3), [items, hidden]);
+  const [expanded, setExpanded] = useState(false);
+  const open = useMemo(() => items.filter(i => !hidden.has(i.key)), [items, hidden]);
+  const shown = expanded ? open : open.slice(0, 1);
+  const more = open.length - 1;
 
   const dismiss = (key: string) => {
     { const i = items.find(x => x.key === key); if (i) pushRecentAlert({ key: `fp-${key}`, title: 'Payment failed', detail: `${i.name || i.email || 'Customer'}${i.amount != null ? ' – £' + Number(i.amount).toFixed(2) : ''}`, tone: 'red' }); }
@@ -22,7 +25,7 @@ export const FailedPaymentPopup: React.FC<{ onOpenMissedPayments?: () => void }>
 
   if (!shown.length) return null;
   return (
-    <AlertRailSlot order={22}>
+    <AlertRailSlot order={ALERT_RAIL_ORDER.failedPayment}>
       <div className="flex flex-col gap-2">
         {shown.map(i => (
           <div key={i.key} className="relative rounded-xl border border-red-200 border-l-4 border-l-red-600 bg-red-50 p-3 shadow-sm text-sm text-gray-900">
@@ -59,6 +62,11 @@ export const FailedPaymentPopup: React.FC<{ onOpenMissedPayments?: () => void }>
             </div>
           </div>
         ))}
+        {more > 0 && (
+          <button type="button" onClick={() => setExpanded(v => !v)} aria-expanded={expanded} className="flex items-center justify-center gap-1 rounded-lg border border-red-200 bg-red-100 py-1.5 text-xs font-semibold text-red-800 hover:bg-red-200">
+            {expanded ? <>Show less <ChevronUp className="h-3.5 w-3.5" /></> : <>See {more} more failed payment{more === 1 ? '' : 's'} <ChevronDown className="h-3.5 w-3.5" /></>}
+          </button>
+        )}
       </div>
     </AlertRailSlot>
   );

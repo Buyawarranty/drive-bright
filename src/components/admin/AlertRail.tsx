@@ -18,21 +18,27 @@ const RAIL_ID = 'admin-alert-rail';
 export const SIDEBAR_ALERTS_ANCHOR_ID = 'admin-sidebar-alerts-anchor';
 const VISIBLE_LIMIT = 3;
 const OPEN_KEY = 'bw:live-alerts-open';
+/** Slots ordered below this are priority alerts and are never folded away. */
+const PRIORITY_MAX_ORDER = 10;
 
 export const ALERT_RAIL_ORDER = {
-  incomingCall: 2,
+  // Priority alerts — always pinned at the top in this order and never
+  // folded away behind "more alerts".
+  failedPayment: 1,
+  stuckCheckout: 2,
+  chatAgentRequest: 3,
   liveChatQuestion: 4,
-  missedCall: 6,
-  missedCallback: 8,
-  reminders: 35,
-  authorisationNeeded: 3,
-  discountPaymentPending: 38,
-  newLeadPopup: 10,
-  whatsappHotLead: 15,
-  stuckCheckout: 20,
-  chatAgentRequest: 25,
-  complaintAlert: 30,
+  whatsappHotLead: 5,
+  // Everything else follows.
+  incomingCall: 10,
+  authorisationNeeded: 11,
+  missedCall: 12,
+  missedCallback: 13,
+  newLeadPopup: 14,
   priceBeat: 22,
+  complaintAlert: 30,
+  reminders: 35,
+  discountPaymentPending: 38,
 } as const;
 
 const TONE: Record<RecentAlertTone, { card: string; dot: string }> = {
@@ -151,6 +157,7 @@ export const AlertRailHost: React.FC = () => {
   });
   const [showAll, setShowAll] = React.useState(false);
   const [count, setCount] = React.useState(0);
+  const [folded, setFolded] = React.useState(0);
   const [recentCount, setRecentCount] = React.useState(() => readRecentAlerts().length);
 
   // Keep the floating panel reachable even with no live alerts, so staff can
@@ -181,10 +188,15 @@ export const AlertRailHost: React.FC = () => {
       const kids = (Array.from(el.children) as HTMLElement[])
         .filter((k) => k.childElementCount > 0)
         .sort((a, b) => Number(a.style.order || 0) - Number(b.style.order || 0));
-      kids.forEach((k, i) => {
-        k.style.display = !showAll && i >= VISIBLE_LIMIT ? 'none' : '';
+      let other = 0;
+      kids.forEach((k) => {
+        const pinned = Number(k.style.order || 0) < PRIORITY_MAX_ORDER;
+        if (pinned) { k.style.display = ''; return; }
+        k.style.display = !showAll && other >= VISIBLE_LIMIT ? 'none' : '';
+        other += 1;
       });
       setCount(kids.length);
+      setFolded(Math.max(0, other - VISIBLE_LIMIT));
     };
     const mo = new MutationObserver(update);
     mo.observe(el, { childList: true, subtree: true });
@@ -203,7 +215,7 @@ export const AlertRailHost: React.FC = () => {
   };
 
   const inSidebar = isDesktop && !collapsed && !!anchor;
-  const hidden = count - VISIBLE_LIMIT;
+  const hidden = folded;
 
   const panel = (
     <div
@@ -219,7 +231,7 @@ export const AlertRailHost: React.FC = () => {
           <span className={`inline-flex min-w-5 h-5 items-center justify-center rounded-md px-1.5 text-[11px] font-bold ${count ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600'}`}>{count}</span>
           {open ? <ChevronUp className="h-4 w-4 text-gray-500" /> : <ChevronDown className="h-4 w-4 text-gray-500" />}
         </button>
-        {count > VISIBLE_LIMIT && open && (
+        {(hidden > 0 || showAll) && open && (
           <button type="button" onClick={() => setShowAll((v) => !v)} className="text-xs font-semibold text-blue-600 hover:underline">
             {showAll ? 'Show less' : `View all (${count})`}
           </button>
@@ -228,7 +240,7 @@ export const AlertRailHost: React.FC = () => {
       <div className={open ? (inSidebar ? 'max-h-[50vh] overflow-y-auto overflow-x-hidden' : 'max-h-[70vh] overflow-y-auto overflow-x-hidden') : 'hidden'}>
         <div ref={holderRef} />
         {count === 0 && <p className="px-1 py-1 text-xs text-gray-500">No live alerts right now.</p>}
-        {hidden > 0 && (
+        {(hidden > 0 || showAll) && (
           <button
             type="button"
             onClick={() => setShowAll((v) => !v)}
