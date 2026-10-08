@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Headset, MessageSquare, Volume2, VolumeX, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Headset, MessageSquare, Volume2, VolumeX, X } from 'lucide-react';
 import { playPhoneRing, stopPhoneRing } from '@/lib/aiSandbox/ringTone';
 import { isTeamOpenNow } from '@/lib/aiSandbox/openingHours';
 import { useChatAlertRecipient } from '@/hooks/useChatAlertRecipient';
@@ -69,6 +69,7 @@ export const LiveChatQuestionAlert: React.FC = () => {
     else setMuted(isSuperAdmin);
   }, [allowed, isSuperAdmin]);
   const [collapsed, setCollapsed] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const [closed, setClosed] = useState(false);
   const closedFor = useRef<string | null>(null);
   const openNow = useRef(isTeamOpenNow());
