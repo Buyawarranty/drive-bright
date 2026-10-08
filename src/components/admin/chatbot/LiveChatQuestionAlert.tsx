@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Headset, MessageSquare, Volume2, VolumeX, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Headset, MessageSquare, Volume2, VolumeX, X } from 'lucide-react';
 import { playPhoneRing, stopPhoneRing } from '@/lib/aiSandbox/ringTone';
 import { isTeamOpenNow } from '@/lib/aiSandbox/openingHours';
 import { useChatAlertRecipient } from '@/hooks/useChatAlertRecipient';
@@ -69,6 +69,7 @@ export const LiveChatQuestionAlert: React.FC = () => {
     else setMuted(isSuperAdmin);
   }, [allowed, isSuperAdmin]);
   const [collapsed, setCollapsed] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const [closed, setClosed] = useState(false);
   const closedFor = useRef<string | null>(null);
   const openNow = useRef(isTeamOpenNow());
@@ -239,7 +240,7 @@ export const LiveChatQuestionAlert: React.FC = () => {
                 Go to the chat and reply now
               </Button>
             )}
-            {visible.map((q) => (
+            {(showAll ? visible : visible.slice(0, 1)).map((q) => (
               <div key={q.id} className="rounded border border-border bg-card p-2">
                 <div className="mb-1 flex items-center gap-2">
                   <Badge variant="outline" className="text-[10px]">
@@ -267,6 +268,18 @@ export const LiveChatQuestionAlert: React.FC = () => {
                 </Button>
               </div>
             ))}
+            {visible.length > 1 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-expanded={showAll}
+                onClick={() => setShowAll((v) => !v)}
+                className="h-7 w-full text-xs"
+              >
+                {showAll ? <>Show less <ChevronUp className="h-3.5 w-3.5" /></> : <>See {visible.length - 1} more chat question{visible.length - 1 === 1 ? '' : 's'} <ChevronDown className="h-3.5 w-3.5" /></>}
+              </Button>
+            )}
             {visible.length === 0 && (
               <p className="px-1 py-2 text-xs text-muted-foreground">
                 No new questions — open Chatbot data to carry on a conversation.
