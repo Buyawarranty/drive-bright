@@ -47,8 +47,8 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
   });
 
   const dismiss = () => {
-    setDismissedCount(reminders.length);
-    sessionStorage.setItem('pp-reminders-banner-dismissed-count', String(reminders.length));
+    setDismissedCount(visible.length);
+    sessionStorage.setItem('pp-reminders-banner-dismissed-count', String(visible.length));
   };
 
   const { data: reminders = [] } = useQuery({
@@ -162,7 +162,7 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
 
       {expanded && (
         <div className="border-t border-black/10 divide-y divide-black/10">
-          {reminders.map(r => {
+          {visible.map(r => {
             const days = r.next_due_date
               ? differenceInCalendarDays(new Date(r.next_due_date), new Date())
               : null;
@@ -214,13 +214,10 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
                   <span className="italic text-muted-foreground">“{r.reminder_note}”</span>
                 )}
                 <div className="ml-auto flex gap-1">
-                  {canMarkReceived ? (
-                    <Button size="sm" variant="outline" className="gap-1" onClick={() => markReceived(r)}>
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Mark payment received
+                  {onShowPendingList && (
+                    <Button size="sm" variant="outline" onClick={onShowPendingList}>
+                      See payment
                     </Button>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Manager marks as received</span>
                   )}
                 </div>
               </div>
