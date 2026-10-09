@@ -106,8 +106,8 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
   const isUncollected24h = (r: ReminderRow) =>
     !!r.created_at && Date.now() - new Date(r.created_at).getTime() > HOURS_24;
 
-  const uncollected = reminders.filter(isUncollected24h).length;
-  const overdue = reminders.filter(
+  const uncollected = visible.filter(isUncollected24h).length;
+  const overdue = visible.filter(
     r => r.next_due_date && differenceInCalendarDays(new Date(r.next_due_date), new Date()) < 0,
   ).length;
   const alarm = uncollected > 0 || overdue > 0;
@@ -129,7 +129,7 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
           </div>
           <div>
             <div className={`text-sm font-semibold ${alarm ? 'text-red-900' : 'text-amber-900'}`}>
-              {reminders.length} part-payment balance{reminders.length === 1 ? '' : 's'} pending
+              {visible.length} part-payment balance{visible.length === 1 ? '' : 's'} pending
               {uncollected > 0 ? ` · ${uncollected} not collected within 24 hours` : ''}
               {overdue > 0 ? ` · ${overdue} past the balance date` : ''}
             </div>
