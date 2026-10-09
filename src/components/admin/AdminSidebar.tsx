@@ -1030,20 +1030,48 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
             collapsed ? 'pb-28' : 'pb-28',
           )}>
 
-            <SortableContext
-              items={tabs.map(tab => tab.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {tabs.map((tab) => (
-                <SortableTab
-                  key={tab.id}
-                  tab={tab}
-                  isActive={activeTab === tab.id}
-                  onClick={() => handleTabClick(tab.id)}
-                  collapsed={collapsed}
-                />
-              ))}
-            </SortableContext>
+            {navMatches ? (
+              <div className="pb-2">
+                {navMatches.length > 0 ? (
+                  navMatches.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => { handleTabClick(tab.id); setNavQuery(''); }}
+                        className={`w-full text-left px-4 lg:px-6 py-3 flex items-center space-x-3 transition-colors ${
+                          activeTab === tab.id
+                            ? 'bg-orange-50 border-r-4 border-orange-600 text-orange-700'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <Icon className={`h-5 w-5 mt-0.5 flex-shrink-0 ${activeTab === tab.id ? 'text-orange-600' : 'text-gray-500'}`} />
+                        <span className="font-medium text-sm lg:text-base truncate">{tab.label}</span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="px-4 lg:px-6 py-3 text-sm text-gray-500">
+                    No sections match “{navQuery}”
+                  </div>
+                )}
+              </div>
+            ) : (
+              <SortableContext
+                items={tabs.map(tab => tab.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {tabs.map((tab) => (
+                  <SortableTab
+                    key={tab.id}
+                    tab={tab}
+                    isActive={activeTab === tab.id}
+                    onClick={() => handleTabClick(tab.id)}
+                    collapsed={collapsed}
+                  />
+                ))}
+              </SortableContext>
+            )}
           </nav>
         </DndContext>
 
