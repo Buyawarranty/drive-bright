@@ -1,11 +1,10 @@
 import React from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 import { format, differenceInCalendarDays } from 'date-fns';
-import { BellRing, CalendarClock, ChevronDown, ChevronUp, PoundSterling, AlertTriangle, CheckCircle2, X } from 'lucide-react';
+import { BellRing, CalendarClock, ChevronDown, ChevronUp, PoundSterling, AlertTriangle, X } from 'lucide-react';
 
 interface ReminderRow {
   id: string;
@@ -36,8 +35,7 @@ const HOURS_24 = 24 * 60 * 60 * 1000;
  * Rows stay visible until a manager marks the payment received. Purely a
  * reminder/tracking surface — it never changes payment or pricing logic.
  */
-export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, canMarkReceived, onShowPendingList }) => {
-  const queryClient = useQueryClient();
+export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, onShowPendingList }) => {
   const [expanded, setExpanded] = React.useState(true);
   /** How many reminders the user closed the banner for. Reopens automatically when new ones appear. */
   const [dismissedCount, setDismissedCount] = React.useState<number>(() => {
@@ -47,8 +45,8 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
   });
 
   const dismiss = () => {
-    setDismissedCount(reminders.length);
-    sessionStorage.setItem('pp-reminders-banner-dismissed-count', String(reminders.length));
+    setDismissedCount(visible.length);
+    sessionStorage.setItem('pp-reminders-banner-dismissed-count', String(visible.length));
   };
 
   const { data: reminders = [] } = useQuery({
@@ -95,42 +93,19 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
     refetchInterval: 2 * 60 * 1000,
   });
 
-  const markReceived = async (row: ReminderRow) => {
-    const outstanding = Math.max(row.total_due - row.paid, 0);
-    if (!window.confirm(`Confirm £${outstanding.toFixed(2)} has been received from ${row.customerName}?`)) return;
-    try {
-      if (outstanding > 0) {
-        const { data: userData } = await supabase.auth.getUser();
-        const { error: payErr } = await supabase.from('customer_part_payments').insert({
-          customer_id: row.customer_id,
-          amount: outstanding,
-          payment_method: 'manual',
-          paid_on: new Date().toISOString().slice(0, 10),
-          notes: 'Balance marked received by manager',
-          recorded_by: userData?.user?.id ?? null,
-        } as any);
-        if (payErr) throw payErr;
-      }
-      const { error } = await supabase
-        .from('customer_part_payment_plans')
-        .update({ status: 'completed', completed_at: new Date().toISOString() })
-        .eq('id', row.id);
-      if (error) throw error;
-      toast.success('Payment marked as received');
-      queryClient.invalidateQueries({ queryKey: ['part-payment-reminders'] });
-      queryClient.invalidateQueries({ queryKey: ['part-payments', row.customer_id] });
-    } catch (e: any) {
-      toast.error(e?.message || 'Could not mark payment received');
-    }
-  };
+  /** Rows whose balance date is more than 60 days away stay hidden until 60 days remain. */
+  const visible = reminders.filter(r => {
+    if (!r.next_due_date) return true;
+    return differenceInCalendarDays(new Date(r.next_due_date), new Date()) <= 60;
+  });
 
-  if (reminders.length === 0 || reminders.length <= dismissedCount) return null;
+  if (visible.length === 0 || visible.length <= dismissedCount) return null;
 
   const isUncollected24h = (r: ReminderRow) =>
     !!r.created_at && Date.now() - new Date(r.created_at).getTime() > HOURS_24;
 
-  const uncollected = reminders.filter(isUncollected24h).length;
-  const overdue = reminders.filter(
+  const uncollected = visible.filter(isUncollected24h).length;
+  const overdue = visible.filter(
     r => r.next_due_date && differenceInCalendarDays(new Date(r.next_due_date), new Date()) < 0,
   ).length;
   const alarm = uncollected > 0 || overdue > 0;
@@ -152,7 +127,7 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
           </div>
           <div>
             <div className={`text-sm font-semibold ${alarm ? 'text-red-900' : 'text-amber-900'}`}>
-              {reminders.length} part-payment balance{reminders.length === 1 ? '' : 's'} pending
+              {visible.length} part-payment balance{visible.length === 1 ? '' : 's'} pending
               {uncollected > 0 ? ` · ${uncollected} not collected within 24 hours` : ''}
               {overdue > 0 ? ` · ${overdue} past the balance date` : ''}
             </div>
@@ -185,7 +160,7 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
 
       {expanded && (
         <div className="border-t border-black/10 divide-y divide-black/10">
-          {reminders.map(r => {
+          {visible.map(r => {
             const days = r.next_due_date
               ? differenceInCalendarDays(new Date(r.next_due_date), new Date())
               : null;
@@ -237,13 +212,10 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
                   <span className="italic text-muted-foreground">“{r.reminder_note}”</span>
                 )}
                 <div className="ml-auto flex gap-1">
-                  {canMarkReceived ? (
-                    <Button size="sm" variant="outline" className="gap-1" onClick={() => markReceived(r)}>
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Mark payment received
+                  {onShowPendingList && (
+                    <Button size="sm" variant="outline" onClick={onShowPendingList}>
+                      See payment
                     </Button>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Manager marks as received</span>
                   )}
                 </div>
               </div>
