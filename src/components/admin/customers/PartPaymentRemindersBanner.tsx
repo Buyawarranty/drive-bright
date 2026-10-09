@@ -1,11 +1,10 @@
 import React from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 import { format, differenceInCalendarDays } from 'date-fns';
-import { BellRing, CalendarClock, ChevronDown, ChevronUp, PoundSterling, AlertTriangle, CheckCircle2, X } from 'lucide-react';
+import { BellRing, CalendarClock, ChevronDown, ChevronUp, PoundSterling, AlertTriangle, X } from 'lucide-react';
 
 interface ReminderRow {
   id: string;
@@ -36,8 +35,7 @@ const HOURS_24 = 24 * 60 * 60 * 1000;
  * Rows stay visible until a manager marks the payment received. Purely a
  * reminder/tracking surface — it never changes payment or pricing logic.
  */
-export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, canMarkReceived, onShowPendingList }) => {
-  const queryClient = useQueryClient();
+export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, onShowPendingList }) => {
   const [expanded, setExpanded] = React.useState(true);
   /** How many reminders the user closed the banner for. Reopens automatically when new ones appear. */
   const [dismissedCount, setDismissedCount] = React.useState<number>(() => {
