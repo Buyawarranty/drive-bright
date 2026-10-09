@@ -153,15 +153,16 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
           <title>Address Label - ${policy.customerName}</title>
           <style>
             @page { size: 90mm 29mm; margin: 0; }
+            @page { size: 90mm auto; margin: 0; }
             * { box-sizing: border-box; margin: 0; padding: 0; }
             body {
               font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
-              width: 90mm; height: 29mm;
+              width: 90mm; min-height: 29mm;
               display: flex; align-items: center;
-              background: white; overflow: hidden;
+              background: white;
             }
-            .label { padding: 1.5mm 3mm; font-size: 8pt; line-height: 1.35; font-weight: 600; color: #000; width: 100%; }
-            .label p { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .label { padding: 1.5mm 3mm; font-size: 32px; line-height: 1.35; font-weight: 600; color: #000; width: 100%; }
+            .label p { margin: 0; overflow-wrap: break-word; }
           </style>
         </head>
         <body>
