@@ -256,7 +256,7 @@ function AnalyticsSectionHeading({
 
 export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const isSalesLead = userRole === 'sales_lead';
-  const canManageMonthlyGoal = userRole === 'admin' || userRole === 'super_admin';
+  const canManageMonthlyGoal = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
   const [customers, setCustomers] = useState<Customer[]>([]);
   // Cancellations/refunds are fetched separately: they must include archived (is_deleted)
   // records so the numbers reconcile with Customer Management.
@@ -267,6 +267,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const [monthlyRevenueTargets, setMonthlyRevenueTargets] = useState<Record<string, number>>({});
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [goalAmount, setGoalAmount] = useState('');
+  const [goalMonthOverride, setGoalMonthOverride] = useState<string | null>(null);
   const [savingGoal, setSavingGoal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -1003,13 +1004,14 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     return months;
   }, [customers, selectedMonth, sourceFilter, payLaterCollectedByMonth, monthlyRevenueTargets]);
 
-  const goalMonthKey = selectedMonth || (() => {
+  const goalMonthKey = goalMonthOverride || selectedMonth || (() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   })();
   const goalMonthData = monthlyRevenue.find(month => month.monthKey === goalMonthKey);
 
   const openGoalDialog = () => {
+    setGoalMonthOverride(null);
     setGoalAmount(goalMonthData?.target ? String(goalMonthData.target) : '');
     setGoalDialogOpen(true);
   };
@@ -1033,6 +1035,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         }, { onConflict: 'target_month' });
       if (error) throw error;
       setMonthlyRevenueTargets(previous => ({ ...previous, [goalMonthKey]: amount }));
+      setGoalMonthOverride(null);
       setGoalDialogOpen(false);
       toast.success(`${goalMonthData?.month || goalMonthKey} revenue goal saved`);
     } catch (error: any) {
@@ -1480,6 +1483,15 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                       <div className="space-y-1">
                         <span className="text-sm text-muted-foreground">Monthly target</span>
                         <p className="text-2xl font-bold text-muted-foreground">Not set</p>
+                        {canManageMonthlyGoal && (
+                    <Button variant="outline" size="sm" className="mt-1 h-7" onClick={() => {
+                      setGoalMonthOverride(key);
+                      setGoalAmount(target ? String(target) : '');
+                      setGoalDialogOpen(true);
+                    }}>
+                      <Pencil className="mr-1 h-3 w-3" />{target ? 'Edit target' : 'Set target'}
+                    </Button>
+                  )}
                       </div>
                     );
                   }
@@ -1493,6 +1505,15 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                       <p className={`text-xs ${projected >= 100 ? 'text-green-600' : 'text-red-600'}`}>
                         On pace for {projected}% of target
                       </p>
+                      {canManageMonthlyGoal && (
+                    <Button variant="outline" size="sm" className="mt-1 h-7" onClick={() => {
+                      setGoalMonthOverride(key);
+                      setGoalAmount(target ? String(target) : '');
+                      setGoalDialogOpen(true);
+                    }}>
+                      <Pencil className="mr-1 h-3 w-3" />{target ? 'Edit target' : 'Set target'}
+                    </Button>
+                  )}
                     </div>
                   );
                 })()}
