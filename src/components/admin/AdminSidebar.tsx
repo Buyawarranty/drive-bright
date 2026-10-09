@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, MailX, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, MessageCircle, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database, ChevronsUpDown, Check, Ban, LogOut, UserCog, FlaskConical, AlertTriangle, RotateCcw, Repeat, Gem, Wifi, PanelLeftClose, PanelLeftOpen, PhoneCall, PoundSterling, Signpost, Gift, Bot, LineChart, ScrollText, Gauge } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, MailX, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, MessageCircle, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database, ChevronsUpDown, Check, Ban, LogOut, UserCog, FlaskConical, AlertTriangle, RotateCcw, Repeat, Gem, Wifi, PanelLeftClose, PanelLeftOpen, PhoneCall, PoundSterling, Signpost, Gift, Bot, LineChart, ScrollText, Gauge, Search } from 'lucide-react';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -854,8 +854,21 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   };
 
   const [jumpOpen, setJumpOpen] = useState(false);
+  // Persistent sidebar search: typing filters the section list below the dropdown.
+  const [navQuery, setNavQuery] = useState('');
   const sortedTabs = useMemo(() => [...tabs].sort((a, b) => a.label.localeCompare(b.label)), [tabs]);
   const activeLabel = tabs.find(t => t.id === activeTab)?.label || 'Select tab...';
+
+  const navMatches = useMemo(() => {
+    const q = navQuery.trim().toLowerCase();
+    if (!q) return null;
+    return tabs.filter(
+      (t) =>
+        t.label.toLowerCase().includes(q) ||
+        t.id.toLowerCase().includes(q) ||
+        (t.description ? t.description.toLowerCase().includes(q) : false)
+    );
+  }, [navQuery, tabs]);
 
   return (
     <TooltipProvider>
@@ -977,6 +990,31 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
                 </Command>
               </PopoverContent>
             </Popover>
+            {/* Section search — filters the list below as you type */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                value={navQuery}
+                onChange={(e) => setNavQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setNavQuery('');
+                }}
+                placeholder="Search sections..."
+                aria-label="Search sections"
+                className="w-full h-9 pl-9 pr-8 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              />
+              {navQuery && (
+                <button
+                  type="button"
+                  onClick={() => setNavQuery('')}
+                  aria-label="Clear search"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         )}
         {!collapsed && <div id={SIDEBAR_ALERTS_ANCHOR_ID} className="hidden lg:block shrink-0" />}
@@ -992,20 +1030,48 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
             collapsed ? 'pb-28' : 'pb-28',
           )}>
 
-            <SortableContext
-              items={tabs.map(tab => tab.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {tabs.map((tab) => (
-                <SortableTab
-                  key={tab.id}
-                  tab={tab}
-                  isActive={activeTab === tab.id}
-                  onClick={() => handleTabClick(tab.id)}
-                  collapsed={collapsed}
-                />
-              ))}
-            </SortableContext>
+            {navMatches ? (
+              <div className="pb-2">
+                {navMatches.length > 0 ? (
+                  navMatches.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => { handleTabClick(tab.id); setNavQuery(''); }}
+                        className={`w-full text-left px-4 lg:px-6 py-3 flex items-center space-x-3 transition-colors ${
+                          activeTab === tab.id
+                            ? 'bg-orange-50 border-r-4 border-orange-600 text-orange-700'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <Icon className={`h-5 w-5 mt-0.5 flex-shrink-0 ${activeTab === tab.id ? 'text-orange-600' : 'text-gray-500'}`} />
+                        <span className="font-medium text-sm lg:text-base truncate">{tab.label}</span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="px-4 lg:px-6 py-3 text-sm text-gray-500">
+                    No sections match “{navQuery}”
+                  </div>
+                )}
+              </div>
+            ) : (
+              <SortableContext
+                items={tabs.map(tab => tab.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {tabs.map((tab) => (
+                  <SortableTab
+                    key={tab.id}
+                    tab={tab}
+                    isActive={activeTab === tab.id}
+                    onClick={() => handleTabClick(tab.id)}
+                    collapsed={collapsed}
+                  />
+                ))}
+              </SortableContext>
+            )}
           </nav>
         </DndContext>
 
