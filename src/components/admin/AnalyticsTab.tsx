@@ -1432,7 +1432,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="space-y-1">
                   <span className="text-sm text-muted-foreground">So far this month</span>
                   <p className="text-2xl font-bold">£{monthProjection.actualRevenue.toLocaleString('en-GB')}</p>
@@ -1471,6 +1471,31 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                   <p className="text-2xl font-bold">£{monthProjection.projectedAov.toLocaleString('en-GB')}</p>
                   <p className="text-xs text-muted-foreground">Current: £{monthProjection.actualAov.toLocaleString('en-GB')}</p>
                 </div>
+                {(() => {
+                  const now = new Date();
+                  const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                  const target = monthlyRevenueTargets[key] || 0;
+                  if (!target) {
+                    return (
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Monthly target</span>
+                        <p className="text-2xl font-bold text-muted-foreground">Not set</p>
+                      </div>
+                    );
+                  }
+                  const achieved = Math.round((monthProjection.actualRevenue / target) * 1000) / 10;
+                  const projected = Math.round((monthProjection.projectedRevenue / target) * 1000) / 10;
+                  return (
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Monthly target</span>
+                      <p className="text-2xl font-bold">£{target.toLocaleString('en-GB')}</p>
+                      <p className="text-xs font-semibold text-primary">{achieved}% achieved so far</p>
+                      <p className={`text-xs ${projected >= 100 ? 'text-green-600' : 'text-red-600'}`}>
+                        On pace for {projected}% of target
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
             </CardContent>
           </Card>
