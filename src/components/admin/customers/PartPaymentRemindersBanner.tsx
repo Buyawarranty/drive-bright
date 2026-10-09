@@ -95,36 +95,13 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
     refetchInterval: 2 * 60 * 1000,
   });
 
-  const markReceived = async (row: ReminderRow) => {
-    const outstanding = Math.max(row.total_due - row.paid, 0);
-    if (!window.confirm(`Confirm £${outstanding.toFixed(2)} has been received from ${row.customerName}?`)) return;
-    try {
-      if (outstanding > 0) {
-        const { data: userData } = await supabase.auth.getUser();
-        const { error: payErr } = await supabase.from('customer_part_payments').insert({
-          customer_id: row.customer_id,
-          amount: outstanding,
-          payment_method: 'manual',
-          paid_on: new Date().toISOString().slice(0, 10),
-          notes: 'Balance marked received by manager',
-          recorded_by: userData?.user?.id ?? null,
-        } as any);
-        if (payErr) throw payErr;
-      }
-      const { error } = await supabase
-        .from('customer_part_payment_plans')
-        .update({ status: 'completed', completed_at: new Date().toISOString() })
-        .eq('id', row.id);
-      if (error) throw error;
-      toast.success('Payment marked as received');
-      queryClient.invalidateQueries({ queryKey: ['part-payment-reminders'] });
-      queryClient.invalidateQueries({ queryKey: ['part-payments', row.customer_id] });
-    } catch (e: any) {
-      toast.error(e?.message || 'Could not mark payment received');
-    }
-  };
+  /** Rows whose balance date is more than 60 days away stay hidden until 60 days remain. */
+  const visible = reminders.filter(r => {
+    if (!r.next_due_date) return true;
+    return differenceInCalendarDays(new Date(r.next_due_date), new Date()) <= 60;
+  });
 
-  if (reminders.length === 0 || reminders.length <= dismissedCount) return null;
+  if (visible.length === 0 || visible.length <= dismissedCount) return null;
 
   const isUncollected24h = (r: ReminderRow) =>
     !!r.created_at && Date.now() - new Date(r.created_at).getTime() > HOURS_24;
