@@ -137,11 +137,10 @@ export const StuckCheckoutAlert: React.FC = () => {
       keys.forEach((k) => lastSeen.set(k, t));
       if (keys.length === 0 || isNewVisit) heads.push(r);
     }
-    // Never pop up while it is too early to call — the customer is still
-    // buying. Only the call window (and the second-try window) interrupts.
+    // Show the row as soon as it exists — same as the New Leads banner. The
+    // per-row cadence still decides whether the Call button is live.
     return heads
       .filter((r) => !dismissedIds.includes(r.id))
-      .filter((r) => getContactCadence(r.created_at).canCall)
       .reverse();
   }, [rows, dismissedIds]);
 
