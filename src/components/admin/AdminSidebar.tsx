@@ -854,8 +854,21 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   };
 
   const [jumpOpen, setJumpOpen] = useState(false);
+  // Persistent sidebar search: typing filters the section list below the dropdown.
+  const [navQuery, setNavQuery] = useState('');
   const sortedTabs = useMemo(() => [...tabs].sort((a, b) => a.label.localeCompare(b.label)), [tabs]);
   const activeLabel = tabs.find(t => t.id === activeTab)?.label || 'Select tab...';
+
+  const navMatches = useMemo(() => {
+    const q = navQuery.trim().toLowerCase();
+    if (!q) return null;
+    return tabs.filter(
+      (t) =>
+        t.label.toLowerCase().includes(q) ||
+        t.id.toLowerCase().includes(q) ||
+        (t.description ? t.description.toLowerCase().includes(q) : false)
+    );
+  }, [navQuery, tabs]);
 
   return (
     <TooltipProvider>
