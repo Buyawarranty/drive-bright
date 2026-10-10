@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { saleFlagReasons, minimumForTerm } from './SaleNeedsAuthorisationAlert';
+import { saleFlagReasons, minimumForTerm } from '@/components/admin/SaleNeedsAuthorisationAlert';
 
 describe('sale needs authorisation flag', () => {
   it('flags more than 30% under the quote (Garry: £324 vs £660)', () => {
