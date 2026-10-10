@@ -3,7 +3,7 @@ import { saleFlagReasons, minimumForTerm } from '@/components/admin/SaleNeedsAut
 
 describe('sale needs authorisation flag', () => {
   it('flags more than 30% under the quote (Garry: £324 vs £660)', () => {
-    expect(saleFlagReasons(324, 660, 'yearly').length).toBe(1);
+    expect(saleFlagReasons(324, 660, 'yearly')[0]).toContain('51% under');
   });
   it('does not flag exactly 30% under the quote above the minimum', () => {
     expect(saleFlagReasons(462, 660, 'yearly')).toEqual([]);
