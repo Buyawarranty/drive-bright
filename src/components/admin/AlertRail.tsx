@@ -25,11 +25,12 @@ export const ALERT_RAIL_ORDER = {
   // Priority alerts — always pinned at the top in this order and never
   // folded away behind "more alerts".
   failedPayment: 1,
-  stuckCheckout: 2,
-  chatAgentRequest: 3,
-  liveChatQuestion: 4,
-  priceBeat: 5,
-  whatsappHotLead: 6,
+  saleNeedsAuthorisation: 2,
+  stuckCheckout: 3,
+  chatAgentRequest: 4,
+  liveChatQuestion: 5,
+  priceBeat: 6,
+  whatsappHotLead: 7,
   // Everything else follows.
   incomingCall: 10,
   authorisationNeeded: 11,
