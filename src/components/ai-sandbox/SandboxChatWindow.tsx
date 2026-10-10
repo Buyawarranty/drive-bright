@@ -1102,6 +1102,18 @@ export function SandboxChatWindow({
         </div>
       )}
 
+      {isGuest && !leadCaptured && !contactOpen && !contactCardWanted && (
+        <div className="shrink-0 border-b border-border bg-muted/30 px-4 py-3">
+          <p className="text-sm leading-relaxed text-foreground">
+            Happy to keep chatting here! If you'd like a quicker reply, share your number and a specialist will call or WhatsApp you back to assist you - handy if you get called away. 😊
+          </p>
+          <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => setContactOpen(true)}>
+            <PhoneCall className="mr-2 h-4 w-4" />
+            Share my number
+          </Button>
+        </div>
+      )}
+
       {(waiting || leadCaptured) && (
         <div className="flex flex-wrap items-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-900">
           <PhoneCall className="h-3.5 w-3.5" />

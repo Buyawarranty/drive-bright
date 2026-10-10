@@ -1,4 +1,5 @@
 # Project architecture rules
+- Reuse CallMeBackPanel and sandbox-callback-request for optional chat phone capture, so submitted numbers follow existing chatbot lead and admin-alert delivery.
 - Use the shared sale-subject formatter for manager direct-sale email source labels in both subject and body; keep existing attribution and delivery logic unchanged to avoid affecting payment flows.
 - Render ORR controls through the dedicated sandbox view and reuse it for legacy ORR tab URLs; Lead Allocation must not mount the ORR section, avoiding duplicate controls.
 
