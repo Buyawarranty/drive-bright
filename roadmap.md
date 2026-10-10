@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Add the chosen friendly phone-number prompt to Miles and expose the existing callback/WhatsApp number capture without changing admin alert routing.
+- [x] Add the chosen friendly phone-number prompt to Miles and expose existing callback/WhatsApp number capture; phone entry and submit button verified, build clean. Existing delivery unchanged; real submission/admin receipt not retested.
 - [x] Clearly label direct-sale manager emails Meta, Google or Organic in subject and body without changing sale attribution or customer emails; formatter verified and build clean, deployment stays on hold.
 - [x] Remove duplicate ORR section and jump link from Lead Allocation; preserve the dedicated sandbox and reuse it for legacy ORR bookmarks without changing activation or routing data.
 
