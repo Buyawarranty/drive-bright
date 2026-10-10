@@ -234,10 +234,18 @@ serve(async (req: Request) => {
       else saleType = sourceLetterFromLeadSource(saleSource);
     }
 
+    const isQuoteSale = saleType === 'Q';
+    const rawChannel = saleExtras.acquisition_source || saleExtras.purchase_source;
+    const channelLetter = isQuoteSale
+      ? (rawChannel ? sourceLetterFromLeadSource(rawChannel) : 'Q')
+      : ((saleType as any) || 'O');
+    const subjectKind = saleSubjectKind({ letter: channelLetter, isAgentSale: !!isAgentSale, isQuote: isQuoteSale });
+
     // Build standard sale email
     const salesEmailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">🎉 New Sale</h2>
+        ${!isAgentSale ? `<p><strong>Sale source: ${subjectKind}</strong></p>` : ''}
         ${isAgentSale ? `
         <div style="margin-top: 16px; padding: 14px 20px; background: #eff6ff; border: 2px solid #3b82f6; border-radius: 8px;">
           <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #1e40af;">Agent sale</div>
@@ -319,11 +327,6 @@ serve(async (req: Request) => {
     // Send main sale notification — unified subject format:
     // "New Sale <SOURCE>: <REG> - £<AMOUNT> via <PAYMENT>"
     // Quote-link sales keep the marketing channel visible: "Q/G" / "S-Q/F".
-    const isQuoteSale = saleType === 'Q';
-    const rawChannel = saleExtras.acquisition_source || saleExtras.purchase_source;
-    const channelLetter = isQuoteSale
-      ? (rawChannel ? sourceLetterFromLeadSource(rawChannel) : 'Q')
-      : ((saleType as any) || 'O');
     const subjectSource = saleSubjectPrefix({
       letter: channelLetter,
       isAgentSale: !!isAgentSale,
@@ -334,7 +337,6 @@ serve(async (req: Request) => {
     // @buyawarranty.co.uk mailboxes isn't dropped by same-domain anti-spoof.
     const agentSubjectPart = isAgentSale ? ` — Agent: ${resolvedAgentName || 'Unknown Agent'}` : '';
     const priceMatchSubjectPart = isPriceMatch ? ' [Price match]' : '';
-    const subjectKind = saleSubjectKind({ letter: channelLetter, isAgentSale: !!isAgentSale, isQuote: isQuoteSale });
     const subject = `New ${subjectKind}: ${reg} - ${saleValueDisplay} via ${payment}${agentSubjectPart}${priceMatchSubjectPart}`;
     const notifyResult = await sendInternalNotification({
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],

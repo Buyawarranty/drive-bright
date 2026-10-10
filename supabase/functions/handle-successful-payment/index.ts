@@ -1016,9 +1016,16 @@ serve(async (req) => {
         } catch (e) { /* ignore */ }
         const paymentTime = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+        const persistedChannel = customerData2?.acquisition_source || customerData2?.purchase_source || customerRecord.purchase_source;
+        const directLetter = detectedAdSource
+          ? sourceLetterFromAdSource(detectedAdSource)
+          : sourceLetterFromLeadSource(persistedChannel);
+        const directSaleKind = saleSubjectKind({ letter: directLetter, isQuote: metadata?.source === 'live_quote' });
+
         const salesEmailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">New Warranty Sale</h2>
+            <p><strong>Sale source: ${directSaleKind}</strong></p>
             
             <!-- Reg Plate Banner -->
             <div style="margin-top: 20px; padding: 16px 24px; background: #fef9c3; border: 2px solid #eab308; border-radius: 8px; text-align: center;">
@@ -1082,11 +1089,7 @@ serve(async (req) => {
           </div>
         `;
 
-        const persistedChannel = customerData2?.acquisition_source || customerData2?.purchase_source || customerRecord.purchase_source;
-        const directLetter = detectedAdSource
-          ? sourceLetterFromAdSource(detectedAdSource)
-          : sourceLetterFromLeadSource(persistedChannel);
-        const saleSubject = `New ${saleSubjectKind({ letter: directLetter, isQuote: metadata?.source === 'live_quote' })}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`;
+        const saleSubject = `New ${directSaleKind}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`;
         const saleRecipients = ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'];
         try {
           const sendResult = await sendInternalNotification({
