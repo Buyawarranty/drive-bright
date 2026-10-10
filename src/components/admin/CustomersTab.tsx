@@ -7323,23 +7323,24 @@ Please log in and change your password after first login.`;
                     </div>
                    </TableCell>
 
-                  <TableCell className="font-medium">
-                    <div className="flex items-center space-x-2">
-                      <span className={customer.vehicle_make ? 'text-gray-900' : 'text-gray-400'}>
-                        {customer.vehicle_make || 'N/A'}
-                      </span>
-                      {!customer.vehicle_make && (
-                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                          Missing
-                        </Badge>
-                      )}
-                      {customer.vehicle_make && (
-                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                          DVLA
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
+                   <TableCell className="font-medium">
+                     <div className="flex items-center space-x-2">
+                       <span className={customer.vehicle_make ? 'text-gray-900' : 'text-gray-400'}>
+                         {customer.vehicle_make || 'N/A'}
+                       </span>
+                       {vehicleTypeBadge((customer as any).vehicle_type)}
+                       {!customer.vehicle_make && (
+                         <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                           Missing
+                         </Badge>
+                       )}
+                       {customer.vehicle_make && (
+                         <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                           DVLA
+                         </Badge>
+                       )}
+                     </div>
+                   </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-2">
                       <span className={customer.vehicle_model ? 'text-gray-900' : 'text-gray-400'}>
