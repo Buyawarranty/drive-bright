@@ -509,6 +509,33 @@ const getRangeForPeriod = (period: PeriodKey, customRange?: DateRange) => (
   period === 'custom' ? customRange : periodToRange(period)
 );
 
+// Coloured tag showing whether the order is for a car, van, motorbike etc.
+const VEHICLE_TYPE_TAG_STYLES: Record<string, { label: string; className: string }> = {
+  car: { label: 'Car', className: 'bg-sky-100 text-sky-800 border-sky-300' },
+  van: { label: 'Van', className: 'bg-amber-100 text-amber-800 border-amber-300' },
+  motorbike: { label: 'Motorbike', className: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300' },
+  motorcycle: { label: 'Motorbike', className: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300' },
+  suv: { label: 'SUV', className: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  phev: { label: 'Hybrid (PHEV)', className: 'bg-teal-100 text-teal-800 border-teal-300' },
+  ev: { label: 'Electric (EV)', className: 'bg-lime-100 text-lime-800 border-lime-300' },
+};
+
+const vehicleTypeBadge = (vehicleType?: string | null) => {
+  if (!vehicleType) return null;
+  const key = vehicleType.toLowerCase().trim();
+  const style = VEHICLE_TYPE_TAG_STYLES[key];
+  if (!style) return null;
+  return (
+    <Badge
+      variant="outline"
+      className={cn('text-[11px] font-semibold', style.className)}
+      title="Vehicle type"
+    >
+      {style.label}
+    </Badge>
+  );
+};
+
 export const CustomersTab = ({
   notifications = [],
   unreadCount = 0,
