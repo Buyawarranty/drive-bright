@@ -34,6 +34,7 @@ import { AlertRailHost, AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/adm
 import { canSeePopup } from '@/lib/popupAccess';
 const FailedPaymentPopup = lazy(() => import('@/components/admin/FailedPaymentPopup'));
 import { StuckCheckoutAlert } from '@/components/admin/leads/StuckCheckoutAlert';
+import { SaleNeedsAuthorisationAlert } from '@/components/admin/SaleNeedsAuthorisationAlert';
 import { ChatAgentRequestAlert } from '@/components/admin/leads/ChatAgentRequestAlert';
 const NonClaimComplaintAlert = lazy(() => import('@/components/admin/NonClaimComplaintAlert').then(m => ({ default: m.NonClaimComplaintAlert })));
 const PriceBeatRequestAlert = lazy(() => import('@/components/admin/PriceBeatRequestAlert').then(m => ({ default: m.PriceBeatRequestAlert })));
@@ -1462,6 +1463,7 @@ const AdminDashboardInner: React.FC<{
             </Suspense>
 
             {show('new_leads') && <NewLeadAlerts />}
+            {isManagementAlerts && <SaleNeedsAuthorisationAlert />}
             {show('stuck_checkout') && <StuckCheckoutAlert />}
             {show('new_leads') && (
               <Suspense fallback={null}>
