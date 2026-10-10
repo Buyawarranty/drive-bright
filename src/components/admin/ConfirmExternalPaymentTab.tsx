@@ -401,15 +401,14 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || '')),
     surface: 'admin',
   });
-  // Kept for reference/display only — no longer used to block a confirmation.
+  // Lowest price a non-management agent may confirm under the 30% ceiling.
   const ceilingMinAmount = quotedTotal > 0
     ? Math.round(quotedTotal * (1 - DISCOUNT_CEILING_PCT / 100) * 100) / 100
     : 0;
-  void ceilingMinAmount;
 
-  // Sales staff may confirm ANY amount down to the absolute net floor — the 30%
-  // ceiling no longer blocks a confirmation here, it only flags the discount.
-  const minAllowedAmount = netFloorAmount;
+  // Sales staff may confirm down to whichever is higher: the net floor or
+  // 30% off the Q&O grid price. Anything lower needs management.
+  const minAllowedAmount = Math.max(netFloorAmount, ceilingMinAmount);
   const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
 
   const underNetFloor = Number.isFinite(enteredAmount) && enteredAmount > 0 && enteredAmount < netFloorAmount - 0.01;
@@ -433,14 +432,13 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     pmFloor !== null &&
     enteredAmount >= pmFloor - 0.01;
   const priceMatchApplied = priceMatchReady && !isManagementRole;
-  // The Confirm payment price block is OFF by default (Lead Allocation → Confirm
-  // payment price block). While it is off, EVERY sales agent can confirm an
-  // external payment at any amount — nothing here stops them. Only when
-  // management switch it on does the absolute net floor (£349/£769/£1,099, half for
-  // motorbikes) block a confirmation; discounts above 30% are always allowed,
-  // flagged and logged.
+  // Blocked for non-management when the amount is more than 30% off the Q&O
+  // grid price (always enforced), or under the net floor while the Confirm
+  // payment price block is switched on. An approved authorisation or an
+  // evidenced price match lifts the block.
   const discountBlocked =
-    priceBlockEnabled && underNetFloor && !isManagementRole && !hasApprovedAuth;
+    !isManagementRole && !hasApprovedAuth &&
+    ((priceBlockEnabled && underNetFloor) || (overDiscountCeiling && !priceMatchApplied));
 
 
 
