@@ -11,6 +11,7 @@ import {
   PhoneCall,
 } from 'lucide-react';
 import { WHATSAPP_URL } from '@/constants/contact';
+import { Button } from '@/components/ui/button';
 
 const CALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-callback-request`;
 
@@ -153,22 +154,24 @@ export function CallMeBackPanel({
   const methodList = (
     <div className="space-y-2">
       <p className="text-sm font-bold text-foreground">How would you like to get in touch?</p>
-      <button
+      <Button
         type="button"
+        variant="outline"
         onClick={() => pickMethod('call')}
         className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
       >
         <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
         Call me back
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="outline"
         onClick={() => pickMethod('whatsapp')}
         className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
       >
         <MessageCircle className="h-4 w-4 shrink-0 text-primary" />
         WhatsApp me back
-      </button>
+      </Button>
       <a
         href={WHATSAPP_URL}
         target="_blank"
@@ -518,7 +521,7 @@ export function CallMeBackPanel({
               'Request my email'
             ) : isWhatsApp ? (
               'Request my WhatsApp'
-            ) : null}
+            ) : 'Request my callback'}
           </button>
         </form>
       )}
