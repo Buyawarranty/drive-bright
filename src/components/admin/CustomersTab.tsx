@@ -509,6 +509,33 @@ const getRangeForPeriod = (period: PeriodKey, customRange?: DateRange) => (
   period === 'custom' ? customRange : periodToRange(period)
 );
 
+// Coloured tag showing whether the order is for a car, van, motorbike etc.
+const VEHICLE_TYPE_TAG_STYLES: Record<string, { label: string; className: string }> = {
+  car: { label: 'Car', className: 'bg-sky-100 text-sky-800 border-sky-300' },
+  van: { label: 'Van', className: 'bg-amber-100 text-amber-800 border-amber-300' },
+  motorbike: { label: 'Motorbike', className: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300' },
+  motorcycle: { label: 'Motorbike', className: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300' },
+  suv: { label: 'SUV', className: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  phev: { label: 'Hybrid (PHEV)', className: 'bg-teal-100 text-teal-800 border-teal-300' },
+  ev: { label: 'Electric (EV)', className: 'bg-lime-100 text-lime-800 border-lime-300' },
+};
+
+const vehicleTypeBadge = (vehicleType?: string | null) => {
+  if (!vehicleType) return null;
+  const key = vehicleType.toLowerCase().trim();
+  const style = VEHICLE_TYPE_TAG_STYLES[key];
+  if (!style) return null;
+  return (
+    <Badge
+      variant="outline"
+      className={cn('text-[11px] font-semibold', style.className)}
+      title="Vehicle type"
+    >
+      {style.label}
+    </Badge>
+  );
+};
+
 export const CustomersTab = ({
   notifications = [],
   unreadCount = 0,
@@ -5562,18 +5589,19 @@ Buyawarranty.co.uk`,
                         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" largeCloseButton>
                           <DialogHeader>
                             <div className="flex items-center justify-between">
-                               <DialogTitle className="flex items-center gap-2">
-                                 Manage Customer: {selectedCustomer?.name}
-                                 {isPayBetterSale((selectedCustomer as any)?.purchase_source) && (
-                                   <Badge
-                                     variant="outline"
-                                     className="bg-violet-100 text-violet-800 border-violet-300 text-[11px] font-semibold"
-                                     title={PAYBETTER_TARGET_NOTE}
-                                   >
-                                     PayBetter sale · 1-year equivalent to target
-                                   </Badge>
-                                 )}
-                               </DialogTitle>
+                                <DialogTitle className="flex items-center gap-2">
+                                  Manage Customer: {selectedCustomer?.name}
+                                  {vehicleTypeBadge((selectedCustomer as any)?.vehicle_type)}
+                                  {isPayBetterSale((selectedCustomer as any)?.purchase_source) && (
+                                    <Badge
+                                      variant="outline"
+                                      className="bg-violet-100 text-violet-800 border-violet-300 text-[11px] font-semibold"
+                                      title={PAYBETTER_TARGET_NOTE}
+                                    >
+                                      PayBetter sale · 1-year equivalent to target
+                                    </Badge>
+                                  )}
+                                </DialogTitle>
                               {selectedCustomer && (
                                 <div className="flex items-center gap-2">
                                   {canRaiseSaveDeal && (
@@ -7295,23 +7323,24 @@ Please log in and change your password after first login.`;
                     </div>
                    </TableCell>
 
-                  <TableCell className="font-medium">
-                    <div className="flex items-center space-x-2">
-                      <span className={customer.vehicle_make ? 'text-gray-900' : 'text-gray-400'}>
-                        {customer.vehicle_make || 'N/A'}
-                      </span>
-                      {!customer.vehicle_make && (
-                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                          Missing
-                        </Badge>
-                      )}
-                      {customer.vehicle_make && (
-                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                          DVLA
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
+                   <TableCell className="font-medium">
+                     <div className="flex items-center space-x-2">
+                       <span className={customer.vehicle_make ? 'text-gray-900' : 'text-gray-400'}>
+                         {customer.vehicle_make || 'N/A'}
+                       </span>
+                       {vehicleTypeBadge((customer as any).vehicle_type)}
+                       {!customer.vehicle_make && (
+                         <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                           Missing
+                         </Badge>
+                       )}
+                       {customer.vehicle_make && (
+                         <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                           DVLA
+                         </Badge>
+                       )}
+                     </div>
+                   </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-2">
                       <span className={customer.vehicle_model ? 'text-gray-900' : 'text-gray-400'}>
