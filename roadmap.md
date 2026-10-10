@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Clearly label direct-sale manager emails Meta, Google or Organic without changing sale attribution or customer emails.
 - [x] Remove duplicate ORR section and jump link from Lead Allocation; preserve the dedicated sandbox and reuse it for legacy ORR bookmarks without changing activation or routing data.
 
 - [x] Remove payment-collection sidebar alert and confirm Quick grant has no remaining render path.
