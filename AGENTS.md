@@ -1,4 +1,5 @@
 # Project architecture rules
+- Use the shared sale-subject formatter for manager direct-sale email source labels in both subject and body; keep existing attribution and delivery logic unchanged to avoid affecting payment flows.
 - Render ORR controls through the dedicated sandbox view and reuse it for legacy ORR tab URLs; Lead Allocation must not mount the ORR section, avoiding duplicate controls.
 
 - Store company-wide monthly Analytics revenue goals in `monthly_revenue_targets`; keep them separate from per-agent `sales_targets` because they measure different scopes.

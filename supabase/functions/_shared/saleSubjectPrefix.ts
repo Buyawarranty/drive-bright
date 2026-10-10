@@ -81,7 +81,9 @@ export function saleSubjectKind(opts: {
     P: 'Phone',
     Q: 'Live quote',
   };
-  const channelName = channel[opts.letter];
+  const channelName = !opts.isAgentSale && !opts.isQuote
+    ? ({ F: 'Meta', O: 'Organic' } as Partial<Record<SourceLetter, string>>)[opts.letter] || channel[opts.letter]
+    : channel[opts.letter];
   if (opts.isQuote) return `${channelName === 'Live quote' ? '' : `${channelName} `}quote sale`.trim();
   return opts.isAgentSale ? `${channelName} lead sale` : `${channelName} direct sale`;
 }
