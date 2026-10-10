@@ -8,8 +8,10 @@ import {
   MessageCircle,
   Mail,
   Pencil,
+  PhoneCall,
 } from 'lucide-react';
 import { WHATSAPP_URL } from '@/constants/contact';
+import { Button } from '@/components/ui/button';
 
 const CALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-callback-request`;
 
@@ -57,7 +59,7 @@ function validEmail(raw: string): boolean {
 }
 
 type Step = 'closed' | 'method' | 'number' | 'done';
-type Preference = 'whatsapp' | 'email';
+type Preference = 'call' | 'whatsapp' | 'email';
 type Topic = 'warranty_purchase' | 'general' | 'existing_policy' | 'claims_complaints' | 'other';
 
 const TOPIC_SENTENCE: Record<Topic, string> = {
@@ -152,6 +154,24 @@ export function CallMeBackPanel({
   const methodList = (
     <div className="space-y-2">
       <p className="text-sm font-bold text-foreground">How would you like to get in touch?</p>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => pickMethod('call')}
+        className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+      >
+        <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
+        Call me back
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => pickMethod('whatsapp')}
+        className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+      >
+        <MessageCircle className="h-4 w-4 shrink-0 text-primary" />
+        WhatsApp me back
+      </Button>
       <a
         href={WHATSAPP_URL}
         target="_blank"
@@ -171,7 +191,7 @@ export function CallMeBackPanel({
       </button>
       <p className="flex items-start gap-1.5 pt-1 text-xs leading-relaxed text-muted-foreground">
         <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-        <span>WhatsApp us now, or leave your email address and our team will reply.</span>
+        <span>Leave your number for a call or WhatsApp reply, or choose email. You can keep chatting here too.</span>
       </p>
     </div>
   );
@@ -306,13 +326,14 @@ export function CallMeBackPanel({
           className="space-y-3"
         >
           <p className="text-sm leading-relaxed text-muted-foreground">
-             Leave your email address and our team will reply, or WhatsApp us instead.
+             Share your number so we can get back to you if you get called away, or choose email instead.
           </p>
 
           <div className="space-y-2">
             <span className="block text-sm font-bold text-foreground">How would you like us to contact you?</span>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {([
+                { key: 'call' as Preference, label: 'Call me', Icon: PhoneCall },
                 { key: 'whatsapp' as Preference, label: 'WhatsApp me', Icon: MessageCircle },
                 { key: 'email' as Preference, label: 'Email me', Icon: Mail },
               ]).map(({ key, label, Icon }) => (
@@ -415,7 +436,7 @@ export function CallMeBackPanel({
             <p className="text-xs leading-relaxed text-muted-foreground">
               {isEmail
                 ? "We'll use this email to get back to you."
-                : "We'll use this number to message you on WhatsApp."}
+                : isWhatsApp ? "We'll use this number to message you on WhatsApp." : "We'll use this number to call you about your enquiry."}
             </p>
           </div>
 
@@ -500,7 +521,7 @@ export function CallMeBackPanel({
               'Request my email'
             ) : isWhatsApp ? (
               'Request my WhatsApp'
-            ) : null}
+            ) : 'Request my callback'}
           </button>
         </form>
       )}
