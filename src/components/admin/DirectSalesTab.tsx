@@ -39,7 +39,12 @@ export function DirectSalesTab() {
     if (error) setError(error.message); else setData(data as any);
     setLoading(false);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    // Keep the figures fresh while the page is open.
+    const t = setInterval(load, 5 * 60 * 1000);
+    return () => clearInterval(t);
+  }, []);
 
   const monthly = useMemo(() => (data?.monthly ?? []).map((m) => ({
     ...m, name: label(m.month),
@@ -56,6 +61,25 @@ export function DirectSalesTab() {
     });
     return { names, rows };
   }, [data]);
+
+  // Average price per popular combo before vs after each price rise.
+  const beforeAfter = useMemo(() => {
+    const periods = [
+      { key: 'before', test: (m: string) => m < '2026-07' },
+      { key: 'jul', test: (m: string) => m >= '2026-07' && m < '2026-09' },
+      { key: 'sep', test: (m: string) => m >= '2026-09' },
+    ];
+    return combos.names.map((name) => {
+      const rows = (data?.combos ?? []).filter((c) => c.combo === name);
+      const avg = (f: (m: string) => boolean) => {
+        const r = rows.filter((c) => f(c.month));
+        const n = r.reduce((a, c) => a + c.n, 0);
+        return n ? Math.round(r.reduce((a, c) => a + c.avg_price * c.n, 0) / n) : null;
+      };
+      const [b, j, s9] = periods.map((p) => avg(p.test));
+      return { name: name.replace(/months/, ' months'), b, j, s9 };
+    });
+  }, [data, combos.names]);
 
   const problems = useMemo(() => {
     const full = monthly.filter((m) => m.step4_reached > 0);
@@ -89,7 +113,7 @@ export function DirectSalesTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold">Direct sales</h2>
-          <p className="text-sm text-muted-foreground">Sales customers complete themselves at Step 4, from March 2026. Cancelled and refunded sales are left out.</p>
+          <p className="text-sm text-muted-foreground">Sales customers complete themselves at Step 4, from March 2026. Cancelled and refunded sales are left out. Refreshes automatically every 5 minutes.</p>
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}><RefreshCw className="h-4 w-4 mr-2" />Refresh</Button>
       </div>
@@ -150,6 +174,32 @@ export function DirectSalesTab() {
                   {markers('name')}
                 </LineChart>
               </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">Price before vs after each price rise (most popular cover options)</CardTitle></CardHeader>
+            <CardContent className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="text-left text-muted-foreground">
+                  <th className="p-2">Cover option</th><th className="p-2">Mar–Jun</th><th className="p-2">After July rise</th><th className="p-2">After September rise</th><th className="p-2">Change</th>
+                </tr></thead>
+                <tbody>
+                  {beforeAfter.map((r) => {
+                    const last = r.s9 ?? r.j;
+                    const ch = r.b && last ? Math.round((last / r.b - 1) * 100) : null;
+                    return (
+                      <tr key={r.name} className="border-t">
+                        <td className="p-2">{r.name}</td>
+                        <td className="p-2">{r.b != null ? `£${r.b}` : '–'}</td>
+                        <td className="p-2">{r.j != null ? `£${r.j}` : '–'}</td>
+                        <td className="p-2">{r.s9 != null ? `£${r.s9}` : '–'}</td>
+                        <td className={`p-2 font-medium ${ch != null && ch > 0 ? 'text-destructive' : ''}`}>{ch != null ? `${ch > 0 ? '+' : ''}${ch}%` : '–'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </CardContent>
           </Card>
 
