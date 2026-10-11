@@ -3,6 +3,7 @@ import { pushRecentAlert } from '@/lib/recentAlerts';
 import { X, CreditCard, Phone, ChevronDown, ChevronUp } from 'lucide-react';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { useFailedPayments } from '@/hooks/useFailedPayments';
+import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
 
 const HIDDEN_KEY = 'bw:failed-payment-hidden';
 const loadHidden = (): string[] => { try { return JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]'); } catch { return []; } };
