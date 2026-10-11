@@ -89,6 +89,7 @@ const ADMIN_TABS = [
   { id: 'marketing-audience', label: 'Marketing Contacts', description: 'Unified mailing list for remarketing' },
   { id: 'emails', label: 'Email Hub', description: 'Unified email management' },
   { id: 'analytics', label: 'Analytics', description: 'View reports and analytics' },
+  { id: 'direct-sales', label: 'Direct sales', description: 'Step 4 self-serve sales analysis (admin and super admin only)' },
   { id: 'page-analytics', label: 'Page Analytics', description: 'Track page visits, traffic sources & Google Ads' },
   { id: 'admin-logs', label: 'Error Logs', description: 'Dashboard activity & issue log: clicks, load times, crashes and errors' },
   { id: 'payments-pending', label: 'Payments Pending', description: 'Confirmed sales with no verified payment — accounts verification queue' },

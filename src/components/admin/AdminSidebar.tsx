@@ -314,6 +314,12 @@ export const defaultTabs: Tab[] = [
     description: 'View reports and analytics'
   },
   {
+    id: 'direct-sales',
+    label: 'Direct sales',
+    icon: LineChart,
+    description: 'Step 4 self-serve sales: trends, prices, drop-off and card failures'
+  },
+  {
     id: 'page-analytics',
     label: 'Page Analytics',
     icon: Eye,
@@ -778,6 +784,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     const WHATSAPP_LEADS_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
     const whatsappLeadsAllowed = !!userRole && WHATSAPP_LEADS_ROLES.has(userRole);
     if (!whatsappLeadsAllowed) base = base.filter(t => t.id !== 'whatsapp-leads');
+    // Direct sales analysis is admin / super_admin only.
+    if (!(userRole === 'admin' || userRole === 'super_admin')) base = base.filter(t => t.id !== 'direct-sales');
     if (!workstreamFlags) return base;
     return base.filter(t => {
 

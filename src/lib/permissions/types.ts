@@ -77,6 +77,7 @@ export const ADMIN_TAB_DEFINITIONS = [
   
   { id: 'emails', key: 'emails', label: 'Email Hub', description: 'Unified email management', category: 'Marketing' },
   { id: 'analytics', key: 'analytics', label: 'Analytics', description: 'View reports and analytics', category: 'Reports' },
+  { id: 'direct-sales', key: 'direct_sales', label: 'Direct sales', description: 'Step 4 self-serve sales analysis (admin and super admin only)', category: 'Reports' },
   { id: 'user-permissions', key: 'user_permissions', label: 'User Permissions', description: 'Manage admin user access and permissions', category: 'Settings' },
   { id: 'document-mapping', key: 'document_mapping', label: 'Document Mapping', description: 'Manage plan to document mappings', category: 'Settings' },
   { id: 'blogs-data', key: 'blog_writing', label: 'Blogs Data', description: 'Blog analytics, editor and SEO tools', category: 'Content' },

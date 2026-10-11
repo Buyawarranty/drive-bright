@@ -89,6 +89,7 @@ const SpecialVehiclePlansTab = lazy(() => import('@/components/admin/SpecialVehi
 const DiscountCodesTab = lazy(() => import('@/components/admin/DiscountCodesTab').then(m => ({ default: m.DiscountCodesTab })));
 const ReferralsTab = lazy(() => import('@/components/admin/ReferralsTab').then(m => ({ default: m.ReferralsTab })));
 const AnalyticsTab = lazy(() => import('@/components/admin/AnalyticsTab').then(m => ({ default: m.AnalyticsTab })));
+const DirectSalesTab = lazy(() => import('@/components/admin/DirectSalesTab').then(m => ({ default: m.DirectSalesTab })));
 const UnifiedEmailHub = lazy(() => import('@/components/admin/UnifiedEmailHub'));
 const AccountSettings = lazy(() => import('@/components/admin/AccountSettings'));
 const AttributionSettingsTab = lazy(() => import('@/components/admin/AttributionSettingsTab'));
@@ -1147,6 +1148,16 @@ const AdminDashboard = () => {
             onNavigateToTab={handleTabChange}
             userRole={effectiveUserRole}
           />
+        );
+      case 'direct-sales':
+        // Hard-restricted to admin and super_admin only.
+        if (!['admin', 'super_admin'].includes(effectiveUserRole || '')) {
+          return <AccessDenied label="Direct sales" />;
+        }
+        return (
+          <Suspense fallback={<TabFallback />}>
+            <DirectSalesTab />
+          </Suspense>
         );
       case 'whatsapp-leads':
         // Hard-restricted to management only (admin, super_admin, sales_manager)
