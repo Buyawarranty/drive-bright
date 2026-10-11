@@ -139,6 +139,28 @@ export function clampWebToNetFloor(amount: number, params: NetFloorParams): numb
  */
 export const WEBSITE_MULTI_YEAR_PRICE_FACTOR = 0.82;
 
+/**
+ * LIVE OVERRIDE — managers can change the website 2/3-year cut from
+ * Price Updates (Risk bands → global settings) and push it live. The
+ * published value travels with the live pricing version and is applied by
+ * applyLivePricingVersion; until then the agreed 18% default above holds.
+ */
+let liveWebsiteMultiYearCutFactor: number | null = null;
+
+export function setLiveWebsiteMultiYearCutPct(pct: number | null | undefined): void {
+  const n = Number(pct);
+  liveWebsiteMultiYearCutFactor =
+    Number.isFinite(n) && n >= 0 && n <= 50 ? Math.round((1 - n / 100) * 1000) / 1000 : null;
+}
+
+export function getWebsiteMultiYearCutFactor(): number {
+  return liveWebsiteMultiYearCutFactor ?? WEBSITE_MULTI_YEAR_PRICE_FACTOR;
+}
+
+export function getWebsiteMultiYearCutPct(): number {
+  return Math.round((1 - getWebsiteMultiYearCutFactor()) * 1000) / 10;
+}
+
 /** Website-only flat minimums for 2/3-year cover (agent limits stay £769/£1,099). */
 export const WEBSITE_NET_FLOOR_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 399,
@@ -162,7 +184,7 @@ export function applyWebsiteSellFloor(total: number, params: Omit<NetFloorParams
   const floor = getWebsiteNetFloor(params);
   if (!Number.isFinite(total) || total <= 0) return Math.ceil(floor);
   const multiYear = params.paymentPeriod === '24months' || params.paymentPeriod === '36months';
-  const cut = multiYear ? total * WEBSITE_MULTI_YEAR_PRICE_FACTOR : total;
+  const cut = multiYear ? total * getWebsiteMultiYearCutFactor() : total;
   return Math.max(Math.round(cut), Math.ceil(floor));
 }
 
