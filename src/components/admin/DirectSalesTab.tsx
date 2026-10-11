@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getWebsiteMultiYearCutFactor, getWebsiteMultiYearCutPct } from '@/lib/pricing/netFloor';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
@@ -272,7 +273,7 @@ export function DirectSalesTab() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle className="text-base">Current website prices after the 18% cut (2 and 3-year cover)</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">Current website prices after the {cutPct}% cut (2 and 3-year cover)</CardTitle></CardHeader>
             <CardContent className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead><tr className="text-left text-muted-foreground">
