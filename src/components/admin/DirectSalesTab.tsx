@@ -87,17 +87,20 @@ export function DirectSalesTab() {
     });
   }, [data, combos.names]);
 
-  // New website prices after the Oct 2026 18% cut on 2/3-year cover
-  // (website only — Quotes & Orders unchanged). Estimated from the September
-  // average shown at Step 4, cut by 18% and clamped to the new website
-  // minimums (£700 / £1,000). 1-year prices are untouched.
+  // New website prices after the website 2/3-year cut (Oct 2026, now a
+  // manager-editable published setting — Price Updates → Risk bands).
+  // Estimated from the September average shown at Step 4, cut by the live
+  // percentage and clamped to the website minimums (£700 / £1,000).
+  // 1-year prices are untouched.
+  const cutPct = getWebsiteMultiYearCutPct();
+  const cutFactor = getWebsiteMultiYearCutFactor();
   const WEBSITE_MIN: Record<number, number> = { 24: 700, 36: 1000 };
   const newWebsitePrices = useMemo(() => beforeAfter.map((r) => {
     const months = Number((r.name.match(/(\d+)\s*months?/) ?? [])[1] ?? 0);
     if (r.s9 == null || (months !== 24 && months !== 36)) return { ...r, months, newPrice: null as number | null };
     const min = WEBSITE_MIN[months];
-    return { ...r, months, newPrice: Math.max(Math.round(r.s9 * 0.82), min) };
-  }), [beforeAfter]);
+    return { ...r, months, newPrice: Math.max(Math.round(r.s9 * cutFactor), min) };
+  }), [beforeAfter, cutFactor]);
 
   const SUBSTEPS: { key: string; label: string }[] = [
     { key: 'step4_viewed', label: 'Reached Step 4' },
