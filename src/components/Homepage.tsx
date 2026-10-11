@@ -895,18 +895,18 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
                 {/* Pricing Reassurance Panel - compact mobile version */}
                 <div className="sm:hidden mt-4 bg-white border border-gray-100 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] px-4 py-4 text-center">
-                  <div className="flex items-center justify-center gap-3">
+                  <div className="flex items-center justify-center gap-2.5">
                     <button
                       onClick={() => setShowCallbackModal(true)}
-                      className="group flex items-center gap-1.5 text-brand-orange font-bold text-sm hover:text-orange-700 transition-colors"
+                      className="group flex items-center gap-1 text-brand-orange font-bold text-[13px] whitespace-nowrap hover:text-orange-700 transition-colors"
                     >
                       Request a callback
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                     </button>
                     <span aria-hidden className="text-gray-300">·</span>
                     <button
                       onClick={() => setShowPriceBeat(true)}
-                      className="group flex items-center gap-1.5 text-gray-600 hover:text-[#E8521A] font-semibold text-sm transition-colors"
+                      className="group flex items-center gap-1 text-gray-600 hover:text-[#E8521A] font-semibold text-[13px] whitespace-nowrap transition-colors"
                     >
                       <Tag className="w-3.5 h-3.5" />
                       Beat My Quote
