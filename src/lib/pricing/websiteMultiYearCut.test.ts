@@ -10,9 +10,9 @@ describe('website 2/3-year 18% cut', () => {
   it('leaves 1-year website price unchanged', () => {
     expect(applyWebsiteSellFloor(500, { paymentPeriod: '12months', ...cheap })).toBe(500);
   });
-  it('website minimums are £565 / £810 at the cheapest combo', () => {
-    expect(getWebsiteNetFloor({ paymentPeriod: '24months', ...cheap })).toBe(565);
-    expect(getWebsiteNetFloor({ paymentPeriod: '36months', ...cheap })).toBe(810);
+  it('website minimums are £700 / £1,000 at the cheapest combo', () => {
+    expect(getWebsiteNetFloor({ paymentPeriod: '24months', ...cheap })).toBe(700);
+    expect(getWebsiteNetFloor({ paymentPeriod: '36months', ...cheap })).toBe(1000);
   });
   it('Quotes & Orders minimums stay £769 / £1,099', () => {
     expect(getNetPayableFloor({ paymentPeriod: '24months', ...cheap, surface: 'admin' })).toBe(769);
