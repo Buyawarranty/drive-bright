@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
 import { logPaymentButtonClick } from '@/utils/paymentClickLog';
+import { logCheckoutStep } from '@/utils/checkoutStepLog';
 import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { getTrackingData, getStoredGclid, getSessionOrUrlGclid, getAttributionGclid, getTrackingSessionId } from '@/utils/gclidCapture';
 import { getUtmPayload } from '@/utils/utmCapture';
@@ -1082,6 +1083,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // ------------------------------------------------------------------
   // Checkout struggle tracker — flags stuck/failed customers to admins
   // ------------------------------------------------------------------
+  // Record that this customer reached Step 4 (once per page load).
+  useEffect(() => { logCheckoutStep('step4_viewed'); }, []);
+
   const struggleTracker = useCheckoutStruggleTracker({
     enabled: true,
     customer: {
@@ -1903,6 +1907,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const processPayment = async (paymentOverride?: 'monthly' | 'full') => {
     const effectivePayment = paymentOverride || selectedPayment || selectedPaymentRef.current;
     console.log('💳 processPayment called:', { paymentOverride, selectedPayment, refValue: selectedPaymentRef.current, effectivePayment });
+    logCheckoutStep('pay_clicked', { paymentMethod: effectivePayment === 'monthly' ? 'bumper' : 'stripe' });
 
     // Validate at the shared payment entry point as well as at each provider.
     // This blocks stale saved address data and an already-open Stripe form when
@@ -2077,6 +2082,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             ? missing[0]
             : `${missing.slice(0, -1).join(', ')} and ${missing[missing.length - 1]}`} to continue.`
         : 'Please check the highlighted fields to continue.';
+      logCheckoutStep('details_incomplete', { details: { missing } });
       toast.error(toastMsg, {
         id: 'checkout-required-fields',
         duration: 6000,
@@ -2089,6 +2095,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     // All other fields are valid — now check the vehicle declaration last
     if (!declarationChecked) {
       setDeclarationError(true);
+      logCheckoutStep('declaration_missing');
       const declSection = document.getElementById('vehicle-declaration');
       scrollToSection(declSection);
       // Inline validation is shown above the sticky CTA and at the checkbox itself —
@@ -2105,6 +2112,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         customerData.email || ''
       );
       if (dupCheck.isDuplicate) {
+        logCheckoutStep('duplicate_blocked');
         setIsLoading(false);
         toast.error(
           'This vehicle registration already has an active warranty with us. Please use a different vehicle registration to continue, or contact us for further support.',
@@ -2296,7 +2304,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       }
 
       if (errorBody?.code === 'bumper_unavailable' || errorBody?.retryable) {
-        struggleTracker.reportPaymentFailed('bumper', 'bumper_unavailable');
+        logCheckoutStep('bumper_error', { paymentMethod: 'bumper' }); struggleTracker.reportPaymentFailed('bumper', 'bumper_unavailable');
         toast.error(
           errorBody?.message ||
             `${monthlyProviderLabel} isn't responding right now. Please try again in a few minutes, or choose pay in full.`,
@@ -2315,7 +2323,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       if (checkoutError || errorBody) {
         const errorMessage = errorBody?.error || errorBody?.message || checkoutError?.message || '';
         console.error('Monthly checkout failed:', { errorBody, checkoutError });
-        struggleTracker.reportPaymentFailed('bumper', errorMessage);
+        logCheckoutStep('bumper_error', { paymentMethod: 'bumper' }); struggleTracker.reportPaymentFailed('bumper', errorMessage);
         if (errorMessage.includes('is not available for Bumper') || errorMessage.includes('Monthly payments are not available')) {
           toast.error('Monthly payments unavailable. Please pay in full.', {
             duration: 8000,
@@ -2385,13 +2393,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           }
           localStorage.setItem('buyawarranty_currentStep', JSON.stringify({ value: '4', timestamp: Date.now() }));
         } catch { /* noop */ }
+        logCheckoutStep('bumper_handoff', { paymentMethod: 'bumper', amount: discountedBumperPrice });
         redirectToStripeWithBackGuard(checkoutData.url);
       } else {
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
       }
     } catch (error: any) {
-      struggleTracker.reportPaymentFailed('bumper', error?.message || 'Bumper checkout exception');
+      logCheckoutStep('bumper_error', { paymentMethod: 'bumper' }); struggleTracker.reportPaymentFailed('bumper', error?.message || 'Bumper checkout exception');
       toast.error('Unable to process. Please try again.');
       setIsLoading(false);
     }
@@ -2486,7 +2495,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
       if (paymentIntentError) {
         console.error('💳 processStripeCheckout: PaymentIntent creation error:', paymentIntentError);
-        struggleTracker.reportPaymentFailed('stripe', paymentIntentError?.message || 'PaymentIntent creation failed');
+        logCheckoutStep('stripe_error', { paymentMethod: 'stripe' }); struggleTracker.reportPaymentFailed('stripe', paymentIntentError?.message || 'PaymentIntent creation failed');
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
         return;
@@ -2532,6 +2541,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         
         // Show inline Stripe payment instead of navigating away
         console.log('💳 processStripeCheckout: Setting stripeClientSecret and showEmbeddedCheckout...');
+        logCheckoutStep('stripe_form_shown', { paymentMethod: 'stripe', amount: Number(paymentIntentData.amount || finalPrice) });
         setStripeClientSecret(paymentIntentData.clientSecret);
         setShowEmbeddedCheckout(true);
         setIsLoading(false);
@@ -2555,7 +2565,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       }
     } catch (error: any) {
       console.error('💳 processStripeCheckout: Stripe checkout error:', error);
-      struggleTracker.reportPaymentFailed('stripe', error?.message || 'Stripe checkout exception');
+      logCheckoutStep('stripe_error', { paymentMethod: 'stripe' }); struggleTracker.reportPaymentFailed('stripe', error?.message || 'Stripe checkout exception');
       toast.error('Unable to process. Please try again.');
       setIsLoading(false);
     }
