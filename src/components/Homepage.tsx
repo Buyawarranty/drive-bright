@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, ArrowRight, Star, Shield, Clock, Zap, Car, Truck, Battery, Bike, Menu, X, Phone, FileCheck, MessageCircle, Wrench, PoundSterling } from 'lucide-react';
+import { Check, ArrowRight, Star, Shield, Clock, Zap, Car, Truck, Battery, Bike, Menu, X, Phone, FileCheck, MessageCircle, Wrench, PoundSterling, Tag } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import WebsiteFooter from './WebsiteFooter';
@@ -36,6 +36,7 @@ const EmailCapturePopup = lazyWithRetry(() =>
   import('./EmailCapturePopup').then((m) => ({ default: m.EmailCapturePopup }))
 );
 const RequestCallbackModal = lazyWithRetry(() => import('./modals/RequestCallbackModal'));
+const PriceBeatModal = lazyWithRetry(() => import('./modals/PriceBeatModal'));
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -96,6 +97,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
+  const [showPriceBeat, setShowPriceBeat] = useState(false);
   // UK office hours: 09:00–18:00 Europe/London
   const computeUkOfficeHours = () => {
     const parts = new Intl.DateTimeFormat('en-GB', {
@@ -851,23 +853,43 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                            Request a callback
                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                          </button>
+
+                         <span className="hidden sm:block h-6 w-px bg-gray-200 mx-4" aria-hidden />
+
+                         <button
+                           onClick={() => setShowPriceBeat(true)}
+                           className="group flex items-center gap-1.5 text-gray-600 hover:text-[#E8521A] font-semibold text-sm transition-colors"
+                         >
+                           <Tag className="w-3.5 h-3.5" />
+                           Beat My Quote
+                           <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                         </button>
                        </div>
 
                        <p className="text-[13px] text-gray-500 font-medium leading-relaxed">
-                         Speak to our UK team – <span className="text-gray-400">Lines open 9am to 6pm, Monday to Saturday.</span>
+                         Speak to our UK team – <span className="text-gray-400">Lines open 9am to 6pm, Monday to Saturday.</span> Found a cheaper quote? <button onClick={() => setShowPriceBeat(true)} className="underline decoration-dotted underline-offset-2 hover:text-[#E8521A] transition-colors">We'll beat it.</button>
                        </p>
                      </>
                    ) : (
-                     <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
-                       <span className="text-gray-600 whitespace-nowrap">Our UK team is open 9am–6pm, Monday to Saturday</span>
-                       <button
-                         onClick={() => setShowCallbackModal(true)}
-                         className="group flex items-center gap-1.5 text-brand-orange font-bold hover:text-orange-700 transition-colors"
-                       >
-                         Request a callback
-                         <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                       </button>
-                     </div>
+                    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
+                      <span className="text-gray-600 whitespace-nowrap">Our UK team is open 9am–6pm, Monday to Saturday</span>
+                      <button
+                        onClick={() => setShowCallbackModal(true)}
+                        className="group flex items-center gap-1.5 text-brand-orange font-bold hover:text-orange-700 transition-colors"
+                      >
+                        Request a callback
+                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      </button>
+                      <span aria-hidden className="text-gray-300">·</span>
+                      <button
+                        onClick={() => setShowPriceBeat(true)}
+                        className="group flex items-center gap-1.5 text-gray-500 hover:text-[#E8521A] font-semibold transition-colors"
+                      >
+                        <Tag className="w-3.5 h-3.5" />
+                        Beat My Quote
+                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                      </button>
+                    </div>
                    )}
                 </div>
 
@@ -1316,6 +1338,14 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         <RequestCallbackModal
           isOpen={showCallbackModal}
           onClose={() => setShowCallbackModal(false)}
+        />
+      </Suspense>
+
+      {/* Price Beat Modal */}
+      <Suspense fallback={null}>
+        <PriceBeatModal
+          isOpen={showPriceBeat}
+          onClose={() => setShowPriceBeat(false)}
         />
       </Suspense>
     </div>
