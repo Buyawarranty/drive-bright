@@ -189,12 +189,14 @@ export function applyWebsiteSellFloor(total: number, params: Omit<NetFloorParams
 }
 
 /**
- * Pay-in-full floor (Oct 2026): the 10% pay-in-full discount may never take
- * the final amount below the website minimum for the term (£399/£700/£1,000).
- * If it would, the customer pays the minimum — the saving just shrinks.
+ * Pay-in-full floor (Oct 2026, revised): the website minimum applies to the
+ * 12-payment TOTAL, not to the discounted pay-in-full amount. The pay-in-full
+ * price is therefore floored at 90% of the website minimum, so the 10%
+ * pay-in-full discount always applies in full and customers never see a
+ * meaningless "Save £1" (e.g. £708 total now pays £638, not £700).
  */
 export function applyWebsitePayInFullFloor(payInFull: number, params: Omit<NetFloorParams, 'surface'>): number {
-  const floor = getWebsiteNetFloor(params);
+  const floor = getWebsiteNetFloor(params) * 0.9;
   if (!Number.isFinite(payInFull) || payInFull <= 0) return Math.ceil(floor);
   return Math.max(Math.round(payInFull), Math.ceil(floor));
 }
