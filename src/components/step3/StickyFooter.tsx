@@ -3,7 +3,7 @@ import { ArrowRight, Lock, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { payInFullSaving, payInFullTotal, twelvePaymentTotal } from '@/lib/pricing/payInFull';
-import { WEBSITE_NET_FLOOR_BY_PERIOD } from '@/lib/pricing/netFloor';
+import { WEBSITE_NET_FLOOR_BY_PERIOD, payInFullFloorFromTermFloor } from '@/lib/pricing/netFloor';
 import type { PaymentPeriod } from '@/lib/pricingMatrix';
 
 interface StickyFooterProps {
@@ -40,7 +40,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   const payInFull = twelvePaymentTotal(monthlyPrice);
   // The 10% pay-in-full discount may never take the final amount below the
   // website minimum for the term (£399/£700/£1,000).
-  const termFloor = WEBSITE_NET_FLOOR_BY_PERIOD[(paymentPeriod as PaymentPeriod)] ?? 399;
+  const termFloor = payInFullFloorFromTermFloor(WEBSITE_NET_FLOOR_BY_PERIOD[(paymentPeriod as PaymentPeriod)] ?? 399, paymentPeriod);
   const payInFullDiscounted = Math.max(termFloor, payInFullTotal(monthlyPrice));
   const stripeSavings = payInFull - payInFullDiscounted;
   const pencePerDay = Math.round((monthlyPrice * 12) / 365);

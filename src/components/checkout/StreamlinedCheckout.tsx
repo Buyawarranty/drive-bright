@@ -49,7 +49,7 @@ import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import DesktopPlanHeader from '@/components/checkout/DesktopPlanHeader';
 import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { minimumPriceForCodes } from '@/lib/testPromoBypass';
-import { getWebsiteNetFloor } from "@/lib/pricing/netFloor";
+import { getWebsiteNetFloor, payInFullFloorFromTermFloor } from "@/lib/pricing/netFloor";
 import { toIsoDob } from '@/lib/customerDob';
 
 // Import the props interface from main component
@@ -1028,7 +1028,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // The 10% discount may never take the final amount below the term floor
   // (Oct 2026) — if it would, the customer pays the floor instead.
   const stripeSavingsBase = Math.floor(bumperTotalPrice * 0.10);
-  const stripeTotalPrice = Math.max(checkoutTermFloor, bumperTotalPrice - stripeSavingsBase);
+  const stripeTotalPrice = Math.max(payInFullFloorFromTermFloor(checkoutTermFloor, checkoutPeriod), bumperTotalPrice - stripeSavingsBase);
   const hasValidDiscountCodes = appliedDiscountCodes.length > 0;
 
   
