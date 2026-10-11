@@ -14,7 +14,7 @@ import {
   getExcessBracketBasis,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
-import { applyWebsiteSellFloor, applyWebsitePayInFullFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
+import { applyWebsiteSellFloor, applyWebsitePayInFullFloor, getWebsiteNetFloor, payInFullFloorFromTermFloor } from "@/lib/pricing/netFloor";
 import { twelvePaymentTotal, MIN_DISPLAYED_SAVING } from "@/lib/pricing/payInFull";
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
@@ -269,7 +269,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   });
   // The 10% pay-in-full discount may never take the final amount below the
   // website minimum for the term (£399/£700/£1,000) — clamp before promos.
-  const stripeBeforePromo = Math.max(promoTermFloor, rawMonthlyTotal - Math.floor(rawMonthlyTotal * 0.10));
+  const stripeBeforePromo = Math.max(payInFullFloorFromTermFloor(promoTermFloor, paymentType), rawMonthlyTotal - Math.floor(rawMonthlyTotal * 0.10));
   const bumperPromoAmt = calcPromoDiscount(rawMonthlyTotal, appliedPromos, promoTermFloor);
   const stripePromoAmt = calcPromoDiscount(stripeBeforePromo, appliedPromos, promoTermFloor);
   const monthlyTotal = Math.max(promoPriceFloor(appliedPromos, promoTermFloor), rawMonthlyTotal - bumperPromoAmt);

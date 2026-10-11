@@ -56,7 +56,7 @@ import Step3Desktop from '@/components/step3/Step3Desktop';
 import MobileSteppedFlow from '@/components/step3/MobileSteppedFlow';
 import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos, promoPriceFloor } from '@/lib/promoStorage';
-import { applyWebsiteSellFloor, applyWebsitePayInFullFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
+import { applyWebsiteSellFloor, applyWebsitePayInFullFloor, getWebsiteNetFloor, payInFullFloorFromTermFloor } from "@/lib/pricing/netFloor";
 import { MIN_DISPLAYED_SAVING } from "@/lib/pricing/payInFull";
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
@@ -2458,7 +2458,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   // The 10% pay-in-full discount may never take the final amount
                   // below the website minimum for the term — clamp, and when the
                   // floor shrinks the saving show the true £ amount only.
-                  const payInFullDiscounted = Math.max(promoTermFloor, payInFull - stripeSavings);
+                  const payInFullDiscounted = Math.max(payInFullFloorFromTermFloor(promoTermFloor, paymentType || '24months'), payInFull - stripeSavings);
                   const actualSaving = Math.max(0, payInFull - payInFullDiscounted);
                   const totalCoverDays = Math.round((months / 12) * 365);
                   // Daily price uses payInFull (12 payments) divided by total cover days, matching the duration cards
@@ -2551,7 +2551,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   // The 10% pay-in-full discount applies to the pre-promo total and may
                   // never drop the final amount below the website minimum for the term —
                   // clamp, and when the floor shrinks the saving show the true £ amount.
-                  const stripeBeforePromo = Math.max(promoTermFloor, rawPayInFull - Math.floor(rawPayInFull * 0.10));
+                  const stripeBeforePromo = Math.max(payInFullFloorFromTermFloor(promoTermFloor, paymentType || '24months'), rawPayInFull - Math.floor(rawPayInFull * 0.10));
                   const stripePromoAmt = calcPromoDiscount(stripeBeforePromo, appliedPromos, promoTermFloor);
                   const payInFullDiscounted = Math.min(stripeBeforePromo, Math.max(promoPriceFloor(appliedPromos, promoTermFloor), stripeBeforePromo - stripePromoAmt));
                   const actualSaving = Math.max(0, rawPayInFull - payInFullDiscounted);
