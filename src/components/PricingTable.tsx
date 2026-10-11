@@ -57,6 +57,7 @@ import MobileSteppedFlow from '@/components/step3/MobileSteppedFlow';
 import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos, promoPriceFloor } from '@/lib/promoStorage';
 import { applyWebsiteSellFloor, applyWebsitePayInFullFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
+import { MIN_DISPLAYED_SAVING } from "@/lib/pricing/payInFull";
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
 
