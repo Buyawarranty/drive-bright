@@ -56,7 +56,7 @@ import Step3Desktop from '@/components/step3/Step3Desktop';
 import MobileSteppedFlow from '@/components/step3/MobileSteppedFlow';
 import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos, promoPriceFloor } from '@/lib/promoStorage';
-import { applyWebsiteSellFloor, getNetPayableFloor } from '@/lib/pricing/netFloor';
+import { applyWebsiteSellFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
 
@@ -2428,7 +2428,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const payInFull = displayMonthlyPrice * 12;
                   const stripeSavings = Math.floor(payInFull * 0.10);
                   // Promo codes never take a sale below the net sell floor for this term.
-                  const promoTermFloor = getNetPayableFloor({
+                  const promoTermFloor = getWebsiteNetFloor({
                     paymentPeriod: (paymentType || '24months') as PaymentPeriod,
                     voluntaryExcess: voluntaryExcess ?? 100,
                     claimLimit: selectedClaimLimit,
@@ -2514,7 +2514,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const months = paymentType === '36months' ? 36 : paymentType === '12months' ? 12 : 24;
                   const rawPayInFull = displayMonthlyPrice * 12;
                   // Promo codes never take a sale below the net sell floor for this term.
-                  const promoTermFloor = getNetPayableFloor({
+                  const promoTermFloor = getWebsiteNetFloor({
                     paymentPeriod: (paymentType || '24months') as PaymentPeriod,
                     voluntaryExcess: voluntaryExcess ?? 100,
                     claimLimit: selectedClaimLimit,

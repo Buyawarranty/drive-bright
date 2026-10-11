@@ -49,7 +49,7 @@ import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import DesktopPlanHeader from '@/components/checkout/DesktopPlanHeader';
 import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { minimumPriceForCodes } from '@/lib/testPromoBypass';
-import { getNetPayableFloor } from '@/lib/pricing/netFloor';
+import { getWebsiteNetFloor } from "@/lib/pricing/netFloor";
 import { toIsoDob } from '@/lib/customerDob';
 
 // Import the props interface from main component
@@ -1018,7 +1018,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     : String(paymentType || '').includes('24')
       ? '24months'
       : '12months';
-  const checkoutTermFloor = getNetPayableFloor({
+  const checkoutTermFloor = getWebsiteNetFloor({
     paymentPeriod: checkoutPeriod as '12months' | '24months' | '36months',
     voluntaryExcess: updatedPricingData.voluntaryExcess ?? 100,
     claimLimit: updatedPricingData.claimLimit || 2000,
