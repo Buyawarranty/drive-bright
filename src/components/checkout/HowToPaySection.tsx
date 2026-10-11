@@ -3,6 +3,7 @@ import { Lock, Check, Tag, X, Shield, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
+import { MIN_DISPLAYED_SAVING } from '@/lib/pricing/payInFull';
 
 interface HowToPaySectionProps {
   selectedPayment: 'monthly' | 'full' | null;
@@ -140,9 +141,11 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 </span>
                 <span className="text-sm text-[#1a1a1a] font-medium">today</span>
               </div>
-              <p className="text-sm text-[#0BA360] font-semibold mt-1">
-                Save £{Math.max(0, savings)} vs monthly payments
-              </p>
+              {savings >= MIN_DISPLAYED_SAVING && (
+                <p className="text-sm text-[#0BA360] font-semibold mt-1">
+                  Save £{Math.max(0, savings)} vs monthly payments
+                </p>
+              )}
               <p className="text-sm text-[#0BA360] font-semibold mt-0.5">
                 = {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day over your full cover term
               </p>

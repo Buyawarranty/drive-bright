@@ -11,6 +11,12 @@ export const PAY_IN_FULL_DISCOUNT_PCT = 10;
 
 export const PAYMENTS_COUNT = 12;
 
+/**
+ * Below this saving, "Save £X" badges are hidden entirely — a tiny saving
+ * (e.g. "Save £1" when a floor clamps the 10% discount) looks worse than none.
+ */
+export const MIN_DISPLAYED_SAVING = 30;
+
 /** Total of the 12 monthly payments. */
 export function twelvePaymentTotal(monthlyPrice: number): number {
   return Math.max(0, Math.round(monthlyPrice)) * PAYMENTS_COUNT;

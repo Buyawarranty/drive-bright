@@ -8,6 +8,7 @@ import { StripeProvider } from '@/components/stripe/StripeProvider';
 import { StripePaymentForm } from '@/components/stripe/StripePaymentForm';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
+import { MIN_DISPLAYED_SAVING } from '@/lib/pricing/payInFull';
 
 interface PaymentData {
   clientSecret: string;
@@ -357,7 +358,7 @@ const StripePayment: React.FC = () => {
                     )}
 
                     {/* Pay in Full Details */}
-                    {!paymentData.isMonthly && savings > 0 && (
+                    {!paymentData.isMonthly && savings >= MIN_DISPLAYED_SAVING && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
                         <div className="flex justify-between items-center text-muted-foreground">
                           <span>Original price</span>

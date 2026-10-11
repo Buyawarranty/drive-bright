@@ -15,7 +15,7 @@ import {
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
 import { applyWebsiteSellFloor, applyWebsitePayInFullFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
-import { twelvePaymentTotal } from "@/lib/pricing/payInFull";
+import { twelvePaymentTotal, MIN_DISPLAYED_SAVING } from "@/lib/pricing/payInFull";
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import ClaimLimitDetails from './ClaimLimitDetails';
@@ -519,7 +519,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                       </div>
                       <div className="text-[12px] text-[#919191] mt-1 min-h-[16px]">Equal to {dailyTxt}</div>
                       <div className="mt-2.5 min-h-[18px] text-[#1ca36f] text-[13px] font-extrabold">
-                        {save > 0 ? `Save £${save} today` : ''}
+                        {save >= MIN_DISPLAYED_SAVING ? `Save £${save} today` : ''}
                       </div>
                       {d.perks.length > 0 && (
                         <div className="mt-2.5 grid gap-1.5">
@@ -635,7 +635,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                   <div className="text-[13px] text-[#3e3e3e] font-semibold">
                     Or pay in full <strong className="text-[#161616]">£{payInFull}</strong>
                   </div>
-                  {savings > 0 && (
+                  {savings >= MIN_DISPLAYED_SAVING && (
                     <div className="text-[12px] text-[#1ca36f] font-extrabold">Save £{savings}</div>
                   )}
                 </div>
@@ -737,7 +737,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
           <div className="px-6">
             <div className="bg-[#eaf8f2] border border-[#cdebd9] rounded-2xl px-5 py-3 leading-tight">
               <div className="text-[15px] text-[#3e3e3e] font-semibold">Pay in full <strong className="text-[#161616] text-[16px]">£{payInFull}</strong></div>
-              {savings > 0 && <div className="text-[14px] text-[#1ca36f] font-bold mt-0.5">Save £{savings} vs monthly</div>}
+              {savings >= MIN_DISPLAYED_SAVING && <div className="text-[14px] text-[#1ca36f] font-bold mt-0.5">Save £{savings} vs monthly</div>}
             </div>
           </div>
 
