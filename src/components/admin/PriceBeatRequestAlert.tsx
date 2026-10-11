@@ -130,6 +130,9 @@ export const PriceBeatRequestAlert: React.FC = () => {
                       <Phone className="h-3 w-3" /> Call now: {fmtPhone(r.phone)}
                     </a>
                   )}
+                  <div className="mt-1.5 flex justify-end">
+                    <CopyAlertButton text={rowText(r)} label="Copy this price beat alert" caption="Copy" />
+                  </div>
                 </div>
               );
             })}

@@ -275,6 +275,7 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
                         Open lead
                       </button>
                     )}
+                    <CopyAlertButton text={rowText(r)} label="Copy this chat request alert" caption="Copy" />
                   </div>
                 </li>
               );
