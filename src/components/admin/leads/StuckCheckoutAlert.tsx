@@ -212,6 +212,29 @@ export const StuckCheckoutAlert: React.FC = () => {
 
   const readyToCall = live.filter((r) => getContactCadence(r.created_at).canCall).length;
 
+  // Plain-text version of one row, for pasting into WhatsApp etc.
+  const rowText = (r: StuckRow) => {
+    const cadence = getContactCadence(r.created_at);
+    const phone = (r.customer_phone || '').replace(/\s/g, '');
+    const owner = ownerName(owners[r.id]);
+    return [
+      r.customer_name || r.customer_email || r.customer_phone || 'Customer',
+      `${SIGNAL_LABELS[r.signal_type] || r.signal_type} · came in ${cameInAt(r.created_at)} · ${timeAgo(r.created_at)}`,
+      [r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null, r.plan_name, r.amount ? `£${r.amount}` : null].filter(Boolean).join(' · '),
+      cadence.label,
+      owner ? `Lead with ${owner}` : null,
+      phone ? `Call now: ${formatUkPhone(phone)}` : null,
+      r.customer_email || null,
+    ].filter(Boolean).join('\n');
+  };
+
+  const allText = [
+    live.length === 1 ? '1 customer stuck on checkout' : `${live.length} customers stuck on checkout`,
+    `${readyToCall} ready to call now`,
+    '',
+    ...live.map(rowText),
+  ].join('\n');
+
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.stuckCheckout}>
       <div className="rounded-lg border border-destructive border-l-4 bg-destructive text-destructive-foreground shadow-sm overflow-hidden">
