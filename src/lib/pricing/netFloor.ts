@@ -142,8 +142,8 @@ export const WEBSITE_MULTI_YEAR_PRICE_FACTOR = 0.82;
 /** Website-only flat minimums for 2/3-year cover (agent limits stay £769/£1,099). */
 export const WEBSITE_NET_FLOOR_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 399,
-  '24months': 565,
-  '36months': 810,
+  '24months': 700,
+  '36months': 1000,
 };
 
 /**

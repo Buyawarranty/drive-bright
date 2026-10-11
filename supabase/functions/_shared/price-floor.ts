@@ -59,8 +59,8 @@ export interface PriceFloorResult {
 export const NET_SELL_FLOOR_GBP: Record<"yearly" | "two_yearly" | "three_yearly" | "monthly", number> = {
   monthly: 399,
   yearly: 399,
-  two_yearly: 565, // Oct 2026 website minimum (agent £769 limit enforced in Quotes & Orders / Confirm payment)
-  three_yearly: 810, // Oct 2026 website minimum (agent £1,099 limit enforced in admin)
+  two_yearly: 700, // Oct 2026 website minimum (agent £769 limit enforced in Quotes & Orders / Confirm payment)
+  three_yearly: 1000, // Oct 2026 website minimum (agent £1,099 limit enforced in admin)
 };
 
 /** Server floor for a term: the full net sell floor (halved for motorbikes). */

@@ -90,8 +90,8 @@ export function DirectSalesTab() {
   // New website prices after the Oct 2026 18% cut on 2/3-year cover
   // (website only — Quotes & Orders unchanged). Estimated from the September
   // average shown at Step 4, cut by 18% and clamped to the new website
-  // minimums (£565 / £810). 1-year prices are untouched.
-  const WEBSITE_MIN: Record<number, number> = { 24: 565, 36: 810 };
+  // minimums (£700 / £1,000). 1-year prices are untouched.
+  const WEBSITE_MIN: Record<number, number> = { 24: 700, 36: 1000 };
   const newWebsitePrices = useMemo(() => beforeAfter.map((r) => {
     const months = Number((r.name.match(/(\d+)\s*months?/) ?? [])[1] ?? 0);
     if (r.s9 == null || (months !== 24 && months !== 36)) return { ...r, months, newPrice: null as number | null };
@@ -286,7 +286,7 @@ export function DirectSalesTab() {
                   ))}
                 </tbody>
               </table>
-              <p className="text-xs text-muted-foreground mt-3">Estimated from the average price shown at Step 4 in September, cut by 18%. No 2-year sale can go below £565 and no 3-year sale below £810 on the website — cheaper options simply show at the minimum, with no error or block for the customer. 1-year prices and all Quotes &amp; Orders prices are unchanged.</p>
+              <p className="text-xs text-muted-foreground mt-3">Estimated from the average price shown at Step 4 in September, cut by 18%. No 2-year sale can go below £700 and no 3-year sale below £1,000 on the website — cheaper options simply show at the minimum, with no error or block for the customer. 1-year prices and all Quotes &amp; Orders prices are unchanged.</p>
             </CardContent>
           </Card>
 
