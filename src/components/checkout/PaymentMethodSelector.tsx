@@ -112,7 +112,8 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
                     Pay in Full: £{discountedPrice}
                   </p>
                   <p className="text-sm text-[#1a1a1a] mt-0.5">
-                    <span className="font-bold text-red-500 line-through">Was £{strikethroughPrice}</span> <span className="font-bold text-green-600">Save £{savings}</span> <span className="text-gray-500">(10% off)</span>
+                    <span className="font-bold text-red-500 line-through">Was £{strikethroughPrice}</span> <span className="font-bold text-green-600">Save £{savings}</span>
+                    {savings >= Math.floor(strikethroughPrice * 0.10) && <span className="text-gray-500"> (10% off)</span>}
                   </p>
                 </div>
               </div>

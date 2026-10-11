@@ -39,7 +39,15 @@ const DesktopStickyBottomBar: React.FC<DesktopStickyBottomBarProps> = ({
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">Pay in Full:</span>
                 <span className="text-xl font-bold text-[#1a1a1a]">£{fullPrice}</span>
-                <span className="text-xs text-[#0BA360] font-medium">10% savings</span>
+                {(() => {
+                  // Only claim "10% savings" when the pay-in-full saving really
+                  // reaches 10% — otherwise show the true £ amount.
+                  const totalIfMonthly = monthlyPrice * 12;
+                  const saved = Math.max(0, totalIfMonthly - fullPrice);
+                  return saved >= Math.floor(totalIfMonthly * 0.10)
+                    ? <span className="text-xs text-[#0BA360] font-medium">10% savings</span>
+                    : <span className="text-xs text-[#0BA360] font-medium">Save £{saved}</span>;
+                })()}
               </div>
             ) : (
               <span className="text-sm text-gray-600">Select a payment option above</span>
