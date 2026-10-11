@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { applyWebsitePayInFullFloor, applyWebsiteSellFloor, getWebsiteNetFloor, getNetPayableFloor } from './netFloor';
 
 const cheap = { voluntaryExcess: 500, claimLimit: 1000, labourRate: 50 };
