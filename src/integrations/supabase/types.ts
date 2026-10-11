@@ -14951,6 +14951,7 @@ export type Database = {
           used_6mo: number
         }[]
       }
+      get_direct_sales_analysis: { Args: { _from?: string }; Returns: Json }
       get_document_version_for_date: {
         Args: { _on_date: string; _plan_type: string }
         Returns: {
