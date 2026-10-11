@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { applyWebsitePayInFullFloor, applyWebsiteSellFloor, getWebsiteNetFloor, getNetPayableFloor } from './netFloor';
+import { applyWebsitePayInFullFloor, payInFullFloorFromTermFloor, applyWebsiteSellFloor, getWebsiteNetFloor, getNetPayableFloor } from './netFloor';
 
 const cheap = { voluntaryExcess: 500, claimLimit: 1000, labourRate: 50 };
 
@@ -74,5 +74,16 @@ describe('website multi-year cut — live manager override', () => {
   it('1-year cover is never cut, whatever is published', () => {
     setLiveWebsiteMultiYearCutPct(25);
     expect(applyWebsiteSellFloor(500, { paymentPeriod: '12months', voluntaryExcess: 500, claimLimit: 1000, labourRate: 50 })).toBe(500);
+  });
+});
+
+describe('pay in full is a true 10% off the 12 payments (2/3-year)', () => {
+  it('3-year £90/mo (£1,080) pays £972 in full, not clamped to the term minimum', () => {
+    const termFloor = 1071; // shaped website minimum seen on the quote
+    const stripe = Math.max(payInFullFloorFromTermFloor(termFloor, '36months'), 1080 - Math.floor(1080 * 0.1));
+    expect(stripe).toBe(972);
+  });
+  it('1-year keeps the full £399 minimum', () => {
+    expect(payInFullFloorFromTermFloor(399, '12months')).toBe(399);
   });
 });
