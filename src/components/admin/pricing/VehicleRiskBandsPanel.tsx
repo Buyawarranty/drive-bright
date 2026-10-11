@@ -680,8 +680,13 @@ const VehicleRiskBandsPanel: React.FC = () => {
           </div>
 
           {/* Website direct-sales discount on 2/3-year cover */}
-          <div className="rounded-lg border p-4 bg-muted/30">
-            <h3 className="font-semibold mb-1">Website direct-sales discount (2 &amp; 3-year cover)</h3>
+          <div className="rounded-lg border-2 border-success/60 bg-success/10 p-4 shadow-sm">
+            <div className="flex items-center justify-between gap-3 mb-1">
+              <h3 className="font-semibold text-success">Website direct-sales discount (2 &amp; 3-year cover)</h3>
+              <span className="rounded-full bg-success text-success-foreground text-sm font-bold px-3 py-1">
+                {config.websiteMultiYearCutPct ?? 18}%
+              </span>
+            </div>
             <p className="text-xs text-muted-foreground mb-3">
               The percentage Steps 3–4 and the chatbot take off the grid price for 2 and 3-year cover sold
               directly on the website. 1-year cover and Quotes &amp; Orders are never touched by this. Every
