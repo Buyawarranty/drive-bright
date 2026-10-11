@@ -184,14 +184,17 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
             </div>
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
           </button>
-          <button
-            onClick={dismissAll}
-            className="p-1 rounded hover:bg-blue-100 shrink-0"
-            title="Close"
-            aria-label="Close chat agent request alert"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+          <div className="flex items-center gap-1 shrink-0">
+            <CopyAlertButton text={allText} label="Copy all chat request alerts" caption="Copy all" />
+            <button
+              onClick={dismissAll}
+              className="p-1 rounded hover:bg-blue-100 shrink-0"
+              title="Close"
+              aria-label="Close chat agent request alert"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
 
         {expanded && (
