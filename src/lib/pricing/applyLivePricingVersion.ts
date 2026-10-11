@@ -16,6 +16,7 @@ import {
 } from '@/lib/pricing/vehicleFactorModel';
 import type { ReferenceVehicle } from '@/lib/pricing/pricingVersionConfig';
 import { setLiveRiskBandConfig } from '@/lib/pricing/liveRiskBands';
+import { setLiveWebsiteMultiYearCutPct } from '@/lib/pricing/netFloor';
 
 export type ApplicableVersion = {
   status?: string | null;
@@ -47,6 +48,11 @@ export function applyLivePricingVersion(version?: ApplicableVersion | null): App
   // Model-risk bands travel inside the published vehicle factor model, so pushing
   // bands live updates whichever pricing version is live without republishing it.
   setLiveRiskBandConfig(((version.vehicle_factor_model as any)?.riskBands ?? null) as any);
+  // Website direct-sales 2/3-year cut travels with the live version too; null
+  // restores the agreed default (18%).
+  setLiveWebsiteMultiYearCutPct(
+    ((version.vehicle_factor_model as any)?.websiteMultiYearCutPct ?? null) as number | null
+  );
   setLivePricingOverride(
     version.admin_matrix as PricingMatrixShape,
     Number(version.step3_discount_pct ?? 10)
