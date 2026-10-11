@@ -103,7 +103,7 @@ export const PriceBeatRequestAlert: React.FC = () => {
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
           </button>
           <div className="flex items-center gap-1 shrink-0">
-            <CopyAlertButton text={allText} label="Copy all price beat alerts" caption="Copy all" />
+            <CopyAlertButton text={allText} label="Copy all price beat alerts" caption="Copy all" emoji="💷" />
             <button onClick={() => live.forEach((r) => dismiss(r.id))} aria-label="Dismiss" className="shrink-0 rounded p-0.5 hover:bg-orange-100">
               <X className="h-4 w-4" />
             </button>
@@ -131,7 +131,7 @@ export const PriceBeatRequestAlert: React.FC = () => {
                     </a>
                   )}
                   <div className="mt-1.5 flex justify-end">
-                    <CopyAlertButton text={rowText(r)} label="Copy this price beat alert" caption="Copy" />
+                    <CopyAlertButton text={rowText(r)} label="Copy this price beat alert" caption="Copy" emoji="💷" />
                   </div>
                 </div>
               );

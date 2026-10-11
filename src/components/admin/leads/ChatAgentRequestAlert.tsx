@@ -185,7 +185,7 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
           </button>
           <div className="flex items-center gap-1 shrink-0">
-            <CopyAlertButton text={allText} label="Copy all chat request alerts" caption="Copy all" />
+            <CopyAlertButton text={allText} label="Copy all chat request alerts" caption="Copy all" emoji="💬" />
             <button
               onClick={dismissAll}
               className="p-1 rounded hover:bg-blue-100 shrink-0"
@@ -275,7 +275,7 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
                         Open lead
                       </button>
                     )}
-                    <CopyAlertButton text={rowText(r)} label="Copy this chat request alert" caption="Copy" />
+                    <CopyAlertButton text={rowText(r)} label="Copy this chat request alert" caption="Copy" emoji="💬" />
                   </div>
                 </li>
               );
