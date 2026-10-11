@@ -30,6 +30,7 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))', 'hsl(142 70% 4
 
 export function DirectSalesTab() {
   const [data, setData] = useState<{ monthly: Month[]; combos: Combo[] } | null>(null);
+  const [substeps, setSubsteps] = useState<{ month: string; event: string; sessions: number }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,6 +38,8 @@ export function DirectSalesTab() {
     setLoading(true); setError(null);
     const { data, error } = await supabase.rpc('get_direct_sales_analysis' as any, { _from: '2026-03-01' });
     if (error) setError(error.message); else setData(data as any);
+    const sub = await supabase.rpc('get_direct_sales_substeps' as any, { _from: '2026-03-01' });
+    if (!sub.error) setSubsteps((sub.data as any) ?? []);
     setLoading(false);
   };
   useEffect(() => {
@@ -80,6 +83,20 @@ export function DirectSalesTab() {
       return { name: name.replace(/months/, ' months'), b, j, s9 };
     });
   }, [data, combos.names]);
+
+  const SUBSTEPS: { key: string; label: string }[] = [
+    { key: 'step4_viewed', label: 'Reached Step 4' },
+    { key: 'pay_clicked', label: 'Pressed pay' },
+    { key: 'details_incomplete', label: 'Stopped: details missing' },
+    { key: 'declaration_missing', label: 'Stopped: declaration not ticked' },
+    { key: 'duplicate_blocked', label: 'Stopped: already has a warranty' },
+    { key: 'bumper_handoff', label: 'Sent to Bumper' },
+    { key: 'bumper_error', label: 'Bumper error' },
+    { key: 'stripe_form_shown', label: 'Card form shown' },
+    { key: 'stripe_error', label: 'Card form error' },
+  ];
+  const substepMonths = useMemo(() => Array.from(new Set(substeps.map((r) => r.month))).sort(), [substeps]);
+  const sub = (m: string, k: string) => substeps.find((r) => r.month === m && r.event === k)?.sessions ?? 0;
 
   const problems = useMemo(() => {
     const full = monthly.filter((m) => m.step4_reached > 0);
@@ -200,6 +217,31 @@ export function DirectSalesTab() {
                   })}
                 </tbody>
               </table>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">Step 4 in detail (recorded from 11 Oct 2026)</CardTitle></CardHeader>
+            <CardContent className="overflow-x-auto">
+              {substepMonths.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Recording has just started — figures will appear here as customers go through Step 4.</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead><tr className="text-left text-muted-foreground"><th className="p-2">Customers who…</th>{substepMonths.map((m) => <th key={m} className="p-2">{label(m)}</th>)}</tr></thead>
+                  <tbody>
+                    {SUBSTEPS.map((s) => (
+                      <tr key={s.key} className="border-t">
+                        <td className="p-2">{s.label}</td>
+                        {substepMonths.map((m) => {
+                          const v = sub(m, s.key), base = sub(m, 'step4_viewed');
+                          return <td key={m} className="p-2">{v}{s.key !== 'step4_viewed' && base ? <span className="text-muted-foreground"> ({pct(v, base)}%)</span> : null}</td>;
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+              <p className="text-xs text-muted-foreground mt-3">Date of birth is now asked on Bumper's own page, after "Sent to Bumper". Whether they finish there shows in the Bumper completion line above.</p>
             </CardContent>
           </Card>
 

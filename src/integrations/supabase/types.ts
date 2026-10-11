@@ -2624,6 +2624,36 @@ export type Database = {
           },
         ]
       }
+      checkout_step_events: {
+        Row: {
+          amount: number | null
+          created_at: string
+          details: Json | null
+          event: string
+          id: string
+          payment_method: string | null
+          session_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          details?: Json | null
+          event: string
+          id?: string
+          payment_method?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          details?: Json | null
+          event?: string
+          id?: string
+          payment_method?: string | null
+          session_id?: string | null
+        }
+        Relationships: []
+      }
       checkout_struggle_alerts: {
         Row: {
           acknowledged_at: string | null
@@ -14952,6 +14982,7 @@ export type Database = {
         }[]
       }
       get_direct_sales_analysis: { Args: { _from?: string }; Returns: Json }
+      get_direct_sales_substeps: { Args: { _from?: string }; Returns: Json }
       get_document_version_for_date: {
         Args: { _on_date: string; _plan_type: string }
         Returns: {
