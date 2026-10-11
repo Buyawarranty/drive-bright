@@ -5,6 +5,7 @@ import { Tag, Phone, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
+import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
 
 const DISMISSED_KEY = 'price-beat-alert-dismissed-ids';
 

@@ -4,6 +4,7 @@ import { pushRecentAlert } from '@/lib/recentAlerts';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
+import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
 import { prettyWhatsAppPhone } from '@/lib/whatsappHeat';
 import type { WhatsAppConversation } from '@/hooks/useWhatsAppConversations';
 

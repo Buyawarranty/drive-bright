@@ -5,6 +5,7 @@ import { MessagesSquare, Phone, Mail, X, ChevronDown, ChevronUp, Car } from 'luc
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
 
 const DISMISSED_IDS_KEY = 'chat-agent-request-dismissed-ids';
 
