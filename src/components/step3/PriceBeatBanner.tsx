@@ -13,6 +13,7 @@ interface PriceBeatBannerProps {
   currentClaimLimit?: number | null;
   currentLabourRate?: number;
   className?: string;
+  startExpanded?: boolean;
 }
 
 const validatePhone = (phone: string): boolean => {
@@ -26,9 +27,10 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
   currentClaimLimit,
   currentLabourRate,
   className,
+  startExpanded = false,
 }) => {
   const { toast } = useToast();
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(startExpanded);
   const [competitorPrice, setCompetitorPrice] = useState('');
   const [priceMode, setPriceMode] = useState<'monthly' | 'total'>('monthly');
   const [phone, setPhone] = useState('');
