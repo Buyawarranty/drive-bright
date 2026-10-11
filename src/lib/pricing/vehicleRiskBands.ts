@@ -156,7 +156,16 @@ export type RiskBandConfig = {
    * no warning at all on Steps 3–4.
    */
   globalMinTotal: number;
+  /**
+   * WEBSITE DIRECT-SALES discount on 2 & 3-year cover (percent off the grid
+   * price on Steps 3–4 and the chatbot). 1-year and Quotes & Orders never use
+   * it. Published with the bands; defaults to 18 when never set.
+   */
+  websiteMultiYearCutPct?: number;
 };
+
+/** Default website 2/3-year cut when nothing has been published. */
+export const DEFAULT_WEBSITE_MULTI_YEAR_CUT_PCT = 18;
 
 /** Fallback global floor when nothing has been configured yet. */
 export const DEFAULT_GLOBAL_MIN_TOTAL = 399;
@@ -351,6 +360,7 @@ export const DEFAULT_RISK_BAND_CONFIG: RiskBandConfig = {
   powertrains: DEFAULT_POWERTRAIN_RULES,
   defaultBandId: 'normal',
   globalMinTotal: DEFAULT_GLOBAL_MIN_TOTAL,
+  websiteMultiYearCutPct: DEFAULT_WEBSITE_MULTI_YEAR_CUT_PCT,
 };
 
 /** Powertrain key for a DVLA fuel string, or null when it isn't EV/PHEV/HEV. */
@@ -704,6 +714,12 @@ export function loadRiskBandConfig(): RiskBandConfig {
       defaultBandId: String(parsed.defaultBandId || 'normal'),
       globalMinTotal:
         Number(parsed.globalMinTotal) > 0 ? Math.round(Number(parsed.globalMinTotal)) : DEFAULT_GLOBAL_MIN_TOTAL,
+      websiteMultiYearCutPct:
+        Number.isFinite(Number(parsed.websiteMultiYearCutPct)) &&
+        Number(parsed.websiteMultiYearCutPct) >= 0 &&
+        Number(parsed.websiteMultiYearCutPct) <= 50
+          ? Number(parsed.websiteMultiYearCutPct)
+          : DEFAULT_WEBSITE_MULTI_YEAR_CUT_PCT,
     };
   } catch {
     return DEFAULT_RISK_BAND_CONFIG;

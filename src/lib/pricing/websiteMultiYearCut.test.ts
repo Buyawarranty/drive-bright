@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { applyWebsitePayInFullFloor, applyWebsiteSellFloor, getWebsiteNetFloor, getNetPayableFloor } from './netFloor';
 
 const cheap = { voluntaryExcess: 500, claimLimit: 1000, labourRate: 50 };
@@ -38,5 +38,40 @@ describe('website 2/3-year 18% cut', () => {
     const tallSaving = tallTotal - applyWebsitePayInFullFloor(tallTotal - Math.floor(tallTotal * 0.10), { paymentPeriod: '24months', ...cheap });
     expect(tallSaving).toBe(Math.floor(tallTotal * 0.10));
     expect(tallSaving >= Math.floor(tallTotal * 0.10)).toBe(true);
+  });
+});
+
+import {
+  setLiveWebsiteMultiYearCutPct,
+  getWebsiteMultiYearCutFactor,
+  getWebsiteMultiYearCutPct,
+  WEBSITE_MULTI_YEAR_PRICE_FACTOR,
+} from './netFloor';
+
+describe('website multi-year cut — live manager override', () => {
+  afterEach(() => setLiveWebsiteMultiYearCutPct(null));
+
+  it('defaults to the agreed 18% when nothing is published', () => {
+    expect(getWebsiteMultiYearCutFactor()).toBe(WEBSITE_MULTI_YEAR_PRICE_FACTOR);
+    expect(getWebsiteMultiYearCutPct()).toBe(18);
+  });
+
+  it('a published value replaces the default and prices follow it', () => {
+    setLiveWebsiteMultiYearCutPct(14);
+    expect(getWebsiteMultiYearCutPct()).toBe(14);
+    // £1,000 grid at 14% off = £860 (above the £700 floor, so no clamp).
+    expect(applyWebsiteSellFloor(1000, { paymentPeriod: '24months', voluntaryExcess: 500, claimLimit: 1000, labourRate: 50 })).toBe(860);
+  });
+
+  it('rejecting nonsense values restores the default', () => {
+    setLiveWebsiteMultiYearCutPct(80);
+    expect(getWebsiteMultiYearCutPct()).toBe(18);
+    setLiveWebsiteMultiYearCutPct(-5);
+    expect(getWebsiteMultiYearCutPct()).toBe(18);
+  });
+
+  it('1-year cover is never cut, whatever is published', () => {
+    setLiveWebsiteMultiYearCutPct(25);
+    expect(applyWebsiteSellFloor(500, { paymentPeriod: '12months', voluntaryExcess: 500, claimLimit: 1000, labourRate: 50 })).toBe(500);
   });
 });

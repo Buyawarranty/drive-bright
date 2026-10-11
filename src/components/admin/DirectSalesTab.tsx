@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getWebsiteMultiYearCutFactor, getWebsiteMultiYearCutPct } from '@/lib/pricing/netFloor';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
@@ -87,17 +88,20 @@ export function DirectSalesTab() {
     });
   }, [data, combos.names]);
 
-  // New website prices after the Oct 2026 18% cut on 2/3-year cover
-  // (website only — Quotes & Orders unchanged). Estimated from the September
-  // average shown at Step 4, cut by 18% and clamped to the new website
-  // minimums (£700 / £1,000). 1-year prices are untouched.
+  // New website prices after the website 2/3-year cut (Oct 2026, now a
+  // manager-editable published setting — Price Updates → Risk bands).
+  // Estimated from the September average shown at Step 4, cut by the live
+  // percentage and clamped to the website minimums (£700 / £1,000).
+  // 1-year prices are untouched.
+  const cutPct = getWebsiteMultiYearCutPct();
+  const cutFactor = getWebsiteMultiYearCutFactor();
   const WEBSITE_MIN: Record<number, number> = { 24: 700, 36: 1000 };
   const newWebsitePrices = useMemo(() => beforeAfter.map((r) => {
     const months = Number((r.name.match(/(\d+)\s*months?/) ?? [])[1] ?? 0);
     if (r.s9 == null || (months !== 24 && months !== 36)) return { ...r, months, newPrice: null as number | null };
     const min = WEBSITE_MIN[months];
-    return { ...r, months, newPrice: Math.max(Math.round(r.s9 * 0.82), min) };
-  }), [beforeAfter]);
+    return { ...r, months, newPrice: Math.max(Math.round(r.s9 * cutFactor), min) };
+  }), [beforeAfter, cutFactor]);
 
   const SUBSTEPS: { key: string; label: string }[] = [
     { key: 'step4_viewed', label: 'Reached Step 4' },
@@ -269,7 +273,7 @@ export function DirectSalesTab() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle className="text-base">Current website prices after the 18% cut (2 and 3-year cover)</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">Current website prices after the {cutPct}% cut (2 and 3-year cover)</CardTitle></CardHeader>
             <CardContent className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead><tr className="text-left text-muted-foreground">
@@ -286,7 +290,7 @@ export function DirectSalesTab() {
                   ))}
                 </tbody>
               </table>
-              <p className="text-xs text-muted-foreground mt-3">Estimated from the average price shown at Step 4 in September, cut by 18%. No 2-year sale can go below £700 and no 3-year sale below £1,000 on the website — cheaper options simply show at the minimum, with no error or block for the customer. 1-year prices and all Quotes &amp; Orders prices are unchanged.</p>
+              <p className="text-xs text-muted-foreground mt-3">Estimated from the average price shown at Step 4 in September, cut by {cutPct}%. No 2-year sale can go below £700 and no 3-year sale below £1,000 on the website — cheaper options simply show at the minimum, with no error or block for the customer. 1-year prices and all Quotes &amp; Orders prices are unchanged.</p>
             </CardContent>
           </Card>
 
