@@ -31,6 +31,7 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))', 'hsl(142 70% 4
 export function DirectSalesTab() {
   const [data, setData] = useState<{ monthly: Month[]; combos: Combo[] } | null>(null);
   const [substeps, setSubsteps] = useState<{ month: string; event: string; sessions: number }[]>([]);
+  const [changes, setChanges] = useState<{ start: string; end: string; label: string; pushes: number; days: number; step3: number; step4: number; sales: number; revenue: number }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -40,6 +41,8 @@ export function DirectSalesTab() {
     if (error) setError(error.message); else setData(data as any);
     const sub = await supabase.rpc('get_direct_sales_substeps' as any, { _from: '2026-03-01' });
     if (!sub.error) setSubsteps((sub.data as any) ?? []);
+    const pc = await supabase.rpc('get_price_change_performance' as any, { _from: '2026-03-01' });
+    if (!pc.error) setChanges((pc.data as any) ?? []);
     setLoading(false);
   };
   useEffect(() => {
@@ -146,6 +149,39 @@ export function DirectSalesTab() {
               <ul className="list-disc pl-5 space-y-1 text-sm">
                 {problems.length ? problems.map((p) => <li key={p}>{p}</li>) : <li>No major change detected yet.</li>}
               </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">Price change log and how each change performed</CardTitle></CardHeader>
+            <CardContent className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="text-left text-muted-foreground">
+                  <th className="p-2">From</th><th className="p-2">Change</th><th className="p-2">Days live</th><th className="p-2">Reached Step 3</th><th className="p-2">Step 3 → 4</th><th className="p-2">Direct sales</th><th className="p-2">Step 4 → sale</th><th className="p-2">Sales / day</th><th className="p-2">Revenue</th>
+                </tr></thead>
+                <tbody>
+                  {changes.map((c, i) => {
+                    const perDay = c.days > 0 ? Math.round((c.sales / c.days) * 100) / 100 : 0;
+                    const prev = i > 0 ? changes[i - 1] : null;
+                    const prevPerDay = prev && prev.days > 0 ? prev.sales / prev.days : null;
+                    const worse = prevPerDay != null && perDay < prevPerDay;
+                    return (
+                      <tr key={c.start} className="border-t align-top">
+                        <td className="p-2 whitespace-nowrap">{new Date(c.start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                        <td className="p-2 max-w-xs">{c.pushes > 1 ? `${c.pushes} price pushes that day` : c.label}</td>
+                        <td className="p-2">{c.days}</td>
+                        <td className="p-2">{c.step3}</td>
+                        <td className="p-2">{pct(c.step4, c.step3)}%</td>
+                        <td className="p-2">{c.sales}</td>
+                        <td className="p-2">{pct(c.sales, c.step4)}%</td>
+                        <td className={`p-2 font-medium ${worse ? 'text-destructive' : ''}`}>{perDay}</td>
+                        <td className="p-2">£{Number(c.revenue).toLocaleString('en-GB')}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <p className="text-xs text-muted-foreground mt-3">Every price list pushed live from Price Updates is added here automatically. Each row runs until the next change. Red means fewer direct sales per day than the period before.</p>
             </CardContent>
           </Card>
 
