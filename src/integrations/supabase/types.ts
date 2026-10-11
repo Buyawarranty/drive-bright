@@ -10572,6 +10572,36 @@ export type Database = {
           },
         ]
       }
+      price_change_log: {
+        Row: {
+          changed_at: string
+          created_at: string
+          details: string | null
+          id: string
+          label: string
+          pricing_version_id: string | null
+          source: string
+        }
+        Insert: {
+          changed_at: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          label: string
+          pricing_version_id?: string | null
+          source?: string
+        }
+        Update: {
+          changed_at?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          label?: string
+          pricing_version_id?: string | null
+          source?: string
+        }
+        Relationships: []
+      }
       price_override_audit: {
         Row: {
           admin_user_id: string | null
@@ -15022,6 +15052,7 @@ export type Database = {
         | { Args: { p_exclude_agent_id?: string }; Returns: string }
       get_next_sales_user: { Args: never; Returns: string }
       get_next_warranty_serial: { Args: never; Returns: number }
+      get_price_change_performance: { Args: { _from?: string }; Returns: Json }
       get_public_vehicle_pricing_rules: {
         Args: never
         Returns: {
