@@ -87,6 +87,18 @@ export function DirectSalesTab() {
     });
   }, [data, combos.names]);
 
+  // New website prices after the Oct 2026 18% cut on 2/3-year cover
+  // (website only — Quotes & Orders unchanged). Estimated from the September
+  // average shown at Step 4, cut by 18% and clamped to the new website
+  // minimums (£565 / £810). 1-year prices are untouched.
+  const WEBSITE_MIN: Record<number, number> = { 24: 565, 36: 810 };
+  const newWebsitePrices = useMemo(() => beforeAfter.map((r) => {
+    const months = Number((r.name.match(/(\d+)\s*months?/) ?? [])[1] ?? 0);
+    if (r.s9 == null || (months !== 24 && months !== 36)) return { ...r, months, newPrice: null as number | null };
+    const min = WEBSITE_MIN[months];
+    return { ...r, months, newPrice: Math.max(Math.round(r.s9 * 0.82), min) };
+  }), [beforeAfter]);
+
   const SUBSTEPS: { key: string; label: string }[] = [
     { key: 'step4_viewed', label: 'Reached Step 4' },
     { key: 'pay_clicked', label: 'Pressed pay' },
@@ -253,6 +265,28 @@ export function DirectSalesTab() {
                   })}
                 </tbody>
               </table>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">Current website prices after the 18% cut (2 and 3-year cover)</CardTitle></CardHeader>
+            <CardContent className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="text-left text-muted-foreground">
+                  <th className="p-2">Cover option</th><th className="p-2">Website price before cut</th><th className="p-2">New website price</th><th className="p-2">Customer saves</th>
+                </tr></thead>
+                <tbody>
+                  {newWebsitePrices.map((r) => (
+                    <tr key={r.name} className="border-t">
+                      <td className="p-2">{r.name}</td>
+                      <td className="p-2">{r.s9 != null ? `£${r.s9}` : '–'}</td>
+                      <td className="p-2 font-medium">{r.newPrice != null ? `£${r.newPrice}` : r.months === 12 ? 'Unchanged' : '–'}</td>
+                      <td className="p-2">{r.newPrice != null && r.s9 != null ? `£${r.s9 - r.newPrice}` : '–'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="text-xs text-muted-foreground mt-3">Estimated from the average price shown at Step 4 in September, cut by 18%. No 2-year sale can go below £565 and no 3-year sale below £810 on the website — cheaper options simply show at the minimum, with no error or block for the customer. 1-year prices and all Quotes &amp; Orders prices are unchanged.</p>
             </CardContent>
           </Card>
 
