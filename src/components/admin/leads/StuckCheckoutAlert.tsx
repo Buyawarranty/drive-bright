@@ -10,6 +10,7 @@ import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useIsManagement } from '@/hooks/useIsManagement';
 import { Button } from '@/components/ui/button';
+import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
 
 const DISMISSED_IDS_KEY = 'stuck-checkout-alert-dismissed-ids';
 
