@@ -256,17 +256,25 @@ export const StuckCheckoutAlert: React.FC = () => {
             </div>
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            onClick={dismissAll}
-            className="h-6 w-6 p-1 shrink-0 hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
-            title="Close"
-            aria-label="Close stuck checkout alert"
-          >
-            <X className="h-3.5 w-3.5" />
-          </Button>
+          <div className="flex items-center gap-1 shrink-0">
+            <CopyAlertButton
+              text={allText}
+              label="Copy all stuck checkout alerts"
+              caption="Copy all"
+              className="inline-flex items-center gap-1 rounded border border-destructive-foreground/40 bg-destructive-foreground/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive-foreground hover:bg-destructive-foreground/20"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={dismissAll}
+              className="h-6 w-6 p-1 shrink-0 hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
+              title="Close"
+              aria-label="Close stuck checkout alert"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
 
         {expanded && (
