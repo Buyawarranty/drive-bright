@@ -9,6 +9,7 @@ import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import { payInFullTotal } from '@/lib/pricing/payInFull';
+import { WEBSITE_NET_FLOOR_BY_PERIOD } from '@/lib/pricing/netFloor';
 import { getPaymentPreference, setPaymentPreference } from '@/lib/checkoutPaymentPreference';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
@@ -531,7 +532,10 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         selectedPayment={stickyPayment}
         onPaymentChange={handleStickyPaymentChange}
         monthlyPrice={discountedMonthlyPrice}
-        fullPrice={payInFullTotal(discountedMonthlyPrice)}
+        fullPrice={Math.max(
+          WEBSITE_NET_FLOOR_BY_PERIOD[(paymentType || '24months') as keyof typeof WEBSITE_NET_FLOOR_BY_PERIOD] ?? 399,
+          payInFullTotal(discountedMonthlyPrice),
+        )}
         paymentType={paymentType || '24months'}
         isLoading={isLoading}
         isFormValid={canAdvance}

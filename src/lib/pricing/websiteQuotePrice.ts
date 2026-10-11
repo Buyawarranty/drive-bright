@@ -27,7 +27,7 @@ import {
   applyPriceAdjustment,
   isMotorbikeAdjustment,
 } from '@/lib/vehicleValidation';
-import { applyWebsiteSellFloor } from '@/lib/pricing/netFloor';
+import { applyWebsitePayInFullFloor, applyWebsiteSellFloor } from '@/lib/pricing/netFloor';
 import { payInFullSaving, payInFullTotal, twelvePaymentTotal } from '@/lib/pricing/payInFull';
 
 export type WebsiteQuoteVehicle = {
@@ -105,10 +105,16 @@ export function calculateWebsiteQuotePrice(
   );
 
   const monthly = Math.ceil(floored / 12);
+  const total = twelvePaymentTotal(monthly);
+  // The 10% pay-in-full discount may never take the final amount below the
+  // website minimum for the term (£399/£700/£1,000).
+  const payInFull = applyWebsitePayInFullFloor(payInFullTotal(monthly), {
+    paymentPeriod, voluntaryExcess, claimLimit, labourRate, isMotorbike,
+  });
   return {
     monthly,
-    total: twelvePaymentTotal(monthly),
-    payInFull: payInFullTotal(monthly),
-    saving: payInFullSaving(monthly),
+    total,
+    payInFull,
+    saving: total - payInFull,
   };
 }

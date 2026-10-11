@@ -1001,17 +1001,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }
   }
   
-  // Pay in full uses 10% discount on the floored monthly total
-  // CRITICAL: Must match Step 3's formula: total - Math.floor(total * 0.10)
-  // NOT Math.floor(total * 0.90) which can differ by £1 due to rounding
-  const stripeSavingsBase = Math.floor(bumperTotalPrice * 0.10);
-  const stripeTotalPrice = bumperTotalPrice - stripeSavingsBase;
-
   // Calculate discounts with minimum price floor (Stripe requires minimum £0.50, we use £1 for safety)
-  // Hard floor = the net sell floor for this term (£399/£769/£1,099 for
-  // 12/24/36 months, halved for motorbikes) — promo codes may NOT take a sale
-  // below it. Mirrors supabase/functions/_shared/price-floor.ts, which rejects
-  // any charge under the same floor server-side.
+  // Hard floor = the website net sell floor for this term (£399/£700/£1,000
+  // for 12/24/36 months, halved for motorbikes) — promo codes may NOT take a
+  // sale below it. Mirrors supabase/functions/_shared/price-floor.ts, which
+  // rejects any charge under the same floor server-side.
   // Manager test codes (SAVE99GOLDEN / TEST*) drop the floor to £1 so 99%-off QA runs work.
   const checkoutPeriod = String(paymentType || '').includes('36')
     ? '36months'
@@ -1027,6 +1021,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     surface: 'admin',
   });
   const MINIMUM_PRICE = minimumPriceForCodes(appliedDiscountCodes, checkoutTermFloor);
+
+  // Pay in full uses 10% discount on the floored monthly total
+  // CRITICAL: Must match Step 3's formula: total - Math.floor(total * 0.10)
+  // NOT Math.floor(total * 0.90) which can differ by £1 due to rounding
+  // The 10% discount may never take the final amount below the term floor
+  // (Oct 2026) — if it would, the customer pays the floor instead.
+  const stripeSavingsBase = Math.floor(bumperTotalPrice * 0.10);
+  const stripeTotalPrice = Math.max(checkoutTermFloor, bumperTotalPrice - stripeSavingsBase);
   const hasValidDiscountCodes = appliedDiscountCodes.length > 0;
 
   
@@ -1054,9 +1056,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // For stripe (pay in full): cap discount so final price >= £1
   // IMPORTANT: Discount is calculated on stripeTotalPrice (already 10% off), not bumperTotalPrice
-  // Pay in full ALWAYS gets the full 10% off (1 Oct 2026): its floor is the
-  // term floor less 10%, so the minimum never swallows the pay-in-full saving.
-  const STRIPE_MINIMUM_PRICE = Math.min(stripeTotalPrice, MINIMUM_PRICE - Math.floor(MINIMUM_PRICE * 0.10));
+  // Pay in full can never go below the term floor (Oct 2026): the 10% saving
+  // is already floored in stripeTotalPrice, and promos cap at the same floor.
+  const STRIPE_MINIMUM_PRICE = Math.min(stripeTotalPrice, MINIMUM_PRICE);
   const maxStripeDiscount = Math.max(0, stripeTotalPrice - STRIPE_MINIMUM_PRICE);
   const effectiveStripeDiscount = Math.min(stripeDiscountAmount, maxStripeDiscount);
   const discountedStripePrice = Math.max(STRIPE_MINIMUM_PRICE, Math.floor(stripeTotalPrice - effectiveStripeDiscount));
