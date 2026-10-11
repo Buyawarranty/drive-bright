@@ -14,7 +14,7 @@ import {
   getExcessBracketBasis,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
-import { applyWebsiteSellFloor, getNetPayableFloor } from '@/lib/pricing/netFloor';
+import { applyWebsiteSellFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import ClaimLimitDetails from './ClaimLimitDetails';
@@ -256,7 +256,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   const appliedPromos = useAppliedPromos();
   // Promo codes may never take a sale below the net sell floor for this term
   // (£399/£769/£1,099, halved for motorbikes) — matches the server-side floor.
-  const promoTermFloor = getNetPayableFloor({
+  const promoTermFloor = getWebsiteNetFloor({
     paymentPeriod: (paymentType || '12months') as PaymentPeriod,
     voluntaryExcess: voluntaryExcess ?? 100,
     claimLimit: selectedClaimLimit ?? undefined,

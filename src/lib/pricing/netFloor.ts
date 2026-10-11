@@ -133,8 +133,35 @@ export function clampWebToNetFloor(amount: number, params: NetFloorParams): numb
  * for that cover. Since 13/09/2026 promo codes (SAVE25, cart recovery,
  * pay-in-full 10%) are also capped at this floor — no sale completes below it.
  */
+/**
+ * WEBSITE-ONLY 2/3-year price cut (Oct 2026): 18% off 2 and 3-year cover on
+ * Step 3 / Step 4 / chatbot. 1-year untouched. Quotes & Orders never uses this.
+ */
+export const WEBSITE_MULTI_YEAR_PRICE_FACTOR = 0.82;
+
+/** Website-only flat minimums for 2/3-year cover (agent limits stay £769/£1,099). */
+export const WEBSITE_NET_FLOOR_BY_PERIOD: Record<PaymentPeriod, number> = {
+  '12months': 399,
+  '24months': 565,
+  '36months': 810,
+};
+
+/**
+ * Website minimum for this combination: the agent (Quotes & Orders) shaped
+ * floor scaled down to the website minimums for 2/3-year cover. 1-year is the
+ * same as Quotes & Orders.
+ */
+export function getWebsiteNetFloor(params: NetFloorParams): number {
+  const adminFloor = getNetPayableFloor({ ...params, surface: 'admin' });
+  const p = params.paymentPeriod;
+  if (p !== '24months' && p !== '36months') return adminFloor;
+  return Math.ceil(adminFloor * (WEBSITE_NET_FLOOR_BY_PERIOD[p] / NET_FLOOR_BY_PERIOD[p]));
+}
+
 export function applyWebsiteSellFloor(total: number, params: Omit<NetFloorParams, 'surface'>): number {
-  const floor = getNetPayableFloor({ ...params, surface: 'admin' });
+  const floor = getWebsiteNetFloor(params);
   if (!Number.isFinite(total) || total <= 0) return Math.ceil(floor);
-  return Math.max(Math.round(total), Math.ceil(floor));
+  const multiYear = params.paymentPeriod === '24months' || params.paymentPeriod === '36months';
+  const cut = multiYear ? total * WEBSITE_MULTI_YEAR_PRICE_FACTOR : total;
+  return Math.max(Math.round(cut), Math.ceil(floor));
 }
