@@ -10,6 +10,12 @@ interface Props {
   caption?: string;
   /** Extra classes for the button. */
   className?: string;
+  /**
+   * Emoji placed at the start and the end of the copied text, so the message
+   * stands out in a WhatsApp thread and the team can see at a glance which
+   * kind of alert it is.
+   */
+  emoji?: string;
 }
 
 /**
@@ -17,17 +23,20 @@ interface Props {
  * text (name, reg, plan, price, phone — not just the number) so it can be
  * pasted straight into WhatsApp or any other message to the sales team.
  */
-export const CopyAlertButton: React.FC<Props> = ({ text, label, caption, className }) => {
+export const CopyAlertButton: React.FC<Props> = ({ text, label, caption, className, emoji }) => {
   const [copied, setCopied] = React.useState(false);
+
+  // Same text, framed with the emoji at the beginning and the end.
+  const payload = emoji ? `${emoji} ${text} ${emoji}` : text;
 
   const copy = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(payload);
     } catch {
       // Fallback for browsers without clipboard permission.
       const ta = document.createElement('textarea');
-      ta.value = text;
+      ta.value = payload;
       document.body.appendChild(ta);
       ta.select();
       try { document.execCommand('copy'); } catch { /* ignore */ }

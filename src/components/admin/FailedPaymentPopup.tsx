@@ -49,7 +49,7 @@ export const FailedPaymentPopup: React.FC<{ onOpenMissedPayments?: () => void }>
       <div className="flex flex-col gap-2">
         {open.length > 1 && (
           <div className="flex justify-end">
-            <CopyAlertButton text={allText} label="Copy all failed payment alerts" caption="Copy all" />
+            <CopyAlertButton text={allText} label="Copy all failed payment alerts" caption="Copy all" emoji="⚠️" />
           </div>
         )}
         {shown.map(i => (
@@ -86,7 +86,7 @@ export const FailedPaymentPopup: React.FC<{ onOpenMissedPayments?: () => void }>
               )}
             </div>
             <div className="mt-2 flex justify-end">
-              <CopyAlertButton text={itemText(i)} label="Copy this failed payment alert" caption="Copy" />
+              <CopyAlertButton text={itemText(i)} label="Copy this failed payment alert" caption="Copy" emoji="⚠️" />
             </div>
           </div>
         ))}

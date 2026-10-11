@@ -261,6 +261,7 @@ export const StuckCheckoutAlert: React.FC = () => {
               text={allText}
               label="Copy all stuck checkout alerts"
               caption="Copy all"
+              emoji="🔒"
               className="inline-flex items-center gap-1 rounded border border-destructive-foreground/40 bg-destructive-foreground/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive-foreground hover:bg-destructive-foreground/20"
             />
             <Button
@@ -363,6 +364,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                       text={rowText(r)}
                       label="Copy this alert as text"
                       caption="Copy"
+                      emoji="🔒"
                       className="inline-flex items-center gap-1 rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-red-700 hover:bg-red-50"
                     />
                     {!phone && <span className="text-[11px] text-gray-500">No phone captured</span>}

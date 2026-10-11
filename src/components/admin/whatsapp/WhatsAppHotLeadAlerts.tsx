@@ -113,7 +113,7 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
               >
                 Open chat
               </Button>
-              <CopyAlertButton text={cardText(c)} label="Copy this WhatsApp lead alert" caption="Copy" />
+              <CopyAlertButton text={cardText(c)} label="Copy this WhatsApp lead alert" caption="Copy" emoji="📲" />
             </div>
           </div>
         ))}
