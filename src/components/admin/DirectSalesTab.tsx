@@ -290,7 +290,7 @@ export function DirectSalesTab() {
                   ))}
                 </tbody>
               </table>
-              <p className="text-xs text-muted-foreground mt-3">Estimated from the average price shown at Step 4 in September, cut by 18%. No 2-year sale can go below £700 and no 3-year sale below £1,000 on the website — cheaper options simply show at the minimum, with no error or block for the customer. 1-year prices and all Quotes &amp; Orders prices are unchanged.</p>
+              <p className="text-xs text-muted-foreground mt-3">Estimated from the average price shown at Step 4 in September, cut by {cutPct}%. No 2-year sale can go below £700 and no 3-year sale below £1,000 on the website — cheaper options simply show at the minimum, with no error or block for the customer. 1-year prices and all Quotes &amp; Orders prices are unchanged.</p>
             </CardContent>
           </Card>
 
