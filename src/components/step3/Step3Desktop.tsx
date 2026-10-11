@@ -15,6 +15,7 @@ import {
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
 import { applyWebsiteSellFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
+import { twelvePaymentTotal } from "@/lib/pricing/payInFull";
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import ClaimLimitDetails from './ClaimLimitDetails';
@@ -281,6 +282,9 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     Math.max(promoPriceFloor(appliedPromos, promoTermFloor), stripeBeforePromo - stripePromoAmt),
   );
   const savings = Math.max(0, rawMonthlyTotal - payInFull);
+  // What the customer actually pays across the 12 instalments — shown in the
+  // sticky bar next to "Pay in full" so the two boxes can be compared directly.
+  const monthlyPaymentsTotal = twelvePaymentTotal(displayedMonthlyPrice);
 
   const selectedTier = CLAIM_LIMIT_TIERS.find(t => t.value === selectedClaimLimit);
   const selectedLabour = LABOUR_OPTIONS.find(l => l.value === selectedLabourRate);
@@ -702,14 +706,16 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                 <div className="text-[11px] mt-1.5">
                   <span className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#f36b21] bg-[#fff1e6] border border-[#ffd9bd] rounded-full px-2 py-0.5">12 instalments only</span>
                 </div>
-                <div className="text-[11px] text-[#6c6c6c] mt-1 font-semibold">{months / 12}-year cover · no payments after month 12</div>
+                <div className="text-[12px] text-[#161616] mt-1 font-extrabold">£{monthlyPaymentsTotal} total if paid monthly</div>
+                <div className="text-[11px] text-[#6c6c6c] mt-0.5 font-semibold">{months / 12}-year cover · no payments after month 12</div>
               </>
             ) : (
               <>
                 <div className="text-[26px] font-extrabold tracking-[-0.04em] text-[#161616] leading-none">
                   £{displayedMonthlyPrice}<span className="text-[14px] text-[#6c6c6c] font-bold ml-0.5">/month</span>
                 </div>
-                <div className="text-[12px] text-[#6c6c6c] mt-1 font-semibold">Equal to {dailyLabel}</div>
+                <div className="text-[12px] text-[#161616] mt-1 font-extrabold">£{monthlyPaymentsTotal} total if paid monthly</div>
+                <div className="text-[12px] text-[#6c6c6c] mt-0.5 font-semibold">Equal to {dailyLabel}</div>
                 <div className="text-[11px] text-[#919191] font-semibold">Paid over 12 months</div>
               </>
             )}
