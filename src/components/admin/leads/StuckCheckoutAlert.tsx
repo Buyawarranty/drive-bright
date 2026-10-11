@@ -10,6 +10,7 @@ import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useIsManagement } from '@/hooks/useIsManagement';
 import { Button } from '@/components/ui/button';
+import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
 
 const DISMISSED_IDS_KEY = 'stuck-checkout-alert-dismissed-ids';
 
@@ -211,6 +212,29 @@ export const StuckCheckoutAlert: React.FC = () => {
 
   const readyToCall = live.filter((r) => getContactCadence(r.created_at).canCall).length;
 
+  // Plain-text version of one row, for pasting into WhatsApp etc.
+  const rowText = (r: StuckRow) => {
+    const cadence = getContactCadence(r.created_at);
+    const phone = (r.customer_phone || '').replace(/\s/g, '');
+    const owner = ownerName(owners[r.id]);
+    return [
+      r.customer_name || r.customer_email || r.customer_phone || 'Customer',
+      `${SIGNAL_LABELS[r.signal_type] || r.signal_type} · came in ${cameInAt(r.created_at)} · ${timeAgo(r.created_at)}`,
+      [r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null, r.plan_name, r.amount ? `£${r.amount}` : null].filter(Boolean).join(' · '),
+      cadence.label,
+      owner ? `Lead with ${owner}` : null,
+      phone ? `Call now: ${formatUkPhone(phone)}` : null,
+      r.customer_email || null,
+    ].filter(Boolean).join('\n');
+  };
+
+  const allText = [
+    live.length === 1 ? '1 customer stuck on checkout' : `${live.length} customers stuck on checkout`,
+    `${readyToCall} ready to call now`,
+    '',
+    ...live.map(rowText),
+  ].join('\n');
+
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.stuckCheckout}>
       <div className="rounded-lg border border-destructive border-l-4 bg-destructive text-destructive-foreground shadow-sm overflow-hidden">
@@ -232,17 +256,25 @@ export const StuckCheckoutAlert: React.FC = () => {
             </div>
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            onClick={dismissAll}
-            className="h-6 w-6 p-1 shrink-0 hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
-            title="Close"
-            aria-label="Close stuck checkout alert"
-          >
-            <X className="h-3.5 w-3.5" />
-          </Button>
+          <div className="flex items-center gap-1 shrink-0">
+            <CopyAlertButton
+              text={allText}
+              label="Copy all stuck checkout alerts"
+              caption="Copy all"
+              className="inline-flex items-center gap-1 rounded border border-destructive-foreground/40 bg-destructive-foreground/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive-foreground hover:bg-destructive-foreground/20"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={dismissAll}
+              className="h-6 w-6 p-1 shrink-0 hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
+              title="Close"
+              aria-label="Close stuck checkout alert"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
 
         {expanded && (
@@ -327,6 +359,12 @@ export const StuckCheckoutAlert: React.FC = () => {
                         <Copy className="h-3.5 w-3.5 text-red-700" />
                       </button>
                     )}
+                    <CopyAlertButton
+                      text={rowText(r)}
+                      label="Copy this alert as text"
+                      caption="Copy"
+                      className="inline-flex items-center gap-1 rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-red-700 hover:bg-red-50"
+                    />
                     {!phone && <span className="text-[11px] text-gray-500">No phone captured</span>}
                   </div>
                 </li>

@@ -5,6 +5,7 @@ import { Tag, Phone, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
+import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
 
 const DISMISSED_KEY = 'price-beat-alert-dismissed-ids';
 
@@ -69,6 +70,24 @@ export const PriceBeatRequestAlert: React.FC = () => {
 
   if (live.length === 0) return null;
 
+  // Plain-text version of one price beat request, for pasting into WhatsApp etc.
+  const rowText = (r: Row) => {
+    const m = r.cart_metadata || {};
+    return [
+      'Price beat request — customer wants us to beat a quote',
+      [r.vehicle_make, r.vehicle_model].filter(Boolean).join(' ') || 'Vehicle',
+      [r.vehicle_reg, formatDistanceToNow(new Date(r.created_at), { addSuffix: true })].filter(Boolean).join(' · '),
+      `Competitor: ${m.competitorPrice ? `£${m.competitorPrice} ${m.competitorPriceMode === 'total' ? 'total' : '/mo'}` : 'not given'}${m.currentMonthlyPrice ? ` · Our quote £${m.currentMonthlyPrice}/mo` : ''}`,
+      r.phone ? `Call now: ${fmtPhone(r.phone)}` : null,
+    ].filter(Boolean).join('\n');
+  };
+
+  const allText = [
+    live.length === 1 ? '1 price beat request' : `${live.length} price beat requests`,
+    '',
+    ...live.map(rowText),
+  ].join('\n');
+
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.priceBeat}>
       <div className="rounded-xl border border-orange-200 border-l-4 border-l-orange-500 bg-orange-50 text-gray-900 shadow-sm overflow-hidden">
@@ -83,9 +102,12 @@ export const PriceBeatRequestAlert: React.FC = () => {
             </div>
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
           </button>
-          <button onClick={() => live.forEach((r) => dismiss(r.id))} aria-label="Dismiss" className="shrink-0 rounded p-0.5 hover:bg-orange-100">
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1 shrink-0">
+            <CopyAlertButton text={allText} label="Copy all price beat alerts" caption="Copy all" />
+            <button onClick={() => live.forEach((r) => dismiss(r.id))} aria-label="Dismiss" className="shrink-0 rounded p-0.5 hover:bg-orange-100">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         {expanded && (
           <div className="space-y-2 px-3 pb-3">
@@ -108,6 +130,9 @@ export const PriceBeatRequestAlert: React.FC = () => {
                       <Phone className="h-3 w-3" /> Call now: {fmtPhone(r.phone)}
                     </a>
                   )}
+                  <div className="mt-1.5 flex justify-end">
+                    <CopyAlertButton text={rowText(r)} label="Copy this price beat alert" caption="Copy" />
+                  </div>
                 </div>
               );
             })}

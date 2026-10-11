@@ -4,6 +4,7 @@ import { pushRecentAlert } from '@/lib/recentAlerts';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
+import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
 import { prettyWhatsAppPhone } from '@/lib/whatsappHeat';
 import type { WhatsAppConversation } from '@/hooks/useWhatsAppConversations';
 
@@ -64,6 +65,15 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
 
   if (!currentAdminId || hot.length === 0) return null;
 
+  // Plain-text version of one hot lead, for pasting into WhatsApp etc.
+  const cardText = (c: WhatsAppConversation) =>
+    [
+      `Hot WhatsApp Lead - ${c.heat_reason || 'Customer is asking for a quote'}`,
+      `${c.display_name || prettyWhatsAppPhone(c.phone)} · ${prettyWhatsAppPhone(c.phone)}`,
+      c.lead_id && ownerByLeadId[c.lead_id] ? `${ownerByLeadId[c.lead_id]}'s lead` : null,
+      c.last_message_preview || null,
+    ].filter(Boolean).join('\n');
+
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.whatsappHotLead}>
       <div className="space-y-2">
@@ -103,6 +113,7 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
               >
                 Open chat
               </Button>
+              <CopyAlertButton text={cardText(c)} label="Copy this WhatsApp lead alert" caption="Copy" />
             </div>
           </div>
         ))}

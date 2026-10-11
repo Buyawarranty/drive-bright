@@ -3,6 +3,7 @@ import { pushRecentAlert } from '@/lib/recentAlerts';
 import { X, CreditCard, Phone, ChevronDown, ChevronUp } from 'lucide-react';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { useFailedPayments } from '@/hooks/useFailedPayments';
+import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
 
 const HIDDEN_KEY = 'bw:failed-payment-hidden';
 const loadHidden = (): string[] => { try { return JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]'); } catch { return []; } };
@@ -24,9 +25,33 @@ export const FailedPaymentPopup: React.FC<{ onOpenMissedPayments?: () => void }>
   };
 
   if (!shown.length) return null;
+
+  // Plain-text version of one failed payment, for pasting into WhatsApp etc.
+  const itemText = (i: (typeof items)[number]) =>
+    [
+      'Payment failed',
+      `${i.method === 'stripe' ? 'Stripe' : 'Bumper'} · ${new Date(i.at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}`,
+      `${i.name || i.email || 'Unknown customer'}${i.amount != null ? ` – £${Number(i.amount).toFixed(2)}` : ''}`,
+      [i.reg, i.reason].filter(Boolean).join(' · '),
+      `Lead owner: ${i.ownerName || 'Unassigned'}`,
+      i.phone ? `Call: ${i.phone}` : null,
+      i.email || null,
+    ].filter(Boolean).join('\n');
+
+  const allText = [
+    open.length === 1 ? '1 failed payment' : `${open.length} failed payments`,
+    '',
+    ...open.map(itemText),
+  ].join('\n');
+
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.failedPayment}>
       <div className="flex flex-col gap-2">
+        {open.length > 1 && (
+          <div className="flex justify-end">
+            <CopyAlertButton text={allText} label="Copy all failed payment alerts" caption="Copy all" />
+          </div>
+        )}
         {shown.map(i => (
           <div key={i.key} className="relative rounded-xl border border-red-200 border-l-4 border-l-red-600 bg-red-50 p-3 shadow-sm text-sm text-gray-900">
             <div className="flex items-start gap-2 pr-6">
@@ -59,6 +84,9 @@ export const FailedPaymentPopup: React.FC<{ onOpenMissedPayments?: () => void }>
                   <Phone className="h-3 w-3" />Call
                 </a>
               )}
+            </div>
+            <div className="mt-2 flex justify-end">
+              <CopyAlertButton text={itemText(i)} label="Copy this failed payment alert" caption="Copy" />
             </div>
           </div>
         ))}
