@@ -36,6 +36,7 @@ const EmailCapturePopup = lazyWithRetry(() =>
   import('./EmailCapturePopup').then((m) => ({ default: m.EmailCapturePopup }))
 );
 const RequestCallbackModal = lazyWithRetry(() => import('./modals/RequestCallbackModal'));
+const PriceBeatModal = lazyWithRetry(() => import('./modals/PriceBeatModal'));
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -96,6 +97,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
+  const [showPriceBeat, setShowPriceBeat] = useState(false);
   // UK office hours: 09:00–18:00 Europe/London
   const computeUkOfficeHours = () => {
     const parts = new Intl.DateTimeFormat('en-GB', {
