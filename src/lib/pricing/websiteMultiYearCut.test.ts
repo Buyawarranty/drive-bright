@@ -45,7 +45,6 @@ import {
   setLiveWebsiteMultiYearCutPct,
   getWebsiteMultiYearCutFactor,
   getWebsiteMultiYearCutPct,
-  applyWebsiteSellFloor,
   WEBSITE_MULTI_YEAR_PRICE_FACTOR,
 } from './netFloor';
 
@@ -61,7 +60,7 @@ describe('website multi-year cut — live manager override', () => {
     setLiveWebsiteMultiYearCutPct(14);
     expect(getWebsiteMultiYearCutPct()).toBe(14);
     // £1,000 grid at 14% off = £860 (above the £700 floor, so no clamp).
-    expect(applyWebsiteSellFloor(1000, { paymentPeriod: '24months', claimLimit: 1000, excess: 500, labourRate: 50 } as never)).toBe(860);
+    expect(applyWebsiteSellFloor(1000, { paymentPeriod: '24months', voluntaryExcess: 500, claimLimit: 1000, labourRate: 50 })).toBe(860);
   });
 
   it('rejecting nonsense values restores the default', () => {
@@ -73,6 +72,6 @@ describe('website multi-year cut — live manager override', () => {
 
   it('1-year cover is never cut, whatever is published', () => {
     setLiveWebsiteMultiYearCutPct(25);
-    expect(applyWebsiteSellFloor(500, { paymentPeriod: '12months', claimLimit: 1000, excess: 500, labourRate: 50 } as never)).toBe(500);
+    expect(applyWebsiteSellFloor(500, { paymentPeriod: '12months', voluntaryExcess: 500, claimLimit: 1000, labourRate: 50 })).toBe(500);
   });
 });
