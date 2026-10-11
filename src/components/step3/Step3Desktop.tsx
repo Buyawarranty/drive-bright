@@ -15,7 +15,7 @@ import {
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
 import { applyWebsiteSellFloor, applyWebsitePayInFullFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
-import { twelvePaymentTotal } from "@/lib/pricing/payInFull";
+import { twelvePaymentTotal, MIN_DISPLAYED_SAVING } from "@/lib/pricing/payInFull";
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import ClaimLimitDetails from './ClaimLimitDetails';
