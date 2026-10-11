@@ -415,6 +415,14 @@ export default function PriceUpdateLogPanel({
                       {stats.orders} {stats.orders === 1 ? 'sale' : 'sales'} over{' '}
                       {stats.list.length || 0} {stats.list.length === 1 ? 'day' : 'days'}
                     </span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="font-semibold" title="Average sales per day while this price model was live — the fairest way to compare models that ran for different lengths of time">
+                      {(stats.orders / Math.max(1, stats.list.length)).toFixed(1)} sales/day
+                    </span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="font-semibold" title="Average revenue taken per day while this price model was live">
+                      {money(stats.revenue / Math.max(1, stats.list.length))}/day
+                    </span>
                     {salesLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                     {stats.list.length > 0 && (
                       <Button
