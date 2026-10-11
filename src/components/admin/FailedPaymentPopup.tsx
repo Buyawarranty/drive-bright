@@ -85,6 +85,9 @@ export const FailedPaymentPopup: React.FC<{ onOpenMissedPayments?: () => void }>
                 </a>
               )}
             </div>
+            <div className="mt-2 flex justify-end">
+              <CopyAlertButton text={itemText(i)} label="Copy this failed payment alert" caption="Copy" />
+            </div>
           </div>
         ))}
         {more > 0 && (
