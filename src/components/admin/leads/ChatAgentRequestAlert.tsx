@@ -142,6 +142,29 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
 
   if (live.length === 0) return null;
 
+  // Plain-text version of one chat request, for pasting into WhatsApp etc.
+  const rowText = (r: ChatLeadRow) => {
+    const name = [r.first_name, r.last_name].filter(Boolean).join(' ').trim();
+    const phone = (r.phone || '').replace(/\s/g, '');
+    return [
+      'Chat customer wants to speak to someone',
+      name || r.email || r.phone || 'Chat customer',
+      `asked for a person in chat · ${formatTimeAgo(r.created_at)}`,
+      info[r.id]?.topic?.label ? `Topic: ${info[r.id].topic.label}` : null,
+      info[r.id]?.question ? `“${info[r.id].question}”` : null,
+      r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null,
+      phone ? `Call now: ${r.phone}` : 'No phone number given — email only',
+      r.email || null,
+    ].filter(Boolean).join('\n');
+  };
+
+  const allText = [
+    live.length === 1 ? '1 chat customer wants to speak to someone' : `${live.length} chat customers want to speak to someone`,
+    'From the website chat — call back now',
+    '',
+    ...live.map(rowText),
+  ].join('\n');
+
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.chatAgentRequest}>
       <div className="rounded-xl border border-blue-200 border-l-4 border-l-blue-600 bg-blue-50 text-gray-900 shadow-sm overflow-hidden">

@@ -70,6 +70,24 @@ export const PriceBeatRequestAlert: React.FC = () => {
 
   if (live.length === 0) return null;
 
+  // Plain-text version of one price beat request, for pasting into WhatsApp etc.
+  const rowText = (r: Row) => {
+    const m = r.cart_metadata || {};
+    return [
+      'Price beat request — customer wants us to beat a quote',
+      [r.vehicle_make, r.vehicle_model].filter(Boolean).join(' ') || 'Vehicle',
+      [r.vehicle_reg, formatDistanceToNow(new Date(r.created_at), { addSuffix: true })].filter(Boolean).join(' · '),
+      `Competitor: ${m.competitorPrice ? `£${m.competitorPrice} ${m.competitorPriceMode === 'total' ? 'total' : '/mo'}` : 'not given'}${m.currentMonthlyPrice ? ` · Our quote £${m.currentMonthlyPrice}/mo` : ''}`,
+      r.phone ? `Call now: ${fmtPhone(r.phone)}` : null,
+    ].filter(Boolean).join('\n');
+  };
+
+  const allText = [
+    live.length === 1 ? '1 price beat request' : `${live.length} price beat requests`,
+    '',
+    ...live.map(rowText),
+  ].join('\n');
+
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.priceBeat}>
       <div className="rounded-xl border border-orange-200 border-l-4 border-l-orange-500 bg-orange-50 text-gray-900 shadow-sm overflow-hidden">
