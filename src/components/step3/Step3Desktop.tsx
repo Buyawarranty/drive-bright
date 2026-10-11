@@ -266,15 +266,16 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     ),
     surface: 'admin',
   });
-  const stripeBeforePromo = rawMonthlyTotal - Math.floor(rawMonthlyTotal * 0.10);
+  // The 10% pay-in-full discount may never take the final amount below the
+  // website minimum for the term (£399/£700/£1,000) — clamp before promos.
+  const stripeBeforePromo = Math.max(promoTermFloor, rawMonthlyTotal - Math.floor(rawMonthlyTotal * 0.10));
   const bumperPromoAmt = calcPromoDiscount(rawMonthlyTotal, appliedPromos, promoTermFloor);
   const stripePromoAmt = calcPromoDiscount(stripeBeforePromo, appliedPromos, promoTermFloor);
   const monthlyTotal = Math.max(promoPriceFloor(appliedPromos, promoTermFloor), rawMonthlyTotal - bumperPromoAmt);
   const displayedMonthlyPrice = bumperPromoAmt > 0
     ? Math.max(1, Math.ceil(monthlyTotal / 12))
     : monthlyPrice;
-  // The floor only limits promo deductions — it must never claw back the 10%
-  // pay-in-full saving (matches Step 4).
+  // The floor limits promo deductions; the 10% saving is already floored above.
   const payInFull = Math.min(
     stripeBeforePromo,
     Math.max(promoPriceFloor(appliedPromos, promoTermFloor), stripeBeforePromo - stripePromoAmt),

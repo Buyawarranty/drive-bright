@@ -165,3 +165,14 @@ export function applyWebsiteSellFloor(total: number, params: Omit<NetFloorParams
   const cut = multiYear ? total * WEBSITE_MULTI_YEAR_PRICE_FACTOR : total;
   return Math.max(Math.round(cut), Math.ceil(floor));
 }
+
+/**
+ * Pay-in-full floor (Oct 2026): the 10% pay-in-full discount may never take
+ * the final amount below the website minimum for the term (£399/£700/£1,000).
+ * If it would, the customer pays the minimum — the saving just shrinks.
+ */
+export function applyWebsitePayInFullFloor(payInFull: number, params: Omit<NetFloorParams, 'surface'>): number {
+  const floor = getWebsiteNetFloor(params);
+  if (!Number.isFinite(payInFull) || payInFull <= 0) return Math.ceil(floor);
+  return Math.max(Math.round(payInFull), Math.ceil(floor));
+}
