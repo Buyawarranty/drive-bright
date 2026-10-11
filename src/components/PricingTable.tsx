@@ -2026,17 +2026,21 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         <div className="text-xs text-gray-500">Pay in full</div>
                         <div className="flex items-baseline gap-2 mt-0.5">
                           <span className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">£{cardPayInFull}</span>
-                          <span className="text-sm text-red-500 line-through">£{displayedAnnualPrice}</span>
+                          {cardSaving >= MIN_DISPLAYED_SAVING && (
+                            <span className="text-sm text-red-500 line-through">£{displayedAnnualPrice}</span>
+                          )}
                         </div>
                       </div>
-                      <div className="text-right">
-                        {cardIsFullTen && (
-                          <div className="text-[10px] font-semibold text-green-700 uppercase tracking-wide">Save 10%</div>
-                        )}
-                        <div className="text-base sm:text-lg font-bold text-green-700 leading-none mt-0.5">
-                          £{cardSaving} today
+                      {cardSaving >= MIN_DISPLAYED_SAVING && (
+                        <div className="text-right">
+                          {cardIsFullTen && (
+                            <div className="text-[10px] font-semibold text-green-700 uppercase tracking-wide">Save 10%</div>
+                          )}
+                          <div className="text-base sm:text-lg font-bold text-green-700 leading-none mt-0.5">
+                            £{cardSaving} today
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
 
@@ -2504,7 +2508,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[11px] text-gray-600">12 payments · Covers {months} months</span>
-                        {actualSaving > 0 && (
+                        {actualSaving >= MIN_DISPLAYED_SAVING && (
                           <span className="text-[11px] font-semibold text-green-600">Save £{actualSaving} today</span>
                         )}
                       </div>
@@ -2626,7 +2630,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             <Wallet className="w-5 h-5 text-green-600 flex-shrink-0" />
                             <div className="flex flex-col">
                               <span className="text-xs text-gray-700 whitespace-nowrap leading-tight">Pay in full <span className="font-bold text-gray-900">£{payInFullDiscounted}</span></span>
-                              <span className="text-xs font-semibold text-green-600 whitespace-nowrap leading-tight mt-0.5">Save £{actualSaving} vs monthly</span>
+                              <span className="text-xs font-semibold text-green-600 whitespace-nowrap leading-tight mt-0.5">{actualSaving >= MIN_DISPLAYED_SAVING ? `Save £${actualSaving} vs monthly` : ''}</span>
                             </div>
                           </div>
                         )}
