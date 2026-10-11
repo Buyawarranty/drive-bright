@@ -108,3 +108,6 @@
 - [x] Customer Management: Payment column pill is now a dropdown so permitted staff (managers, accounts managers, etc.) can change the payment type inline
 - [x] Publish Blog 14 (3-year-old Mercedes)
 - [x] Answer: sold price ranges for 1/2/3-year warranties
+
+- [x] Direct sales: record each part of Step 4 (viewed, pay pressed, details missing, declaration, duplicate, Bumper hand-off/errors, card form/errors) and show it in Direct sales
+- [ ] Website only: take the July (+20%) and September (+10%) rises off 2 and 3-year cover; 1-year and Quotes & Orders unchanged — waiting on user to confirm website minimum prices
