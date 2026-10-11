@@ -25,4 +25,18 @@ describe('website 2/3-year 18% cut', () => {
     // Above the floor the full 10% saving is untouched.
     expect(applyWebsitePayInFullFloor(1080, { paymentPeriod: '24months', ...cheap })).toBe(1080);
   });
+  it('floored quotes keep the full "Save 10%" wording; shrunken savings show the £ amount only', () => {
+    // When the floor binds (£708 total → £700) the saving (£8) is below the
+    // standard 10% (£70), so the "Save 10%" label is switched off and only
+    // the £ amount is shown.
+    const total = 708;
+    const saving = total - applyWebsitePayInFullFloor(total - Math.floor(total * 0.10), { paymentPeriod: '24months', ...cheap });
+    expect(saving).toBe(8);
+    expect(saving >= Math.floor(total * 0.10)).toBe(false);
+    // Above the floor the saving meets the full 10%, so the wording stays.
+    const tallTotal = 1080;
+    const tallSaving = tallTotal - applyWebsitePayInFullFloor(tallTotal - Math.floor(tallTotal * 0.10), { paymentPeriod: '24months', ...cheap });
+    expect(tallSaving).toBe(Math.floor(tallTotal * 0.10));
+    expect(tallSaving >= Math.floor(tallTotal * 0.10)).toBe(true);
+  });
 });

@@ -14,7 +14,7 @@ import {
   getExcessBracketBasis,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
-import { applyWebsiteSellFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
+import { applyWebsiteSellFloor, applyWebsitePayInFullFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
 import { twelvePaymentTotal } from "@/lib/pricing/payInFull";
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
@@ -490,7 +490,19 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                   const dailyTxt = dailyVal < 1 ? `${Math.round(dailyVal * 100)}p/day` : `£${dailyVal.toFixed(2)}/day`;
                   // Pay-in-full savings = Math.floor(annualTotal * 0.10) — must match Step 4 formula.
                   // Selected term reuses the live-price savings so card / sidebar / sticky agree.
-                  const save = selected ? savings : Math.floor(m * 12 * 0.10);
+                  // Unselected terms clamp the pay-in-full to the website minimum for that
+                  // term so the saving never shows more than the customer would actually keep.
+                  const termAnnual = m * 12;
+                  const termPayInFull = applyWebsitePayInFullFloor(termAnnual - Math.floor(termAnnual * 0.10), {
+                    paymentPeriod: d.id as PaymentPeriod,
+                    voluntaryExcess: voluntaryExcess ?? 100,
+                    claimLimit: selectedClaimLimit ?? undefined,
+                    labourRate: selectedLabourRate,
+                    isMotorbike: isMotorbikeAdjustment(
+                      calculateVehiclePriceAdjustment(vehicleData as any, d.id === '24months' ? 2 : d.id === '36months' ? 3 : 1),
+                    ),
+                  });
+                  const save = selected ? savings : Math.max(0, termAnnual - termPayInFull);
                   return (
                     <OptionCard
                       key={d.id}

@@ -189,6 +189,9 @@ const StripePayment: React.FC = () => {
   };
 
   const savings = paymentData ? paymentData.originalAmount - paymentData.amount : 0;
+  // Only claim the 10% offer when the pay-in-full saving really reaches it —
+  // when the website minimum clamps the final price, show the £ amount only.
+  const isFullTenPercent = savings >= Math.floor((paymentData?.originalAmount ?? 0) * 0.10);
 
   if (isLoading || !paymentData) {
     return (
@@ -331,7 +334,7 @@ const StripePayment: React.FC = () => {
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                           <Check className="w-3.5 h-3.5" />
-                          Pay in Full (Save 10%)
+                          {isFullTenPercent ? 'Pay in Full (Save 10%)' : 'Pay in Full'}
                         </span>
                       )}
                     </div>
@@ -361,7 +364,7 @@ const StripePayment: React.FC = () => {
                           <span className="line-through">£{paymentData.originalAmount.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-green-600 font-medium">10% discount</span>
+                          <span className="text-green-600 font-medium">{isFullTenPercent ? '10% discount' : 'Discount'}</span>
                           <span className="text-green-600 font-medium">-£{savings.toFixed(2)}</span>
                         </div>
                       </div>

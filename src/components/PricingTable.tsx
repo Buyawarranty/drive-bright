@@ -56,7 +56,7 @@ import Step3Desktop from '@/components/step3/Step3Desktop';
 import MobileSteppedFlow from '@/components/step3/MobileSteppedFlow';
 import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos, promoPriceFloor } from '@/lib/promoStorage';
-import { applyWebsiteSellFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
+import { applyWebsiteSellFloor, applyWebsitePayInFullFloor, getWebsiteNetFloor } from "@/lib/pricing/netFloor";
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
 
@@ -1891,6 +1891,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
 
               const stripeSavings = Math.floor(displayedAnnualPrice * 0.10);
+              // Pay-in-full may never drop below the website minimum for this term
+              // (Oct 2026). When the floor clamps it, the real saving shrinks below
+              // the advertised 10% — show only the £ amount then (no "Save 10%").
+              const cardPayInFull = applyWebsitePayInFullFloor(displayedAnnualPrice - stripeSavings, {
+                paymentPeriod: durationId as PaymentPeriod,
+                voluntaryExcess: voluntaryExcess ?? 100,
+                claimLimit: cardClaimLimit,
+                labourRate: selectedLabourRate,
+                isMotorbike: isMotorbikeAdjustment(vehicleAdjustment),
+              });
+              const cardSaving = Math.max(0, displayedAnnualPrice - cardPayInFull);
+              const cardIsFullTen = cardSaving >= stripeSavings;
               const isPopular = durationId === '24months';
               const isBestValue = durationId === '36months';
 
@@ -2013,14 +2025,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <div>
                         <div className="text-xs text-gray-500">Pay in full</div>
                         <div className="flex items-baseline gap-2 mt-0.5">
-                          <span className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">£{displayedAnnualPrice - stripeSavings}</span>
+                          <span className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">£{cardPayInFull}</span>
                           <span className="text-sm text-red-500 line-through">£{displayedAnnualPrice}</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[10px] font-semibold text-green-700 uppercase tracking-wide">Save 10%</div>
+                        {cardIsFullTen && (
+                          <div className="text-[10px] font-semibold text-green-700 uppercase tracking-wide">Save 10%</div>
+                        )}
                         <div className="text-base sm:text-lg font-bold text-green-700 leading-none mt-0.5">
-                          £{stripeSavings} today
+                          £{cardSaving} today
                         </div>
                       </div>
                     </div>
@@ -2436,7 +2450,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     isMotorbike: isMotorbikeAdjustment(vehiclePriceAdjustment),
                     surface: 'admin',
                   });
-                  const payInFullDiscounted = Math.max(Math.min(payInFull - stripeSavings, promoPriceFloor(appliedPromos, promoTermFloor) - Math.floor(promoPriceFloor(appliedPromos, promoTermFloor) * 0.10)), payInFull - stripeSavings);
+                  // The 10% pay-in-full discount may never take the final amount
+                  // below the website minimum for the term — clamp, and when the
+                  // floor shrinks the saving show the true £ amount only.
+                  const payInFullDiscounted = Math.max(promoTermFloor, payInFull - stripeSavings);
+                  const actualSaving = Math.max(0, payInFull - payInFullDiscounted);
                   const totalCoverDays = Math.round((months / 12) * 365);
                   // Daily price uses payInFull (12 payments) divided by total cover days, matching the duration cards
                   const pencePerDayRaw = totalCoverDays > 0 ? (payInFull * 100) / totalCoverDays : 0;
@@ -2486,8 +2504,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[11px] text-gray-600">12 payments · Covers {months} months</span>
-                        {stripeSavings > 0 && (
-                          <span className="text-[11px] font-semibold text-green-600">Save £{stripeSavings} today</span>
+                        {actualSaving > 0 && (
+                          <span className="text-[11px] font-semibold text-green-600">Save £{actualSaving} today</span>
                         )}
                       </div>
 
@@ -2525,8 +2543,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   // Apply persisted promo (from Step 4) so Step 3 sticky matches Step 4
                   const promoDiscount = calcPromoDiscount(rawPayInFull, appliedPromos, promoTermFloor);
                   const payInFull = Math.max(promoPriceFloor(appliedPromos, promoTermFloor), rawPayInFull - promoDiscount);
-                  const stripeSavings = Math.floor(payInFull * 0.10);
-                  const payInFullDiscounted = Math.max(Math.min(payInFull - stripeSavings, promoPriceFloor(appliedPromos, promoTermFloor) - Math.floor(promoPriceFloor(appliedPromos, promoTermFloor) * 0.10)), payInFull - stripeSavings);
+                  // The 10% pay-in-full discount applies to the pre-promo total and may
+                  // never drop the final amount below the website minimum for the term —
+                  // clamp, and when the floor shrinks the saving show the true £ amount.
+                  const stripeBeforePromo = Math.max(promoTermFloor, rawPayInFull - Math.floor(rawPayInFull * 0.10));
+                  const stripePromoAmt = calcPromoDiscount(stripeBeforePromo, appliedPromos, promoTermFloor);
+                  const payInFullDiscounted = Math.min(stripeBeforePromo, Math.max(promoPriceFloor(appliedPromos, promoTermFloor), stripeBeforePromo - stripePromoAmt));
+                  const actualSaving = Math.max(0, rawPayInFull - payInFullDiscounted);
                   const totalCoverDays = Math.round((months / 12) * 365);
                   const pencePerDayRaw = totalCoverDays > 0 ? (payInFull * 100) / totalCoverDays : 0;
                   const dailyPriceLabel = pencePerDayRaw >= 100
@@ -2598,12 +2621,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                       {/* SECTION 4: Pay in full pill */}
                       <div className="flex-[1.2] flex items-center justify-center px-5 py-3.5">
-                        {stripeSavings > 0 && (
+                        {actualSaving > 0 && (
                           <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-4 py-2.5">
                             <Wallet className="w-5 h-5 text-green-600 flex-shrink-0" />
                             <div className="flex flex-col">
                               <span className="text-xs text-gray-700 whitespace-nowrap leading-tight">Pay in full <span className="font-bold text-gray-900">£{payInFullDiscounted}</span></span>
-                              <span className="text-xs font-semibold text-green-600 whitespace-nowrap leading-tight mt-0.5">Save £{stripeSavings} vs monthly</span>
+                              <span className="text-xs font-semibold text-green-600 whitespace-nowrap leading-tight mt-0.5">Save £{actualSaving} vs monthly</span>
                             </div>
                           </div>
                         )}

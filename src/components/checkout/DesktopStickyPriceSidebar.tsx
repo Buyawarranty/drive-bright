@@ -41,6 +41,9 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
   };
 
   const savings = originalPrice - fullPrice;
+  // Only claim the 10% offer when the saving really reaches it — otherwise show
+  // the true £ amount without the percentage wording.
+  const isFullTen = savings >= Math.floor(originalPrice * 0.10);
 
   return (
     <div className="sticky top-4">
@@ -114,7 +117,10 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
                   <div>
                     <p className="text-sm font-semibold text-[#1a1a1a]">Pay in Full</p>
                     <p className="text-lg font-bold text-[#1a1a1a]">£{fullPrice}</p>
-                    <p className="text-xs text-[#0BA360] font-medium mt-0.5">Save £{savings} (10% off)</p>
+                    <p className="text-xs text-[#0BA360] font-medium mt-0.5">
+                      Save £{savings}
+                      {isFullTen && <> (10% off)</>}
+                    </p>
                   </div>
                   <div className="w-5 h-5 rounded-full bg-[#0BA360] flex items-center justify-center">
                     <Check className="w-3 h-3 text-white" />

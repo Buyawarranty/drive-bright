@@ -68,6 +68,10 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   // Per-day pricing - MUST derive from monthlyPrice * 12 (actual paid amount) divided by total cover days
   const totalCoverDays = Math.round((planDurationMonths / 12) * 365);
   const monthlyPaidTotal = monthlyPrice * 12;
+  // Only claim the 10% offer when the pay-in-full saving really reaches it —
+  // when the website minimum clamps the final price the saving is smaller,
+  // so we show only the £ amount (never an over-claimed percentage).
+  const isFullTenPercent = savings >= Math.floor((originalPrice > 0 ? originalPrice : monthlyPaidTotal) * 0.10);
   const monthlyPencePerDay = monthlyPaidTotal > 0 && totalCoverDays > 0 ? Math.round((monthlyPaidTotal * 100) / totalCoverDays) : 0;
   const fullPencePerDay = fullPrice > 0 && totalCoverDays > 0 ? Math.round((fullPrice * 100) / totalCoverDays) : 0;
 
@@ -119,9 +123,11 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 {selectedPayment === 'full' && <span className="w-2.5 h-2.5 rounded-full bg-[#0BA360]" />}
               </div>
               <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Pay in full</h3>
-              <span className="bg-[#0BA360] text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">
-                Save 10%
-              </span>
+              {isFullTenPercent && (
+                <span className="bg-[#0BA360] text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">
+                  Save 10%
+                </span>
+              )}
             </div>
           </div>
 
@@ -135,7 +141,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 <span className="text-sm text-[#1a1a1a] font-medium">today</span>
               </div>
               <p className="text-sm text-[#0BA360] font-semibold mt-1">
-                Save £{Math.max(monthlyPaidTotal - fullPrice, Math.round(fullPrice * 0.1))} vs monthly payments
+                Save £{Math.max(0, savings)} vs monthly payments
               </p>
               <p className="text-sm text-[#0BA360] font-semibold mt-0.5">
                 = {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day over your full cover term
@@ -146,7 +152,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             <div className="space-y-1.5 pl-7">
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
-                <span>10% cheaper than spreading the cost</span>
+                <span>{isFullTenPercent ? '10% cheaper than spreading the cost' : 'Cheaper than spreading the cost'}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
