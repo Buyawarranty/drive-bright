@@ -87,6 +87,18 @@ export function DirectSalesTab() {
     });
   }, [data, combos.names]);
 
+  // New website prices after the Oct 2026 18% cut on 2/3-year cover
+  // (website only — Quotes & Orders unchanged). Estimated from the September
+  // average shown at Step 4, cut by 18% and clamped to the new website
+  // minimums (£565 / £810). 1-year prices are untouched.
+  const WEBSITE_MIN: Record<number, number> = { 24: 565, 36: 810 };
+  const newWebsitePrices = useMemo(() => beforeAfter.map((r) => {
+    const months = Number((r.name.match(/(\d+)\s*months?/) ?? [])[1] ?? 0);
+    if (r.s9 == null || (months !== 24 && months !== 36)) return { ...r, months, newPrice: null as number | null };
+    const min = WEBSITE_MIN[months];
+    return { ...r, months, newPrice: Math.max(Math.round(r.s9 * 0.82), min) };
+  }), [beforeAfter]);
+
   const SUBSTEPS: { key: string; label: string }[] = [
     { key: 'step4_viewed', label: 'Reached Step 4' },
     { key: 'pay_clicked', label: 'Pressed pay' },
