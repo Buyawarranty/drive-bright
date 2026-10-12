@@ -329,6 +329,13 @@ const BlogArticle = () => {
           "url": heroImage,
           "width": 1600,
           "height": 900,
+          ...(post.slug === 'mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes' ? {
+            "name": post.meta_tags?.featured_image_title,
+            "description": post.meta_tags?.featured_image_description,
+            "caption": post.meta_tags?.featured_image_caption,
+            "width": post.meta_tags?.featured_image_width || 1376,
+            "height": post.meta_tags?.featured_image_height || 768,
+          } : {}),
         },
         "datePublished": post.published_at,
         "dateModified": lastModified,
@@ -615,7 +622,7 @@ const BlogArticle = () => {
 
           {/* Hero Image */}
           <figure className="px-6 md:px-16 -mt-4">
-            <div className="relative aspect-[21/9] bg-slate-100 rounded-xl overflow-hidden shadow-xl">
+            <div className={`relative ${post.slug === 'mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes' ? 'aspect-[1376/768]' : 'aspect-[21/9]'} bg-muted rounded-xl overflow-hidden shadow-xl`}>
               <img
                 src={heroImage}
                 alt={post.meta_tags?.featured_image_alt || `${post.title}: UK car warranty guide illustration`}
@@ -628,6 +635,11 @@ const BlogArticle = () => {
                 className="absolute inset-0 w-full h-full object-cover"
               />
             </div>
+            {post.meta_tags?.featured_image_caption && (
+              <figcaption className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                {post.meta_tags.featured_image_caption}
+              </figcaption>
+            )}
           </figure>
 
           {/* Mobile contents — jump links help engagement, dwell time and Google sitelinks */}
