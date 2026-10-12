@@ -15,7 +15,7 @@ const CancellationPolicy: React.FC = () => {
     <main className="min-h-screen bg-[#F9FAFB] text-[#111827]">
       <SEOHead
         title="Cancellation Policy | Buyawarranty"
-        description="Read our clear and simple warranty cancellation policy. 14-day cooling-off period, pro-rata refunds, £40 processing fee. UK-based support team."
+        description="Read our clear and simple warranty cancellation policy. Full refund within 14 days, pro-rata refunds after 14 days. UK-based support team."
         keywords="cancellation policy, warranty cancellation, refund policy, buyawarranty"
       />
 
@@ -84,32 +84,29 @@ const CancellationPolicy: React.FC = () => {
               </div>
 
               <p className="text-sm leading-6 text-[#374151]">
-                Your cover starts immediately from the day you purchase. If you cancel within 14 days and no claim has been made or is in progress, you'll receive a refund minus the days you've been covered and a £40 processing fee.
+                Your warranty cover begins immediately from the date of purchase. If you cancel within the first 14
+                days of purchasing your policy, and no claim has been made or is in progress, you will receive a{' '}
+                <strong>full refund</strong>.
               </p>
 
-              <div className="mt-5 overflow-hidden rounded-xl border border-[#E5E7EB]">
-                <table className="min-w-full divide-y divide-[#E5E7EB] text-left text-sm">
-                  <thead className="bg-[#111827] text-white">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold">Day you cancel</th>
-                      <th className="px-4 py-3 font-semibold">Days used</th>
-                      <th className="px-4 py-3 font-semibold">Deduction</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E5E7EB] bg-white text-[#374151]">
-                    {[
-                      { d: 'Day 3', used: '3 days', amount: '3/365 of your cover plus £40' },
-                      { d: 'Day 7', used: '7 days', amount: '7/365 of your cover plus £40' },
-                      { d: 'Day 14', used: '14 days', amount: '14/365 of your cover plus £40' },
-                    ].map((row) => (
-                      <tr key={row.d}>
-                        <td className="px-4 py-3 font-medium">{row.d}</td>
-                        <td className="px-4 py-3">{row.used}</td>
-                        <td className="px-4 py-3">{row.amount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <ul className="mt-4 space-y-2 text-sm leading-6 text-[#374151]">
+                {[
+                  'No administration fees',
+                  'No pro-rata deductions',
+                  'No cancellation charges',
+                ].map((line) => (
+                  <li key={line} className="flex gap-2">
+                    <span className="mt-2 h-1.5 w-1.5 flex-none rounded-full bg-[#16A34A]" />
+                    {line}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-4 rounded-xl bg-[#F9FAFB] p-4">
+                <p className="text-sm leading-6 text-[#374151]">
+                  Refunds are typically processed within <strong>5–7 working days</strong> of receiving your
+                  cancellation request.
+                </p>
               </div>
             </article>
 
@@ -120,14 +117,41 @@ const CancellationPolicy: React.FC = () => {
                   <span className="mb-2 inline-flex rounded-full bg-[#E8F7EE] px-3 py-1 text-xs font-bold text-[#16A34A]">
                     After day 14
                   </span>
-                  <h3 className="text-lg font-bold">Cancelling after 14 days — no claim made</h3>
+                  <h3 className="text-lg font-bold">Cancelling after 14 days (no claim made)</h3>
                 </div>
-                <span className="text-sm font-medium text-[#6B7280]">No claim in progress</span>
+                <span className="text-sm font-medium text-[#6B7280]">Ending your warranty early</span>
               </div>
 
               <p className="text-sm leading-6 text-[#374151]">
-                You'll receive a pro-rata refund based on the unused time remaining, minus a £40 processing fee. We'll confirm your cancellation and any refund within 5 to 7 working days of receiving your request.
+                If you cancel your warranty more than 14 days after it starts, and no claim has been made or is
+                currently in progress, you will be entitled to a <strong>pro-rata refund</strong> for the unused
+                period of cover. The following amounts will be deducted from your refund:
               </p>
+
+              <div className="mt-4 space-y-3">
+                <div className="rounded-xl border border-[#E5E7EB] p-4">
+                  <p className="text-sm font-bold text-[#111827]">Administration fee – £60</p>
+                  <p className="mt-1 text-sm leading-6 text-[#374151]">
+                    This covers the cost of processing your cancellation and closing your warranty.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-[#E5E7EB] p-4">
+                  <p className="text-sm font-bold text-[#111827]">
+                    Early termination charge – 14% of the remaining unused value of your warranty
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-[#374151]">
+                    This contributes towards the upfront costs we incur when arranging and providing your warranty
+                    for the agreed term.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-xl bg-[#F9FAFB] p-4">
+                <p className="text-sm leading-6 text-[#374151]">
+                  Before your cancellation is completed, we will provide you with a clear breakdown of your refund,
+                  including the pro-rata amount and any deductions that apply.
+                </p>
+              </div>
             </article>
 
             {/* Claim made warning */}
@@ -182,9 +206,9 @@ const CancellationPolicy: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">
                 {[
-                  { sit: 'Cancel within 14 days, no claim made', out: '✓ Refund minus days of cover and a £40 processing fee', good: true },
+                  { sit: 'Cancel within 14 days, no claim made', out: '✓ Full refund — no fees, no deductions', good: true },
                   { sit: 'Cancel within 14 days, claim made or in progress', out: '⚠ Policy continues — no refund', good: false },
-                  { sit: 'Cancel after 14 days, no claim made', out: '✓ Refund minus days of cover and a £40 processing fee', good: true },
+                  { sit: 'Cancel after 14 days, no claim made', out: '✓ Pro-rata refund for the unused period, less a £60 administration fee and a 14% early termination charge', good: true },
                   { sit: 'Cancel after 14 days, claim made, in progress or completed', out: '⚠ Policy continues — no refund', good: false },
                 ].map((row, i) => (
                   <tr key={row.sit} className={i % 2 === 1 ? 'bg-[#F9FAFB]' : ''}>
