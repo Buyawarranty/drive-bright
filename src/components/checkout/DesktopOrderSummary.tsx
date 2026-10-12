@@ -51,7 +51,7 @@ const DesktopGuarantee = () => {
         <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
           <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
           <p className="text-sm text-[#1a1a1a] leading-relaxed">
-            <strong>14-day cooling-off period.</strong> Refund minus days covered and a £40 processing fee if no claim made.
+            <strong>14-day cooling-off period.</strong> Full refund with no fees if you cancel within 14 days and no claim has been made.
           </p>
         </div>
 

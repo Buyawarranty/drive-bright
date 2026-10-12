@@ -36,13 +36,13 @@ const MoneyBackGuarantee: React.FC = () => {
             <div className="flex items-start gap-2.5">
               <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
               <p className="text-sm text-[#1a1a1a]">
-                If a claim is made within 14 days, a small <span className="font-semibold">£40 handling fee</span> plus any assessment costs
+                <span className="font-semibold">No fees</span> when you cancel within the first 14 days
               </p>
             </div>
             <div className="flex items-start gap-2.5">
               <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
               <p className="text-sm text-[#1a1a1a]">
-                After 14 days, refunds are calculated <span className="font-semibold">pro-rata</span> based on time remaining, less any claims made
+                After 14 days, refunds are calculated <span className="font-semibold">pro-rata</span> for the unused cover, less a £60 administration fee and a 14% early termination charge. If a claim has been made, cover runs for the full term
               </p>
             </div>
           </div>

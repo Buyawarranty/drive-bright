@@ -57,15 +57,15 @@ const RefundEligibility: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
                   <span className="text-success">✔</span>
-                  <span className="text-foreground">Pro-rata refund for unused full months</span>
+                  <span className="text-foreground">Pro-rata refund for the unused part of your cover</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-success">✔</span>
-                  <span className="text-foreground">£40 fair usage fee applies</span>
+                  <span className="text-foreground">Less a £60 administration fee</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-success">✔</span>
-                  <span className="text-foreground">Minimum of 2 months' equivalent retained</span>
+                  <span className="text-foreground">Less a 14% early termination charge on the unused value</span>
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-border">
@@ -102,7 +102,7 @@ const RefundEligibility: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
                   <span className="text-foreground">•</span>
-                  <span className="text-foreground">Minimum 2 months' equivalent + £40 fee applies</span>
+                  <span className="text-foreground">Pro-rata refund less a £60 administration fee and a 14% early termination charge on the unused value</span>
                 </div>
               </div>
               <p className="text-foreground font-medium mt-3">If no claim has been submitted:</p>
