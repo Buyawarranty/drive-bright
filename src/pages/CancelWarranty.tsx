@@ -256,7 +256,7 @@ const CancelWarranty = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-[#000] mb-1">If your cover has started</p>
-                  <p className="text-[#333] text-sm">You will receive a refund minus the value of the days already covered.</p>
+                  <p className="text-[#333] text-sm">You will receive a <strong>full refund</strong> – no administration fees, no pro-rata deductions and no cancellation charges.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 bg-[#fef2f2] rounded-lg p-4 border border-red-200">
@@ -264,12 +264,12 @@ const CancelWarranty = () => {
                   <AlertCircle className="w-4 h-4 text-red-500" />
                 </div>
                 <div>
-                  <p className="font-semibold text-[#000] mb-1">If a claim has been started</p>
+                  <p className="font-semibold text-[#000] mb-1">If a claim has been made or is in progress</p>
                   <p className="text-[#333] text-sm">
-                    We deduct the value of any service already provided, such as a claim review or assessment.
+                    A refund isn't available once a claim has been made or is in progress.
                   </p>
                   <p className="text-[#333] text-sm mt-1">
-                    If the value of work already completed is higher than the remaining amount on your plan, no refund will be due.
+                    Your cover continues for the full agreed term.
                   </p>
                 </div>
               </div>
@@ -301,8 +301,8 @@ const CancelWarranty = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-[#000] mb-1">If no claim work has been carried out</p>
-                      <p className="text-[#333] text-sm">We refund any unused full months on a pro rata basis.</p>
-                      <p className="text-[#333] text-sm mt-1">A reasonable administration charge may apply to cover our actual costs.</p>
+                      <p className="text-[#333] text-sm">We refund the unused part of your cover on a pro-rata basis.</p>
+                      <p className="text-[#333] text-sm mt-1">From this we deduct a £60 administration fee and a 14% early termination charge on the remaining unused value.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 bg-white rounded-lg p-3 border border-[#E6E6E6]">
@@ -310,9 +310,9 @@ const CancelWarranty = () => {
                       <Wrench className="w-4 h-4 text-red-500" />
                     </div>
                     <div>
-                      <p className="font-semibold text-[#000] mb-1">If claim work has been completed</p>
-                      <p className="text-[#333] text-sm">We deduct the value of the work already provided.</p>
-                      <p className="text-[#333] text-sm mt-1">If the claim work costs more than the remaining balance, no refund will be due.</p>
+                      <p className="font-semibold text-[#000] mb-1">If a claim has been made</p>
+                      <p className="text-[#333] text-sm">No refund is due once a claim has been made.</p>
+                      <p className="text-[#333] text-sm mt-1">Your cover continues for the full agreed term.</p>
                     </div>
                   </div>
                 </div>
@@ -335,7 +335,7 @@ const CancelWarranty = () => {
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-[#009A44] flex-shrink-0 mt-0.5" />
-                    <p className="text-[#333] text-sm">Any refund due will be handled directly by the finance provider.</p>
+                    <p className="text-[#333] text-sm">Any refund due, less a £60 administration fee and a 14% early termination charge, will be handled directly by the finance provider.</p>
                   </div>
                   <div className="flex items-start gap-2 mt-2 bg-[#009A44]/10 rounded-lg p-2">
                     <CheckCircle className="w-4 h-4 text-[#009A44] flex-shrink-0 mt-0.5" />
