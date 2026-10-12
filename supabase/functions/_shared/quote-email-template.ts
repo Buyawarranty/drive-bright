@@ -86,25 +86,25 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
   const labourStr = data.labourRate ? `£${Number(data.labourRate)} per hour` : null;
   const mileageStr = data.mileage ? `${Number(data.mileage).toLocaleString()} miles` : null;
 
-  const savingsPct = savingsNum && monthlyTotalNum
-    ? Math.round((savingsNum / monthlyTotalNum) * 100)
-    : null;
-
   const priceLines: string[] = [];
   if (monthlyNum) {
     priceLines.push(
-      `<p style="margin:0 0 4px 0;font-size:16px;color:#111827;"><strong>Pay monthly &mdash; £${monthlyNum.toFixed(2)} / month</strong></p>` +
-      `<p style="margin:0;color:#4b5563;font-size:14px;">12 interest-free payments${monthlyTotalNum ? ` &middot; Total £${monthlyTotalNum.toLocaleString()}` : ''}</p>`
+      `<p style="margin:0 0 6px 0;font-size:16px;font-weight:600;color:#111827;">Pay monthly</p>` +
+      `<p style="margin:0 0 10px 0;color:#111827;line-height:1.25;"><strong style="font-size:30px;">£${monthlyNum.toFixed(2)}</strong> <span style="font-size:15px;color:#4b5563;">per month</span></p>` +
+      `<p style="margin:0;font-size:14px;color:#4b5563;">12 interest-free payments</p>` +
+      (monthlyTotalNum ? `<p style="margin:10px 0 0 0;padding-top:10px;border-top:1px solid #e5e7eb;font-size:15px;color:#111827;">Total for ${durationLabel} of cover: <strong>£${monthlyTotalNum.toLocaleString()}</strong></p>` : '')
     );
   }
   if (payInFullNum) {
     priceLines.push(
-      `<p style="margin:0 0 4px 0;font-size:16px;color:#111827;"><strong>Pay in full &mdash; £${payInFullNum.toLocaleString()}</strong></p>` +
-      `<p style="margin:0;color:#4b5563;font-size:14px;">One payment, nothing else to pay${savingsNum && savingsNum > 0 ? ` &middot; Save £${savingsNum.toLocaleString()} vs monthly${savingsPct ? ` (${savingsPct}%)` : ''}` : ''}</p>`
+      `<p style="margin:0 0 6px 0;font-size:16px;font-weight:600;color:#111827;">Pay in full</p>` +
+      `<p style="margin:0 0 10px 0;color:#111827;line-height:1.25;"><strong style="font-size:30px;">£${payInFullNum.toLocaleString()}</strong> <span style="font-size:15px;color:#4b5563;">total</span></p>` +
+      `<p style="margin:0;font-size:14px;color:#4b5563;">One payment for ${durationLabel} of cover</p>` +
+      (savingsNum && savingsNum > 0 ? `<p style="margin:10px 0 0 0;padding-top:10px;border-top:1px solid #e5e7eb;font-size:15px;color:#0b57d0;"><strong>Save £${savingsNum.toLocaleString()}</strong> compared with paying monthly</p>` : '')
     );
   }
   const priceHtml = priceLines
-    .map((line) => `<div style="margin:0 0 14px 0;padding:12px 14px;background:#f9fafb;border-left:3px solid #0b57d0;border-radius:4px;">${line}</div>`)
+    .map((line) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin:0 0 12px 0;background:#f9fafb;border:1px solid #e5e7eb;border-left:3px solid #0b57d0;border-radius:4px;"><tr><td style="padding:18px 20px;">${line}</td></tr></table>`)
     .join('');
 
   const summaryLines: Array<[string, string]> = [
@@ -166,7 +166,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
 
     ${attachmentsLine}
 
-    ${priceHtml ? `<p style="margin:0 0 8px 0;"><strong>Your quote</strong></p>${priceHtml}` : ''}
+    ${priceHtml ? `<p style="margin:0 0 12px 0;font-size:18px;"><strong>Your quote &mdash; ${durationLabel} of cover</strong></p>${priceLines.length > 1 ? '<p style="margin:0 0 12px 0;font-size:14px;color:#4b5563;">Same cover, two ways to pay.</p>' : ''}${priceHtml}` : ''}
 
     <p style="margin:0 0 8px 0;"><strong>Your ${planName} cover</strong></p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 18px 0;">
