@@ -325,7 +325,7 @@ const HowStep: React.FC<{ n: number; title: string; children: React.ReactNode }>
       {n}
     </span>
     <div>
-      <h3 className="font-bold">{title}</h3>
+      <h3 className="text-lg font-bold">{title}</h3>
       <p className="mt-1 text-sm leading-6 text-[#6B7280]">{children}</p>
     </div>
   </article>
