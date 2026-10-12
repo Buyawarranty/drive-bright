@@ -52,6 +52,7 @@ Deno.serve(async (req) => {
       { url: '/cookies/', priority: '0.9' },
       { url: '/complaints/', priority: '0.9' },
       { url: '/thewarrantyhub/', priority: '0.9' },
+      { url: '/thewarrantyhub/mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes/', priority: '0.8' },
       { url: '/thewarrantyhub/platinum-warranty-cover-modifications-uk-vehicle-protection-guide/', priority: '0.8' },
       { url: '/thewarrantyhub/top-rated-car-warranty-uk-buyer-guide/', priority: '0.8' },
       { url: '/thewarrantyhub/tesla-warranty-uk-2026-battery-cover-repair-costs-extended-options/', priority: '0.8' },
