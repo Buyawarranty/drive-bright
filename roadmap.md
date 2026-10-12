@@ -113,3 +113,5 @@
 - [x] Direct sales: record each part of Step 4 (viewed, pay pressed, details missing, declaration, duplicate, Bumper hand-off/errors, card form/errors) and show it in Direct sales
 - [ ] Website only: take the July (+20%) and September (+10%) rises off 2 and 3-year cover; 1-year and Quotes & Orders unchanged — waiting on user to confirm website minimum prices
 - [x] Direct sales: price change log (auto-adds every Price Updates push) with direct-sale performance between each change
+
+- [x] Align all customer-facing cancellation wording to the new rules: full refund within 14 days with no fees; after 14 days pro-rata less a £60 administration fee and 14% early termination charge; a claim made means cover runs the full term. Cancellation policy page, cancel-warranty page and the checkout cooling-off note verified in the preview; old £40/£30 fee wording gone.
