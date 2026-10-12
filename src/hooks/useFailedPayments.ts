@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 export type FailedPayment = {
   key: string;
@@ -74,8 +75,8 @@ export function useFailedPayments(sinceMs: number, pollMs = 60000) {
   }, [sinceMs]);
   useEffect(() => {
     load();
-    const t = window.setInterval(load, pollMs);
-    return () => window.clearInterval(t);
+    // Skip polling while the tab is hidden (same guard as the other alert widgets).
+    return setVisibleInterval(load, pollMs);
   }, [load, pollMs]);
   return { items, reload: load };
 }

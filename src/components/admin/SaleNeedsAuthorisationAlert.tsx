@@ -84,14 +84,26 @@ export const SaleNeedsAuthorisationAlert: React.FC = () => {
       .order('created_at', { ascending: false })
       .limit(1000);
 
+    // Precompute max-quoted lookups in one pass (avoids O(n×m) re-normalisation per policy).
+    const maxByReg = new Map<string, number>();
+    const maxByName = new Map<string, number>();
+    for (const q of quotes || []) {
+      const price = Number(q.total_price) || 0;
+      const reg = normReg(q.vehicle_reg);
+      if (reg && price > (maxByReg.get(reg) ?? -Infinity)) maxByReg.set(reg, price);
+      const nm = String(q.customer_name || '').trim().toLowerCase();
+      if (nm && price > (maxByName.get(nm) ?? -Infinity)) maxByName.set(nm, price);
+    }
+
     const out: Flag[] = [];
     for (const p of policies as any[]) {
       const reg = regByCust.get(p.customer_id) || '';
       const name = String(p.customer_full_name || '').trim().toLowerCase();
-      const match = (quotes || []).filter((q: any) =>
-        (reg && normReg(q.vehicle_reg) === reg) ||
-        (name && String(q.customer_name || '').trim().toLowerCase() === name));
-      const quoted = match.length ? Math.max(...match.map((q: any) => Number(q.total_price) || 0)) : null;
+      const match = Math.max(
+        reg ? (maxByReg.get(reg) ?? -Infinity) : -Infinity,
+        name ? (maxByName.get(name) ?? -Infinity) : -Infinity,
+      );
+      const quoted = match === -Infinity ? null : match;
       const paid = Number(p.payment_amount) || 0;
       const reasons = saleFlagReasons(paid, quoted, p.payment_type);
       if (!reasons.length) continue;
