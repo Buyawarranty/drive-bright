@@ -10,6 +10,8 @@
  * hydrates normally on first paint.
  */
 
+import blog15 from './blog15-content.json';
+
 export interface RouteMeta {
   /** URL path, must start with `/`. Trailing slash is normalized. */
   path: string;
@@ -23,6 +25,9 @@ export interface RouteMeta {
   h1?: string;
   /** Static intro paragraph for the crawler-visible fallback body. Defaults to the description. */
   intro?: string;
+  /** Exact published article HTML and structured data for crawler output. */
+  articleHtml?: string;
+  articleSchema?: unknown;
 }
 
 
@@ -108,6 +113,16 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
   },
 
   // ---------------- The Warranty Hub articles ----------------
+  {
+    path: `/thewarrantyhub/${blog15.slug}/`,
+    title: blog15.seo_title,
+    description: blog15.seo_description,
+    h1: blog15.title,
+    ogType: 'article',
+    ogImage: blog15.featured_image_url,
+    articleHtml: blog15.html,
+    articleSchema: blog15.structured_data,
+  },
   {
     path: "/thewarrantyhub/platinum-warranty-cover-modifications-uk-vehicle-protection-guide/",
     title: "Platinum Warranty Cover & Modifications | UK Guide 2026",

@@ -111,6 +111,9 @@ function buildFaqJsonLd(body: PageBody): string {
 }
 
 function buildStaticBody(route: RouteMeta): string {
+  if (route.articleHtml) {
+    return `<div id="prerender-content"><h1>${escapeHtmlText(deriveH1(route))}</h1>${route.articleHtml}</div>`;
+  }
   const body = getPageBody(route.path);
 
   if (body) {
@@ -237,6 +240,10 @@ function buildHtmlForRoute(template: string, route: RouteMeta): string {
   }
 
   html = setStaticBody(html, route);
+  if (route.articleSchema) {
+    const schema = JSON.stringify(route.articleSchema).replace(/</g, '\\u003c');
+    html = html.replace(/<\/head>/i, `<script type="application/ld+json">${schema}</script>\n</head>`);
+  }
 
   return html;
 }
