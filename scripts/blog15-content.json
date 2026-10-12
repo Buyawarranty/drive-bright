@@ -29,7 +29,7 @@
   "canonical_url": "https://buyawarranty.co.uk/thewarrantyhub/mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes/",
   "seo_title": "Mercedes EQ Warranty UK | Out-of-Warranty EV Guide",
   "seo_description": "Mercedes EQ warranty UK: understand factory battery cover, onboard chargers, inverters and repair costs when your electric Mercedes leaves its original warranty.",
-  "featured_image_url": "https://drive-bright.lovable.app/__l5e/assets-v1/36b18688-e4e7-4387-8003-9607d3abbcdd/mercedes-extended-warranty-original-blog13.jpg",
+  "featured_image_url": "https://drive-bright.lovable.app/__l5e/assets-v1/3c81f3fe-5747-4371-be27-3c092f5bba59/mercedes-eq-electric-car-warranty-uk-violet-blue.jpg",
   "structured_data": {
     "@context": "https://schema.org",
     "@graph": [
@@ -45,8 +45,14 @@
         },
         "image": {
           "@type": "ImageObject",
-          "url": "https://drive-bright.lovable.app/__l5e/assets-v1/36b18688-e4e7-4387-8003-9607d3abbcdd/mercedes-extended-warranty-original-blog13.jpg",
-          "caption": "Mercedes-Benz in an independent garage"
+          "url": "https://drive-bright.lovable.app/__l5e/assets-v1/3c81f3fe-5747-4371-be27-3c092f5bba59/mercedes-eq-electric-car-warranty-uk-violet-blue.jpg",
+          "caption": "As the original warranty expires, Mercedes EQ owners should check whether onboard chargers, power inverters, heat pumps and electronic systems are covered by an extended warranty.",
+          "contentUrl": "https://drive-bright.lovable.app/__l5e/assets-v1/3c81f3fe-5747-4371-be27-3c092f5bba59/mercedes-eq-electric-car-warranty-uk-violet-blue.jpg",
+          "name": "Mercedes EQ Warranty UK: Electric Car Repair Protection",
+          "description": "Mercedes EQE electric car undergoing specialist EV diagnostics in the UK as its original warranty expires and repair risks increase.",
+          "width": 1376,
+          "height": 768,
+          "encodingFormat": "image/jpeg"
         },
         "author": {
           "@type": "Person",
@@ -136,8 +142,12 @@
   },
   "meta_tags": {
     "author_name": "David Yash",
-    "featured_image_alt": "Grey Mercedes-Benz saloon in an independent garage with a technician and owner reviewing warranty paperwork",
-    "featured_image_title": "Mercedes EQ warranty UK: out-of-warranty guide",
-    "featured_image_description": "Existing Mercedes warranty photograph reused for Blog 15; general Mercedes-Benz illustration, not an EQ-specific photograph."
+    "featured_image_alt": "Deep violet-blue Mercedes EQE being inspected by an EV technician at a UK specialist workshop.",
+    "featured_image_title": "Mercedes EQ Warranty UK: Electric Car Repair Protection",
+    "featured_image_description": "Mercedes EQE electric car undergoing specialist EV diagnostics in the UK as its original warranty expires and repair risks increase.",
+    "featured_image_filename": "mercedes-eq-electric-car-warranty-uk-violet-blue.jpg",
+    "featured_image_caption": "As the original warranty expires, Mercedes EQ owners should check whether onboard chargers, power inverters, heat pumps and electronic systems are covered by an extended warranty.",
+    "featured_image_width": 1376,
+    "featured_image_height": 768
   }
 }
