@@ -11,6 +11,7 @@
  */
 
 import blog15 from './blog15-content.json';
+import blog16 from './blog16-content.json';
 
 export interface RouteMeta {
   /** URL path, must start with `/`. Trailing slash is normalized. */
@@ -122,6 +123,16 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     ogImage: blog15.featured_image_url,
     articleHtml: blog15.html,
     articleSchema: blog15.structured_data,
+  },
+  {
+    path: `/thewarrantyhub/${blog16.slug}/`,
+    title: blog16.seo_title,
+    description: blog16.seo_description,
+    h1: blog16.title,
+    ogType: 'article',
+    ogImage: blog16.featured_image_url,
+    articleHtml: blog16.html,
+    articleSchema: blog16.structured_data,
   },
   {
     path: "/thewarrantyhub/platinum-warranty-cover-modifications-uk-vehicle-protection-guide/",
