@@ -329,7 +329,7 @@ const BlogArticle = () => {
           "url": heroImage,
           "width": 1600,
           "height": 900,
-          ...(post.slug === 'mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes' ? {
+          ...(['mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes', 'bmw-x5-vs-audi-q7'].includes(post.slug) ? {
             "name": post.meta_tags?.featured_image_title,
             "description": post.meta_tags?.featured_image_description,
             "caption": post.meta_tags?.featured_image_caption,
