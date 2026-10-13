@@ -32,6 +32,18 @@ interface StuckRow {
   payment_method: string | null;
   plan_name: string | null;
   amount: number | null;
+  details: Record<string, any> | null;
+}
+
+/** One pop-up per customer visit: the first alert plus every repeat signal folded in. */
+interface Group {
+  head: StuckRow;
+  all: StuckRow[];
+  status: string;
+  signals: string[];
+  msTotal: number | null;
+  visits: number | null;
+  urgent: boolean;
 }
 
 const SIGNAL_LABELS: Record<string, string> = {
@@ -42,6 +54,23 @@ const SIGNAL_LABELS: Record<string, string> = {
   method_thrash: 'toggling payment methods',
   bumper_cancelled: 'cancelled Bumper checkout',
   exit_intent: 'about to leave checkout',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  active: 'New',
+  contacting: 'Contacting',
+  acknowledged: 'Contacting',
+  recovered: 'Recovered',
+  closed: 'Closed',
+};
+const HANDLING_STATUSES = ['contacting', 'acknowledged'];
+const TERMINAL_STATUSES = ['recovered', 'closed'];
+
+const fmtDuration = (ms: number) => {
+  const m = Math.floor(ms / 60000);
+  const s = Math.round((ms % 60000) / 1000);
+  if (m === 0) return `${s}s`;
+  return s ? `${m}m ${s}s` : `${m}m`;
 };
 
 const timeAgo = (iso: string) => {
@@ -96,8 +125,7 @@ export const StuckCheckoutAlert: React.FC = () => {
     const since = new Date(Date.now() - windowHours * 60 * 60 * 1000).toISOString();
     const { data } = await supabase
       .from('checkout_struggle_alerts')
-      .select('id, signal_type, status, created_at, customer_name, customer_email, customer_phone, vehicle_reg, device_type, payment_method, plan_name, amount')
-      .in('status', ['active', 'acknowledged'])
+      .select('id, signal_type, status, created_at, customer_name, customer_email, customer_phone, vehicle_reg, device_type, payment_method, plan_name, amount, details')
       .gte('created_at', since)
       .order('created_at', { ascending: false })
       .limit(50);
@@ -120,13 +148,16 @@ export const StuckCheckoutAlert: React.FC = () => {
   // One pop-up per customer per visit. Repeat signals from the same customer
   // (email / phone tail-9 / reg) are folded into the first one, unless the
   // customer comes back at least 1 hour after their previous signal — then
-  // it counts as a new visit and pops up again.
-  const live = useMemo(() => {
+  // it counts as a new visit and pops up again. A customer a salesperson is
+  // already handling (Contacting) raises no fresh pop-ups, and one marked
+  // Recovered or Closed stops popping up altogether.
+  const live = useMemo((): Group[] => {
     const asc = rows.filter((r) => !isTestStruggle(r)).slice().sort(
       (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     );
     const lastSeen = new Map<string, number>();
-    const heads: StuckRow[] = [];
+    const keyGroup = new Map<string, number>();
+    const groups: { head: StuckRow; all: StuckRow[] }[] = [];
     for (const r of asc) {
       const keys = [
         (r.customer_email || '').trim().toLowerCase() ? `e:${(r.customer_email || '').trim().toLowerCase()}` : null,
@@ -137,23 +168,64 @@ export const StuckCheckoutAlert: React.FC = () => {
       const prev = keys.map((k) => lastSeen.get(k)).filter((v): v is number => v != null);
       const isNewVisit = prev.length === 0 || t - Math.max(...prev) >= 60 * 60 * 1000;
       keys.forEach((k) => lastSeen.set(k, t));
-      if (keys.length === 0 || isNewVisit) heads.push(r);
+      if (keys.length === 0) {
+        groups.push({ head: r, all: [r] });
+        continue;
+      }
+      const gi = isNewVisit
+        ? -1
+        : Math.max(...keys.map((k) => keyGroup.get(k)).filter((v): v is number => v != null), -1);
+      if (gi === -1) {
+        groups.push({ head: r, all: [r] });
+        keys.forEach((k) => keyGroup.set(k, groups.length - 1));
+      } else {
+        groups[gi].all.push(r);
+        keys.forEach((k) => keyGroup.set(k, gi));
+      }
     }
-    // Show the row as soon as it exists — same as the New Leads banner. The
+    const lastIdx = (arr: StuckRow[], pred: (x: StuckRow) => boolean) => {
+      for (let i = arr.length - 1; i >= 0; i--) if (pred(arr[i])) return i;
+      return -1;
+    };
+    // Show the group as soon as it exists — same as the New Leads banner. The
     // per-row cadence still decides whether the Call button is live.
-    return heads
-      .filter((r) => !dismissedIds.includes(r.id))
+    return groups
+      .map((g) => {
+        const handlingIdx = lastIdx(g.all, (x) => HANDLING_STATUSES.includes(x.status));
+        const terminalIdx = lastIdx(g.all, (x) => TERMINAL_STATUSES.includes(x.status));
+        if (terminalIdx > handlingIdx) return null; // already dealt with
+        const kept = handlingIdx >= 0 ? g.all.slice(0, handlingIdx + 1) : g.all;
+        const last = kept[kept.length - 1];
+        const signals: string[] = [];
+        kept.forEach((x) => {
+          const label = SIGNAL_LABELS[x.signal_type] || x.signal_type;
+          if (!signals.includes(label)) signals.push(label);
+        });
+        const d = (last.details || {}) as Record<string, any>;
+        const priorities = kept.map((x) => x.details?.priority).filter(Boolean) as string[];
+        return {
+          head: g.head,
+          all: kept,
+          status: last.status,
+          signals,
+          msTotal: typeof d.cumulative_ms === 'number' ? d.cumulative_ms : null,
+          visits: typeof d.visits === 'number' ? d.visits : null,
+          urgent: priorities.includes('critical') || priorities.includes('high'),
+        };
+      })
+      .filter((g): g is Group => !!g && !dismissedIds.includes(g.head.id))
       .reverse();
   }, [rows, dismissedIds]);
 
   // Resolve which agent owns each stuck customer's lead (by email / phone tail-9).
   useEffect(() => {
-    const unresolved = live.filter((r) => !(r.id in owners));
+    const unresolved = live.filter((g) => !(g.head.id in owners));
     if (unresolved.length === 0) return;
     let cancelled = false;
     (async () => {
       const results = await Promise.all(
-        unresolved.map(async (r) => {
+        unresolved.map(async (g) => {
+          const r = g.head;
           const email = (r.customer_email || '').trim().toLowerCase();
           const phone9 = tail9(r.customer_phone);
           try {
@@ -175,6 +247,34 @@ export const StuckCheckoutAlert: React.FC = () => {
     return () => { cancelled = true; };
   }, [live, owners]);
 
+  // Management-only report: last 7 days — how many alerts fired, how fast
+  // sales respond (time to "Contacting") and how many checkouts were recovered.
+  const [report, setReport] = useState<{ total: number; avgReplyMins: number | null; recovered: number } | null>(null);
+  useEffect(() => {
+    if (!isManagement) return;
+    let cancelled = false;
+    (async () => {
+      const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from('checkout_struggle_alerts')
+        .select('created_at, acknowledged_at, status')
+        .gte('created_at', since)
+        .order('created_at', { ascending: false })
+        .limit(2000);
+      if (cancelled) return;
+      const all = (data as any[]) || [];
+      const replied = all.filter((r) => r.acknowledged_at);
+      const avgReplyMins = replied.length
+        ? Math.round(
+            replied.reduce((s, r) => s + (new Date(r.acknowledged_at).getTime() - new Date(r.created_at).getTime()), 0) /
+              replied.length / 60000,
+          )
+        : null;
+      setReport({ total: all.length, avgReplyMins, recovered: all.filter((r) => r.status === 'recovered').length });
+    })();
+    return () => { cancelled = true; };
+  }, [isManagement, rows.length]);
+
   const ownerIds = useMemo(() => Object.values(owners).filter((v): v is string => !!v), [owners]);
   const adminMap = useAllAdminUsersMap(ownerIds);
   const ownerName = (id: string | null | undefined) => {
@@ -184,14 +284,14 @@ export const StuckCheckoutAlert: React.FC = () => {
     return [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
   };
 
-  const dismiss = (id: string) => {
-    const r = rows.find((row) => row.id === id);
+  const dismiss = (g: Group) => {
+    const r = g.head;
     if (r) pushRecentAlert({
-      key: `stuck-${id}`, title: 'Checkout stuck',
+      key: `stuck-${r.id}`, title: 'Checkout stuck',
       detail: `${r.customer_name || r.customer_email || r.customer_phone || 'Customer'}${r.vehicle_reg ? ' – ' + r.vehicle_reg : ''}`,
       tone: 'red',
       details: [
-        `${SIGNAL_LABELS[r.signal_type] || r.signal_type} · came in ${cameInAt(r.created_at)}`,
+        `${g.signals.join(' + ')} · came in ${cameInAt(r.created_at)}`,
         [r.vehicle_reg, r.plan_name, r.amount ? `£${r.amount}` : null].filter(Boolean).join(' · '),
         r.customer_phone ? formatUkPhone(r.customer_phone) : '',
         r.customer_email || '',
@@ -199,29 +299,48 @@ export const StuckCheckoutAlert: React.FC = () => {
       ].filter(Boolean),
     });
     setDismissedIds((prev) => {
-      const next = [...new Set([...prev, id])].slice(-200);
+      const next = [...new Set([...prev, r.id])].slice(-200);
       try { localStorage.setItem(DISMISSED_IDS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
       return next;
     });
   };
 
   const dismissAll = () => {
-    live.forEach((r) => dismiss(r.id));
+    live.forEach((g) => dismiss(g));
   };
 
   if (live.length === 0) return null;
 
-  const readyToCall = live.filter((r) => getContactCadence(r.created_at).canCall).length;
+  const readyToCall = live.filter((g) => getContactCadence(g.head.created_at).canCall).length;
 
-  // Plain-text version of one row, for pasting into WhatsApp etc.
-  const rowText = (r: StuckRow) => {
+  // Record what the salesperson did with this alert — Contacting means they
+  // are on it (new signals for that customer stop popping up), Recovered means
+  // the checkout was saved, Closed means it was handled another way.
+  const setStatus = async (id: string, status: string) => {
+    const now = new Date().toISOString();
+    const patch: Record<string, any> = { status, updated_at: now };
+    if (HANDLING_STATUSES.includes(status)) {
+      patch.acknowledged_by = myAdminId ?? null;
+      patch.acknowledged_at = now;
+    }
+    if (status === 'recovered') patch.resolved_at = now;
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+    const { error } = await supabase.from('checkout_struggle_alerts').update(patch).eq('id', id);
+    if (error) console.warn('[StuckCheckoutAlert] status update failed', error);
+  };
+
+  // Plain-text version of one pop-up, for pasting into WhatsApp etc.
+  const rowText = (g: Group) => {
+    const r = g.head;
     const cadence = getContactCadence(r.created_at);
     const phone = (r.customer_phone || '').replace(/\s/g, '');
     const owner = ownerName(owners[r.id]);
     return [
       r.customer_name || r.customer_email || r.customer_phone || 'Customer',
-      `${SIGNAL_LABELS[r.signal_type] || r.signal_type} · came in ${cameInAt(r.created_at)} · ${timeAgo(r.created_at)}`,
+      `${g.signals.join(' + ')} · came in ${cameInAt(r.created_at)} · ${timeAgo(r.created_at)}`,
       [r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null, r.plan_name, r.amount ? `£${r.amount}` : null].filter(Boolean).join(' · '),
+      g.msTotal ? `On checkout ${fmtDuration(g.msTotal)}${g.visits ? ` · ${g.visits} visit${g.visits === 1 ? '' : 's'}` : ''}` : null,
+      r.status !== 'active' ? `Status: ${STATUS_LABELS[r.status] || r.status}` : null,
       cadence.label,
       owner ? `Lead with ${owner}` : null,
       phone ? `Call now: ${formatUkPhone(phone)}` : null,
@@ -281,7 +400,8 @@ export const StuckCheckoutAlert: React.FC = () => {
 
         {expanded && (
           <ul id="stuck-checkout-details" className="divide-y divide-destructive-foreground/30 max-h-[45vh] overflow-y-auto">
-            {(showAllRows ? live : live.slice(0, 1)).map((r) => {
+            {(showAllRows ? live : live.slice(0, 1)).map((g) => {
+              const r = g.head;
               const cadence = getContactCadence(r.created_at);
               const phone = (r.customer_phone || '').replace(/\s/g, '');
               const mailto = r.customer_email
@@ -297,16 +417,26 @@ export const StuckCheckoutAlert: React.FC = () => {
                         {r.customer_name || r.customer_email || r.customer_phone || 'Customer'}
                       </p>
                       <p className="text-[11px] font-medium break-words text-destructive-foreground">
-                        {SIGNAL_LABELS[r.signal_type] || r.signal_type} · came in {cameInAt(r.created_at)} · {timeAgo(r.created_at)}
+                        {g.signals.join(' + ')} · came in {cameInAt(r.created_at)} · {timeAgo(r.created_at)}
                       </p>
                       <p className="text-[11px] break-words text-destructive-foreground">
-                        {[r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null, r.plan_name, r.amount ? `£${r.amount}` : null]
-                          .filter(Boolean)
-                          .join(' · ')}
+                        {[
+                          r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null,
+                          r.plan_name,
+                          r.amount ? `£${r.amount}` : null,
+                          g.msTotal ? `${fmtDuration(g.msTotal)} on checkout` : null,
+                          g.visits ? `${g.visits} visit${g.visits === 1 ? '' : 's'}` : null,
+                          g.urgent ? 'Urgent' : null,
+                        ].filter(Boolean).join(' · ')}
                       </p>
                       <span className={`inline-block mt-1 text-[10px] font-semibold border rounded-full px-2 py-0.5 ${cadence.chipClass}`}>
                         {cadence.label}
                       </span>
+                      {r.status !== 'active' && (
+                        <span className="inline-block mt-1 ml-1 text-[10px] font-semibold border border-gray-300 bg-white text-gray-700 rounded-full px-2 py-0.5">
+                          {STATUS_LABELS[r.status] || r.status}
+                        </span>
+                      )}
                       {r.id in owners && (
                         ownerName(owners[r.id]) ? (
                           <span className="inline-flex items-center gap-1 mt-1 ml-1 text-[10px] font-semibold border border-indigo-200 bg-indigo-50 text-indigo-700 rounded-full px-2 py-0.5" title="This customer already has a lead owned by this agent">
@@ -321,7 +451,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                       )}
                     </div>
                     <button
-                      onClick={() => dismiss(r.id)}
+                      onClick={() => dismiss(g)}
                       className="p-1 rounded hover:bg-red-50 shrink-0"
                       title="Dismiss"
                       aria-label="Dismiss this alert"
@@ -362,12 +492,39 @@ export const StuckCheckoutAlert: React.FC = () => {
                       </button>
                     )}
                     <CopyAlertButton
-                      text={rowText(r)}
+                      text={rowText(g)}
                       label="Copy this alert as text"
                       caption="Copy"
                       emoji="🔒"
                       className="inline-flex items-center gap-1 rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-red-700 hover:bg-red-50"
                     />
+                    {!HANDLING_STATUSES.includes(r.status) && (
+                      <button
+                        onClick={() => setStatus(r.id, 'contacting')}
+                        title="Mark that you are handling this customer — new signals for them stop popping up"
+                        className="inline-flex items-center rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-red-700 hover:bg-red-50"
+                      >
+                        Contacting
+                      </button>
+                    )}
+                    {r.status !== 'recovered' && (
+                      <button
+                        onClick={() => setStatus(r.id, 'recovered')}
+                        title="Checkout was recovered"
+                        className="inline-flex items-center rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-red-700 hover:bg-red-50"
+                      >
+                        Recovered
+                      </button>
+                    )}
+                    {r.status !== 'closed' && (
+                      <button
+                        onClick={() => setStatus(r.id, 'closed')}
+                        title="Handled — close this alert"
+                        className="inline-flex items-center rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-red-700 hover:bg-red-50"
+                      >
+                        Closed
+                      </button>
+                    )}
                     {!phone && <span className="text-[11px] text-gray-500">No phone captured</span>}
                   </div>
                 </li>
@@ -379,6 +536,11 @@ export const StuckCheckoutAlert: React.FC = () => {
           <Button type="button" variant="ghost" aria-expanded={showAllRows} onClick={() => setShowAllRows((v) => !v)} className="h-auto w-full rounded-none border-t border-destructive-foreground/30 py-1.5 text-xs font-semibold text-destructive-foreground hover:bg-destructive-foreground/10 hover:text-destructive-foreground">
             {showAllRows ? <>Show less <ChevronUp /></> : <>See {live.length - 1} more <ChevronDown /></>}
           </Button>
+        )}
+        {expanded && isManagement && report && (
+          <p className="px-3 py-1.5 border-t border-destructive-foreground/30 text-[11px] text-destructive-foreground">
+            Last 7 days: {report.total} alert{report.total === 1 ? '' : 's'} · average reply {report.avgReplyMins != null ? `${report.avgReplyMins}min` : 'not recorded'} · {report.recovered} recovered
+          </p>
         )}
       </div>
     </AlertRailSlot>

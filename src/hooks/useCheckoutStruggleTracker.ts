@@ -33,6 +33,7 @@ export const STRUGGLE_THRESHOLDS = {
   WINDOW_MS: 10 * 60_000, // …within a rolling 10-minute window, across visits
   SWITCHES: 2, // monthly ↔ pay-in-full / payment method switches
   HESITATION_FOR_EXIT_MS: 30_000, // exit intent counts once they've hesitated 30s+
+  COOLDOWN_MS: 10 * 60_000, // at most one alert per customer every 10 minutes
 };
 const IDLE_MS = STRUGGLE_THRESHOLDS.IDLE_MS;
 
@@ -44,6 +45,12 @@ const readCum = (): CumState | null => {
   try { return JSON.parse(localStorage.getItem(CUM_KEY) || 'null'); } catch { return null; }
 };
 const writeCum = (s: CumState) => { try { localStorage.setItem(CUM_KEY, JSON.stringify(s)); } catch { /* ignore */ } };
+
+/** Timestamp (ms) of the last struggle alert this browser raised — drives the 10-minute cooldown. */
+const COOLDOWN_KEY = 'csa_last_alert_at';
+const readLastAlertAt = (): number => {
+  try { return Number(localStorage.getItem(COOLDOWN_KEY)) || 0; } catch { return 0; }
+};
 
 /**
  * Fires a struggle alert row into checkout_struggle_alerts.
@@ -81,15 +88,17 @@ export function useCheckoutStruggleTracker(input: TrackerInput) {
 
   const fire = async (signal: SignalType, extraDetails: Record<string, any> = {}) => {
     if (firedRef.current.has(signal)) return;
-    firedRef.current.add(signal);
 
     const c = latest.current;
     const name = [c.customer.first_name, c.customer.last_name].filter(Boolean).join(' ').trim();
-    if (!name && !c.customer.email && !c.customer.phone) {
-      // No identifying info → useless alert, skip
-      firedRef.current.delete(signal);
-      return;
-    }
+    if (!name && !c.customer.email && !c.customer.phone) return; // no identifying info → useless alert
+
+    // 10-minute cooldown: one alert per customer per 10 minutes, whatever the
+    // reason. Signals suppressed here stay armed — if the customer is still
+    // struggling when the cooldown ends, they raise a fresh alert.
+    if (Date.now() - readLastAlertAt() < STRUGGLE_THRESHOLDS.COOLDOWN_MS) return;
+
+    firedRef.current.add(signal);
 
     try {
       // Plain INSERT — never upsert. PostgREST treats an upsert as INSERT+UPDATE,
@@ -112,12 +121,17 @@ export function useCheckoutStruggleTracker(input: TrackerInput) {
           payment_type: c.paymentType || null,
           url: typeof window !== 'undefined' ? window.location.href : null,
           user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+          // every reason this customer has tripped so far, so the dashboard can
+          // show them together ("60s inactive + switched twice")
+          reasons: Array.from(firedRef.current),
           ...extraDetails,
         },
         status: 'active',
       });
       // 23505 = duplicate for this session/signal, which is fine.
-      if (error && error.code !== '23505') {
+      if (!error || error.code === '23505') {
+        try { localStorage.setItem(COOLDOWN_KEY, String(Date.now())); } catch { /* ignore */ }
+      } else if (error) {
         console.warn('[StruggleTracker] failed to insert alert', error);
       }
     } catch (err) {
