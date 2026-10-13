@@ -115,3 +115,4 @@
 - [x] Direct sales: price change log (auto-adds every Price Updates push) with direct-sale performance between each change
 
 - [x] Align all customer-facing cancellation wording to the new rules: full refund within 14 days with no fees; after 14 days pro-rata less a £60 administration fee and 14% early termination charge; a claim made means cover runs the full term. Cancellation policy page, cancel-warranty page and the checkout cooling-off note verified in the preview; old £40/£30 fee wording gone.
+- [x] Stuck-checkout alerts: faster detection (60s idle, 150s cumulative across visits) with combined reasons on one alert, a 10-minute cooldown per customer, Contacting/Recovered/Closed statuses that stop repeat pop-ups for handled customers, and a management report line (alerts, average reply time, recoveries). Preview only — publishing stays on the user's explicit go-ahead.
