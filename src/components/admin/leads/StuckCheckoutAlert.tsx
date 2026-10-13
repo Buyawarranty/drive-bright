@@ -492,12 +492,39 @@ export const StuckCheckoutAlert: React.FC = () => {
                       </button>
                     )}
                     <CopyAlertButton
-                      text={rowText(r)}
+                      text={rowText(g)}
                       label="Copy this alert as text"
                       caption="Copy"
                       emoji="🔒"
                       className="inline-flex items-center gap-1 rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-red-700 hover:bg-red-50"
                     />
+                    {!HANDLING_STATUSES.includes(r.status) && (
+                      <button
+                        onClick={() => setStatus(r.id, 'contacting')}
+                        title="Mark that you are handling this customer — new signals for them stop popping up"
+                        className="inline-flex items-center rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-red-700 hover:bg-red-50"
+                      >
+                        Contacting
+                      </button>
+                    )}
+                    {r.status !== 'recovered' && (
+                      <button
+                        onClick={() => setStatus(r.id, 'recovered')}
+                        title="Checkout was recovered"
+                        className="inline-flex items-center rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-red-700 hover:bg-red-50"
+                      >
+                        Recovered
+                      </button>
+                    )}
+                    {r.status !== 'closed' && (
+                      <button
+                        onClick={() => setStatus(r.id, 'closed')}
+                        title="Handled — close this alert"
+                        className="inline-flex items-center rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-red-700 hover:bg-red-50"
+                      >
+                        Closed
+                      </button>
+                    )}
                     {!phone && <span className="text-[11px] text-gray-500">No phone captured</span>}
                   </div>
                 </li>
@@ -509,6 +536,11 @@ export const StuckCheckoutAlert: React.FC = () => {
           <Button type="button" variant="ghost" aria-expanded={showAllRows} onClick={() => setShowAllRows((v) => !v)} className="h-auto w-full rounded-none border-t border-destructive-foreground/30 py-1.5 text-xs font-semibold text-destructive-foreground hover:bg-destructive-foreground/10 hover:text-destructive-foreground">
             {showAllRows ? <>Show less <ChevronUp /></> : <>See {live.length - 1} more <ChevronDown /></>}
           </Button>
+        )}
+        {expanded && isManagement && report && (
+          <p className="px-3 py-1.5 border-t border-destructive-foreground/30 text-[11px] text-destructive-foreground">
+            Last 7 days: {report.total} alert{report.total === 1 ? '' : 's'} · average reply {report.avgReplyMins != null ? `${report.avgReplyMins}min` : 'not recorded'} · {report.recovered} recovered
+          </p>
         )}
       </div>
     </AlertRailSlot>
