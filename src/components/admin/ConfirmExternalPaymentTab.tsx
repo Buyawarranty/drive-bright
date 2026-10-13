@@ -574,6 +574,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
       if (error) {
         console.error('DVLA lookup error:', error);
+        if (applyLeadFallback()) return;
         toast({
           title: "Lookup Failed",
           description: error.message || "Unable to connect to vehicle database. Please try again.",
@@ -583,6 +584,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       }
 
       if (data?.error || !data?.make || !data?.model) {
+        if (applyLeadFallback()) return;
         toast({
           title: "Vehicle Not Found",
           description: data?.error || "Unable to find vehicle details. Please check the registration.",
