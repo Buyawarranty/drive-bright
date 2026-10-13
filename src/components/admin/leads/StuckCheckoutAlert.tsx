@@ -400,7 +400,8 @@ export const StuckCheckoutAlert: React.FC = () => {
 
         {expanded && (
           <ul id="stuck-checkout-details" className="divide-y divide-destructive-foreground/30 max-h-[45vh] overflow-y-auto">
-            {(showAllRows ? live : live.slice(0, 1)).map((r) => {
+            {(showAllRows ? live : live.slice(0, 1)).map((g) => {
+              const r = g.head;
               const cadence = getContactCadence(r.created_at);
               const phone = (r.customer_phone || '').replace(/\s/g, '');
               const mailto = r.customer_email
@@ -416,16 +417,26 @@ export const StuckCheckoutAlert: React.FC = () => {
                         {r.customer_name || r.customer_email || r.customer_phone || 'Customer'}
                       </p>
                       <p className="text-[11px] font-medium break-words text-destructive-foreground">
-                        {SIGNAL_LABELS[r.signal_type] || r.signal_type} · came in {cameInAt(r.created_at)} · {timeAgo(r.created_at)}
+                        {g.signals.join(' + ')} · came in {cameInAt(r.created_at)} · {timeAgo(r.created_at)}
                       </p>
                       <p className="text-[11px] break-words text-destructive-foreground">
-                        {[r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null, r.plan_name, r.amount ? `£${r.amount}` : null]
-                          .filter(Boolean)
-                          .join(' · ')}
+                        {[
+                          r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null,
+                          r.plan_name,
+                          r.amount ? `£${r.amount}` : null,
+                          g.msTotal ? `${fmtDuration(g.msTotal)} on checkout` : null,
+                          g.visits ? `${g.visits} visit${g.visits === 1 ? '' : 's'}` : null,
+                          g.urgent ? 'Urgent' : null,
+                        ].filter(Boolean).join(' · ')}
                       </p>
                       <span className={`inline-block mt-1 text-[10px] font-semibold border rounded-full px-2 py-0.5 ${cadence.chipClass}`}>
                         {cadence.label}
                       </span>
+                      {r.status !== 'active' && (
+                        <span className="inline-block mt-1 ml-1 text-[10px] font-semibold border border-gray-300 bg-white text-gray-700 rounded-full px-2 py-0.5">
+                          {STATUS_LABELS[r.status] || r.status}
+                        </span>
+                      )}
                       {r.id in owners && (
                         ownerName(owners[r.id]) ? (
                           <span className="inline-flex items-center gap-1 mt-1 ml-1 text-[10px] font-semibold border border-indigo-200 bg-indigo-50 text-indigo-700 rounded-full px-2 py-0.5" title="This customer already has a lead owned by this agent">
@@ -440,7 +451,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                       )}
                     </div>
                     <button
-                      onClick={() => dismiss(r.id)}
+                      onClick={() => dismiss(g)}
                       className="p-1 rounded hover:bg-red-50 shrink-0"
                       title="Dismiss"
                       aria-label="Dismiss this alert"
