@@ -8,7 +8,8 @@ type SignalType =
   | 'payment_failed'
   | 'multi_attempt'
   | 'method_thrash'
-  | 'bumper_cancelled';
+  | 'bumper_cancelled'
+  | 'exit_intent';
 
 interface TrackerInput {
   enabled: boolean;
@@ -25,8 +26,24 @@ interface TrackerInput {
   paymentMethod?: 'stripe' | 'bumper' | null; // current selected
 }
 
-const IDLE_MS = 90_000; // 90s with no interaction
-const DWELL_MS = 180_000; // 3 min total on page
+/** Tunable thresholds — change here to optimise conversion later. */
+export const STRUGGLE_THRESHOLDS = {
+  IDLE_MS: 60_000, // 60s with no interaction
+  CUMULATIVE_MS: 150_000, // 150s visible checkout time…
+  WINDOW_MS: 10 * 60_000, // …within a rolling 10-minute window, across visits
+  SWITCHES: 2, // monthly ↔ pay-in-full / payment method switches
+  HESITATION_FOR_EXIT_MS: 30_000, // exit intent counts once they've hesitated 30s+
+};
+const IDLE_MS = STRUGGLE_THRESHOLDS.IDLE_MS;
+
+// Cumulative checkout time survives leaving/returning and refreshes (localStorage),
+// and is shared across tabs (only the visible tab adds time, so no double counting).
+const CUM_KEY = 'csa_checkout_cumulative';
+interface CumState { windowStart: number; ms: number; visits: number; lastActive: number; sessionKey?: string }
+const readCum = (): CumState | null => {
+  try { return JSON.parse(localStorage.getItem(CUM_KEY) || 'null'); } catch { return null; }
+};
+const writeCum = (s: CumState) => { try { localStorage.setItem(CUM_KEY, JSON.stringify(s)); } catch { /* ignore */ } };
 
 /**
  * Fires a struggle alert row into checkout_struggle_alerts.
@@ -35,6 +52,11 @@ const DWELL_MS = 180_000; // 3 min total on page
  */
 const SESSION_KEY = (() => {
   try {
+    const cum = JSON.parse(localStorage.getItem('csa_checkout_cumulative') || 'null');
+    if (cum?.sessionKey && Date.now() - cum.windowStart < 10 * 60_000) {
+      sessionStorage.setItem('csa_session_key', cum.sessionKey);
+      return cum.sessionKey as string;
+    }
     const existing = sessionStorage.getItem('csa_session_key');
     if (existing) return existing;
     const k = `csa_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
@@ -103,38 +125,81 @@ export function useCheckoutStruggleTracker(input: TrackerInput) {
     }
   };
 
-  // Idle + dwell timers
+  // Idle + cumulative-time + exit-intent tracking
   useEffect(() => {
     if (!enabled) return;
+    const T = STRUGGLE_THRESHOLDS;
+
+    // Start / continue the rolling window and count this visit.
+    const now = Date.now();
+    let cum = readCum();
+    if (!cum || now - cum.windowStart > T.WINDOW_MS) {
+      cum = { windowStart: now, ms: 0, visits: 0, lastActive: now, sessionKey: SESSION_KEY };
+    }
+    cum.visits += 1;
+    cum.sessionKey = cum.sessionKey || SESSION_KEY;
+    writeCum(cum);
+    const visitStart = now;
 
     let idleTimer: number | undefined;
-    let dwellTimer: number | undefined;
-
     const resetIdle = () => {
       if (idleTimer) window.clearTimeout(idleTimer);
-      idleTimer = window.setTimeout(() => fire('idle_timeout', { idle_ms: IDLE_MS }), IDLE_MS);
+      if (document.visibilityState !== 'visible') return; // away (e.g. 3D Secure / Bumper tab) is not idling
+      idleTimer = window.setTimeout(() => {
+        const c = readCum();
+        fire('idle_timeout', { idle_ms: IDLE_MS, cumulative_ms: c?.ms ?? null, visits: c?.visits ?? null, priority: 'high' });
+      }, IDLE_MS);
     };
 
-    const events = ['mousemove', 'keydown', 'touchstart', 'scroll', 'click'];
-    events.forEach((e) => window.addEventListener(e, resetIdle, { passive: true }));
-    resetIdle();
+    // Tick once a second; add time only while this tab is visible.
+    let lastTick = Date.now();
+    const tick = window.setInterval(() => {
+      const t = Date.now();
+      const delta = Math.min(t - lastTick, 2000);
+      lastTick = t;
+      if (document.visibilityState !== 'visible') return;
+      let c = readCum();
+      if (!c || t - c.windowStart > T.WINDOW_MS) {
+        c = { windowStart: t, ms: 0, visits: 1, lastActive: t, sessionKey: SESSION_KEY };
+      }
+      c.ms += delta;
+      c.lastActive = t;
+      writeCum(c);
+      if (c.ms >= T.CUMULATIVE_MS) {
+        fire('long_dwell', { dwell_ms: c.ms, cumulative_ms: c.ms, visits: c.visits, window_ms: T.WINDOW_MS, priority: 'medium' });
+      }
+    }, 1000);
 
-    dwellTimer = window.setTimeout(() => fire('long_dwell', { dwell_ms: DWELL_MS }), DWELL_MS);
+    const onVisibility = () => { lastTick = Date.now(); resetIdle(); };
+    const onExit = (e: MouseEvent) => {
+      if (e.clientY > 0 || e.relatedTarget) return; // only when the pointer leaves through the top
+      const c = readCum();
+      const hesitated = (c?.ms ?? 0) >= T.HESITATION_FOR_EXIT_MS || Date.now() - visitStart >= T.HESITATION_FOR_EXIT_MS;
+      if (hesitated) fire('exit_intent', { cumulative_ms: c?.ms ?? null, visits: c?.visits ?? null, priority: 'high' });
+    };
+
+    const events = ['mousemove', 'keydown', 'touchstart', 'scroll', 'click', 'input'];
+    events.forEach((e) => window.addEventListener(e, resetIdle, { passive: true }));
+    document.addEventListener('visibilitychange', onVisibility);
+    document.addEventListener('mouseout', onExit);
+    resetIdle();
 
     return () => {
       events.forEach((e) => window.removeEventListener(e, resetIdle));
+      document.removeEventListener('visibilitychange', onVisibility);
+      document.removeEventListener('mouseout', onExit);
       if (idleTimer) window.clearTimeout(idleTimer);
-      if (dwellTimer) window.clearTimeout(dwellTimer);
+      window.clearInterval(tick);
     };
   }, [enabled]);
 
-  // Payment-method toggle thrash
+  // Monthly / pay-in-full (= payment method) switching
   useEffect(() => {
     if (!enabled || !paymentType) return;
     if (lastMethodRef.current && lastMethodRef.current !== paymentType) {
       methodToggleCountRef.current += 1;
-      if (methodToggleCountRef.current >= 3) {
-        fire('method_thrash', { toggles: methodToggleCountRef.current });
+      if (methodToggleCountRef.current >= STRUGGLE_THRESHOLDS.SWITCHES) {
+        fire('method_thrash', { toggles: methodToggleCountRef.current, priority: 'high' });
       }
     }
     lastMethodRef.current = paymentType;
@@ -159,7 +224,7 @@ export function useCheckoutStruggleTracker(input: TrackerInput) {
 
   const reportPaymentFailed = (method: 'stripe' | 'bumper', message?: string) => {
     // Clear the dedupe so a fresh failure still fires (one alert per session is enough)
-    fire('payment_failed', { method, message: message || null });
+    fire('payment_failed', { method, message: message || null, priority: 'critical' });
   };
 
   return { reportPaymentAttempt, reportPaymentFailed };
