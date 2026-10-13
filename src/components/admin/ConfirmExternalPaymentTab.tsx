@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
@@ -493,6 +493,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
+    leadVehicleFallback.current = (lead.make || lead.model)
+      ? { make: lead.make, model: lead.model }
+      : null;
     if (lead.vehicle_reg) setRegNumber(formatRegNumber(lead.vehicle_reg));
     if (lead.email) setCustomerEmail(lead.email);
     // Many leads store the whole name in first_name with last_name empty.
