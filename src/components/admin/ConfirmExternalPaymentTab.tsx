@@ -910,7 +910,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
         // one wins, so a real discount is never saved as zero.
         let effectiveQuoted = await resolveHighestQuotedTotal(
           editableRegNumber,
-          Math.round(quotedTotal * 100) / 100
+          Math.round(quotedTotal * 100) / 100,
+          paymentType
         );
 
 

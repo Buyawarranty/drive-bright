@@ -3735,6 +3735,7 @@ Questions? Call 0330 229 5040`;
     const quotedTotalAtSale = await resolveHighestQuotedTotal(
       (editableRegNumber || vehicleData.regNumber || ''),
       quotedOnScreen,
+      paymentType,
     );
     const discountGivenAtSale = discountGiven(
       quotedTotalAtSale,

@@ -28,10 +28,24 @@ function plateVariants(reg: string): string[] {
  * Highest quoted total on record for this plate (price logs + quotes emailed to
  * the customer), never lower than the fallback passed in.
  */
+/** Cover length in months from any payment_type spelling we store, or null. */
+export function coverMonthsOf(paymentType: string | null | undefined): number | null {
+  const t = String(paymentType || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!t) return null;
+  if (t.startsWith('36') || t.startsWith('3year') || t === 'threeyear') return 36;
+  if (t.startsWith('24') || t.startsWith('2year') || t === 'twoyear') return 24;
+  if (t.startsWith('12') || t.startsWith('1year') || t === 'yearly' || t === 'monthly' || t === 'oneyear') return 12;
+  return null;
+}
+
 export async function resolveHighestQuotedTotal(
   reg: string,
-  fallbackQuoted: number
+  fallbackQuoted: number,
+  /** Cover being sold. Quotes for a different cover length are ignored, so a
+   *  2-year quote can never be used as the "quoted price" of a 1-year sale. */
+  paymentType?: string | null
 ): Promise<number> {
+  const soldMonths = coverMonthsOf(paymentType);
   let highest = Math.max(0, Math.round((Number(fallbackQuoted) || 0) * 100) / 100);
   const target = normalisePlate(reg);
   if (!target) return highest;
@@ -43,6 +57,8 @@ export async function resolveHighestQuotedTotal(
   const consider = (rows: any[] | null, field: string) => {
     for (const row of rows || []) {
       if (normalisePlate(row.vehicle_reg) !== target) continue;
+      const rowMonths = coverMonthsOf(row.payment_type);
+      if (soldMonths && rowMonths && rowMonths !== soldMonths) continue;
       const value = Math.round((Number(row[field]) || 0) * 100) / 100;
       if (value > highest) highest = value;
     }
@@ -52,13 +68,13 @@ export async function resolveHighestQuotedTotal(
     const [audit, sent] = await Promise.all([
       supabase
         .from('price_override_audit')
-        .select('vehicle_reg, matrix_total')
+        .select('vehicle_reg, matrix_total, payment_type')
         .or(orFilter('vehicle_reg'))
         .gte('created_at', since)
         .limit(100),
       supabase
         .from('admin_sent_quotes')
-        .select('vehicle_reg, total_price')
+        .select('vehicle_reg, total_price, payment_type')
         .or(orFilter('vehicle_reg'))
         .gte('created_at', since)
         .limit(100),
