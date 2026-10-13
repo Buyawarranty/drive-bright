@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
@@ -197,6 +197,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   
   // Vehicle lookup state
   const [regNumber, setRegNumber] = useState('');
+  // Make/model already saved on the lead — used when the DVLA lookup fails
+  // so pricing never falls back to a make-less (underpriced) quote.
+  const leadVehicleFallback = useRef<{ make?: string; model?: string } | null>(null);
   const [mileage, setMileage] = useState('');
   const [sliderMileage, setSliderMileage] = useState(0);
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -490,6 +493,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
+    leadVehicleFallback.current = (lead.vehicle_make || lead.vehicle_model)
+      ? { make: lead.vehicle_make || undefined, model: lead.vehicle_model || undefined }
+      : null;
     if (lead.vehicle_reg) setRegNumber(formatRegNumber(lead.vehicle_reg));
     if (lead.email) setCustomerEmail(lead.email);
     // Many leads store the whole name in first_name with last_name empty.
@@ -535,6 +541,27 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     }
 
     setIsLookingUp(true);
+    // If the DVLA lookup fails but the lead already has make/model saved,
+    // use those so the quote is still priced for the right vehicle.
+    const applyLeadFallback = (): boolean => {
+      const fb = leadVehicleFallback.current;
+      if (!fb?.make) return false;
+      setVehicleData({
+        regNumber: reg.toUpperCase(),
+        mileage: mileage || '0',
+        make: fb.make,
+        model: fb.model || '',
+        fuelType: '',
+        transmission: '',
+        year: '',
+        vehicleType: '',
+      });
+      toast({
+        title: "Using saved vehicle details",
+        description: `${fb.make} ${fb.model || ''} — live lookup unavailable, using the details saved on the lead.`,
+      });
+      return true;
+    };
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -547,6 +574,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
       if (error) {
         console.error('DVLA lookup error:', error);
+        if (applyLeadFallback()) return;
         toast({
           title: "Lookup Failed",
           description: error.message || "Unable to connect to vehicle database. Please try again.",
@@ -556,6 +584,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       }
 
       if (data?.error || !data?.make || !data?.model) {
+        if (applyLeadFallback()) return;
         toast({
           title: "Vehicle Not Found",
           description: data?.error || "Unable to find vehicle details. Please check the registration.",
@@ -598,6 +627,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       });
     } catch (error: any) {
       console.error('Error looking up vehicle:', error);
+      if (applyLeadFallback()) return;
       const msg = error?.name === 'AbortError' 
         ? 'Request timed out. Please try again.' 
         : (error?.message || 'Unable to connect to vehicle database. Please try again.');
