@@ -197,6 +197,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   
   // Vehicle lookup state
   const [regNumber, setRegNumber] = useState('');
+  // Make/model already saved on the lead — used when the DVLA lookup fails
+  // so pricing never falls back to a make-less (underpriced) quote.
+  const leadVehicleFallback = useRef<{ make?: string; model?: string } | null>(null);
   const [mileage, setMileage] = useState('');
   const [sliderMileage, setSliderMileage] = useState(0);
   const [isLookingUp, setIsLookingUp] = useState(false);
