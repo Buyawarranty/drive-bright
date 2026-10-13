@@ -541,6 +541,27 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     }
 
     setIsLookingUp(true);
+    // If the DVLA lookup fails but the lead already has make/model saved,
+    // use those so the quote is still priced for the right vehicle.
+    const applyLeadFallback = (): boolean => {
+      const fb = leadVehicleFallback.current;
+      if (!fb?.make) return false;
+      setVehicleData({
+        regNumber: reg.toUpperCase(),
+        mileage: mileage || '0',
+        make: fb.make,
+        model: fb.model || '',
+        fuelType: '',
+        transmission: '',
+        year: '',
+        vehicleType: '',
+      });
+      toast({
+        title: "Using saved vehicle details",
+        description: `${fb.make} ${fb.model || ''} — live lookup unavailable, using the details saved on the lead.`,
+      });
+      return true;
+    };
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
