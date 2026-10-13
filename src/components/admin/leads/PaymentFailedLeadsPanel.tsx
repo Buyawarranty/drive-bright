@@ -33,6 +33,7 @@ const SIGNAL_LABELS: Record<string, string> = {
   payment_failed: 'Payment failed',
   multi_attempt: 'Multiple payment attempts',
   method_thrash: 'Switched payment methods',
+  exit_intent: 'About to leave checkout',
   bumper_cancelled: 'Cancelled at Bumper',
 };
 
