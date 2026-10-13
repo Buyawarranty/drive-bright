@@ -56,6 +56,23 @@ const SIGNAL_LABELS: Record<string, string> = {
   exit_intent: 'about to leave checkout',
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  active: 'New',
+  contacting: 'Contacting',
+  acknowledged: 'Contacting',
+  recovered: 'Recovered',
+  closed: 'Closed',
+};
+const HANDLING_STATUSES = ['contacting', 'acknowledged'];
+const TERMINAL_STATUSES = ['recovered', 'closed'];
+
+const fmtDuration = (ms: number) => {
+  const m = Math.floor(ms / 60000);
+  const s = Math.round((ms % 60000) / 1000);
+  if (m === 0) return `${s}s`;
+  return s ? `${m}m ${s}s` : `${m}m`;
+};
+
 const timeAgo = (iso: string) => {
   const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
   if (mins < 60) return `${mins}min ago`;
