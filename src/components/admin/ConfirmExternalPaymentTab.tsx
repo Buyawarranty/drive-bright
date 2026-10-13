@@ -493,8 +493,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
-    leadVehicleFallback.current = (lead.make || lead.model)
-      ? { make: lead.make, model: lead.model }
+    leadVehicleFallback.current = (lead.vehicle_make || lead.vehicle_model)
+      ? { make: lead.vehicle_make || undefined, model: lead.vehicle_model || undefined }
       : null;
     if (lead.vehicle_reg) setRegNumber(formatRegNumber(lead.vehicle_reg));
     if (lead.email) setCustomerEmail(lead.email);
