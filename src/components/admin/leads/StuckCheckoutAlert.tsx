@@ -125,8 +125,7 @@ export const StuckCheckoutAlert: React.FC = () => {
     const since = new Date(Date.now() - windowHours * 60 * 60 * 1000).toISOString();
     const { data } = await supabase
       .from('checkout_struggle_alerts')
-      .select('id, signal_type, status, created_at, customer_name, customer_email, customer_phone, vehicle_reg, device_type, payment_method, plan_name, amount')
-      .in('status', ['active', 'acknowledged'])
+      .select('id, signal_type, status, created_at, customer_name, customer_email, customer_phone, vehicle_reg, device_type, payment_method, plan_name, amount, details')
       .gte('created_at', since)
       .order('created_at', { ascending: false })
       .limit(50);
@@ -149,13 +148,16 @@ export const StuckCheckoutAlert: React.FC = () => {
   // One pop-up per customer per visit. Repeat signals from the same customer
   // (email / phone tail-9 / reg) are folded into the first one, unless the
   // customer comes back at least 1 hour after their previous signal — then
-  // it counts as a new visit and pops up again.
-  const live = useMemo(() => {
+  // it counts as a new visit and pops up again. A customer a salesperson is
+  // already handling (Contacting) raises no fresh pop-ups, and one marked
+  // Recovered or Closed stops popping up altogether.
+  const live = useMemo((): Group[] => {
     const asc = rows.filter((r) => !isTestStruggle(r)).slice().sort(
       (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     );
     const lastSeen = new Map<string, number>();
-    const heads: StuckRow[] = [];
+    const keyGroup = new Map<string, number>();
+    const groups: { head: StuckRow; all: StuckRow[] }[] = [];
     for (const r of asc) {
       const keys = [
         (r.customer_email || '').trim().toLowerCase() ? `e:${(r.customer_email || '').trim().toLowerCase()}` : null,
@@ -166,23 +168,64 @@ export const StuckCheckoutAlert: React.FC = () => {
       const prev = keys.map((k) => lastSeen.get(k)).filter((v): v is number => v != null);
       const isNewVisit = prev.length === 0 || t - Math.max(...prev) >= 60 * 60 * 1000;
       keys.forEach((k) => lastSeen.set(k, t));
-      if (keys.length === 0 || isNewVisit) heads.push(r);
+      if (keys.length === 0) {
+        groups.push({ head: r, all: [r] });
+        continue;
+      }
+      const gi = isNewVisit
+        ? -1
+        : Math.max(...keys.map((k) => keyGroup.get(k)).filter((v): v is number => v != null), -1);
+      if (gi === -1) {
+        groups.push({ head: r, all: [r] });
+        keys.forEach((k) => keyGroup.set(k, groups.length - 1));
+      } else {
+        groups[gi].all.push(r);
+        keys.forEach((k) => keyGroup.set(k, gi));
+      }
     }
-    // Show the row as soon as it exists — same as the New Leads banner. The
+    const lastIdx = (arr: StuckRow[], pred: (x: StuckRow) => boolean) => {
+      for (let i = arr.length - 1; i >= 0; i--) if (pred(arr[i])) return i;
+      return -1;
+    };
+    // Show the group as soon as it exists — same as the New Leads banner. The
     // per-row cadence still decides whether the Call button is live.
-    return heads
-      .filter((r) => !dismissedIds.includes(r.id))
+    return groups
+      .map((g) => {
+        const handlingIdx = lastIdx(g.all, (x) => HANDLING_STATUSES.includes(x.status));
+        const terminalIdx = lastIdx(g.all, (x) => TERMINAL_STATUSES.includes(x.status));
+        if (terminalIdx > handlingIdx) return null; // already dealt with
+        const kept = handlingIdx >= 0 ? g.all.slice(0, handlingIdx + 1) : g.all;
+        const last = kept[kept.length - 1];
+        const signals: string[] = [];
+        kept.forEach((x) => {
+          const label = SIGNAL_LABELS[x.signal_type] || x.signal_type;
+          if (!signals.includes(label)) signals.push(label);
+        });
+        const d = (last.details || {}) as Record<string, any>;
+        const priorities = kept.map((x) => x.details?.priority).filter(Boolean) as string[];
+        return {
+          head: g.head,
+          all: kept,
+          status: last.status,
+          signals,
+          msTotal: typeof d.cumulative_ms === 'number' ? d.cumulative_ms : null,
+          visits: typeof d.visits === 'number' ? d.visits : null,
+          urgent: priorities.includes('critical') || priorities.includes('high'),
+        };
+      })
+      .filter((g): g is Group => !!g && !dismissedIds.includes(g.head.id))
       .reverse();
   }, [rows, dismissedIds]);
 
   // Resolve which agent owns each stuck customer's lead (by email / phone tail-9).
   useEffect(() => {
-    const unresolved = live.filter((r) => !(r.id in owners));
+    const unresolved = live.filter((g) => !(g.head.id in owners));
     if (unresolved.length === 0) return;
     let cancelled = false;
     (async () => {
       const results = await Promise.all(
-        unresolved.map(async (r) => {
+        unresolved.map(async (g) => {
+          const r = g.head;
           const email = (r.customer_email || '').trim().toLowerCase();
           const phone9 = tail9(r.customer_phone);
           try {
