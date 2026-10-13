@@ -627,6 +627,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       });
     } catch (error: any) {
       console.error('Error looking up vehicle:', error);
+      if (applyLeadFallback()) return;
       const msg = error?.name === 'AbortError' 
         ? 'Request timed out. Please try again.' 
         : (error?.message || 'Unable to connect to vehicle database. Please try again.');
