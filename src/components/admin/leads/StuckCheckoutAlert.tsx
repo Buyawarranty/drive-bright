@@ -41,6 +41,7 @@ const SIGNAL_LABELS: Record<string, string> = {
   multi_attempt: 'multiple payment attempts',
   method_thrash: 'toggling payment methods',
   bumper_cancelled: 'cancelled Bumper checkout',
+  exit_intent: 'about to leave checkout',
 };
 
 const timeAgo = (iso: string) => {
