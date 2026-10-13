@@ -32,6 +32,18 @@ interface StuckRow {
   payment_method: string | null;
   plan_name: string | null;
   amount: number | null;
+  details: Record<string, any> | null;
+}
+
+/** One pop-up per customer visit: the first alert plus every repeat signal folded in. */
+interface Group {
+  head: StuckRow;
+  all: StuckRow[];
+  status: string;
+  signals: string[];
+  msTotal: number | null;
+  visits: number | null;
+  urgent: boolean;
 }
 
 const SIGNAL_LABELS: Record<string, string> = {
