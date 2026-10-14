@@ -177,26 +177,45 @@ export const SalesScoreboardTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Full team target — managers, admins and super admins only */}
-      {isManagement && <CompanyTargetBanner monthDate={dateRange?.from ?? undefined} />}
+      {/* Full team target — managers, admins and super admins only, and hidden
+          when a manager focuses the page on their own scores */}
+      {isManagement && !focusOnlyMe && <CompanyTargetBanner monthDate={dateRange?.from ?? undefined} />}
 
 
 
       {/* Team filter toolbar */}
       <div className="rounded-xl border bg-card/60 p-3 md:p-4 space-y-3">
-        {/* Team filter — management sees teams + an "Only me" focus toggle; agents see their own team as a locked label */}
-        {teams.length > 0 && isManagement && (
-          <div className="flex flex-wrap items-center gap-2 pt-3 border-t">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Team</span>
+        {/* Show/hide — managers pick between the whole board and their own scores only */}
+        {isManagement && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Show</span>
+            <Button
+              variant={!focusOnlyMe ? 'default' : 'outline'}
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setFocusOnlyMe(false)}
+              title="List every agent and team on this page"
+            >
+              All agents
+            </Button>
             <Button
               variant={focusOnlyMe ? 'default' : 'outline'}
               size="sm"
               className="h-8 text-xs"
-              onClick={() => setFocusOnlyMe(v => !v)}
-              title="Hide other agents and teams — show only your own scoreboard row"
+              onClick={() => setFocusOnlyMe(true)}
+              title="Hide every other agent — show only your own scores"
             >
-              {focusOnlyMe ? 'Only me · on' : 'Only me'}
+              Only my scores
             </Button>
+            <span className="text-xs text-muted-foreground">
+              {focusOnlyMe ? 'Other agents and teams are hidden on this page.' : 'Every agent and team is listed on this page.'}
+            </span>
+          </div>
+        )}
+        {/* Team filter — management sees teams; agents see their own team as a locked label */}
+        {teams.length > 0 && isManagement && (
+          <div className="flex flex-wrap items-center gap-2 pt-3 border-t">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Team</span>
             <Button
               variant={!focusOnlyMe && selectedTeamId === 'all' ? 'default' : 'outline'}
               size="sm"
@@ -442,7 +461,15 @@ export const SalesScoreboardTab: React.FC = () => {
             <span className="flex items-center gap-2"><Zap className="h-4 w-4" /> Speed to dial</span>
           </AccordionTrigger>
           <AccordionContent className="pb-4">
-            <SpeedToDialPanel />
+            <SpeedToDialPanel
+              isManagement={isManagement}
+              currentAdminUserId={currentAdminUserId}
+              allowedAgentIds={
+                isManagement && !focusOnlyMe && selectedTeamId === 'all'
+                  ? null
+                  : visibleAgents.map(a => a.id)
+              }
+            />
           </AccordionContent>
         </AccordionItem>
 

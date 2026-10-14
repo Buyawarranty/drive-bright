@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Zap, RefreshCw, Target, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { filterStatsByAgent } from './speedToDialScope';
 
 interface LeadRow {
   id: string;
@@ -43,11 +44,18 @@ const isConverted = (l: LeadRow) => l.is_paid === true || (l.status || '').toLow
 
 const fmt = (s: number | null) => s == null ? '—' : s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
 
+
 /**
  * Speed to Dial reporting — per-agent daily counters and conversion-by-band
  * analysis. "First dial" = earliest lead_call_logs row for each sales_lead.
  */
-export const SpeedToDialPanel: React.FC = () => {
+export const SpeedToDialPanel: React.FC<{
+  /** Management sees every agent; a sales agent only ever sees their own row. */
+  isManagement: boolean;
+  currentAdminUserId: string | null;
+  /** Scoreboard "Only my scores" focus — null = every agent. */
+  allowedAgentIds?: string[] | null;
+}> = ({ isManagement, currentAdminUserId, allowedAgentIds }) => {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [firstCallByLead, setFirstCallByLead] = useState<Map<string, CallRow>>(new Map());
   const [agentNames, setAgentNames] = useState<Map<string, string>>(new Map());
@@ -122,10 +130,26 @@ export const SpeedToDialPanel: React.FC = () => {
     });
   }, [leads, firstCallByLead]);
 
+  // Visibility: a sales agent only ever sees their own figures; management can
+  // focus the whole panel on one person with the scoreboard's "Only my scores"
+  // switch (allowedAgentIds), and sees everyone when it is off.
+  const ownOnly = !isManagement;
+  const visibleIds = useMemo(() => {
+    if (!isManagement) return new Set<string>(currentAdminUserId ? [currentAdminUserId] : []);
+    if (allowedAgentIds) return new Set(allowedAgentIds);
+    return null;
+  }, [isManagement, currentAdminUserId, allowedAgentIds]);
+
+  const scopedStats = useMemo(
+    () => filterStatsByAgent(leadStats, visibleIds),
+    [leadStats, visibleIds]
+  );
+
+
   // Per-agent stats (owned by assigned_to when present, else first-caller)
   const agentStats: AgentStats[] = useMemo(() => {
     const map = new Map<string, AgentStats>();
-    leadStats.forEach(({ lead, seconds, ownerAgentId }) => {
+    scopedStats.forEach(({ lead, seconds, ownerAgentId }) => {
       if (!ownerAgentId) return;
       const s = map.get(ownerAgentId) || {
         agentId: ownerAgentId,
@@ -153,13 +177,13 @@ export const SpeedToDialPanel: React.FC = () => {
       const bPct = b.called ? b.within120 / b.called : 0;
       return bPct - aPct || (a.avgSeconds || 9999) - (b.avgSeconds || 9999);
     });
-  }, [leadStats, agentNames]);
+  }, [scopedStats, agentNames]);
 
   // Conversion-by-band analysis
   const bandStats = useMemo(() => {
     const bands = BANDS.map(b => ({ ...b, leads: 0, sales: 0 }));
     let notContacted = { leads: 0, sales: 0 };
-    leadStats.forEach(({ lead, seconds }) => {
+    scopedStats.forEach(({ lead, seconds }) => {
       if (seconds == null) {
         notContacted.leads += 1;
         if (isConverted(lead)) notContacted.sales += 1;
@@ -172,26 +196,26 @@ export const SpeedToDialPanel: React.FC = () => {
       }
     });
     return { bands, notContacted };
-  }, [leadStats]);
+  }, [scopedStats]);
 
   const totals = useMemo(() => {
-    const total = leads.length;
-    const called = firstCallByLead.size;
-    const within = leadStats.filter(x => x.seconds != null && x.seconds <= TARGET_SECONDS).length;
-    const sales = leads.filter(isConverted).length;
+    const total = scopedStats.length;
+    const called = scopedStats.filter(x => x.seconds != null).length;
+    const within = scopedStats.filter(x => x.seconds != null && x.seconds <= TARGET_SECONDS).length;
+    const sales = scopedStats.filter(x => isConverted(x.lead)).length;
     const avg = (() => {
-      const secs = leadStats.map(x => x.seconds).filter((s): s is number => s != null);
+      const secs = scopedStats.map(x => x.seconds).filter((s): s is number => s != null);
       if (!secs.length) return null;
       return Math.round(secs.reduce((a, b) => a + b, 0) / secs.length);
     })();
     return { total, called, within, notCalled: total - called, sales, avg };
-  }, [leads, firstCallByLead, leadStats]);
+  }, [scopedStats]);
 
   return (
     <div className="space-y-6">
       {/* Overview KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-        <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">New leads today</CardTitle></CardHeader>
+        <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">{ownOnly ? 'My leads today' : 'New leads today'}</CardTitle></CardHeader>
           <CardContent className="pt-0"><div className="text-2xl font-bold">{totals.total}</div></CardContent></Card>
         <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">Called</CardTitle></CardHeader>
           <CardContent className="pt-0"><div className="text-2xl font-bold">{totals.called}</div></CardContent></Card>
@@ -204,7 +228,7 @@ export const SpeedToDialPanel: React.FC = () => {
           </CardContent></Card>
         <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">Avg speed</CardTitle></CardHeader>
           <CardContent className="pt-0"><div className={`text-2xl font-bold ${totals.avg != null && totals.avg <= TARGET_SECONDS ? 'text-green-600' : 'text-red-600'}`}>{fmt(totals.avg)}</div></CardContent></Card>
-        <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">Sales today</CardTitle></CardHeader>
+        <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">{ownOnly ? 'My sales today' : 'Sales today'}</CardTitle></CardHeader>
           <CardContent className="pt-0"><div className="text-2xl font-bold">{totals.sales}</div>
             <div className="text-[10px] text-muted-foreground">{totals.total ? ((totals.sales / totals.total) * 100).toFixed(1) : 0}% conv</div>
           </CardContent></Card>
@@ -213,7 +237,7 @@ export const SpeedToDialPanel: React.FC = () => {
       {/* Per-agent table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5 text-primary" />Per Agent — Today</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5 text-primary" />{ownOnly ? 'My speed to dial — Today' : 'Per Agent — Today'}</CardTitle>
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />Refresh
           </Button>
@@ -221,7 +245,7 @@ export const SpeedToDialPanel: React.FC = () => {
         <CardContent>
           {agentStats.length === 0 ? (
             <div className="text-sm text-muted-foreground py-8 text-center">
-              {loading ? 'Loading…' : 'No leads assigned to agents today yet.'}
+              {loading ? 'Loading…' : ownOnly ? 'No leads assigned to you today yet.' : 'No leads assigned to agents today yet.'}
             </div>
           ) : (
             <div className="overflow-x-auto">
