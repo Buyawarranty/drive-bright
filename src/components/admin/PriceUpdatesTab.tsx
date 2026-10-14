@@ -1,4 +1,6 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import WebsiteDiscountPanel from './pricing/WebsiteDiscountPanel';
+import { normalizeWebsiteDiscount, readWebsiteDiscountDraft, saveWebsiteDiscountDraft, WEBSITE_DISCOUNT_CHANGED_EVENT } from '@/lib/pricing/websiteDiscount';
 import { type VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 import { getLiveRiskBandConfig } from '@/lib/pricing/liveRiskBands';
 import { loadRiskBandConfig } from '@/lib/pricing/vehicleRiskBands';
@@ -235,7 +237,12 @@ export default function PriceUpdatesTab() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [label, setLabel] = useState('');
   const [notes, setNotes] = useState('');
-  const [discountPct, setDiscountPct] = useState(10);
+  const [discountPct, setDiscountPct] = useState(readWebsiteDiscountDraft);
+  useEffect(() => {
+    const sync = () => setDiscountPct(readWebsiteDiscountDraft());
+    window.addEventListener(WEBSITE_DISCOUNT_CHANGED_EVENT, sync);
+    return () => window.removeEventListener(WEBSITE_DISCOUNT_CHANGED_EVENT, sync);
+  }, []);
   const [bulkPct, setBulkPct] = useState('15');
 
   const [matrix, setMatrix] = useState<PricingMatrixShape>(() => buildCodeAdminMatrix());
@@ -281,9 +288,10 @@ export default function PriceUpdatesTab() {
     setSelectedId(v.id);
     setLabel(v.label);
     setNotes(v.notes ?? '');
-    setDiscountPct(
-      Number(v.step3_discount_pct) > 0 ? Number(v.step3_discount_pct) : 10
-    );
+    if (v.vehicle_factor_model?.websiteDiscountMode === 'single') {
+      setDiscountPct(normalizeWebsiteDiscount(v.step3_discount_pct));
+      saveWebsiteDiscountDraft(v.step3_discount_pct);
+    }
     setMatrix(roundMatrixWhole(v.admin_matrix));
   }
 
@@ -337,9 +345,7 @@ export default function PriceUpdatesTab() {
    * percentage. If nobody has set one, default to 10% so the customer journey is
    * never accidentally published at the same price as Quotes & Orders.
    */
-  const DEFAULT_WEBSITE_DISCOUNT_PCT = 10;
-  const effectiveDiscountPct = (pct: number) =>
-    Number.isFinite(pct) && pct > 0 ? pct : DEFAULT_WEBSITE_DISCOUNT_PCT;
+  const effectiveDiscountPct = normalizeWebsiteDiscount;
 
   const codeMatrix = useMemo(() => buildCodeAdminMatrix(), []);
 
@@ -375,7 +381,7 @@ export default function PriceUpdatesTab() {
       const v = await createVersion(
         `Test pricing ${new Date().toLocaleDateString('en-GB')}`,
         roundMatrixWhole(liveVersion ? liveVersion.admin_matrix : buildCodeAdminMatrix()),
-        liveVersion ? Number(liveVersion.step3_discount_pct) : 10,
+        readWebsiteDiscountDraft(),
         ''
       );
       loadIntoEditor(v);
@@ -487,7 +493,7 @@ export default function PriceUpdatesTab() {
     const bands =
       (model as any)?.riskBands ?? getLiveRiskBandConfig() ?? loadRiskBandConfig();
     if (!bands) return model;
-    return { ...(model ?? ({} as VehicleFactorModel)), riskBands: bands } as VehicleFactorModel;
+    return { ...(model ?? ({} as VehicleFactorModel)), riskBands: bands, websiteDiscountMode: 'single' } as VehicleFactorModel;
   }
 
 
@@ -525,7 +531,7 @@ export default function PriceUpdatesTab() {
   ) {
     const vehicleFactors =
       opts && 'vehicleFactorModel' in opts ? opts.vehicleFactorModel ?? null : currentVehicleFactorModel();
-    websiteDiscountPct = effectiveDiscountPct(Number(websiteDiscountPct));
+    websiteDiscountPct = readWebsiteDiscountDraft();
     if (
       publish &&
       !opts?.skipConfirm &&
@@ -834,6 +840,25 @@ export default function PriceUpdatesTab() {
 
   return (
     <div className="space-y-6 p-1">
+      <WebsiteDiscountPanel busy={busy} onSave={async pct => {
+        setBusy(true);
+        try {
+          const v = await createVersion(
+            `Website direct-sales discount ${pct}% — ${new Date().toLocaleDateString('en-GB')}`,
+            roundMatrixWhole(liveVersion?.admin_matrix ?? codeMatrix),
+            pct,
+            'Website discount only. Quotes & Orders grid and existing minimums unchanged.',
+            liveVersion?.claim_limit_factors ?? null,
+            liveVersion?.labour_rate_factors ?? null,
+            { ...(liveVersion?.vehicle_factor_model ?? ({} as VehicleFactorModel)), websiteDiscountMode: 'single' },
+            liveVersion ?? undefined
+          );
+          loadIntoEditor(v);
+          toast.success('Website discount saved as a test draft — live prices unchanged');
+        } catch (e: unknown) {
+          toast.error(e instanceof Error ? e.message : 'Could not save the test discount');
+        } finally { setBusy(false); }
+      }} />
       {/* Always-visible go-live controls so Push live / Revert are never buried in a tab */}
       <div className="rounded-lg border-2 border-primary/30 bg-muted/40 p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1328,18 +1353,8 @@ export default function PriceUpdatesTab() {
                   <Input value={label} onChange={e => setLabel(e.target.value)} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Website discount off Quotes &amp; Orders (%)</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={50}
-                    value={discountPct}
-                    onChange={e => setDiscountPct(Number(e.target.value) || 0)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Step 3 / Step 4 price = this grid minus this %. Leave blank or 0 and 10% is
-                    applied automatically on publish.
-                  </p>
+                  <Label>Website discount</Label>
+                  <Button variant="link" onClick={() => document.getElementById('website-discount')?.scrollIntoView({ behavior: 'smooth' })}>{discountPct}% — change in the purple section</Button>
                 </div>
               </div>
 

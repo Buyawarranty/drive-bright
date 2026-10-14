@@ -679,57 +679,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
             </Alert>
           </div>
 
-          {/* Website direct-sales discount on 2/3-year cover */}
-          <div className="rounded-lg border-2 border-success/60 bg-success/10 p-4 shadow-sm">
-            <div className="flex items-center justify-between gap-3 mb-1">
-              <h3 className="font-semibold text-success">Website direct-sales discount (2 &amp; 3-year cover)</h3>
-              <span className="rounded-full bg-success text-success-foreground text-sm font-bold px-3 py-1">
-                {config.websiteMultiYearCutPct ?? 18}%
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mb-3">
-              The percentage Steps 3–4 and the chatbot take off the grid price for 2 and 3-year cover sold
-              directly on the website. 1-year cover and Quotes &amp; Orders are never touched by this. Every
-              change is logged on push live, so the Direct sales tab can show performance before and after
-              each value.
-            </p>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-1">
-                <Label htmlFor="web-multi-year-cut">Discount off 2 &amp; 3-year website prices (%)</Label>
-                <Input
-                  id="web-multi-year-cut"
-                  type="number"
-                  min={0}
-                  max={50}
-                  step="1"
-                  value={config.websiteMultiYearCutPct ?? 18}
-                  onChange={e =>
-                    update({
-                      ...config,
-                      websiteMultiYearCutPct: Math.min(
-                        50,
-                        Math.max(0, Math.round(Number(e.target.value) || 0))
-                      ),
-                    })
-                  }
-                />
-                <p className="text-xs text-muted-foreground">
-                  Currently {config.websiteMultiYearCutPct ?? 18}% — website 2-year and 3-year prices are{' '}
-                  {100 - (config.websiteMultiYearCutPct ?? 18)}% of the grid price.
-                </p>
-              </div>
-              <div className="space-y-1">
-                <Label>1-year cover</Label>
-                <Input value="No discount" disabled />
-                <p className="text-xs text-muted-foreground">Always the full grid price.</p>
-              </div>
-              <div className="space-y-1">
-                <Label>Quotes &amp; Orders</Label>
-                <Input value="Never affected" disabled />
-                <p className="text-xs text-muted-foreground">Agent prices stay on the grid.</p>
-              </div>
-            </div>
-          </div>
+          <Button variant="link" onClick={() => document.getElementById('website-discount')?.scrollIntoView({ behavior: 'smooth' })}>Website discount — change in the purple section</Button>
 
           {/* Vehicle type factors */}
           <div>

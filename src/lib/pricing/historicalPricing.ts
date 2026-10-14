@@ -73,7 +73,7 @@ export function withPricingAsOf<T>(
     setLiveLabourRateFactors(version.labourRateFactors);
     return fn();
   } finally {
-    setLivePricingOverride(previous.adminMatrix, previous.step3DiscountPct);
+    setLivePricingOverride(previous.adminMatrix, previous.step3DiscountPct, previous.unifiedWebsiteDiscount);
     setLiveLabourRateFactors(previousLabour);
   }
 }

@@ -21,7 +21,6 @@ import PriceMatrixExplorer from '@/components/admin/pricing/PriceMatrixExplorer'
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import WebGapDraftPanel from '@/components/admin/pricing/WebGapDraftPanel';
 import ModelRiskDraftPanel from '@/components/admin/pricing/ModelRiskDraftPanel';
 import PriceSurfaceBadge from './PriceSurfaceBadge';
 
@@ -416,8 +415,6 @@ export default function PricingEngineDraftPanel() {
           setClaimLimit(c);
         }}
       />
-
-      <WebGapDraftPanel />
 
       <ModelRiskDraftPanel />
 
