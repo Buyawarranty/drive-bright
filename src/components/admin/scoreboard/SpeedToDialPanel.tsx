@@ -216,7 +216,7 @@ export const SpeedToDialPanel: React.FC<{
     <div className="space-y-6">
       {/* Overview KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-        <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">New leads today</CardTitle></CardHeader>
+        <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">{ownOnly ? 'My leads today' : 'New leads today'}</CardTitle></CardHeader>
           <CardContent className="pt-0"><div className="text-2xl font-bold">{totals.total}</div></CardContent></Card>
         <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">Called</CardTitle></CardHeader>
           <CardContent className="pt-0"><div className="text-2xl font-bold">{totals.called}</div></CardContent></Card>
@@ -229,7 +229,7 @@ export const SpeedToDialPanel: React.FC<{
           </CardContent></Card>
         <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">Avg speed</CardTitle></CardHeader>
           <CardContent className="pt-0"><div className={`text-2xl font-bold ${totals.avg != null && totals.avg <= TARGET_SECONDS ? 'text-green-600' : 'text-red-600'}`}>{fmt(totals.avg)}</div></CardContent></Card>
-        <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">Sales today</CardTitle></CardHeader>
+        <Card><CardHeader className="pb-1"><CardTitle className="text-xs text-muted-foreground">{ownOnly ? 'My sales today' : 'Sales today'}</CardTitle></CardHeader>
           <CardContent className="pt-0"><div className="text-2xl font-bold">{totals.sales}</div>
             <div className="text-[10px] text-muted-foreground">{totals.total ? ((totals.sales / totals.total) * 100).toFixed(1) : 0}% conv</div>
           </CardContent></Card>
@@ -238,7 +238,7 @@ export const SpeedToDialPanel: React.FC<{
       {/* Per-agent table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5 text-primary" />Per Agent — Today</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5 text-primary" />{ownOnly ? 'My speed to dial — Today' : 'Per Agent — Today'}</CardTitle>
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />Refresh
           </Button>
@@ -246,7 +246,7 @@ export const SpeedToDialPanel: React.FC<{
         <CardContent>
           {agentStats.length === 0 ? (
             <div className="text-sm text-muted-foreground py-8 text-center">
-              {loading ? 'Loading…' : 'No leads assigned to agents today yet.'}
+              {loading ? 'Loading…' : ownOnly ? 'No leads assigned to you today yet.' : 'No leads assigned to agents today yet.'}
             </div>
           ) : (
             <div className="overflow-x-auto">
