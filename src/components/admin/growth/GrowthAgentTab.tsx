@@ -160,7 +160,7 @@ export default function GrowthAgentTab() {
         <Lightbulb className="h-6 w-6 text-primary" />
         <div>
           <h1 className="text-xl font-semibold">Growth assistant</h1>
-          <p className="text-sm text-muted-foreground">Super admin only. Reads your sales, leads and blogs and suggests what to do — it never changes or sends anything.</p>
+          <p className="text-sm text-muted-foreground">Uses the parts of the CRM you've been given access to and suggests what to do — it never changes or sends anything.</p>
         </div>
       </div>
       {err && <p className="text-sm text-destructive mb-2">{err}</p>}
