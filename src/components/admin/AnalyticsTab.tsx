@@ -1640,6 +1640,13 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                     formatter={(value: number) => value > 0 ? `${value} ${value === 1 ? 'deal' : 'deals'}` : ''}
                     style={{ fill: 'hsl(var(--analytics-revenue-strong))', fontSize: 11, fontWeight: 600 }}
                   />
+                  <LabelList
+                    dataKey="revenue"
+                    position="top"
+                    offset={22}
+                    formatter={(value: number) => value > 0 ? `£${Math.round(value).toLocaleString('en-GB')}` : ''}
+                    style={{ fill: 'hsl(var(--analytics-revenue-strong))', fontSize: 11, fontWeight: 700 }}
+                  />
                 </Bar>
                 <Line
                   yAxisId="right"
