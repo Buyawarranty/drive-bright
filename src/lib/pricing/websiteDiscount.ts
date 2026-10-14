@@ -22,5 +22,5 @@ export function saveWebsiteDiscountDraft(pct: number): void {
 }
 
 export function discountedWebsiteTotal(total: number, pct: number, floor: number): number {
-  return Math.max(Math.ceil(floor), Math.ceil(total * (1 - normalizeWebsiteDiscount(pct) / 100)));
+  return Math.max(Math.ceil(floor), Math.ceil(total * (100 - normalizeWebsiteDiscount(pct)) / 100));
 }
