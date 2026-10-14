@@ -11,7 +11,6 @@ import {
   LEADS_ISSUE_OPTIONS,
   ORDERS_ISSUE_OPTIONS,
   SURVEY_START_DATE,
-  surveyWindowLabel,
 } from './DailyCrmSurvey';
 
 /**
@@ -330,7 +329,7 @@ export const DailyCrmSurveyResults: React.FC<{ days: number; selfOnly?: boolean 
             Daily CRM survey
           </h3>
           <p className="text-sm text-muted-foreground">
-            Agents get a pop-up every day between {surveyWindowLabel()} UK time. One answer per agent per day, tracked from {fmtLong(SURVEY_START_DATE)}.
+            Answers already collected from the sales team — one per agent per day, tracked from {fmtLong(SURVEY_START_DATE)}. The daily prompt has been withdrawn, so no new answers are being requested.
           </p>
         </div>
         <Button size="sm" variant="outline" onClick={exportCsv} disabled={rows.length === 0}>
@@ -409,7 +408,7 @@ export const DailyCrmSurveyResults: React.FC<{ days: number; selfOnly?: boolean 
         </CardHeader>
         <CardContent className="h-64">
           {trend.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-10 text-center">No surveys yet — the first answers arrive after today's {surveyWindowLabel()} window.</p>
+            <p className="text-sm text-muted-foreground py-10 text-center">No survey answers yet.</p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={trend}>
