@@ -223,7 +223,7 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
                             {info[r.id].topic.label}
                           </span>
                           {info[r.id].question && (
-                            <p className="text-[11px] italic text-gray-800 whitespace-nowrap" title={info[r.id].question}>
+                            <p className="alert-scroll-x text-[11px] italic text-gray-800 whitespace-nowrap" title={info[r.id].question}>
                               “{info[r.id].question}”
                             </p>
                           )}

@@ -100,7 +100,7 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
                 {ownerByLeadId[c.lead_id]}'s lead
               </p>
             ) : null}
-            <p className="mt-1 whitespace-nowrap text-xs text-gray-600">{c.last_message_preview}</p>
+            <p className="alert-scroll-x mt-1 whitespace-nowrap text-xs text-gray-600">{c.last_message_preview}</p>
             <div className="mt-2 flex gap-2">
               <Button size="sm" className="bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => onTake(c.id)}>
                 Take Lead

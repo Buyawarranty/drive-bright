@@ -151,7 +151,7 @@ export const NonClaimComplaintAlert: React.FC = () => {
                   <span className="text-[11px] text-gray-900/80">{timeAgo(c.created_at)}</span>
                 </div>
                 <p className="text-sm font-semibold mt-1">{c.first_name} {c.last_name}</p>
-                <p className="text-[12px] text-gray-600 whitespace-nowrap">{c.description}</p>
+                <p className="alert-scroll-x text-[12px] text-gray-600 whitespace-nowrap">{c.description}</p>
                 <div className="flex flex-wrap gap-1.5 mt-1.5">
                   {c.phone && (
                     <a
