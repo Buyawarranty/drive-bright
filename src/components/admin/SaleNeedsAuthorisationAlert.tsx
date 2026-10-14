@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { ShieldAlert, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShieldAlert, X, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { toast } from 'sonner';
+import { useRealAdminId } from '@/hooks/useCurrentAdminId';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { useIsManagement } from '@/hooks/useIsManagement';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
@@ -54,9 +56,11 @@ const readDismissed = (): string[] => {
 export const SaleNeedsAuthorisationAlert: React.FC = () => {
   const { isManagement } = useIsManagement();
   const adminMap = useAllAdminUsersMap() as any;
+  const myId = useRealAdminId();
   const [flags, setFlags] = useState<Flag[]>([]);
   const [dismissed, setDismissed] = useState<string[]>(readDismissed);
   const [expanded, setExpanded] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const since = new Date(Date.now() - LOOKBACK_DAYS * 86400000).toISOString();
@@ -118,8 +122,39 @@ export const SaleNeedsAuthorisationAlert: React.FC = () => {
         reasons,
       });
     }
-    setFlags(out);
+    const ids = out.map((f) => f.id);
+    const { data: decided } = ids.length
+      ? await (supabase as any).from('sale_authorisations').select('policy_id').in('policy_id', ids)
+      : { data: [] as any[] };
+    const done = new Set((decided || []).map((d: any) => d.policy_id));
+    setFlags(out.filter((f) => !done.has(f.id)));
   }, []);
+
+  const decide = async (f: Flag, status: 'approved' | 'declined') => {
+    setBusy(f.id);
+    try {
+      const me = myId ? (adminMap?.[myId] ?? adminMap?.get?.(myId)) : null;
+      const myName = me?.name || [me?.first_name, me?.last_name].filter(Boolean).join(' ') || me?.email || null;
+      const { error } = await (supabase as any).from('sale_authorisations').upsert({
+        policy_id: f.id,
+        agent_admin_id: f.agent,
+        customer_name: f.name,
+        warranty_number: f.warranty,
+        paid_amount: f.paid,
+        status,
+        decided_by: myId,
+        decided_by_name: myName,
+        agent_seen_at: null,
+      }, { onConflict: 'policy_id' });
+      if (error) throw error;
+      setFlags((x) => x.filter((y) => y.id !== f.id));
+      toast.success(status === 'approved' ? 'Sale authorised — the agent has been told' : 'Agent asked to speak to you');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not save the decision');
+    } finally {
+      setBusy(null);
+    }
+  };
 
   useEffect(() => {
     if (!isManagement) return;
@@ -159,6 +194,14 @@ export const SaleNeedsAuthorisationAlert: React.FC = () => {
               <div>Paid £{f.paid.toFixed(2)}{f.quoted ? ` · quoted £${f.quoted.toFixed(2)}` : ''}</div>
               <div>{f.reasons.join(' · ')}</div>
               <div className="opacity-90">Confirmed by {agentName(f.agent)} · {new Date(f.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })}</div>
+              <div className="mt-2 flex gap-2">
+                <Button size="sm" disabled={busy === f.id} onClick={() => decide(f, 'approved')} className="h-7 bg-emerald-600 px-3 text-xs font-semibold text-white hover:bg-emerald-700">
+                  <Check className="mr-1 h-3.5 w-3.5" /> Authorise
+                </Button>
+                <Button size="sm" variant="outline" disabled={busy === f.id} onClick={() => decide(f, 'declined')} className="h-7 bg-background px-3 text-xs font-semibold text-foreground">
+                  <X className="mr-1 h-3.5 w-3.5" /> Speak to manager
+                </Button>
+              </div>
             </div>
             <Button
               type="button"
