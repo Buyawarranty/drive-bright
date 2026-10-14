@@ -11,7 +11,6 @@ import {
   LEADS_ISSUE_OPTIONS,
   ORDERS_ISSUE_OPTIONS,
   SURVEY_START_DATE,
-  surveyWindowLabel,
 } from './DailyCrmSurvey';
 
 /**
@@ -409,7 +408,7 @@ export const DailyCrmSurveyResults: React.FC<{ days: number; selfOnly?: boolean 
         </CardHeader>
         <CardContent className="h-64">
           {trend.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-10 text-center">No surveys yet — the first answers arrive after today's {surveyWindowLabel()} window.</p>
+            <p className="text-sm text-muted-foreground py-10 text-center">No survey answers yet.</p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={trend}>
