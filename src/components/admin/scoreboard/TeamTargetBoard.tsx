@@ -183,8 +183,9 @@ export const TeamTargetBoard: React.FC<{
           )}
 
           <p className="mt-2 rounded-md border-2 border-violet-300 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-900">
-            PayBetter sales count at the one-year equivalent — a 2 or 3 year PayBetter warranty is credited as the
-            yearly figure (total ÷ cover years). Every other sale counts in full.
+            How totals are counted: full payments count in full. BAW PayLater (partial) sales count only the first
+            year collected now — the remaining years are collected each year on the policy anniversary, so they
+            are not included here. PayBetter sales count at the one-year equivalent (total ÷ cover years).
           </p>
         </CardHeader>
         <CardContent className="space-y-5">
