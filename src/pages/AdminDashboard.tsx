@@ -1,3 +1,4 @@
+import GrowthAgentTab from '@/components/admin/growth/GrowthAgentTab';
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -1118,6 +1119,9 @@ const AdminDashboard = () => {
 
 
 
+      case 'growth-agent':
+        if (effectiveUserRole !== 'super_admin') return <AccessDenied label="Growth Assistant" />;
+        return <GrowthAgentTab />;
       case 'price-updates':
         return <PriceUpdatesTab />;
       case 'sms-tracking':
