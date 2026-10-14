@@ -209,7 +209,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
                 <p>
                   <strong>{sectionLabel}</strong> — publishing <strong>{pending?.label}</strong>. Quotes
                   &amp; Orders will price with this model immediately, and the customer journey (Step
-                  3/4) will be <strong>{pending?.websiteDiscountPct ?? gapValue}% cheaper</strong>{' '}
+                  3/4) will use <strong>{gapValue}% off</strong>{' '}
                   than the Quotes &amp; Orders price, rounded to the nearest pound.
                 </p>
                 {pending?.description && <p>{pending.description}</p>}
