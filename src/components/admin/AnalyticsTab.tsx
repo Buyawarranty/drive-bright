@@ -427,6 +427,26 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         });
         setMonthlyRevenueTargets(targetMap);
       }
+
+      // The monthly goal mirrors the scoreboard: sum of every agent's full-month target.
+      // Falls back to the stored company goal only for months with no agent targets.
+      try {
+        const now = new Date();
+        const months = Array.from({ length: 12 }, (_, i) => new Date(now.getFullYear(), now.getMonth() - i, 1));
+        const results = await Promise.all(months.map(async (d) => {
+          const start = new Date(d.getFullYear(), d.getMonth(), 1);
+          const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+          const { data } = await supabase.rpc('get_team_scoreboard', { p_start: start.toISOString(), p_end: end.toISOString() });
+          const total = ((data || []) as any[]).reduce((s, r) => s + (Number(r.full_month_target ?? r.revenue_target) || 0), 0);
+          return [`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, total] as const;
+        }));
+        const scoreboardGoals = Object.fromEntries(results.filter(([, t]) => t > 0));
+        if (Object.keys(scoreboardGoals).length) {
+          setMonthlyRevenueTargets(previous => ({ ...previous, ...scoreboardGoals }));
+        }
+      } catch (e) {
+        console.error('Error loading scoreboard targets for monthly goal:', e);
+      }
     } catch (error) {
       console.error('Error fetching analytics data:', error);
       toast.error('Failed to load analytics data');
