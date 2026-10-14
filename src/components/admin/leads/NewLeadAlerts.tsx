@@ -101,7 +101,7 @@ export const NewLeadAlerts: React.FC = () => {
     return (
       <AlertRailSlot order={ALERT_RAIL_ORDER.newLeadPopup}>
       <div className="w-full">
-        <div className="flex items-center gap-2 rounded-full bg-emerald-50 text-gray-900 pl-3 pr-1 py-1 shadow-sm border border-emerald-200">
+        <div className="alert-scroll-x flex items-center gap-2 rounded-full bg-emerald-50 text-gray-900 pl-3 pr-1 py-1 shadow-sm border border-emerald-200">
           <PhoneCall className="w-4 h-4 text-emerald-600 animate-pulse" />
           <span className="text-xs font-semibold">
             On call — {queue.length} lead{queue.length === 1 ? '' : 's'} waiting
@@ -142,7 +142,7 @@ export const NewLeadAlerts: React.FC = () => {
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.newLeadPopup}>
     <div className="w-full flex flex-col gap-1.5">
-      <div className={`flex items-center justify-between rounded-xl text-gray-900 px-3 py-2 shadow-sm border border-l-4 ${headerBorder} shrink-0`}>
+      <div className={`alert-scroll-x flex items-center justify-between rounded-xl text-gray-900 px-3 py-2 shadow-sm border border-l-4 ${headerBorder} shrink-0`}>
         <button
           type="button"
           onClick={() => setCollapsedStack((c) => !c)}
@@ -423,7 +423,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
 
   if (collapsed) {
     return (
-      <div className={`w-full rounded-xl border border-l-4 ${themeBorder} ${themeTint} shadow-sm hover:shadow-md transition-shadow animate-in slide-in-from-left-4 flex items-center`}>
+      <div className={`alert-scroll-x w-full rounded-xl border border-l-4 ${themeBorder} ${themeTint} shadow-sm hover:shadow-md transition-shadow animate-in slide-in-from-left-4 flex items-center`}>
         <button
           type="button"
           onClick={onExpand}
@@ -457,7 +457,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
   }
 
   return (
-    <div className={`rounded-xl border border-l-4 ${themeBorder} ${themeTint} shadow-sm overflow-hidden animate-in slide-in-from-right-4`}>
+    <div className={`alert-scroll-x rounded-xl border border-l-4 ${themeBorder} ${themeTint} shadow-sm animate-in slide-in-from-right-4`}>
       <div className="flex items-center gap-1.5 px-2.5 pt-2 pb-1 text-gray-900">
         <Flame className={`w-3.5 h-3.5 shrink-0 ${urgent && !isOrr ? 'text-red-600 animate-pulse' : themeFlameHeader + ' animate-pulse'}`} />
         <span className="font-bold text-[11px] tracking-wide truncate">

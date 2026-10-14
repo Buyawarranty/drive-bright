@@ -110,6 +110,26 @@ input:-webkit-autofill::first-line {
   display: none;
 }
 
+/* Live Alerts pop-ups: when a pop-up's content is wider than the rail column,
+   it scrolls left-to-right inside the card instead of spilling past the column. */
+.alert-scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(100 116 139 / 0.55) transparent;
+}
+.alert-scroll-x::-webkit-scrollbar {
+  height: 6px;
+}
+.alert-scroll-x::-webkit-scrollbar-track {
+  background: transparent;
+}
+.alert-scroll-x::-webkit-scrollbar-thumb {
+  background: rgb(100 116 139 / 0.55);
+  border-radius: 9999px;
+}
+
 /* Mobile optimization for better responsive behavior */
 * {
   box-sizing: border-box;

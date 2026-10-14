@@ -78,7 +78,7 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
     <AlertRailSlot order={ALERT_RAIL_ORDER.whatsappHotLead}>
       <div className="space-y-2">
         {(showAll ? hot : hot.slice(0, 1)).map((c) => (
-          <div key={c.id} className="rounded-xl border border-emerald-200 border-l-4 border-l-emerald-600 bg-emerald-50 p-3 text-gray-900 shadow-sm">
+          <div key={c.id} className="alert-scroll-x rounded-xl border border-emerald-200 border-l-4 border-l-emerald-600 bg-emerald-50 p-3 text-gray-900 shadow-sm">
             <div className="flex items-start justify-between gap-2">
               <p className="text-sm font-bold text-gray-900">
                 🔥 Hot WhatsApp Lead - {c.heat_reason || 'Customer is asking for a quote'}
@@ -100,7 +100,7 @@ export const WhatsAppHotLeadAlerts: React.FC<Props> = ({
                 {ownerByLeadId[c.lead_id]}'s lead
               </p>
             ) : null}
-            <p className="mt-1 line-clamp-2 text-xs text-gray-600">{c.last_message_preview}</p>
+            <p className="alert-scroll-x mt-1 whitespace-nowrap text-xs text-gray-600">{c.last_message_preview}</p>
             <div className="mt-2 flex gap-2">
               <Button size="sm" className="bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => onTake(c.id)}>
                 Take Lead

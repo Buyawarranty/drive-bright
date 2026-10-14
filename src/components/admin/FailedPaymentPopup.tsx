@@ -53,7 +53,7 @@ export const FailedPaymentPopup: React.FC<{ onOpenMissedPayments?: () => void }>
           </div>
         )}
         {shown.map(i => (
-          <div key={i.key} className="relative rounded-xl border border-red-200 border-l-4 border-l-red-600 bg-red-50 p-3 shadow-sm text-sm text-gray-900">
+          <div key={i.key} className="alert-scroll-x relative rounded-xl border border-red-200 border-l-4 border-l-red-600 bg-red-50 p-3 shadow-sm text-sm text-gray-900">
             <div className="flex items-start gap-2 pr-6">
               <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded bg-red-600 text-white"><CreditCard className="h-3 w-3" /></span>
               <div className="min-w-0 flex-1">

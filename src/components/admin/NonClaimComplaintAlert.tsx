@@ -119,7 +119,7 @@ export const NonClaimComplaintAlert: React.FC = () => {
 
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.complaintAlert}>
-      <div className="rounded-xl border border-orange-200 border-l-4 border-l-orange-500 bg-orange-50 text-gray-900 shadow-sm overflow-hidden">
+      <div className="alert-scroll-x rounded-xl border border-orange-200 border-l-4 border-l-orange-500 bg-orange-50 text-gray-900 shadow-sm">
         <div className="flex items-start justify-between gap-2 px-3 py-2">
           <button
             onClick={() => setExpanded((v) => !v)}
@@ -151,7 +151,7 @@ export const NonClaimComplaintAlert: React.FC = () => {
                   <span className="text-[11px] text-gray-900/80">{timeAgo(c.created_at)}</span>
                 </div>
                 <p className="text-sm font-semibold mt-1">{c.first_name} {c.last_name}</p>
-                <p className="text-[12px] text-gray-600 line-clamp-2">{c.description}</p>
+                <p className="alert-scroll-x text-[12px] text-gray-600 whitespace-nowrap">{c.description}</p>
                 <div className="flex flex-wrap gap-1.5 mt-1.5">
                   {c.phone && (
                     <a
