@@ -4,6 +4,7 @@ import { Bell, ChevronDown, ChevronUp, Plus, X } from 'lucide-react';
 import { readRecentAlerts, removeRecentAlert, RECENT_ALERTS_EVENT, type RecentAlert, type RecentAlertTone } from '@/lib/recentAlerts';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Button } from '@/components/ui/button';
+import { isLiveAlertsOpen, setLiveAlertsOpen } from '@/lib/liveAlertsPanelState';
 
 /**
  * Live Alerts panel for the admin dashboard.
@@ -17,7 +18,6 @@ import { Button } from '@/components/ui/button';
 const RAIL_ID = 'admin-alert-rail';
 export const SIDEBAR_ALERTS_ANCHOR_ID = 'admin-sidebar-alerts-anchor';
 const VISIBLE_LIMIT = 3;
-const OPEN_KEY = 'bw:live-alerts-open';
 /** Slots ordered below this are priority alerts and are never folded away. */
 const PRIORITY_MAX_ORDER = 10;
 
@@ -153,9 +153,8 @@ export const AlertRailHost: React.FC = () => {
   const { collapsed } = useAdminSidebarCollapsed();
   const isDesktop = useIsDesktop();
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null);
-  const [open, setOpen] = React.useState(() => {
-    try { return localStorage.getItem(OPEN_KEY) !== '0'; } catch { return true; }
-  });
+  // Open by default on every visit; closing applies to this visit only.
+  const [open, setOpen] = React.useState(() => isLiveAlertsOpen());
   const [showAll, setShowAll] = React.useState(false);
   const [count, setCount] = React.useState(0);
   const [folded, setFolded] = React.useState(0);
@@ -212,7 +211,7 @@ export const AlertRailHost: React.FC = () => {
   const toggleOpen = () => {
     const next = !open;
     setOpen(next);
-    try { localStorage.setItem(OPEN_KEY, next ? '1' : '0'); } catch { /* ignore */ }
+    setLiveAlertsOpen(next, sessionStorage, localStorage);
   };
 
   const inSidebar = isDesktop && !collapsed && !!anchor;
