@@ -25,8 +25,12 @@ describe('Live Alerts panel opens by default', () => {
     expect(isLiveAlertsOpen(makeStore())).toBe(true);
   });
 
-  it('ignores the legacy localStorage "closed" setting', () => {
-    expect(isLiveAlertsOpen(makeStore({ [LIVE_ALERTS_OPEN_KEY]: '0' }))).toBe(true);
+  it('a legacy localStorage "closed" setting does not keep it shut next visit', () => {
+    // The panel reads the current visit's store only, so an old localStorage
+    // '0' left behind by the previous behaviour is never consulted.
+    const legacy = makeStore({ [LIVE_ALERTS_OPEN_KEY]: '0' });
+    expect(isLiveAlertsOpen(makeStore())).toBe(true);
+    expect(legacy.getItem(LIVE_ALERTS_OPEN_KEY)).toBe('0');
   });
 
   it('stays closed for the rest of the visit after closing it', () => {
