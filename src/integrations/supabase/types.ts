@@ -11474,6 +11474,7 @@ export type Database = {
       sale_authorisations: {
         Row: {
           agent_admin_id: string | null
+          agent_response: string | null
           agent_seen_at: string | null
           created_at: string
           customer_name: string | null
@@ -11488,6 +11489,7 @@ export type Database = {
         }
         Insert: {
           agent_admin_id?: string | null
+          agent_response?: string | null
           agent_seen_at?: string | null
           created_at?: string
           customer_name?: string | null
@@ -11502,6 +11504,7 @@ export type Database = {
         }
         Update: {
           agent_admin_id?: string | null
+          agent_response?: string | null
           agent_seen_at?: string | null
           created_at?: string
           customer_name?: string | null
