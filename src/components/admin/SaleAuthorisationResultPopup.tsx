@@ -4,6 +4,7 @@ import { CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRealAdminId } from '@/hooks/useCurrentAdminId';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
+import { saleAuthPopupCutoff, isSaleAuthWithinPopupWindow } from '@/lib/saleAuthorisationPopupWindow';
 
 /**
  * Sales agent pop-up: a manager has decided on one of the agent's sales that
@@ -20,9 +21,10 @@ export const SaleAuthorisationResultPopup: React.FC = () => {
       .select('id, status, customer_name, warranty_number, paid_amount, decided_by_name, updated_at')
       .eq('agent_admin_id', adminId)
       .is('agent_seen_at', null)
+      .gte('updated_at', saleAuthPopupCutoff())
       .order('updated_at', { ascending: false })
       .limit(10);
-    setItems(data || []);
+    setItems((data || []).filter((i: any) => isSaleAuthWithinPopupWindow(i.updated_at)));
   }, [adminId]);
 
   useEffect(() => {
