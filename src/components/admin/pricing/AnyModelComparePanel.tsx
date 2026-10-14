@@ -265,7 +265,7 @@ const AnyModelComparePanel: React.FC<{
           vehicle={vehicle}
           showRegLookup={false}
           title={`${leftOpt?.label ?? 'Left'} — Quotes & Orders price`}
-          subtitle="The website Step 3 price is 10% below this figure."
+          subtitle="Website Steps 3 and 4 use the discount selected in the purple section, subject to minimum prices."
           badgeText="Left"
         />
         <PriceTestStep2
@@ -274,7 +274,7 @@ const AnyModelComparePanel: React.FC<{
           vehicle={vehicle}
           showRegLookup={false}
           title={`${rightOpt?.label ?? 'Right'} — Quotes & Orders price`}
-          subtitle="The website Step 3 price is 10% below this figure."
+          subtitle="Website Steps 3 and 4 use the discount selected in the purple section, subject to minimum prices."
           badgeText="Right"
         />
       </div>

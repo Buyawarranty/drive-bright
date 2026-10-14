@@ -1,4 +1,5 @@
 # Project architecture rules
+- New pricing versions mark `websiteDiscountMode: single` and apply the one website percentage to the completed total; legacy versions keep their original rules so historical prices and unpublished live settings are not rewritten.
 - Published document blogs may supply exact article HTML and schema through route metadata so crawler output preserves the same approved content as the database article without altering existing page schemas.
 - Reuse CallMeBackPanel and sandbox-callback-request for optional chat phone capture, so submitted numbers follow existing chatbot lead and admin-alert delivery.
 - Use the shared sale-subject formatter for manager direct-sale email source labels in both subject and body; keep existing attribution and delivery logic unchanged to avoid affecting payment flows.

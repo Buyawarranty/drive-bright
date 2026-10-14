@@ -1,5 +1,6 @@
 import { TERM_ELIGIBILITY_TABLE } from '@/lib/pricing/termEligibility';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { readWebsiteDiscountDraft, WEBSITE_DISCOUNT_CHANGED_EVENT } from '@/lib/pricing/websiteDiscount';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -332,7 +333,12 @@ export default function AgeBandPricingPreview({
   const [twoYearMult, setTwoYearMult] = useState(saved.twoYearMult ?? 1.65);
   const [threeYearMult, setThreeYearMult] = useState(saved.threeYearMult ?? 2.35);
   const [payInFullFactor, setPayInFullFactor] = useState(saved.payInFullFactor ?? 0.9);
-  const [websiteDiscountPct, setWebsiteDiscountPct] = useState(saved.websiteDiscountPct ?? 10);
+  const [websiteDiscountPct, setWebsiteDiscountPct] = useState(readWebsiteDiscountDraft);
+  useEffect(() => {
+    const sync = () => setWebsiteDiscountPct(readWebsiteDiscountDraft());
+    window.addEventListener(WEBSITE_DISCOUNT_CHANGED_EVENT, sync);
+    return () => window.removeEventListener(WEBSITE_DISCOUNT_CHANGED_EVENT, sync);
+  }, []);
   const [mileageBands, setMileageBands] = useState<MileageBand[]>(saved.mileageBands ?? PROPOSED_MILEAGE_BANDS);
   const [powertrains, setPowertrains] = useState<PowertrainFactor[]>(saved.powertrains ?? PROPOSED_POWERTRAIN_FACTORS);
   const [vehicleTypes, setVehicleTypes] = useState<RiskFactor[]>(saved.vehicleTypes ?? PROPOSED_VEHICLE_TYPE_FACTORS);
@@ -783,7 +789,7 @@ export default function AgeBandPricingPreview({
             your numbers here. To make them count, press “Build test draft from this model” — that
             writes them into the <strong>Price grid</strong> tab, which you then publish with{' '}
             <strong>Push live</strong> at the top of Price updates. The website (Step 3 / Step 4)
-            price is always the grid minus the website discount below, defaulting to 10%.
+            price uses the single website discount in the purple section.
           </AlertDescription>
         </Alert>
 
@@ -843,14 +849,8 @@ export default function AgeBandPricingPreview({
             />
           </div>
           <div className="space-y-1">
-            <Label>Website price is this much less (%)</Label>
-            <Input
-              type="number"
-              min={0}
-              max={50}
-              value={websiteDiscountPct}
-              onChange={e => setWebsiteDiscountPct(Number(e.target.value) || 0)}
-            />
+            <Label>Website discount</Label>
+            <Button variant="link" onClick={() => document.getElementById('website-discount')?.scrollIntoView({ behavior: 'smooth' })}>{websiteDiscountPct}% — purple section</Button>
           </div>
         </div>
 

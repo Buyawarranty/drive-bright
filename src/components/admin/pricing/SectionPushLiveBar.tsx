@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { readWebsiteDiscountDraft, WEBSITE_DISCOUNT_CHANGED_EVENT } from '@/lib/pricing/websiteDiscount';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -66,9 +67,12 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   busy,
 }) => {
   const [pending, setPending] = useState<PushCandidate | null>(null);
-  const [webGap, setWebGap] = useState(
-    String(liveWebDiscountPct ?? CODE_WEB_DISCOUNT_PCT)
-  );
+  const [webGap, setWebGap] = useState(() => String(readWebsiteDiscountDraft()));
+  useEffect(() => {
+    const sync = () => setWebGap(String(readWebsiteDiscountDraft()));
+    window.addEventListener(WEBSITE_DISCOUNT_CHANGED_EVENT, sync);
+    return () => window.removeEventListener(WEBSITE_DISCOUNT_CHANGED_EVENT, sync);
+  }, []);
 
   const closePending = () => {
     setPending(null);
@@ -107,7 +111,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
       adminMatrix: extras?.adminMatrix,
       labourRateFactors: extras?.labourRateFactors ?? null,
       vehicleFactorModel: model,
-      webDiscountPct: pending.websiteDiscountPct ?? gapValue,
+      webDiscountPct: gapValue,
       pricedVehicles,
     });
   }, [pending, gapValue]);
@@ -126,7 +130,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
     const versionLabel = `${sectionLabel} — ${pending.label}`;
     closePending();
     if (!model) return;
-    await onPush(model, versionLabel, pending.websiteDiscountPct ?? gapValue);
+    await onPush(model, versionLabel, gapValue);
     // Excluded vehicles always go live with the pricing version.
     if (!ownsExclusions) await autoPublishExclusionsWithPricing(versionLabel);
   };
@@ -166,18 +170,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
                 <Label className="text-xs whitespace-nowrap">
                   Step 3/4 vs Quotes &amp; Orders
                 </Label>
-                <div className="flex items-center gap-1">
-                  <Input
-                    className="h-8 w-20"
-                    type="number"
-                    min={0}
-                    max={MAX_WEB_DISCOUNT_PCT}
-                    step={0.5}
-                    value={webGap}
-                    onChange={e => setWebGap(e.target.value)}
-                  />
-                  <span className="text-xs text-muted-foreground">% cheaper</span>
-                </div>
+                <Button variant="link" className="h-8 px-0" onClick={() => document.getElementById('website-discount')?.scrollIntoView({ behavior: 'smooth' })}>{gapValue}% cheaper — purple section</Button>
               </div>
             )}
             {directPush && (
@@ -216,7 +209,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
                 <p>
                   <strong>{sectionLabel}</strong> — publishing <strong>{pending?.label}</strong>. Quotes
                   &amp; Orders will price with this model immediately, and the customer journey (Step
-                  3/4) will be <strong>{pending?.websiteDiscountPct ?? gapValue}% cheaper</strong>{' '}
+                  3/4) will use <strong>{gapValue}% off</strong>{' '}
                   than the Quotes &amp; Orders price, rounded to the nearest pound.
                 </p>
                 {pending?.description && <p>{pending.description}</p>}

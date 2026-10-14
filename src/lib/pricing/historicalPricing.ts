@@ -14,6 +14,7 @@ export interface PricingVersionSnapshot {
   publishedAt: number; // epoch ms
   matrix: PricingMatrixShape;
   step3DiscountPct: number;
+  unifiedWebsiteDiscount?: boolean;
   labourRateFactors: { rate: number; factor: number }[] | null;
 }
 
@@ -26,7 +27,7 @@ export interface PricingVersionSnapshot {
 export async function loadPricingVersionHistory(): Promise<PricingVersionSnapshot[]> {
   const { data, error } = await supabase
     .from('pricing_matrix_versions')
-    .select('id, label, published_at, admin_matrix, step3_discount_pct, labour_rate_factors')
+    .select('id, label, published_at, admin_matrix, step3_discount_pct, labour_rate_factors, vehicle_factor_model')
     .not('published_at', 'is', null)
     .order('published_at', { ascending: false });
 
@@ -40,6 +41,7 @@ export async function loadPricingVersionHistory(): Promise<PricingVersionSnapsho
       publishedAt: new Date(v.published_at as string).getTime(),
       matrix: v.admin_matrix as unknown as PricingMatrixShape,
       step3DiscountPct: Number(v.step3_discount_pct ?? 10),
+      unifiedWebsiteDiscount: (v.vehicle_factor_model as { websiteDiscountMode?: string } | null)?.websiteDiscountMode === 'single',
       labourRateFactors: (v.labour_rate_factors as { rate: number; factor: number }[] | null) ?? null,
     }));
 }
@@ -69,11 +71,11 @@ export function withPricingAsOf<T>(
   const previous = getLivePricingOverride();
   const previousLabour = getLiveLabourRateFactors();
   try {
-    setLivePricingOverride(version.matrix, version.step3DiscountPct);
+    setLivePricingOverride(version.matrix, version.step3DiscountPct, version.unifiedWebsiteDiscount);
     setLiveLabourRateFactors(version.labourRateFactors);
     return fn();
   } finally {
-    setLivePricingOverride(previous.adminMatrix, previous.step3DiscountPct);
+    setLivePricingOverride(previous.adminMatrix, previous.step3DiscountPct, previous.unifiedWebsiteDiscount);
     setLiveLabourRateFactors(previousLabour);
   }
 }

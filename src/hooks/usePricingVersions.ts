@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { readWebsiteDiscountDraft } from '@/lib/pricing/websiteDiscount';
 import {
   BASE_PRICING_MATRIX,
   ADMIN_QUOTE_PRICE_MULTIPLIER,
@@ -139,6 +140,8 @@ export function usePricingVersions() {
       vehicleFactorModel?: VehicleFactorModel | null,
       config?: PricingVersionConfig | null
     ) => {
+      step3DiscountPct = readWebsiteDiscountDraft();
+      vehicleFactorModel = { ...(vehicleFactorModel ?? ({} as VehicleFactorModel)), websiteDiscountMode: 'single' };
       const { data: authData } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from('pricing_matrix_versions')
@@ -185,6 +188,13 @@ export function usePricingVersions() {
     async (id: string, patch: Partial<Pick<PricingVersion, 'label' | 'admin_matrix' | 'step3_discount_pct' | 'notes' | 'claim_limit_factors' | 'labour_rate_factors' | 'vehicle_factor_model' | 'reference_vehicle' | 'reference_factors' | 'price_floors' | 'price_caps' | 'rounding_rule' | 'effective_date'>>) => {
       // Keep the checksum in step with whatever was just edited.
       const existing = versionsRef.current.find(v => v.id === id);
+      if ('admin_matrix' in patch || 'step3_discount_pct' in patch || 'vehicle_factor_model' in patch) {
+        patch = {
+          ...patch,
+          step3_discount_pct: readWebsiteDiscountDraft(),
+          vehicle_factor_model: { ...(patch.vehicle_factor_model ?? existing?.vehicle_factor_model ?? ({} as VehicleFactorModel)), websiteDiscountMode: 'single' },
+        };
+      }
       const merged = { ...(existing ?? {}), ...patch } as PricingVersion;
       const { error } = await supabase
         .from('pricing_matrix_versions')
