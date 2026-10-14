@@ -167,7 +167,7 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
 
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.chatAgentRequest}>
-      <div className="rounded-xl border border-blue-200 border-l-4 border-l-blue-600 bg-blue-50 text-gray-900 shadow-sm overflow-hidden">
+      <div className="alert-scroll-x rounded-xl border border-blue-200 border-l-4 border-l-blue-600 bg-blue-50 text-gray-900 shadow-sm">
         <div className="flex items-start justify-between gap-2 px-3 py-2">
           <button
             onClick={() => setExpanded((v) => !v)}
@@ -223,7 +223,7 @@ export const ChatAgentRequestAlert: React.FC<{ onOpenLead?: (leadId: string) => 
                             {info[r.id].topic.label}
                           </span>
                           {info[r.id].question && (
-                            <p className="text-[11px] italic text-gray-800 line-clamp-2" title={info[r.id].question}>
+                            <p className="text-[11px] italic text-gray-800 whitespace-nowrap" title={info[r.id].question}>
                               “{info[r.id].question}”
                             </p>
                           )}

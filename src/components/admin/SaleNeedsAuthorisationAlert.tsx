@@ -182,7 +182,7 @@ export const SaleNeedsAuthorisationAlert: React.FC = () => {
 
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.saleNeedsAuthorisation}>
-      <div className="rounded-lg border border-destructive border-l-4 bg-destructive text-destructive-foreground shadow-sm overflow-hidden">
+      <div className="alert-scroll-x rounded-lg border border-destructive border-l-4 bg-destructive text-destructive-foreground shadow-sm">
         <div className="flex items-center gap-2 px-3 py-2 font-semibold text-sm">
           <ShieldAlert className="h-4 w-4 shrink-0" />
           Sale needs authorisation ({live.length})

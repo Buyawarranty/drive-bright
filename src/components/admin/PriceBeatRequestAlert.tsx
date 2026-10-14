@@ -90,7 +90,7 @@ export const PriceBeatRequestAlert: React.FC = () => {
 
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.priceBeat}>
-      <div className="rounded-xl border border-orange-200 border-l-4 border-l-orange-500 bg-orange-50 text-gray-900 shadow-sm overflow-hidden">
+      <div className="alert-scroll-x rounded-xl border border-orange-200 border-l-4 border-l-orange-500 bg-orange-50 text-gray-900 shadow-sm">
         <div className="flex items-start justify-between gap-2 px-3 py-2">
           <button onClick={() => setExpanded((v) => !v)} className="flex items-start gap-2 text-left min-w-0">
             <Tag className="h-4 w-4 mt-0.5 shrink-0" />

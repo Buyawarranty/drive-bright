@@ -357,7 +357,7 @@ export const StuckCheckoutAlert: React.FC = () => {
 
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.stuckCheckout}>
-      <div className="rounded-lg border border-destructive border-l-4 bg-destructive text-destructive-foreground shadow-sm overflow-hidden">
+      <div className="alert-scroll-x rounded-lg border border-destructive border-l-4 bg-destructive text-destructive-foreground shadow-sm">
         <div className="flex items-start justify-between gap-2 px-3 py-2">
           <Button
             type="button"
