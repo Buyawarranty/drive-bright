@@ -64,7 +64,7 @@ export const CODE_PRICE_FLOORS: PriceFloors = {
 export const CODE_WEB_DISCOUNT_PCT = 10;
 
 /** Hard ceiling on the web gap — the website may never undercut the grid by more. */
-export const MAX_WEB_DISCOUNT_PCT = 10;
+export const MAX_WEB_DISCOUNT_PCT = 50;
 
 /** The engine rounds every contract total up to the whole pound. */
 export const CODE_ROUNDING_RULE: RoundingRule = 'ceil_pound';
@@ -98,9 +98,10 @@ export function resolvePriceFloors(config?: PricingVersionConfig | null): PriceF
 
 
 export function resolveWebDiscountPct(config?: PricingVersionConfig | null): number {
-  const raw = Number(config?.web_discount_pct);
-  if (!Number.isFinite(raw) || raw <= 0) return CODE_WEB_DISCOUNT_PCT;
-  return Math.min(raw, MAX_WEB_DISCOUNT_PCT);
+  if (config?.web_discount_pct == null) return CODE_WEB_DISCOUNT_PCT;
+  const raw = Number(config.web_discount_pct);
+  if (!Number.isFinite(raw)) return CODE_WEB_DISCOUNT_PCT;
+  return Math.min(Math.max(0, raw), MAX_WEB_DISCOUNT_PCT);
 }
 
 export function resolveRoundingRule(config?: PricingVersionConfig | null): RoundingRule {

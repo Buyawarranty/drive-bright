@@ -19,7 +19,8 @@
  *     No sale, on any surface, may complete below the term floor; promo
  *     discounts are capped at the floor (only live TEST codes keep a £1 floor).
  */
-import { getAbsoluteMinimumTotal, type PaymentPeriod, type PricingSurface } from '@/lib/pricingMatrix';
+import { getAbsoluteMinimumTotal, getLiveStep3DiscountPct, hasUnifiedWebsiteDiscount, type PaymentPeriod, type PricingSurface } from '@/lib/pricingMatrix';
+import { discountedWebsiteTotal } from './websiteDiscount';
 
 /**
  * GLOBAL absolute minimum (12/08/2026): no warranty plan, on any pricing model
@@ -183,6 +184,7 @@ export function getWebsiteNetFloor(params: NetFloorParams): number {
 export function applyWebsiteSellFloor(total: number, params: Omit<NetFloorParams, 'surface'>): number {
   const floor = getWebsiteNetFloor(params);
   if (!Number.isFinite(total) || total <= 0) return Math.ceil(floor);
+  if (hasUnifiedWebsiteDiscount()) return discountedWebsiteTotal(total, getLiveStep3DiscountPct(), floor);
   const multiYear = params.paymentPeriod === '24months' || params.paymentPeriod === '36months';
   const cut = multiYear ? total * getWebsiteMultiYearCutFactor() : total;
   return Math.max(Math.round(cut), Math.ceil(floor));

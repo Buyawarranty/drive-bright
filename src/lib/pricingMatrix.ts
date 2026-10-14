@@ -16,6 +16,7 @@
  */
 
 import { getVehicleRuleMinPrice } from './pricing/vehicleRules';
+import { MAX_WEBSITE_DISCOUNT_PCT } from './pricing/websiteDiscount';
 import { getLiveRiskBandFactor, getLiveRiskBandMinPrice, getLiveRiskBandFixedPrice } from './pricing/liveRiskBands';
 
 // Base pricing matrix - 3% INCREASE applied (Jun 2026), floored to whole numbers
@@ -448,6 +449,7 @@ export const MOTORBIKE_PRICE_MULTIPLIER = 0.5;
 export const CUSTOMER_JOURNEY_PRICE_MULTIPLIER = 1.0;
 
 export function getCustomerSurfaceFactor(): number {
+  if (LIVE_UNIFIED_WEBSITE_DISCOUNT) return 1;
   return 1 - clampWebDiscountPct(LIVE_STEP3_DISCOUNT_PCT) / 100;
 }
 
@@ -700,13 +702,20 @@ export type PricingSurface = 'customer' | 'admin';
 
 let LIVE_ADMIN_MATRIX: PricingMatrixShape | null = null;
 let LIVE_STEP3_DISCOUNT_PCT = 10;
+let LIVE_UNIFIED_WEBSITE_DISCOUNT = false;
+
+export function hasUnifiedWebsiteDiscount(): boolean {
+  return LIVE_UNIFIED_WEBSITE_DISCOUNT;
+}
 
 export function setLivePricingOverride(
   adminMatrix: PricingMatrixShape | null,
-  step3DiscountPct = 10
+  step3DiscountPct = 10,
+  unifiedWebsiteDiscount = false
 ): void {
   LIVE_ADMIN_MATRIX = adminMatrix;
   LIVE_STEP3_DISCOUNT_PCT = step3DiscountPct;
+  LIVE_UNIFIED_WEBSITE_DISCOUNT = unifiedWebsiteDiscount;
   notifyPricingUpdated();
 }
 
@@ -722,8 +731,9 @@ export function getLiveStep3DiscountPct(): number {
 export function getLivePricingOverride(): {
   adminMatrix: PricingMatrixShape | null;
   step3DiscountPct: number;
+  unifiedWebsiteDiscount: boolean;
 } {
-  return { adminMatrix: LIVE_ADMIN_MATRIX, step3DiscountPct: LIVE_STEP3_DISCOUNT_PCT };
+  return { adminMatrix: LIVE_ADMIN_MATRIX, step3DiscountPct: LIVE_STEP3_DISCOUNT_PCT, unifiedWebsiteDiscount: LIVE_UNIFIED_WEBSITE_DISCOUNT };
 }
 
 
@@ -732,7 +742,7 @@ export function getLivePricingOverride(): {
  * Quotes & Orders grid price. The web price is never allowed to undercut the grid
  * by more than this percentage.
  */
-export const MAX_WEB_DISCOUNT_VS_GRID_PCT = 10;
+export const MAX_WEB_DISCOUNT_VS_GRID_PCT = MAX_WEBSITE_DISCOUNT_PCT;
 
 /** Clamp any requested web discount to the 0–10% band. */
 export function clampWebDiscountPct(discountPct: number): number {

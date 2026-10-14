@@ -14,6 +14,8 @@
  */
 
 export type VehicleFactorModel = {
+  /** New versions use one final-total website discount; legacy versions retain their original rules. */
+  websiteDiscountMode?: 'single';
   /** Age bands, keyed '1-3' | '4-5' | '12' | '15+' with the 1-year base price. */
   bands: { key: string; oneYear: number | null }[];
   /** Which band the published grid represents (factor 1.00). */

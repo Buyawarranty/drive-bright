@@ -55,7 +55,8 @@ export function applyLivePricingVersion(version?: ApplicableVersion | null): App
   );
   setLivePricingOverride(
     version.admin_matrix as PricingMatrixShape,
-    Number(version.step3_discount_pct ?? 10)
+    Number(version.step3_discount_pct ?? 10),
+    version.vehicle_factor_model?.websiteDiscountMode === 'single'
   );
   setLiveLabourRateFactors(version.labour_rate_factors ?? null);
   setLiveClaimLimitFactors(version.claim_limit_factors ?? null);

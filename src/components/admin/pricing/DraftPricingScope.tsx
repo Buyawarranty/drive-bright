@@ -33,11 +33,11 @@ export default function DraftPricingScope({
   useEffect(() => {
     const previous = getLivePricingOverride();
     if (active) {
-      setLivePricingOverride(matrix, discountPct);
+      setLivePricingOverride(matrix, discountPct, true);
     }
     setEpoch(e => e + 1);
     return () => {
-      setLivePricingOverride(previous.adminMatrix, previous.step3DiscountPct);
+      setLivePricingOverride(previous.adminMatrix, previous.step3DiscountPct, previous.unifiedWebsiteDiscount);
     };
   }, [active, matrix, discountPct]);
 
