@@ -4808,6 +4808,7 @@ export type Database = {
       customers: {
         Row: {
           acquisition_source: string | null
+          ad_id: string | null
           assigned_to: string | null
           balance_due_amount: number | null
           baw_paylater: boolean
@@ -4958,6 +4959,7 @@ export type Database = {
         }
         Insert: {
           acquisition_source?: string | null
+          ad_id?: string | null
           assigned_to?: string | null
           balance_due_amount?: number | null
           baw_paylater?: boolean
@@ -5108,6 +5110,7 @@ export type Database = {
         }
         Update: {
           acquisition_source?: string | null
+          ad_id?: string | null
           assigned_to?: string | null
           balance_due_amount?: number | null
           baw_paylater?: boolean
@@ -11547,6 +11550,7 @@ export type Database = {
       sales_leads: {
         Row: {
           abandoned_cart_id: string | null
+          ad_id: string | null
           assigned_at: string | null
           assigned_to: string | null
           auto_tags: string[]
@@ -11671,6 +11675,7 @@ export type Database = {
         }
         Insert: {
           abandoned_cart_id?: string | null
+          ad_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           auto_tags?: string[]
@@ -11795,6 +11800,7 @@ export type Database = {
         }
         Update: {
           abandoned_cart_id?: string | null
+          ad_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           auto_tags?: string[]
