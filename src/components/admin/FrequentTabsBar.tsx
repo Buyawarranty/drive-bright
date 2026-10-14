@@ -93,21 +93,36 @@ export const FrequentTabsBar: React.FC<Props> = ({
             const Icon = tab.icon;
             const active = tab.id === activeTab;
             return (
-              <button
+              <span
                 key={tab.id}
-                type="button"
-                onClick={() => onSelect(tab.id)}
-                title={tab.description}
                 className={cn(
-                  'inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full border text-xs font-medium whitespace-nowrap transition-colors',
+                  'group inline-flex items-center rounded-full border text-xs font-medium whitespace-nowrap transition-colors',
                   active
                     ? 'bg-foreground text-background border-foreground'
                     : 'bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground'
                 )}
               >
-                <Icon className="h-3.5 w-3.5" />
-                {tab.label}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => onSelect(tab.id)}
+                  title={tab.description}
+                  className="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-1.5"
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {tab.label}
+                </button>
+                {isCustom && (
+                  <button
+                    type="button"
+                    onClick={() => togglePin(tab.id)}
+                    title={`Remove ${tab.label} from shortcuts`}
+                    aria-label={`Remove ${tab.label} from shortcuts`}
+                    className="h-7 pr-1.5 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </span>
             );
           })}
         </div>
