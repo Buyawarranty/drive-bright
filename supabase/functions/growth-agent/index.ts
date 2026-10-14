@@ -1,4 +1,4 @@
-// Growth assistant for the CRM — super admin only. Read-only: it looks at sales,
+// Growth assistant for the CRM — super admins, plus staff granted it in User Permissions (per-part). Read-only: it looks at sales,
 // leads, cover combinations and blog posts and SUGGESTS marketing, sales and
 // branding actions. It never changes data or sends anything.
 import { streamText, tool, stepCountIs, convertToModelMessages } from "npm:ai@^7.0.64";
@@ -57,9 +57,19 @@ Deno.serve(async (req) => {
     const { data: u } = await userClient.auth.getUser();
     const user = u?.user;
     if (!user) return json({ error: "Not signed in" }, 401);
-    const { data: adminRow } = await admin.from("admin_users").select("role")
+    const { data: adminRow } = await admin.from("admin_users").select("role, permissions")
       .eq("user_id", user.id).eq("is_active", true).maybeSingle();
-    if ((adminRow as any)?.role !== "super_admin") return json({ error: "Super admins only" }, 403);
+    const isSuper = (adminRow as any)?.role === "super_admin";
+    const perms = ((adminRow as any)?.permissions ?? {}) as Record<string, unknown>;
+    if (!isSuper && perms["tab_growth-agent"] !== true) return json({ error: "You don't have access to the Growth Assistant" }, 403);
+    // Super admins get every part. Others get only the parts ticked for them in
+    // User Permissions; if none are ticked they get marketing + branding (no figures).
+    const anyPart = ["tab_growth-sales", "tab_growth-leads", "tab_growth-marketing", "tab_growth-branding"].some((k) => perms[k] === true);
+    const can = (k: string) => isSuper || perms[k] === true || (!anyPart && (k === "tab_growth-marketing" || k === "tab_growth-branding"));
+    const parts = {
+      sales: can("tab_growth-sales"), leads: can("tab_growth-leads"),
+      marketing: can("tab_growth-marketing"), branding: can("tab_growth-branding"),
+    };
 
     const body = await req.json().catch(() => ({}));
     const threadId = String(body?.threadId ?? "");
@@ -169,6 +179,13 @@ Deno.serve(async (req) => {
       }),
     };
 
+    const allowedTools: Record<string, any> = {};
+    if (parts.sales) { allowedTools.sales_summary = tools.sales_summary; allowedTools.top_cover_combinations = tools.top_cover_combinations; }
+    if (parts.leads) allowedTools.lead_followups = tools.lead_followups;
+    if (parts.marketing) allowedTools.recent_blogs = tools.recent_blogs;
+    const allowedNames = Object.entries(parts).filter(([, v]) => v).map(([k]) => k).join(", ");
+    const accessNote = `\n\nThis user's access: ${allowedNames}. Only help with those areas. If they ask for something outside them (for example sales figures or lead details without access), say politely that their login doesn't include that part and a super admin can add it in User Permissions. Never guess figures you can't look up.`;
+
     const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(req));
     const provider = createOpenAI({
       baseURL: "https://ai.gateway.lovable.dev/v1",
@@ -179,9 +196,9 @@ Deno.serve(async (req) => {
 
     const result = streamText({
       model: provider.responses(MODEL),
-      instructions: `${INSTRUCTIONS}\nToday is ${new Date().toISOString().slice(0, 10)}.`,
+      instructions: `${INSTRUCTIONS}\nToday is ${new Date().toISOString().slice(0, 10)}.${accessNote}`,
       messages: await convertToModelMessages(messages),
-      tools,
+      tools: allowedTools,
       stopWhen: stepCountIs(50),
       abortSignal: req.signal,
       providerOptions: {
