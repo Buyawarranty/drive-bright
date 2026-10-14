@@ -399,6 +399,12 @@ export const defaultTabs: Tab[] = [
   },
 
   {
+    id: 'growth-agent',
+    label: 'Growth Assistant',
+    icon: Lightbulb,
+    description: 'AI ideas for sales, marketing and branding from your CRM data (super admin only)'
+  },
+  {
 
     id: 'price-updates',
     label: 'Price Updates',
@@ -786,6 +792,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     if (!whatsappLeadsAllowed) base = base.filter(t => t.id !== 'whatsapp-leads');
     // Direct sales analysis is admin / super_admin only.
     if (!(userRole === 'admin' || userRole === 'super_admin')) base = base.filter(t => t.id !== 'direct-sales');
+    // Growth Assistant is super admin only — never via per-user grants.
+    if (userRole !== 'super_admin') base = base.filter(t => t.id !== 'growth-agent');
     if (!workstreamFlags) return base;
     return base.filter(t => {
 

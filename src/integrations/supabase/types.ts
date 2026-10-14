@@ -7986,6 +7986,68 @@ export type Database = {
         }
         Relationships: []
       }
+      growth_agent_messages: {
+        Row: {
+          created_at: string
+          id: string
+          parts: Json
+          role: string
+          sdk_message_id: string | null
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parts?: Json
+          role: string
+          sdk_message_id?: string | null
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parts?: Json
+          role?: string
+          sdk_message_id?: string | null
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "growth_agent_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "growth_agent_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      growth_agent_threads: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       landing_pages: {
         Row: {
           brand_logo_url: string | null
@@ -15175,6 +15237,7 @@ export type Database = {
         | { Args: never; Returns: boolean }
         | { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      is_super_admin_user: { Args: { _user_id: string }; Returns: boolean }
       lead_has_been_worked: { Args: { p_lead_id: string }; Returns: boolean }
       lead_has_human_activity: { Args: { p_lead_id: string }; Returns: boolean }
       lead_routing_scope: { Args: { _user_id: string }; Returns: string }
