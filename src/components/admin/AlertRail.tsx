@@ -31,6 +31,8 @@ export const ALERT_RAIL_ORDER = {
   liveChatQuestion: 5,
   priceBeat: 6,
   whatsappHotLead: 7,
+  // An agent's reply to a manager's authorisation decision — stays until they answer.
+  saleAuthorisationResult: 9,
   // Everything else follows.
   incomingCall: 10,
   authorisationNeeded: 11,
