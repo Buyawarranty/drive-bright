@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const KEY_PREFIX = 'admin-tab-usage:';
 const EVENT = 'admin-tab-usage-change';
@@ -113,6 +114,12 @@ export const writePinnedTabs = (userId: string | null | undefined, ids: string[]
     /* ignore */
   }
   window.dispatchEvent(new Event(EVENT));
+  // Persist to the account so pins survive browser/device changes.
+  if (userId) {
+    void supabase.rpc('save_pinned_shortcuts', { ids }).then(({ error }) => {
+      if (error) console.warn('Failed to save pinned shortcuts:', error.message);
+    });
+  }
 };
 
 /** Live list of the user's pinned shortcut tab ids (empty = use automatic). */
@@ -127,6 +134,33 @@ export const usePinnedTabs = (userId: string | null | undefined): string[] => {
     return () => {
       window.removeEventListener(EVENT, onChange);
       window.removeEventListener('storage', onChange);
+    };
+  }, [userId]);
+
+  // Sync with the account-stored pins: server wins when it has pins;
+  // otherwise push any local pins up so existing users keep theirs.
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    void supabase.rpc('get_pinned_shortcuts').then(({ data, error }) => {
+      if (cancelled || error || !Array.isArray(data)) return;
+      const serverIds = (data as unknown[]).filter((id): id is string => typeof id === 'string');
+      const localIds = readPinnedTabs(userId);
+      if (serverIds.length > 0) {
+        if (JSON.stringify(serverIds) !== JSON.stringify(localIds)) {
+          try {
+            localStorage.setItem(pinnedKey(userId), JSON.stringify(serverIds));
+          } catch {
+            /* ignore */
+          }
+          window.dispatchEvent(new Event(EVENT));
+        }
+      } else if (localIds.length > 0) {
+        void supabase.rpc('save_pinned_shortcuts', { ids: localIds });
+      }
+    });
+    return () => {
+      cancelled = true;
     };
   }, [userId]);
 
