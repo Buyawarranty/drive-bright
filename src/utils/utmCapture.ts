@@ -9,7 +9,7 @@
  * localStorage mirror exists only for long-window analytics fallbacks.
  */
 
-const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const;
+const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'ad_id'] as const;
 type UtmKey = typeof UTM_KEYS[number];
 
 export type UtmParams = Partial<Record<UtmKey, string>>;

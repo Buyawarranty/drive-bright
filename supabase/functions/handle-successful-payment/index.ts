@@ -456,7 +456,7 @@ serve(async (req) => {
 
 
         // Persist UTM attribution onto the customer record (all 5 params)
-        ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'].forEach((k) => {
+        ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','ad_id'].forEach((k) => {
           const v = meta[k];
           if (typeof v === 'string' && v.trim()) {
             (customerRecord as Record<string, any>)[k] = v.trim();
@@ -467,7 +467,7 @@ serve(async (req) => {
       logStep("Warning: Failed to read cart metadata for ad source / UTMs", e);
     }
     // Fallback: also accept UTMs sent directly via Stripe metadata
-    ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'].forEach((k) => {
+    ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','ad_id'].forEach((k) => {
       const rec = customerRecord as Record<string, any>;
       if (!rec[k] && metadata && typeof metadata[k] === 'string' && metadata[k].trim()) {
         rec[k] = metadata[k].trim();
