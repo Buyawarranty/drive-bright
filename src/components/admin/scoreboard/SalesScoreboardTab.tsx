@@ -463,8 +463,12 @@ export const SalesScoreboardTab: React.FC = () => {
           <AccordionContent className="pb-4">
             <SpeedToDialPanel
               isManagement={isManagement}
-              currentAdminUserId={currentAdminId}
-              allowedAgentIds={allowedAgentIds}
+              currentAdminUserId={currentAdminUserId}
+              allowedAgentIds={
+                isManagement && !focusOnlyMe && selectedTeamId === 'all'
+                  ? null
+                  : visibleAgents.map(a => a.id)
+              }
             />
           </AccordionContent>
         </AccordionItem>
