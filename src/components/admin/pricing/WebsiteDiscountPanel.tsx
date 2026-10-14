@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { readWebsiteDiscountDraft, saveWebsiteDiscountDraft, normalizeWebsiteDiscount, WEBSITE_DISCOUNT_CHANGED_EVENT } from '@/lib/pricing/websiteDiscount';
+import { discountedWebsiteTotal, readWebsiteDiscountDraft, saveWebsiteDiscountDraft, normalizeWebsiteDiscount, WEBSITE_DISCOUNT_CHANGED_EVENT } from '@/lib/pricing/websiteDiscount';
 
 export default function WebsiteDiscountPanel({ onSave, busy }: { onSave: (pct: number) => Promise<void>; busy: boolean }) {
   const [pct, setPct] = useState(readWebsiteDiscountDraft);
@@ -31,7 +31,7 @@ export default function WebsiteDiscountPanel({ onSave, busy }: { onSave: (pct: n
         </div>
         <Button disabled={busy} onClick={() => void onSave(pct)}><Save className="mr-2 h-4 w-4" /> Save discount as test draft</Button>
       </div>
-      <p className="mt-3 text-sm text-foreground">£1,000 in Quotes &amp; Orders → £{Math.ceil(1000 * (1 - pct / 100)).toLocaleString('en-GB')} on the website before minimum prices and payment rounding.</p>
+      <p className="mt-3 text-sm text-foreground">£1,000 in Quotes &amp; Orders → £{discountedWebsiteTotal(1000, pct, 0).toLocaleString('en-GB')} on the website before minimum prices and payment rounding.</p>
       <p className="mt-2 text-xs text-muted-foreground">Quotes &amp; Orders prices, minimum prices and the separate pay-in-full saving stay unchanged. Saving creates a test draft; live prices change only when you choose Push live.</p>
     </section>
   );
