@@ -33,7 +33,6 @@ import { useOvernightQueue } from '@/hooks/useOvernightQueue';
 import { CallbackBanner } from './CallbackBanner';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter, AgeWindow } from './LeadsFilters';
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
-import { DailyCrmSurveyBanner } from '@/components/admin/feedback/DailyCrmSurvey';
 
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { LiveLeadTrackingPanel } from './LiveLeadTrackingPanel';
@@ -1766,11 +1765,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     <div className="space-y-4">
       <WhatsAppReplyAlerts />
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
-      {!sandboxMode && (userRole === 'sales' || userRole === 'sales_lead') && (
-        <WidgetErrorBoundary label="Daily CRM survey">
-          <DailyCrmSurveyBanner adminUserId={currentAdminId} />
-        </WidgetErrorBoundary>
-      )}
       {/* Stuck-on-checkout alerts now pop up in the red left-hand rail on every tab */}
 
       {isAdminOrSuperAdmin || userRole === 'sales_manager' ? (

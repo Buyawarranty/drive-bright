@@ -23,8 +23,6 @@ import GlobalQuickReminderButton from '@/components/admin/GlobalQuickReminderBut
 import { PendingLeadsPill } from '@/components/admin/PendingLeadsPill';
 
 
-import { DailyCrmSurveyPrompt } from '@/components/admin/feedback/DailyCrmSurvey';
-import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import LiveChatHoursBanner from '@/components/admin/LiveChatHoursBanner';
 import LiveChatQuestionAlert from '@/components/admin/chatbot/LiveChatQuestionAlert';
@@ -1325,7 +1323,6 @@ const AdminDashboardInner: React.FC<{
   const { isManagement: serverIsManagement } = useIsManagement();
   const { session } = useAuth();
   const isSuperAdmin = userRole === 'super_admin';
-  const currentAdminIdForSurvey = useCurrentAdminId();
 
   // Use effective (impersonated) role for sidebar and content
   const displayRole = isImpersonating ? effectiveRole : userRole;
@@ -1494,12 +1491,6 @@ const AdminDashboardInner: React.FC<{
             )}
             {show('chat_request') && <ChatAgentRequestAlert onOpenLead={goLead} />}
 
-            {/* Daily CRM feedback survey pop-up for sales agents (silent, once a day) */}
-            <DailyCrmSurveyPrompt
-              adminUserId={currentAdminIdForSurvey}
-              userRole={displayRole}
-              onOpenResults={() => handleTabChange('staff-system-reports')}
-            />
 
 
             {/* Sticky left-hand rail host (kept mounted so portalled alerts have a home) */}

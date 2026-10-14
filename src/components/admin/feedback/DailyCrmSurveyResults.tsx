@@ -330,7 +330,7 @@ export const DailyCrmSurveyResults: React.FC<{ days: number; selfOnly?: boolean 
             Daily CRM survey
           </h3>
           <p className="text-sm text-muted-foreground">
-            Agents get a pop-up every day between {surveyWindowLabel()} UK time. One answer per agent per day, tracked from {fmtLong(SURVEY_START_DATE)}.
+            Answers already collected from the sales team — one per agent per day, tracked from {fmtLong(SURVEY_START_DATE)}. The daily prompt has been withdrawn, so no new answers are being requested.
           </p>
         </div>
         <Button size="sm" variant="outline" onClick={exportCsv} disabled={rows.length === 0}>
