@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.fill_sales_lead_ad_id(), public.sync_cart_ad_id_to_lead(), public.fill_customer_ad_id() FROM PUBLIC, anon, authenticated;
