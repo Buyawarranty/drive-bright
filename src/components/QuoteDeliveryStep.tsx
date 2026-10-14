@@ -264,7 +264,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       const sessionUtms = compactUtms(getSessionUtms());
       const liveParams = new URLSearchParams(window.location.search);
       const utms: Record<string, string> = { ...sessionUtms };
-      ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'].forEach((k) => {
+      ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','ad_id'].forEach((k) => {
         if (!utms[k]) {
           const v = liveParams.get(k);
           if (v) utms[k] = v;

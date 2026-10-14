@@ -67,9 +67,10 @@ interface AbandonedCartData {
   utm_campaign?: string;
   utm_term?: string;
   utm_content?: string;
+  ad_id?: string;
 }
 
-const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const;
+const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'ad_id'] as const;
 
 /** Pull only non-empty UTM values out of the request payload. */
 function stripUtms(cartData: Record<string, any>): Record<string, any> {
