@@ -43,18 +43,6 @@ const isConverted = (l: LeadRow) => l.is_paid === true || (l.status || '').toLow
 
 const fmt = (s: number | null) => s == null ? '—' : s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
 
-/**
- * Keep only the rows belonging to agents who are allowed to see them. A sales
- * agent's set is their own id only; management's is null (everyone) or the one
- * person the scoreboard is focused on.
- */
-export function filterStatsByAgent<T extends { ownerAgentId: string | null }>(
-  stats: T[],
-  visibleIds: Set<string> | null
-): T[] {
-  if (!visibleIds) return stats;
-  return stats.filter(s => s.ownerAgentId != null && visibleIds.has(s.ownerAgentId));
-}
 
 /**
  * Speed to Dial reporting — per-agent daily counters and conversion-by-band
