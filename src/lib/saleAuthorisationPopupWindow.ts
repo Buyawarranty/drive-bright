@@ -23,3 +23,26 @@ export const isSaleAuthWithinPopupWindow = (
   if (Number.isNaN(decided)) return false;
   return decided >= now.getTime() - SALE_AUTH_POPUP_DAYS * DAY_MS;
 };
+
+/** What the selling agent can say when closing the pop-up. */
+export type SaleAuthAgentAction = {
+  key: 'accepted' | 'will_speak_to_manager' | 'acknowledged';
+  label: string;
+  variant: 'secondary' | 'outline' | 'ghost';
+};
+
+/**
+ * The reply buttons on the pop-up. An authorised sale is confirmed or queried;
+ * a declined sale leads with speaking to the manager, since that is the whole
+ * point of the decision.
+ */
+export const saleAuthAgentActions = (status: string): SaleAuthAgentAction[] =>
+  status === 'approved'
+    ? [
+        { key: 'accepted', label: 'Accepted, thanks', variant: 'secondary' },
+        { key: 'will_speak_to_manager', label: "I'll speak to manager", variant: 'outline' },
+      ]
+    : [
+        { key: 'will_speak_to_manager', label: "I'll speak to manager", variant: 'outline' },
+        { key: 'acknowledged', label: 'Understood', variant: 'ghost' },
+      ];
