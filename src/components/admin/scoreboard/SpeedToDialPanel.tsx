@@ -47,7 +47,13 @@ const fmt = (s: number | null) => s == null ? '—' : s < 60 ? `${s}s` : `${Math
  * Speed to Dial reporting — per-agent daily counters and conversion-by-band
  * analysis. "First dial" = earliest lead_call_logs row for each sales_lead.
  */
-export const SpeedToDialPanel: React.FC = () => {
+export const SpeedToDialPanel: React.FC<{
+  /** Management sees every agent; a sales agent only ever sees their own row. */
+  isManagement: boolean;
+  currentAdminUserId: string | null;
+  /** Scoreboard "Only my scores" focus — null = every agent. */
+  allowedAgentIds?: string[] | null;
+}> = ({ isManagement, currentAdminUserId, allowedAgentIds }) => {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [firstCallByLead, setFirstCallByLead] = useState<Map<string, CallRow>>(new Map());
   const [agentNames, setAgentNames] = useState<Map<string, string>>(new Map());
@@ -122,10 +128,29 @@ export const SpeedToDialPanel: React.FC = () => {
     });
   }, [leads, firstCallByLead]);
 
+  // Visibility: a sales agent only ever sees their own figures; management can
+  // focus the whole panel on one person with the scoreboard's "Only my scores"
+  // switch (allowedAgentIds), and sees everyone when it is off.
+  const ownOnly = !isManagement;
+  const visibleIds = useMemo(() => {
+    if (!isManagement) return new Set<string>(currentAdminUserId ? [currentAdminUserId] : []);
+    if (allowedAgentIds) return new Set(allowedAgentIds);
+    return null;
+  }, [isManagement, currentAdminUserId, allowedAgentIds]);
+
+  const scopedStats = useMemo(
+    () =>
+      visibleIds
+        ? leadStats.filter(s => s.ownerAgentId && visibleIds.has(s.ownerAgentId))
+        : leadStats,
+    [leadStats, visibleIds]
+  );
+
+
   // Per-agent stats (owned by assigned_to when present, else first-caller)
   const agentStats: AgentStats[] = useMemo(() => {
     const map = new Map<string, AgentStats>();
-    leadStats.forEach(({ lead, seconds, ownerAgentId }) => {
+    scopedStats.forEach(({ lead, seconds, ownerAgentId }) => {
       if (!ownerAgentId) return;
       const s = map.get(ownerAgentId) || {
         agentId: ownerAgentId,
@@ -153,13 +178,13 @@ export const SpeedToDialPanel: React.FC = () => {
       const bPct = b.called ? b.within120 / b.called : 0;
       return bPct - aPct || (a.avgSeconds || 9999) - (b.avgSeconds || 9999);
     });
-  }, [leadStats, agentNames]);
+  }, [scopedStats, agentNames]);
 
   // Conversion-by-band analysis
   const bandStats = useMemo(() => {
     const bands = BANDS.map(b => ({ ...b, leads: 0, sales: 0 }));
     let notContacted = { leads: 0, sales: 0 };
-    leadStats.forEach(({ lead, seconds }) => {
+    scopedStats.forEach(({ lead, seconds }) => {
       if (seconds == null) {
         notContacted.leads += 1;
         if (isConverted(lead)) notContacted.sales += 1;
@@ -172,20 +197,20 @@ export const SpeedToDialPanel: React.FC = () => {
       }
     });
     return { bands, notContacted };
-  }, [leadStats]);
+  }, [scopedStats]);
 
   const totals = useMemo(() => {
-    const total = leads.length;
-    const called = firstCallByLead.size;
-    const within = leadStats.filter(x => x.seconds != null && x.seconds <= TARGET_SECONDS).length;
-    const sales = leads.filter(isConverted).length;
+    const total = scopedStats.length;
+    const called = scopedStats.filter(x => x.seconds != null).length;
+    const within = scopedStats.filter(x => x.seconds != null && x.seconds <= TARGET_SECONDS).length;
+    const sales = scopedStats.filter(x => isConverted(x.lead)).length;
     const avg = (() => {
-      const secs = leadStats.map(x => x.seconds).filter((s): s is number => s != null);
+      const secs = scopedStats.map(x => x.seconds).filter((s): s is number => s != null);
       if (!secs.length) return null;
       return Math.round(secs.reduce((a, b) => a + b, 0) / secs.length);
     })();
     return { total, called, within, notCalled: total - called, sales, avg };
-  }, [leads, firstCallByLead, leadStats]);
+  }, [scopedStats]);
 
   return (
     <div className="space-y-6">
