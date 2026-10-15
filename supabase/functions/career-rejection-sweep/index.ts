@@ -6,7 +6,7 @@ import { CAREERS_FROM, rejectionEmail } from '../_shared/careerEmails.ts';
  * Automatic careers rejection sweep.
  *
  * Runs on a schedule. Any application still sitting on status `new` once its
- * five-working-day deadline has passed gets the polite rejection letter and is
+ * three-working-day deadline has passed gets the polite rejection letter and is
  * moved to `rejected`. Giving an applicant ANY other status (shortlisted,
  * interview, hired, on hold) permanently takes them out of this sweep.
  *

@@ -2,7 +2,7 @@
  * Careers recruitment email copy.
  *
  * Kept in one place so the acknowledgement and the automatic
- * five-working-day rejection always read consistently.
+ * three-working-day rejection always read consistently.
  */
 
 const BRAND = 'Buyawarranty.co.uk';
@@ -53,7 +53,7 @@ export function acknowledgementEmail(fullName: string, role: string) {
       <p>Hi ${firstName(fullName)},</p>
       <p>Thanks for applying for the <strong>${role}</strong> role at ${BRAND} — your CV has landed safely with us.</p>
       <p>Our team reviews every application personally. If we'd like to take things further, we'll be in touch
-      within <strong>5 working days</strong> to arrange a chat. If you haven't heard from us by then, we'll let you
+      within <strong>3 working days</strong> to arrange a chat. If you haven't heard from us by then, we'll let you
       know either way so you're never left waiting.</p>
       <p>Thanks again for your interest in joining us.</p>
       <p style="margin-bottom:0;">Kind regards,<br><strong>The Recruitment Team</strong><br>${BRAND}</p>
