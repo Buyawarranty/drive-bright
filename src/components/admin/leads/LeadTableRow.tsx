@@ -1483,6 +1483,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             if (metadata?.utm_campaign) utmLines.push(`UTM Campaign: ${metadata.utm_campaign}`);
             if (metadata?.utm_term)     utmLines.push(`UTM Term: ${metadata.utm_term}`);
             if (metadata?.utm_content)  utmLines.push(`UTM Content: ${metadata.utm_content}`);
+            const adId = (lead as any).ad_id || (metadata as any)?.ad_id;
+            if (adId) utmLines.push(`Ad ID: ${adId}`);
             const utmBlock = utmLines.length ? `\n${utmLines.join('\n')}` : '';
 
             const chip = (label: string, cls: string, tipParts: string[]) => (

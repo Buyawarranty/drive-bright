@@ -307,6 +307,7 @@ interface Customer {
   utm_campaign?: string | null;
   utm_term?: string | null;
   utm_content?: string | null;
+  ad_id?: string | null;
   customer_dob?: string | null;
 
   admin_users?: {
@@ -7225,6 +7226,7 @@ Please log in and change your password after first login.`;
                         if (customer.utm_campaign) utmLines.push(`UTM Campaign: ${customer.utm_campaign}`);
                         if (customer.utm_term)     utmLines.push(`UTM Term: ${customer.utm_term}`);
                         if (customer.utm_content)  utmLines.push(`UTM Content: ${customer.utm_content}`);
+                        if ((customer as any).ad_id) utmLines.push(`Ad ID: ${(customer as any).ad_id}`);
                         const utmTip = utmLines.length ? `\n${utmLines.join('\n')}` : '';
                         const cursor = 'cursor-help';
                         const path = getCustomerSalePath(customer);
