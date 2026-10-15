@@ -24,16 +24,62 @@
 }
 
 /* Custom car animation */
+.homepage-contact-shell {
+  container-type: inline-size;
+}
+
 .homepage-contact-strip {
   --primary: 22 100% 52%;
   --primary-foreground: 0 0% 100%;
-  --secondary-foreground: 214 68% 29%;
+  --foreground: 222 18% 16%;
+  --secondary-foreground: 222 18% 16%;
   --muted-foreground: 220 9% 40%;
   --background: 0 0% 100%;
   --accent: 214 60% 96%;
   --accent-foreground: 214 68% 29%;
   --border: 220 16% 89%;
   --ring: 22 100% 52%;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 16px 12px;
+}
+
+.homepage-contact-phone {
+  grid-column: 1 / -1;
+}
+
+@container (min-width: 600px) {
+  .homepage-contact-strip {
+    grid-template-columns: minmax(170px, 1fr) minmax(190px, 1.15fr) minmax(160px, 1fr);
+    column-gap: 36px;
+  }
+
+  .homepage-contact-phone {
+    grid-column: auto;
+    justify-content: flex-start;
+  }
+
+  .homepage-contact-callback,
+  .homepage-contact-price-beat {
+    position: relative;
+  }
+
+  .homepage-contact-callback::before,
+  .homepage-contact-price-beat::before {
+    content: '';
+    position: absolute;
+    left: -19px;
+    top: 4px;
+    bottom: 4px;
+    width: 1px;
+    background: hsl(var(--border));
+    pointer-events: none;
+  }
+}
+
+@container (max-width: 359px) {
+  .homepage-contact-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .website-footer-theme {
