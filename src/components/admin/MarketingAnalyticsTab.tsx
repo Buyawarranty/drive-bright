@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Target, Facebook, Search, Music2 } from 'lucide-react';
 import { MarketingOverviewCards } from './marketing/MarketingOverviewCards';
 import { OrganicSourceBreakdownPanel } from './marketing/OrganicSourceBreakdownPanel';
+import { UtmAdLabelBreakdownPanel } from './marketing/UtmAdLabelBreakdownPanel';
 
 const GoogleAdsSettingsTab = lazy(() => import('@/components/admin/GoogleAdsSettingsTab').then(m => ({ default: m.GoogleAdsSettingsTab })));
 const FacebookAdsTab = lazy(() => import('@/components/admin/FacebookAdsTab').then(m => ({ default: m.FacebookAdsTab })));
@@ -30,6 +31,9 @@ export const MarketingAnalyticsTab: React.FC = () => {
 
       {/* Organic split — web (search/blogs) vs offline (billboard, word of mouth) */}
       <OrganicSourceBreakdownPanel />
+
+      {/* Ad labels — UTM + ad_id captured with each lead */}
+      <UtmAdLabelBreakdownPanel />
 
       <Tabs defaultValue="google" className="w-full">
         <TabsList className="grid w-full max-w-3xl grid-cols-4 gap-2 bg-transparent p-1">
