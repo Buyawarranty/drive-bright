@@ -44,6 +44,7 @@ import { Badge } from '@/components/ui/badge';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subWeeks, subMonths, subYears, isSameWeek, isSameMonth, isSameYear } from 'date-fns';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { cn } from '@/lib/utils';
+import { AgentProjectionsPanel } from './analytics/AgentProjectionsPanel';
 
 interface Customer {
   id: string;
@@ -1541,6 +1542,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             </CardContent>
           </Card>
         )}
+
+        {monthProjection && <AgentProjectionsPanel />}
 
         <AnalyticsSectionHeading id="revenue-monthly" title="Revenue & AOV by month" description="Monthly revenue collected so far, order volume and average order value across the last 12 months. Orders awaiting payment are counted as sales but add no revenue until collected." accent="border-emerald-500/60" />
 
