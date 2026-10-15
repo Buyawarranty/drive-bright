@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       cvPath = null;
     }
 
-    // ---- Record the application (starts the 5-working-day clock) ------------
+    // ---- Record the application (starts the 3-working-day clock) ------------
     const { data: inserted, error: insErr } = await supabase
       .from('career_applications')
       .insert({
@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
       ? new Date(inserted.rejection_due_at).toLocaleDateString('en-GB', {
           weekday: 'short', day: 'numeric', month: 'short',
         })
-      : 'in 5 working days';
+      : 'in 3 working days';
 
     const html = `
       <h2>New Careers Application</h2>
