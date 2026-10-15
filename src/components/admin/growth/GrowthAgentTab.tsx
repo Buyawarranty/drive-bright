@@ -88,7 +88,7 @@ function ChatWindow({ threadId, initialMessages, onActivity }: { threadId: strin
       </Conversation>
       <div ref={composerRef} className="pt-3">
         <PromptInput onSubmit={(msg: any) => send(msg?.text ?? text)}>
-          <PromptInputTextarea value={text} onChange={(e: any) => setText(e.target.value)} placeholder="Ask the growth assistant…" />
+          <PromptInputTextarea value={text} onChange={(e: any) => setText(e.target.value)} placeholder="Ask the Agentic assistant…" />
           <PromptInputFooter className="justify-end">
             <PromptInputSubmit status={status} onStop={stop} disabled={!text.trim() && status === 'ready'} />
           </PromptInputFooter>
@@ -159,7 +159,7 @@ export default function GrowthAgentTab() {
       <div className="flex items-center gap-2 mb-4">
         <Lightbulb className="h-6 w-6 text-primary" />
         <div>
-          <h1 className="text-xl font-semibold">Growth assistant</h1>
+          <h1 className="text-xl font-semibold">Agentic assistant</h1>
           <p className="text-sm text-muted-foreground">Uses the parts of the CRM you've been given access to and suggests what to do — it never changes or sends anything.</p>
         </div>
       </div>

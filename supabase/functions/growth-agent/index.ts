@@ -1,4 +1,4 @@
-// Growth assistant for the CRM — super admins, plus staff granted it in User Permissions (per-part). Read-only: it looks at sales,
+// Agentic assistant for the CRM (was named Growth Assistant) — super admins, plus staff granted it in User Permissions (per-part). Read-only: it looks at sales,
 // leads, cover combinations and blog posts and SUGGESTS marketing, sales and
 // branding actions. It never changes data or sends anything.
 import { streamText, tool, stepCountIs, convertToModelMessages } from "npm:ai@^7.0.64";
@@ -22,7 +22,7 @@ const json = (body: unknown, status = 200) =>
 
 const MODEL = "openai/gpt-6-astra";
 
-const INSTRUCTIONS = `You are the Buyawarranty.co.uk growth assistant, working inside the staff CRM for a super admin.
+const INSTRUCTIONS = `You are the Buyawarranty.co.uk Agentic assistant, working inside the staff CRM for a super admin.
 Your job: sales insights, marketing content, lead follow-up ideas and branding reviews for a UK used-car warranty company.
 
 How you work:
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
       .eq("user_id", user.id).eq("is_active", true).maybeSingle();
     const isSuper = (adminRow as any)?.role === "super_admin";
     const perms = ((adminRow as any)?.permissions ?? {}) as Record<string, unknown>;
-    if (!isSuper && perms["tab_growth-agent"] !== true) return json({ error: "You don't have access to the Growth Assistant" }, 403);
+    if (!isSuper && perms["tab_growth-agent"] !== true) return json({ error: "You don't have access to the Agentic Assistant" }, 403);
     // Super admins get every part. Others get only the parts ticked for them in
     // User Permissions; if none are ticked they get marketing + branding (no figures).
     const anyPart = ["tab_growth-sales", "tab_growth-leads", "tab_growth-marketing", "tab_growth-branding"].some((k) => perms[k] === true);

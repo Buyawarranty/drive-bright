@@ -1119,7 +1119,7 @@ const AdminDashboard = () => {
 
 
       case 'growth-agent':
-        if (effectiveUserRole !== 'super_admin' && (effectiveUserPermissions as any)?.['tab_growth-agent'] !== true) return <AccessDenied label="Growth Assistant" />;
+        if (effectiveUserRole !== 'super_admin' && (effectiveUserPermissions as any)?.['tab_growth-agent'] !== true) return <AccessDenied label="Agentic Assistant" />;
         return <GrowthAgentTab />;
       case 'price-updates':
         return <PriceUpdatesTab />;
