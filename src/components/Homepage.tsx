@@ -818,7 +818,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   >
                     <Phone className="h-5 w-5 shrink-0" aria-hidden="true" />
                     <span className="flex flex-col text-left">
-                      <span className="whitespace-nowrap text-lg font-bold leading-6">0330 912 2402</span>
+                      <span className="whitespace-nowrap text-lg font-bold leading-6 underline decoration-2 underline-offset-4">0330 912 2402</span>
                       <span className="mt-0.5 whitespace-nowrap text-xs text-muted-foreground">Mon–Sat, 9am–6pm</span>
                     </span>
                   </a>
