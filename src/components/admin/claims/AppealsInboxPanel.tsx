@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Gavel, CheckCircle2, Paperclip, Mail, Scale, ExternalLink, X } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { Gavel, ThumbsUp, ThumbsDown, StickyNote, CheckCircle2, Paperclip, Mail, Scale, ExternalLink, X } from 'lucide-react';
 import { ReturnedAppeal } from '@/hooks/useReturnedAppeals';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,15 +19,16 @@ interface SentAppeal {
   customerEmail: string | null;
   customerName: string | null;
   registration: string | null;
+  notes: string | null;
 }
 
 const outcomeLabel = (a: SentAppeal): { text: string; className: string } => {
   if (a.closedAt) {
     const s = (a.status || '').toLowerCase();
     if (s.includes('upheld') || s.includes('accepted') || s.includes('approved'))
-      return { text: 'Closed — upheld', className: 'bg-emerald-100 border-emerald-300 text-emerald-800' };
+      return { text: 'Appeal approved', className: 'bg-emerald-100 border-emerald-300 text-emerald-800' };
     if (s.includes('reject') || s.includes('declin') || s.includes('dismiss'))
-      return { text: 'Closed — not upheld', className: 'bg-slate-100 border-slate-300 text-slate-700' };
+      return { text: 'Appeal rejected', className: 'bg-slate-100 border-slate-300 text-slate-700' };
     return { text: 'Closed', className: 'bg-slate-100 border-slate-300 text-slate-700' };
   }
   const s = (a.status || '').toLowerCase();
@@ -65,13 +68,56 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
 
   const [sentAppeals, setSentAppeals] = useState<SentAppeal[]>([]);
   const [sentLoading, setSentLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [notesOpen, setNotesOpen] = useState<string | null>(null);
+  const [notesDraft, setNotesDraft] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const updateAppeal = async (sa: SentAppeal, patch: Record<string, any>, auditNote: string) => {
+    setBusyId(sa.id);
+    const { data: userRes } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from('claim_appeals')
+      .update({ ...patch, updated_at: new Date().toISOString() } as any)
+      .eq('id', sa.id);
+    setBusyId(null);
+    if (error) {
+      toast({ title: 'Could not update appeal', description: error.message, variant: 'destructive' });
+      return false;
+    }
+    await supabase.from('claim_audit_log').insert({
+      claim_id: sa.claimId,
+      action: 'appeal_updated',
+      field: 'appeal',
+      old_value: sa.status,
+      new_value: patch.status ?? sa.status,
+      reason: auditNote,
+      actor_id: userRes?.user?.id ?? null,
+    } as any);
+    toast({ title: auditNote });
+    setReloadKey(k => k + 1);
+    return true;
+  };
+
+  const decide = (sa: SentAppeal, decision: 'approved' | 'rejected') =>
+    updateAppeal(
+      sa,
+      { status: decision, closed_at: new Date().toISOString() },
+      decision === 'approved' ? 'Appeal approved' : 'Appeal rejected',
+    );
+
+  const saveNotes = async (sa: SentAppeal) => {
+    const ok = await updateAppeal(sa, { outcome: notesDraft.trim() || null }, 'Appeal notes saved');
+    if (ok) setNotesOpen(null);
+  };
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       const { data } = await supabase
         .from('claim_appeals')
-        .select('id, claim_id, sent_at, created_at, status, closed_at, customer_email, claims_submissions(name, vehicle_registration)')
+        .select('id, claim_id, sent_at, created_at, status, closed_at, customer_email, outcome, claims_submissions(name, vehicle_registration)')
         .order('created_at', { ascending: false })
         .limit(100);
       if (cancelled) return;
@@ -86,13 +132,14 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
           customerEmail: r.customer_email ?? null,
           customerName: r.claims_submissions?.name ?? null,
           registration: r.claims_submissions?.vehicle_registration ?? null,
+          notes: r.outcome ?? null,
         }))
       );
       setSentLoading(false);
     };
     void load();
     return () => { cancelled = true; };
-  }, [appeals.length]);
+  }, [appeals.length, reloadKey]);
 
   return (
     <section className="rounded-2xl border border-amber-200 bg-white overflow-hidden">
@@ -159,6 +206,7 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
                     <th className="px-3 py-2 font-semibold">Reg</th>
                     <th className="px-3 py-2 font-semibold">Email</th>
                     <th className="px-3 py-2 font-semibold">Outcome</th>
+                    <th className="px-3 py-2 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -187,6 +235,60 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
                         </td>
                         <td className="px-3 py-2">
                           <Badge variant="outline" className={outcome.className}>{outcome.text}</Badge>
+                          {sa.notes && notesOpen !== sa.id && (
+                            <p className="mt-1 text-xs text-slate-600 whitespace-pre-wrap max-w-[280px]">📝 {sa.notes}</p>
+                          )}
+                        </td>
+                        <td className="px-3 py-2" onClick={e => e.stopPropagation()}>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={busyId === sa.id}
+                              className="h-7 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                              onClick={() => decide(sa, 'approved')}
+                            >
+                              <ThumbsUp className="h-3.5 w-3.5 mr-1" /> Approved
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={busyId === sa.id}
+                              className="h-7 border-slate-300 text-slate-700 hover:bg-slate-50"
+                              onClick={() => decide(sa, 'rejected')}
+                            >
+                              <ThumbsDown className="h-3.5 w-3.5 mr-1" /> Rejected
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7"
+                              onClick={() => {
+                                setNotesOpen(notesOpen === sa.id ? null : sa.id);
+                                setNotesDraft(sa.notes || '');
+                              }}
+                            >
+                              <StickyNote className="h-3.5 w-3.5 mr-1" /> {sa.notes ? 'Edit notes' : 'Add notes'}
+                            </Button>
+                          </div>
+                          {notesOpen === sa.id && (
+                            <div className="mt-2 space-y-1.5 min-w-[260px]">
+                              <Textarea
+                                rows={3}
+                                value={notesDraft}
+                                onChange={e => setNotesDraft(e.target.value)}
+                                placeholder="Notes about this appeal…"
+                              />
+                              <div className="flex gap-1.5">
+                                <Button size="sm" className="h-7" disabled={busyId === sa.id} onClick={() => saveNotes(sa)}>
+                                  Save notes
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7" onClick={() => setNotesOpen(null)}>
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     );
