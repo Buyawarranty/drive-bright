@@ -306,6 +306,7 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
                           </span>
                         ) : null}
                       </div>
+                      </div>
                     </div>
 
                     <div className="text-xs text-right shrink-0">
