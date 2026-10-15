@@ -35,6 +35,7 @@ const FailedPaymentPopup = lazy(() => import('@/components/admin/FailedPaymentPo
 import { StuckCheckoutAlert } from '@/components/admin/leads/StuckCheckoutAlert';
 import { SaleNeedsAuthorisationAlert } from '@/components/admin/SaleNeedsAuthorisationAlert';
 import { SaleAuthorisationResultPopup } from '@/components/admin/SaleAuthorisationResultPopup';
+import { CareerApplicantsAlert } from '@/components/admin/CareerApplicantsAlert';
 import { ChatAgentRequestAlert } from '@/components/admin/leads/ChatAgentRequestAlert';
 const NonClaimComplaintAlert = lazy(() => import('@/components/admin/NonClaimComplaintAlert').then(m => ({ default: m.NonClaimComplaintAlert })));
 const PriceBeatRequestAlert = lazy(() => import('@/components/admin/PriceBeatRequestAlert').then(m => ({ default: m.PriceBeatRequestAlert })));
@@ -1478,6 +1479,7 @@ const AdminDashboardInner: React.FC<{
             {show('new_leads') && <NewLeadAlerts />}
             {isManagementAlerts && <SaleNeedsAuthorisationAlert />}
             <SaleAuthorisationResultPopup />
+            {isManagementAlerts && <CareerApplicantsAlert onOpen={() => handleTabChange('careers-applications')} />}
             {show('stuck_checkout') && <StuckCheckoutAlert />}
             {show('new_leads') && (
               <Suspense fallback={null}>
