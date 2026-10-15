@@ -29,6 +29,10 @@ export default {
 				'crm-body': ['Manrope', 'sans-serif'],
 			},
 			colors: {
+				footer: {
+					banner: 'hsl(var(--footer-banner))',
+					'banner-foreground': 'hsl(var(--footer-banner-foreground))',
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',

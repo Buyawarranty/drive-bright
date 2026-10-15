@@ -24,6 +24,11 @@
 }
 
 /* Custom car animation */
+.website-footer-theme {
+  --footer-banner: 214 52% 25%;
+  --footer-banner-foreground: 0 0% 100%;
+}
+
 .website-discount-theme {
   --primary: 275 72% 43%;
   --primary-foreground: 0 0% 100%;

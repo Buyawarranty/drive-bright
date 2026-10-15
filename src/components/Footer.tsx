@@ -96,7 +96,7 @@ const Footer = () => {
                 />
               </span>
               <span className="text-xs text-gray-300">
-                Registered with the Information Commissioner&apos;s Office
+                Registered with the Information Commissioner&apos;s Office · ICO registration number C1994014
               </span>
             </div>
             <p>&copy; {new Date().getFullYear()} Buy a Warranty. All rights reserved.</p>
