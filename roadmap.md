@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Simplify homepage contact strip on desktop/mobile: unbroken phone and hours, orange callback primary, one price-beat secondary; verify both dialogs and layout.
 - [x] Replace stacked website discounts with one purple percentage control (10% starting value), preserving Quotes & Orders, floors and pay-in-full; preview only. Pricing tests and isolated control verified; signed-in draft-save check unavailable for externally managed access.
 - [x] Post Blog 15 from the specified Google Docs tab with approved battery corrections, preserved copy/links/table, reused Mercedes photograph, canonical and search/AI metadata; article and schema verified in the preview. Site-wide publication remains on hold.
 - [x] Add the chosen friendly phone-number prompt to Miles and expose existing callback/WhatsApp number capture; phone entry and submit button verified, build clean. Existing delivery unchanged; real submission/admin receipt not retested.

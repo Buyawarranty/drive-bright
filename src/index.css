@@ -24,6 +24,18 @@
 }
 
 /* Custom car animation */
+.homepage-contact-strip {
+  --primary: 22 100% 52%;
+  --primary-foreground: 0 0% 100%;
+  --secondary-foreground: 214 68% 29%;
+  --muted-foreground: 220 9% 40%;
+  --background: 0 0% 100%;
+  --accent: 214 60% 96%;
+  --accent-foreground: 214 68% 29%;
+  --border: 220 16% 89%;
+  --ring: 22 100% 52%;
+}
+
 .website-footer-theme {
   --footer-banner: 214 52% 25%;
   --footer-banner-foreground: 0 0% 100%;

@@ -98,29 +98,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
   const [showPriceBeat, setShowPriceBeat] = useState(false);
-  // UK office hours: 09:00–18:00 Europe/London
-  const computeUkOfficeHours = () => {
-    const parts = new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Europe/London',
-      weekday: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).formatToParts(new Date());
-    const h = Number(parts.find((p) => p.type === 'hour')?.value ?? '0');
-    const m = Number(parts.find((p) => p.type === 'minute')?.value ?? '0');
-    const weekday = parts.find((p) => p.type === 'weekday')?.value ?? '';
-    const mins = h * 60 + m;
-    // Open Monday to Saturday, 9am–6pm UK time (closed Sundays)
-    const isOpenDay = weekday !== 'Sun';
-    return isOpenDay && mins >= 9 * 60 && mins < 18 * 60;
-  };
-
-  const [isUkOfficeHours, setIsUkOfficeHours] = useState(computeUkOfficeHours);
-  useEffect(() => {
-    const id = setInterval(() => setIsUkOfficeHours(computeUkOfficeHours()), 60_000);
-    return () => clearInterval(id);
-  }, []);
 
 
   
@@ -830,92 +807,38 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
 
 
-                {/* Pricing Reassurance Panel - Premium Trust Block (desktop) */}
-                <div className="hidden sm:block mt-4 sm:mt-6 bg-white border border-gray-100 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] px-6 py-5 text-center">
-                   {isUkOfficeHours ? (
-                     <>
-                       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-0 mb-3">
-                         <a href="tel:03309122402" className="group flex items-center gap-2.5 text-brand-blue transition-all duration-200">
-                           <span className="p-1.5 bg-blue-50 rounded-full text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-colors">
-                             <Phone className="w-4 h-4 fill-current" strokeWidth={0} />
-                           </span>
-                           <span className="text-base md:text-lg font-bold border-b-2 border-brand-blue pb-0.5 leading-none tracking-tight group-hover:text-[#1B2A4A] group-hover:border-[#1B2A4A]">
-                             0330 912 2402
-                           </span>
-                         </a>
-
-                         <span className="hidden sm:block h-6 w-px bg-gray-200 mx-6" aria-hidden />
-
-                         <button
-                           onClick={() => setShowCallbackModal(true)}
-                           className="group flex items-center gap-1.5 text-brand-orange font-bold text-sm md:text-base hover:text-orange-700 transition-colors"
-                         >
-                           Request a callback
-                           <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                         </button>
-
-                         <span className="hidden sm:block h-6 w-px bg-gray-200 mx-4" aria-hidden />
-
-                         <button
-                           onClick={() => setShowPriceBeat(true)}
-                           className="group flex items-center gap-1.5 text-gray-600 hover:text-[#E8521A] font-semibold text-sm transition-colors"
-                         >
-                           <Tag className="w-3.5 h-3.5" />
-                           Beat My Quote
-                           <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                         </button>
-                       </div>
-
-                       <p className="text-[13px] text-gray-500 font-medium leading-relaxed">
-                         Speak to our UK team – <span className="text-gray-400">Lines open 9am to 6pm, Monday to Saturday.</span> Found a cheaper quote? <button onClick={() => setShowPriceBeat(true)} className="underline decoration-dotted underline-offset-2 hover:text-[#E8521A] transition-colors">We'll beat it.</button>
-                       </p>
-                     </>
-                   ) : (
-                    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
-                      <span className="text-gray-600 whitespace-nowrap">Our UK team is open 9am–6pm, Monday to Saturday</span>
-                      <button
-                        onClick={() => setShowCallbackModal(true)}
-                        className="group flex items-center gap-1.5 text-brand-orange font-bold hover:text-orange-700 transition-colors"
-                      >
-                        Request a callback
-                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                      </button>
-                      <span aria-hidden className="text-gray-300">·</span>
-                      <button
-                        onClick={() => setShowPriceBeat(true)}
-                        className="group flex items-center gap-1.5 text-gray-500 hover:text-[#E8521A] font-semibold transition-colors"
-                      >
-                        <Tag className="w-3.5 h-3.5" />
-                        Beat My Quote
-                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                      </button>
-                    </div>
-                   )}
-                </div>
-
-                {/* Pricing Reassurance Panel - compact mobile version */}
-                <div className="sm:hidden mt-4 bg-white border border-gray-100 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] px-4 py-4 text-center">
-                  <div className="flex items-center justify-center gap-2.5">
-                    <button
-                      onClick={() => setShowCallbackModal(true)}
-                      className="group flex items-center gap-1 text-brand-orange font-bold text-[13px] whitespace-nowrap hover:text-orange-700 transition-colors"
-                    >
-                      Request a callback
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                    </button>
-                    <span aria-hidden className="text-gray-300">·</span>
-                    <button
-                      onClick={() => setShowPriceBeat(true)}
-                      className="group flex items-center gap-1 text-gray-600 hover:text-[#E8521A] font-semibold text-[13px] whitespace-nowrap transition-colors"
-                    >
-                      <Tag className="w-3.5 h-3.5" />
-                      Beat My Quote
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                    </button>
-                  </div>
-                  <p className="mt-2 text-[12px] text-gray-500 font-medium leading-relaxed">
-                    Found a cheaper quote? <button onClick={() => setShowPriceBeat(true)} className="underline decoration-dotted underline-offset-2 hover:text-[#E8521A] transition-colors">We'll beat it.</button>
-                  </p>
+                <div
+                  role="group"
+                  aria-label="Speak to our UK team"
+                  className="homepage-contact-strip mt-4 grid grid-cols-2 items-center gap-3 border-t border-border pt-4 sm:mt-6 sm:grid-cols-[minmax(170px,1fr)_minmax(0,1.15fr)_minmax(0,0.9fr)] sm:gap-4"
+                >
+                  <a
+                    href="tel:03309122402"
+                    className="col-span-2 flex min-h-14 items-center justify-center gap-2.5 rounded-md text-secondary-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:col-span-1 sm:justify-start"
+                  >
+                    <Phone className="h-5 w-5 shrink-0" aria-hidden="true" />
+                    <span className="flex flex-col text-left">
+                      <span className="whitespace-nowrap text-lg font-bold leading-6">0330 912 2402</span>
+                      <span className="mt-0.5 whitespace-nowrap text-xs text-muted-foreground">Mon–Sat, 9am–6pm</span>
+                    </span>
+                  </a>
+                  <Button
+                    type="button"
+                    onClick={() => setShowCallbackModal(true)}
+                    className="h-14 w-full min-w-0 gap-2 whitespace-normal px-3 text-sm font-bold leading-5"
+                  >
+                    <span>Request a callback</span>
+                    <ArrowRight className="hidden sm:block" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowPriceBeat(true)}
+                    className="h-14 w-full min-w-0 gap-2 whitespace-normal border-border px-3 text-sm font-semibold leading-5 text-secondary-foreground"
+                  >
+                    <Tag aria-hidden="true" />
+                    <span>Beat My Quote</span>
+                  </Button>
                 </div>
 
 
