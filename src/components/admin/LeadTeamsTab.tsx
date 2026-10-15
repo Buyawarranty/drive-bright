@@ -48,6 +48,7 @@ import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
 import { ImportLeadToAgentPanel } from './leads/ImportLeadToAgentPanel';
 
 import { useViewAs } from '@/contexts/ViewAsContext';
+import { OrrMirrorSection } from './leads/OrrMirrorSection';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
@@ -472,6 +473,10 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           <RecentReassignmentsPanel />
           <ManagerOverrideAuditPanel />
         </div>
+      )}
+
+      {isManagement && (
+        <OrrMirrorSection onOpenSandbox={onNavigateToTab ? () => onNavigateToTab('orr-sandbox') : undefined} />
       )}
 
 
