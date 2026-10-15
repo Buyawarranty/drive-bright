@@ -3,7 +3,7 @@
 - Published document blogs may supply exact article HTML and schema through route metadata so crawler output preserves the same approved content as the database article without altering existing page schemas.
 - Reuse CallMeBackPanel and sandbox-callback-request for optional chat phone capture, so submitted numbers follow existing chatbot lead and admin-alert delivery.
 - Use the shared sale-subject formatter for manager direct-sale email source labels in both subject and body; keep existing attribution and delivery logic unchanged to avoid affecting payment flows.
-- Render ORR controls through the dedicated sandbox view and reuse it for legacy ORR tab URLs; Lead Allocation must not mount the ORR section, avoiding duplicate controls.
+- Render ORR controls through the dedicated sandbox view (legacy ORR URLs reuse it); Lead Allocation shows only a read-only mirror of the same section, so there is one editable ORR.
 
 - Store company-wide monthly Analytics revenue goals in `monthly_revenue_targets`; keep them separate from per-agent `sales_targets` because they measure different scopes.
 - Multi-year Quotes & Orders offers only 12 monthly instalments or BAW PayLater; PayLater records and credits one yearly payment at collection because uncollected future years are not revenue.
