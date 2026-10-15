@@ -807,16 +807,17 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
 
 
+                <div className="homepage-contact-shell">
                 <div
                   role="group"
                   aria-label="Speak to our UK team"
-                  className="homepage-contact-strip mt-4 grid grid-cols-2 items-center gap-3 border-t border-border pt-4 sm:mt-6 sm:grid-cols-[minmax(170px,1fr)_minmax(0,1.15fr)_minmax(0,0.9fr)] sm:gap-4"
+                  className="homepage-contact-strip mt-6 grid items-center border-t border-border pt-5"
                 >
                   <a
                     href="tel:03309122402"
-                    className="col-span-2 flex min-h-14 items-center justify-center gap-2.5 rounded-md text-secondary-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:col-span-1 sm:justify-start"
+                    className="homepage-contact-phone flex min-h-14 items-center justify-center gap-3 rounded-md text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <Phone className="h-5 w-5 shrink-0" aria-hidden="true" />
+                    <Phone className="h-7 w-7 shrink-0" aria-hidden="true" />
                     <span className="flex flex-col text-left">
                       <span className="whitespace-nowrap text-lg font-bold leading-6 underline decoration-2 underline-offset-4">0330 912 2402</span>
                       <span className="mt-0.5 whitespace-nowrap text-xs text-muted-foreground">Mon–Sat, 9am–6pm</span>
@@ -824,21 +825,23 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </a>
                   <Button
                     type="button"
+                    variant="outline"
                     onClick={() => setShowCallbackModal(true)}
-                    className="h-14 w-full min-w-0 gap-2 whitespace-normal px-3 text-sm font-bold leading-5"
+                    className="homepage-contact-callback h-14 w-full min-w-0 gap-2 whitespace-nowrap border-primary bg-primary/5 px-3 text-sm font-bold leading-5 text-primary hover:bg-primary/10 hover:text-primary"
                   >
                     <span>Request a callback</span>
-                    <ArrowRight className="hidden sm:block" aria-hidden="true" />
+                    <ArrowRight aria-hidden="true" />
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setShowPriceBeat(true)}
-                    className="h-14 w-full min-w-0 gap-2 whitespace-normal border-border px-3 text-sm font-semibold leading-5 text-secondary-foreground"
+                    className="homepage-contact-price-beat h-14 w-full min-w-0 gap-2 whitespace-nowrap border-border px-3 text-sm font-semibold leading-5 text-foreground"
                   >
                     <Tag aria-hidden="true" />
                     <span>Beat My Quote</span>
                   </Button>
+                </div>
                 </div>
 
 
