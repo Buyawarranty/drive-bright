@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
+import { rejectApplicants } from '@/lib/careerReject';
 
 type Status = 'new' | 'shortlisted' | 'interview' | 'hired' | 'rejected' | 'on_hold';
 
@@ -56,6 +58,8 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
   const [busy, setBusy] = React.useState<string | null>(null);
   const [filter, setFilter] = React.useState<'live' | 'all' | Status>('live');
   const [search, setSearch] = React.useState('');
+  const [selected, setSelected] = React.useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = React.useState(false);
   const [noteDraft, setNoteDraft] = React.useState<Record<string, string>>({});
 
   const load = React.useCallback(async () => {
@@ -73,6 +77,9 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
   React.useEffect(() => { load(); }, [load]);
 
   const setStatus = async (row: Application, status: Status) => {
+    if (status === 'rejected') {
+      setBusy(row.id); await rejectApplicants([row.id], 'reject'); setBusy(null); load(); return;
+    }
     setBusy(row.id);
     const { data: me } = await supabase.auth.getUser();
     let adminId: string | null = null;
@@ -127,6 +134,19 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
     }
     return true;
   });
+
+  const toggle = (id: string) => setSelected(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const allSelected = filtered.length > 0 && filtered.every(r => selected.has(r.id));
+  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(filtered.map(r => r.id)));
+  const runBulk = async (action: 'reject' | 'delete') => {
+    const ids = filtered.filter(r => selected.has(r.id)).map(r => r.id);
+    if (!ids.length) return;
+    const word = action === 'delete' ? 'Delete' : 'Decline';
+    if (!window.confirm(`${word} ${ids.length} applicant${ids.length === 1 ? '' : 's'}? Each one is sent the polite rejection email (unless they already had it).${action === 'delete' ? ' Their profile and CV are then removed permanently.' : ''}`)) return;
+    setBulkBusy(true);
+    await rejectApplicants(ids, action);
+    setBulkBusy(false); setSelected(new Set()); load();
+  };
 
   const awaiting = rows.filter(r => r.status === 'new');
   const dueToday = awaiting.filter(
@@ -217,6 +237,23 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
         />
       </div>
 
+      {canEdit && filtered.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-md border bg-muted/40 px-3 py-2">
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <Checkbox checked={allSelected} onCheckedChange={toggleAll} /> Select all ({filtered.length})
+          </label>
+          <span className="text-xs text-muted-foreground">{selected.size} selected</span>
+          <div className="ml-auto flex gap-2">
+            <Button size="sm" variant="outline" className="h-8" disabled={bulkBusy || !selected.size} onClick={() => runBulk('reject')}>
+              {bulkBusy ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <ThumbsDown className="h-3.5 w-3.5 mr-1.5" />}Decline selected
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 border-rose-400 text-rose-700 hover:bg-rose-50" disabled={bulkBusy || !selected.size} onClick={() => runBulk('delete')}>
+              Delete selected
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* List */}
       {loading ? (
         <div className="py-16 text-center text-sm text-muted-foreground">Loading applications…</div>
@@ -234,7 +271,9 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
               <Card key={row.id}>
                 <CardHeader className="pb-2">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex items-start gap-3">
+                      {canEdit && <Checkbox className="mt-1" checked={selected.has(row.id)} onCheckedChange={() => toggle(row.id)} aria-label={`Select ${row.full_name}`} />}
+                      <div className="min-w-0">
                       <CardTitle className="text-base flex flex-wrap items-center gap-2">
                         {row.full_name}
                         <Badge variant="outline" className={meta.className}>{meta.label}</Badge>
