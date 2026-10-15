@@ -174,7 +174,7 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
           </h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
             Every application from the careers page lands here. Anyone still awaiting a decision after
-            5 working days is sent the polite rejection letter automatically — shortlist the people you want to
+            3 working days is sent the polite rejection letter automatically — shortlist the people you want to
             speak to and their clock stops for good.
           </p>
         </div>
