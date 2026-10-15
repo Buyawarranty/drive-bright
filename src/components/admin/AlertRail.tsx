@@ -33,6 +33,7 @@ export const ALERT_RAIL_ORDER = {
   whatsappHotLead: 7,
   // An agent's reply to a manager's authorisation decision — stays until they answer.
   saleAuthorisationResult: 9,
+  careerApplicants: 15,
   // Everything else follows.
   incomingCall: 10,
   authorisationNeeded: 11,
