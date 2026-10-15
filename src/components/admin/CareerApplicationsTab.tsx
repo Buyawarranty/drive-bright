@@ -95,7 +95,7 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
     setBusy(null);
     if (error) { toast.error(error.message); return; }
     toast.success(
-      status === 'rejected'
+      (status as Status) === 'rejected'
         ? `${row.full_name} marked as rejected`
         : `${row.full_name} → ${STATUS_META[status].label}. Automatic rejection stopped.`,
     );
