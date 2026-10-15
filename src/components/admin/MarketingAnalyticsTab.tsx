@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Target, Facebook, Search, Music2 } from 'lucide-react';
 import { MarketingOverviewCards } from './marketing/MarketingOverviewCards';
 import { OrganicSourceBreakdownPanel } from './marketing/OrganicSourceBreakdownPanel';
+import { UtmAdLabelBreakdownPanel } from './marketing/UtmAdLabelBreakdownPanel';
 
 const GoogleAdsSettingsTab = lazy(() => import('@/components/admin/GoogleAdsSettingsTab').then(m => ({ default: m.GoogleAdsSettingsTab })));
 const FacebookAdsTab = lazy(() => import('@/components/admin/FacebookAdsTab').then(m => ({ default: m.FacebookAdsTab })));
