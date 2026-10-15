@@ -162,13 +162,6 @@ const WebsiteFooter = () => {
                 Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England.
               </p>
               <p className="text-sm text-muted-foreground mt-2">VAT registration number 519 1099 85.</p>
-              <div className="flex flex-wrap items-center gap-4 mt-5">
-                <img src={icoLogo.url} alt="Information Commissioner's Office" className="h-7 w-auto max-w-full object-contain" loading="lazy" />
-                <div className="text-sm">
-                  <span className="flex items-center gap-1.5 font-medium text-foreground"><ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />ICO registered</span>
-                  <span className="text-muted-foreground">Registration number C1994014</span>
-                </div>
-              </div>
             </section>
             <section aria-labelledby="footer-finance-heading" className="min-w-0">
               <h3 id="footer-finance-heading" className="text-sm font-semibold text-foreground mb-3">Finance and regulation</h3>
