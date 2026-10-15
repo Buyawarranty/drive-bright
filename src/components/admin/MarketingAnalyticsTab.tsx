@@ -32,6 +32,9 @@ export const MarketingAnalyticsTab: React.FC = () => {
       {/* Organic split — web (search/blogs) vs offline (billboard, word of mouth) */}
       <OrganicSourceBreakdownPanel />
 
+      {/* Ad labels — UTM + ad_id captured with each lead */}
+      <UtmAdLabelBreakdownPanel />
+
       <Tabs defaultValue="google" className="w-full">
         <TabsList className="grid w-full max-w-3xl grid-cols-4 gap-2 bg-transparent p-1">
           <TabsTrigger value="google" className="flex items-center gap-2 border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-700">
