@@ -141,8 +141,8 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                   <p className="text-sm font-bold text-foreground">
                     <span className="text-xl">£{monthlyPrice}</span> today
                   </p>
-                  <p className="text-xs text-muted-foreground">Then 11 monthly payments of £{monthlyPrice}</p>
-                  <p className="text-xs font-semibold text-foreground">£{monthlyPaidTotal} total payable</p>
+                  <p className="text-xs font-bold text-muted-foreground">Then 11 monthly payments of £{monthlyPrice}</p>
+                  <p className="text-xs text-foreground">£{monthlyPaidTotal} total payable</p>
                   <p className="text-xs text-muted-foreground">
                     = {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day over your full cover term
                   </p>
