@@ -48,6 +48,7 @@ const FILTERS: { id: 'live' | 'all' | Status; label: string }[] = [
   { id: 'shortlisted', label: 'Shortlisted' },
   { id: 'interview', label: 'Interview' },
   { id: 'hired', label: 'Hired' },
+  { id: 'on_hold', label: 'No action' },
   { id: 'rejected', label: 'Rejected' },
   { id: 'all', label: 'All' },
 ];

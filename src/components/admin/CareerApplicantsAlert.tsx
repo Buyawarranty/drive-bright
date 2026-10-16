@@ -86,6 +86,10 @@ export const CareerApplicantsAlert: React.FC<{ onOpen?: () => void }> = ({ onOpe
               <Button size="sm" variant="outline" className="h-7 text-xs" disabled={busy === a.id} onClick={() => decline(a.id)}>
                 <ThumbsDown className="h-3 w-3 mr-1" />Decline &amp; email
               </Button>
+              <Button size="sm" variant="outline" className="h-7 text-xs" disabled={busy === a.id} onClick={() => noAction(a.id)}
+                title="Keep as-is — no rejection email, no automatic decline">
+                <PauseCircle className="h-3 w-3 mr-1" />No action
+              </Button>
             </div>
           </div>
         ))}
