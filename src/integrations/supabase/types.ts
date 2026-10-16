@@ -9078,6 +9078,8 @@ export type Database = {
           color: string
           created_at: string
           created_by: string | null
+          distribution_environment: Database["public"]["Enums"]["distribution_environment"]
+          distribution_method: Database["public"]["Enums"]["distribution_method"]
           emoji: string | null
           id: string
           is_active: boolean
@@ -9091,6 +9093,8 @@ export type Database = {
           color?: string
           created_at?: string
           created_by?: string | null
+          distribution_environment?: Database["public"]["Enums"]["distribution_environment"]
+          distribution_method?: Database["public"]["Enums"]["distribution_method"]
           emoji?: string | null
           id?: string
           is_active?: boolean
@@ -9104,6 +9108,8 @@ export type Database = {
           color?: string
           created_at?: string
           created_by?: string | null
+          distribution_environment?: Database["public"]["Enums"]["distribution_environment"]
+          distribution_method?: Database["public"]["Enums"]["distribution_method"]
           emoji?: string | null
           id?: string
           is_active?: boolean
@@ -9792,6 +9798,47 @@ export type Database = {
           },
         ]
       }
+      orr_agent_availability: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          id: string
+          last_orr_allocation_at: string | null
+          orr_rotation_position: number | null
+          ready_since: string | null
+          state: Database["public"]["Enums"]["orr_availability_state"]
+          updated_at: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          last_orr_allocation_at?: string | null
+          orr_rotation_position?: number | null
+          ready_since?: string | null
+          state?: Database["public"]["Enums"]["orr_availability_state"]
+          updated_at?: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          last_orr_allocation_at?: string | null
+          orr_rotation_position?: number | null
+          ready_since?: string | null
+          state?: Database["public"]["Enums"]["orr_availability_state"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orr_agent_availability_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orr_agent_status_overrides: {
         Row: {
           agent_id: string
@@ -9816,30 +9863,102 @@ export type Database = {
         }
         Relationships: []
       }
+      orr_attempts: {
+        Row: {
+          attempt_agent_id: string | null
+          attempt_day: number
+          attempt_number: number
+          call_started_at: string | null
+          contact_success: boolean
+          created_at: string
+          id: string
+          lead_id: string
+          outcome: string | null
+        }
+        Insert: {
+          attempt_agent_id?: string | null
+          attempt_day?: number
+          attempt_number?: number
+          call_started_at?: string | null
+          contact_success?: boolean
+          created_at?: string
+          id?: string
+          lead_id: string
+          outcome?: string | null
+        }
+        Update: {
+          attempt_agent_id?: string | null
+          attempt_day?: number
+          attempt_number?: number
+          call_started_at?: string | null
+          contact_success?: boolean
+          created_at?: string
+          id?: string
+          lead_id?: string
+          outcome?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orr_attempts_attempt_agent_id_fkey"
+            columns: ["attempt_agent_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orr_attempts_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orr_config: {
         Row: {
+          browse_window_seconds: number
+          contact_journey_days: number
           id: boolean
           live_cutoff: string
+          min_retry_gap_hours: number
+          overnight_max_wait_minutes: number | null
+          reservation_seconds: number
           timezone: string
           updated_at: string
+          weekday_attempts_per_day: number
+          weekend_attempts_per_day: number
           weekend_days: number[]
           work_end: string
           work_start: string
         }
         Insert: {
+          browse_window_seconds?: number
+          contact_journey_days?: number
           id?: boolean
           live_cutoff?: string
+          min_retry_gap_hours?: number
+          overnight_max_wait_minutes?: number | null
+          reservation_seconds?: number
           timezone?: string
           updated_at?: string
+          weekday_attempts_per_day?: number
+          weekend_attempts_per_day?: number
           weekend_days?: number[]
           work_end?: string
           work_start?: string
         }
         Update: {
+          browse_window_seconds?: number
+          contact_journey_days?: number
           id?: boolean
           live_cutoff?: string
+          min_retry_gap_hours?: number
+          overnight_max_wait_minutes?: number | null
+          reservation_seconds?: number
           timezone?: string
           updated_at?: string
+          weekday_attempts_per_day?: number
+          weekend_attempts_per_day?: number
           weekend_days?: number[]
           work_end?: string
           work_start?: string
@@ -11609,9 +11728,15 @@ export type Database = {
           call_outcome: string | null
           cart_value: number | null
           claim_count: number
+          contacted_agent_id: string | null
           converted_at: string | null
           created_at: string
+          customer_browse_started_at: string | null
           customer_contact_id: string | null
+          distribution_environment:
+            | Database["public"]["Enums"]["distribution_environment"]
+            | null
+          distribution_team_id: string | null
           do_not_contact: boolean
           do_not_contact_at: string | null
           do_not_contact_by: string | null
@@ -11626,6 +11751,7 @@ export type Database = {
           fake_marked_by: string | null
           fake_reason: string | null
           fake_reason_note: string | null
+          first_contact_at: string | null
           first_name: string | null
           follow_up_status: string | null
           gclid: string | null
@@ -11642,6 +11768,7 @@ export type Database = {
           last_contacted_at: string | null
           last_name: string | null
           last_resubmitted_at: string | null
+          lead_entry_type: Database["public"]["Enums"]["lead_entry_type"] | null
           lead_source: Database["public"]["Enums"]["lead_source"] | null
           locked_at: string | null
           locked_by: string | null
@@ -11656,9 +11783,15 @@ export type Database = {
           no_callback_until: string | null
           notes: string | null
           original_assigned_to: string | null
+          original_distribution_method:
+            | Database["public"]["Enums"]["distribution_method"]
+            | null
+          original_lead_datetime: string | null
           original_source: string | null
           orr_attempt_count: number
+          orr_contact_day: number
           orr_dormant_at: string | null
+          orr_eligible_at: string | null
           orr_first_call_deadline: string | null
           orr_first_call_kind: string | null
           orr_first_call_missed_at: string | null
@@ -11676,6 +11809,9 @@ export type Database = {
           orr_pool_since: string | null
           orr_pool_state: string | null
           orr_reassign_count: number
+          orr_reservation_expires_at: string | null
+          orr_reserved_agent_id: string | null
+          orr_reserved_at: string | null
           orr_retry_deadline: string | null
           orr_retry_missed_at: string | null
           orr_retry_missed_by: string | null
@@ -11734,9 +11870,15 @@ export type Database = {
           call_outcome?: string | null
           cart_value?: number | null
           claim_count?: number
+          contacted_agent_id?: string | null
           converted_at?: string | null
           created_at?: string
+          customer_browse_started_at?: string | null
           customer_contact_id?: string | null
+          distribution_environment?:
+            | Database["public"]["Enums"]["distribution_environment"]
+            | null
+          distribution_team_id?: string | null
           do_not_contact?: boolean
           do_not_contact_at?: string | null
           do_not_contact_by?: string | null
@@ -11751,6 +11893,7 @@ export type Database = {
           fake_marked_by?: string | null
           fake_reason?: string | null
           fake_reason_note?: string | null
+          first_contact_at?: string | null
           first_name?: string | null
           follow_up_status?: string | null
           gclid?: string | null
@@ -11767,6 +11910,9 @@ export type Database = {
           last_contacted_at?: string | null
           last_name?: string | null
           last_resubmitted_at?: string | null
+          lead_entry_type?:
+            | Database["public"]["Enums"]["lead_entry_type"]
+            | null
           lead_source?: Database["public"]["Enums"]["lead_source"] | null
           locked_at?: string | null
           locked_by?: string | null
@@ -11781,9 +11927,15 @@ export type Database = {
           no_callback_until?: string | null
           notes?: string | null
           original_assigned_to?: string | null
+          original_distribution_method?:
+            | Database["public"]["Enums"]["distribution_method"]
+            | null
+          original_lead_datetime?: string | null
           original_source?: string | null
           orr_attempt_count?: number
+          orr_contact_day?: number
           orr_dormant_at?: string | null
+          orr_eligible_at?: string | null
           orr_first_call_deadline?: string | null
           orr_first_call_kind?: string | null
           orr_first_call_missed_at?: string | null
@@ -11801,6 +11953,9 @@ export type Database = {
           orr_pool_since?: string | null
           orr_pool_state?: string | null
           orr_reassign_count?: number
+          orr_reservation_expires_at?: string | null
+          orr_reserved_agent_id?: string | null
+          orr_reserved_at?: string | null
           orr_retry_deadline?: string | null
           orr_retry_missed_at?: string | null
           orr_retry_missed_by?: string | null
@@ -11859,9 +12014,15 @@ export type Database = {
           call_outcome?: string | null
           cart_value?: number | null
           claim_count?: number
+          contacted_agent_id?: string | null
           converted_at?: string | null
           created_at?: string
+          customer_browse_started_at?: string | null
           customer_contact_id?: string | null
+          distribution_environment?:
+            | Database["public"]["Enums"]["distribution_environment"]
+            | null
+          distribution_team_id?: string | null
           do_not_contact?: boolean
           do_not_contact_at?: string | null
           do_not_contact_by?: string | null
@@ -11876,6 +12037,7 @@ export type Database = {
           fake_marked_by?: string | null
           fake_reason?: string | null
           fake_reason_note?: string | null
+          first_contact_at?: string | null
           first_name?: string | null
           follow_up_status?: string | null
           gclid?: string | null
@@ -11892,6 +12054,9 @@ export type Database = {
           last_contacted_at?: string | null
           last_name?: string | null
           last_resubmitted_at?: string | null
+          lead_entry_type?:
+            | Database["public"]["Enums"]["lead_entry_type"]
+            | null
           lead_source?: Database["public"]["Enums"]["lead_source"] | null
           locked_at?: string | null
           locked_by?: string | null
@@ -11906,9 +12071,15 @@ export type Database = {
           no_callback_until?: string | null
           notes?: string | null
           original_assigned_to?: string | null
+          original_distribution_method?:
+            | Database["public"]["Enums"]["distribution_method"]
+            | null
+          original_lead_datetime?: string | null
           original_source?: string | null
           orr_attempt_count?: number
+          orr_contact_day?: number
           orr_dormant_at?: string | null
+          orr_eligible_at?: string | null
           orr_first_call_deadline?: string | null
           orr_first_call_kind?: string | null
           orr_first_call_missed_at?: string | null
@@ -11926,6 +12097,9 @@ export type Database = {
           orr_pool_since?: string | null
           orr_pool_state?: string | null
           orr_reassign_count?: number
+          orr_reservation_expires_at?: string | null
+          orr_reserved_agent_id?: string | null
+          orr_reserved_at?: string | null
           orr_retry_deadline?: string | null
           orr_retry_missed_at?: string | null
           orr_retry_missed_by?: string | null
@@ -11994,6 +12168,13 @@ export type Database = {
             columns: ["customer_contact_id"]
             isOneToOne: false
             referencedRelation: "lead_customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_leads_distribution_team_id_fkey"
+            columns: ["distribution_team_id"]
+            isOneToOne: false
+            referencedRelation: "lead_teams"
             referencedColumns: ["id"]
           },
         ]
@@ -16065,6 +16246,8 @@ export type Database = {
         | "in_progress"
         | "resolved"
         | "closed"
+      distribution_environment: "SANDBOX" | "LIVE"
+      distribution_method: "ROUND_ROBIN" | "OPEN_ROUND_ROBIN"
       finance_application_status:
         | "draft"
         | "submitted"
@@ -16079,6 +16262,7 @@ export type Database = {
         | "declined"
         | "withdrawn"
       interaction_type: "call" | "email" | "chat" | "in_person"
+      lead_entry_type: "LIVE" | "OVERNIGHT"
       lead_priority: "low" | "medium" | "high" | "urgent"
       lead_source:
         | "website"
@@ -16124,6 +16308,11 @@ export type Database = {
         | "payment"
         | "general"
         | "complaint"
+      orr_availability_state:
+        | "READY"
+        | "WORKING_ORR"
+        | "FOCUS_CURRENT_LEADS"
+        | "UNAVAILABLE"
       risk_level: "low" | "medium" | "high"
       shark_tank_status:
         | "queued"
@@ -16306,6 +16495,8 @@ export const Constants = {
         "resolved",
         "closed",
       ],
+      distribution_environment: ["SANDBOX", "LIVE"],
+      distribution_method: ["ROUND_ROBIN", "OPEN_ROUND_ROBIN"],
       finance_application_status: [
         "draft",
         "submitted",
@@ -16321,6 +16512,7 @@ export const Constants = {
         "withdrawn",
       ],
       interaction_type: ["call", "email", "chat", "in_person"],
+      lead_entry_type: ["LIVE", "OVERNIGHT"],
       lead_priority: ["low", "medium", "high", "urgent"],
       lead_source: [
         "website",
@@ -16368,6 +16560,12 @@ export const Constants = {
         "payment",
         "general",
         "complaint",
+      ],
+      orr_availability_state: [
+        "READY",
+        "WORKING_ORR",
+        "FOCUS_CURRENT_LEADS",
+        "UNAVAILABLE",
       ],
       risk_level: ["low", "medium", "high"],
       shark_tank_status: [
