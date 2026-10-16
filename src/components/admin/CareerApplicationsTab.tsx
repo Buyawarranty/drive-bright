@@ -40,7 +40,7 @@ const STATUS_META: Record<Status, { label: string; className: string }> = {
   interview: { label: 'Interview', className: 'border-blue-500 text-blue-700 bg-blue-50' },
   hired: { label: 'Hired', className: 'border-violet-500 text-violet-700 bg-violet-50' },
   rejected: { label: 'Rejected', className: 'border-rose-500 text-rose-700 bg-rose-50' },
-  on_hold: { label: 'On hold', className: 'border-slate-400 text-slate-700 bg-slate-50' },
+  on_hold: { label: 'No action', className: 'border-slate-400 text-slate-700 bg-slate-50' },
 };
 
 const FILTERS: { id: 'live' | 'all' | Status; label: string }[] = [
