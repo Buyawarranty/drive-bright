@@ -1,4 +1,5 @@
 import GrowthAgentTab from '@/components/admin/growth/GrowthAgentTab';
+import LeadCountTab from '@/components/admin/LeadCountTab';
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -1119,6 +1120,13 @@ const AdminDashboard = () => {
 
 
 
+      case 'lead-count': {
+        const r = effectiveUserRole || '';
+        const ok = !['sales', 'sales_lead', 'sales_manager'].includes(r)
+          && (r === 'admin' || r === 'super_admin' || (effectiveUserPermissions as any)?.['tab_lead-count'] === true);
+        if (!ok) return <AccessDenied label="Lead count" />;
+        return <LeadCountTab />;
+      }
       case 'growth-agent':
         if (effectiveUserRole !== 'super_admin' && (effectiveUserPermissions as any)?.['tab_growth-agent'] !== true) return <AccessDenied label="Agentic Assistant" />;
         return <GrowthAgentTab />;
