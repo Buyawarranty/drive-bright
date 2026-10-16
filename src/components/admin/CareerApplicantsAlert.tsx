@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Briefcase, FileText, Star, ThumbsDown, X } from 'lucide-react';
+import { Briefcase, FileText, PauseCircle, Star, ThumbsDown, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
@@ -48,6 +48,15 @@ export const CareerApplicantsAlert: React.FC<{ onOpen?: () => void }> = ({ onOpe
     await rejectApplicants([id], 'reject');
     setBusy(null); load();
   };
+  // "No action" — parks the application as on_hold: no rejection email, the
+  // automatic 3-working-day sweep skips it, and it stays in Careers to decide later.
+  const noAction = async (id: string) => {
+    setBusy(id);
+    await supabase.from('career_applications')
+      .update({ status: 'on_hold', decided_at: new Date().toISOString() }).eq('id', id);
+    setBusy(null); load();
+    toast('Kept with no action', { description: 'No email sent — decide whenever suits you.', duration: 2500 });
+  };
 
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.careerApplicants}>
@@ -76,6 +85,10 @@ export const CareerApplicantsAlert: React.FC<{ onOpen?: () => void }> = ({ onOpe
               </Button>
               <Button size="sm" variant="outline" className="h-7 text-xs" disabled={busy === a.id} onClick={() => decline(a.id)}>
                 <ThumbsDown className="h-3 w-3 mr-1" />Decline &amp; email
+              </Button>
+              <Button size="sm" variant="outline" className="h-7 text-xs" disabled={busy === a.id} onClick={() => noAction(a.id)}
+                title="Keep as-is — no rejection email, no automatic decline">
+                <PauseCircle className="h-3 w-3 mr-1" />No action
               </Button>
             </div>
           </div>
