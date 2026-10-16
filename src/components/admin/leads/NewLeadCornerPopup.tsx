@@ -105,6 +105,13 @@ const CopyBtn: React.FC<{ value: string; label: string }> = ({ value, label }) =
   );
 };
 
+const formatCountdown = (ms: number) => {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const m = Math.floor(total / 60).toString().padStart(2, '0');
+  const s = (total % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+};
+
 const Card: React.FC<{ lead: NewLeadAlertData; owner: string; onClose: () => void }> = ({ lead, owner, onClose }) => {
   const name = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || 'New lead';
   const phone = lead.phone ? toUkLocal(lead.phone) : '';
@@ -112,11 +119,39 @@ const Card: React.FC<{ lead: NewLeadAlertData; owner: string; onClose: () => voi
   const vehicle = [lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ');
   const copyAll = [name, phone, reg, vehicle].filter(Boolean).join('\n');
 
+  // Open Round Robin reservation — blue theme + live claim countdown so the
+  // agent sees their 2-minute window even on another tab or scrolled away.
+  const isOrr = !!lead.orr_first_call_deadline || lead.pool_status === 'offered';
+  const deadlineMs = lead.orr_first_call_deadline
+    ? new Date(lead.orr_first_call_deadline).getTime()
+    : lead.orr_offer_expires_at
+      ? new Date(lead.orr_offer_expires_at).getTime()
+      : 0;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!isOrr) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [isOrr]);
+  const remainingMs = deadlineMs ? deadlineMs - now : 0;
+  const orrExpired = isOrr && deadlineMs > 0 && remainingMs <= 0;
+
+  const cardTheme = isOrr
+    ? 'bg-blue-700 ring-blue-300'
+    : 'bg-violet-700 ring-violet-300';
+  const labelTheme = isOrr ? 'text-blue-200' : 'text-violet-200';
+  const subtleTheme = isOrr ? 'text-blue-100' : 'text-violet-100';
+  const phoneTheme = isOrr ? 'text-blue-800 hover:bg-blue-50' : 'text-violet-800 hover:bg-violet-50';
+
   return (
-    <div className="rounded-xl bg-violet-700 text-white shadow-2xl ring-2 ring-violet-300 p-3 animate-in slide-in-from-bottom-2">
+    <div className={`rounded-xl ${cardTheme} text-white shadow-2xl ring-2 p-3 animate-in slide-in-from-bottom-2`}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-[10px] font-extrabold uppercase tracking-wider text-violet-200"><span className="animate-pulse">🔔</span> Just come in — your lead</div>
+          <div className={`text-[10px] font-extrabold uppercase tracking-wider ${labelTheme}`}>
+            {isOrr
+              ? <><span className="animate-pulse">⚡</span> Reserved for you — Open Round Robin</>
+              : <><span className="animate-pulse">🔔</span> Just come in — your lead</>}
+          </div>
           <div className="text-base font-bold leading-tight truncate">{name}</div>
         </div>
         <button type="button" onClick={onClose} aria-label="Close new lead pop-up" className="p-1 rounded hover:bg-white/15 shrink-0">
@@ -124,10 +159,16 @@ const Card: React.FC<{ lead: NewLeadAlertData; owner: string; onClose: () => voi
         </button>
       </div>
 
+      {isOrr && deadlineMs > 0 && (
+        <div className={`mt-1.5 rounded-md px-2.5 py-1.5 text-center text-sm font-extrabold tabular-nums ${orrExpired ? 'bg-red-500' : 'bg-white/20'}`}>
+          {orrExpired ? 'Reservation expired — it may have moved on' : `${formatCountdown(remainingMs)} left to call`}
+        </div>
+      )}
+
       <div className="mt-2 space-y-1.5 text-sm">
         {phone && (
           <div className="flex items-center gap-1.5">
-            <a href={`tel:${phone}`} className="flex-1 inline-flex items-center gap-1.5 rounded-md bg-white text-violet-800 font-bold px-2.5 py-1.5 tabular-nums hover:bg-violet-50 underline-offset-2 hover:underline min-w-0">
+            <a href={`tel:${phone}`} className={`flex-1 inline-flex items-center gap-1.5 rounded-md bg-white ${phoneTheme} font-bold px-2.5 py-1.5 tabular-nums underline-offset-2 hover:underline min-w-0`}>
               <Phone className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{phone}</span>
             </a>
             <CopyBtn value={phone} label="Phone number" />
@@ -153,9 +194,9 @@ const Card: React.FC<{ lead: NewLeadAlertData; owner: string; onClose: () => voi
           </div>
         )}
         <div className="flex items-center justify-between gap-2 pt-0.5">
-          <span className="inline-flex items-center gap-1 text-xs text-violet-100 min-w-0">
+          <span className={`inline-flex items-center gap-1 text-xs ${subtleTheme} min-w-0`}>
             <UserCheck className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">Assigned to {owner || 'you'}</span>
+            <span className="truncate">{isOrr ? 'Held for you' : `Assigned to ${owner || 'you'}`}</span>
           </span>
           <button
             type="button"
@@ -168,8 +209,10 @@ const Card: React.FC<{ lead: NewLeadAlertData; owner: string; onClose: () => voi
             Copy all
           </button>
         </div>
-        <div className="text-center text-[11px] font-semibold text-violet-100 pt-0.5 border-t border-white/10 mt-1.5">
-          <span className="animate-pulse">🚗</span> This one's yours — don't let it wait
+        <div className={`text-center text-[11px] font-semibold ${subtleTheme} pt-0.5 border-t border-white/10 mt-1.5`}>
+          {isOrr
+            ? <><span className="animate-pulse">⚡</span> Call now to make it yours</>
+            : <><span className="animate-pulse">🚗</span> This one's yours — don't let it wait</>}
         </div>
       </div>
     </div>

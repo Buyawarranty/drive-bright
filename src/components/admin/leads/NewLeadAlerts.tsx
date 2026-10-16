@@ -264,8 +264,11 @@ export const NewLeadAlerts: React.FC = () => {
       )}
     </div>
     </AlertRailSlot>
-    {/* Standard round robin leads only — Open Round Robin leads never get the purple card. */}
-    <NewLeadCornerPopup leads={queue.filter((l) => l.pool_status !== 'offered' && !isOrrLead(l))} onDismiss={dismissLead} />
+    {/* Sticky bottom-left pop-up for every new lead, including Open Round Robin
+        reservations (authorised by the owner, 16 Oct 2026) — ORR cards show a
+        blue theme with the live claim countdown so an agent on another tab or
+        scrolled away still sees their 2-minute window. */}
+    <NewLeadCornerPopup leads={queue} onDismiss={dismissLead} />
     </>
   );
 };
