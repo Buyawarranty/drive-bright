@@ -2,7 +2,7 @@ import React from 'react';
 import { Phone, Mail, MessageCircle } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import icoLogo from '@/assets/ico-registered.png.asset.json';
+import icoWordmark from '@/assets/ico-wordmark.png.asset.json';
 import SocialLinks from '@/components/SocialLinks';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 
@@ -163,7 +163,8 @@ const WebsiteFooter = () => {
               </p>
               <p className="text-sm text-muted-foreground mt-2">VAT registration number 519 1099 85.</p>
               <div className="mt-5">
-                <img src={icoLogo.url} alt="Information Commissioner's Office" className="h-9 w-auto max-w-full object-contain" loading="lazy" />
+                <img src={icoWordmark.url} alt="Information Commissioner's Office" className="h-8 w-auto max-w-full object-contain" loading="lazy" />
+                <p className="text-xs text-muted-foreground mt-2">Information Commissioner's Office</p>
               </div>
             </section>
             <section aria-labelledby="footer-finance-heading" className="min-w-0">
