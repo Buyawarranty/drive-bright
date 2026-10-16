@@ -2,6 +2,7 @@ import React from 'react';
 import { Phone, Mail, MessageCircle } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import icoLogo from '@/assets/ico-registered.png.asset.json';
 import SocialLinks from '@/components/SocialLinks';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 
