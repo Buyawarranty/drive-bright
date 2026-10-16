@@ -75,7 +75,7 @@ const Card: React.FC<{ lead: NewLeadAlertData; owner: string; onClose: () => voi
     <div className="rounded-xl bg-violet-700 text-white shadow-2xl ring-2 ring-violet-300 p-3 animate-in slide-in-from-bottom-2">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-[10px] font-extrabold uppercase tracking-wider text-violet-200">Just come in — your lead</div>
+          <div className="text-[10px] font-extrabold uppercase tracking-wider text-violet-200"><span className="animate-pulse">🔔</span> Just come in — your lead</div>
           <div className="text-base font-bold leading-tight truncate">{name}</div>
         </div>
         <button type="button" onClick={onClose} aria-label="Close new lead pop-up" className="p-1 rounded hover:bg-white/15 shrink-0">
@@ -126,6 +126,9 @@ const Card: React.FC<{ lead: NewLeadAlertData; owner: string; onClose: () => voi
           >
             Copy all
           </button>
+        </div>
+        <div className="text-center text-[11px] font-semibold text-violet-100 pt-0.5 border-t border-white/10 mt-1.5">
+          <span className="animate-pulse">🚗</span> This one's yours — don't let it wait
         </div>
       </div>
     </div>
