@@ -252,7 +252,7 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   if (LEAD_ALLOCATION_BLOCKED_ROLES.has(role || '') && LEAD_ALLOCATION_TABS.has(tab)) return false;
   // Analytics is hard-blocked for sales roles ahead of the explicit-grant check
   // below, so a per-user tab_analytics tick can never reopen it for them.
-  if (ANALYTICS_BLOCKED_ROLES.has(role || '') && ANALYTICS_TABS.has(tab)) return false;
+  if (isAnalyticsBlocked(tab, role)) return false;
   if (tab === 'overview' && role && LIVE_CALLS_ALWAYS_ALLOWED_ROLES.has(role)) return true;
   // Permissions win over role hardcoding: any user (any role, now or in future)
   // granted tab_<id> = true in User Permissions gets the tab. This is what makes
@@ -1054,8 +1054,10 @@ const AdminDashboard = () => {
           </Suspense>
         );
       case 'page-analytics':
+        if (isAnalyticsBlocked('page-analytics', effectiveUserRole)) return <AccessDenied label="Page Analytics" />;
         return <PageAnalyticsTab />;
       case 'social-analytics':
+        if (isAnalyticsBlocked('social-analytics', effectiveUserRole)) return <AccessDenied label="Social Analytics" />;
         return <SocialAnalyticsTab />;
       case 'google-ads':
         if (!['admin', 'super_admin', 'sales_manager', 'performance_manager', 'accounts_manager', 'lead_gen'].includes(effectiveUserRole) && effectiveUserPermissions?.['tab_google-ads'] !== true) {
