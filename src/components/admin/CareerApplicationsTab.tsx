@@ -209,7 +209,8 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
             <strong>How this works.</strong> Applicants get an instant acknowledgement when they apply. If you do
             nothing, the rejection letter sends automatically on working day 5 (Mon–Fri, bank holidays skipped).
             Marking someone <strong>Shortlisted</strong>, <strong>Interview</strong>, <strong>Hired</strong> or
-            <strong> On hold</strong> stops their rejection permanently — that's how you tell us you want them.
+            <strong> No action</strong> stops their rejection permanently — No action keeps the application exactly
+            as it is with no email sent, so you can decide whenever suits you.
           </span>
         </CardContent>
       </Card>
@@ -358,7 +359,7 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
                       </Button>
                       <Button size="sm" variant="outline" className="h-8" disabled={busy === row.id}
                         onClick={() => setStatus(row, 'on_hold')}>
-                        <PauseCircle className="h-3.5 w-3.5 mr-1.5" />On hold
+                        <PauseCircle className="h-3.5 w-3.5 mr-1.5" />No action — keep as-is
                       </Button>
                       {row.status === 'new' && (
                         <Button
