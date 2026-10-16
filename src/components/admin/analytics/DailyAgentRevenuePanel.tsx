@@ -39,6 +39,17 @@ function matchesSource(customer: any, sourceFilter: string) {
   return true;
 }
 
+function websiteSourceLabel(c: any): string {
+  const s = (c.acquisition_source || '').toLowerCase();
+  const u = (c.utm_source || '').toLowerCase();
+  const p = (c.purchase_source || '').toLowerCase();
+  if (c.gclid || s.includes('google') || u.includes('google') || p === 'google_ads') return 'Google';
+  if (c.fbclid || /facebook|meta|instagram|social_ad/.test(s) || /facebook|meta|instagram/.test(u) || p === 'facebook_ads') return 'Meta (Facebook/Instagram)';
+  if (c.msclkid || s.includes('bing') || /bing|microsoft/.test(u)) return 'Bing';
+  if (c.ttclid || s.includes('tiktok') || u.includes('tiktok')) return 'TikTok';
+  return 'Organic / direct';
+}
+
 // Distinct, readable series colours for the stacked bars.
 const PALETTE = [
   '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444',
