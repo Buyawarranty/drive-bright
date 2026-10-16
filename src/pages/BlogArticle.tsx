@@ -329,7 +329,7 @@ const BlogArticle = () => {
           "url": heroImage,
           "width": 1600,
           "height": 900,
-          ...(['mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes', 'bmw-x5-vs-audi-q7'].includes(post.slug) ? {
+          ...(['mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes', 'bmw-x5-vs-audi-q7', 'bmw-x5-vs-mercedes-gle-maintenance-costs'].includes(post.slug) ? {
             "name": post.meta_tags?.featured_image_title,
             "description": post.meta_tags?.featured_image_description,
             "caption": post.meta_tags?.featured_image_caption,
@@ -622,7 +622,7 @@ const BlogArticle = () => {
 
           {/* Hero Image */}
           <figure className="px-6 md:px-16 -mt-4">
-            <div className={`relative ${['mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes','bmw-x5-vs-audi-q7'].includes(post.slug) ? 'aspect-[1376/768]' : 'aspect-[21/9]'} bg-muted rounded-xl overflow-hidden shadow-xl`}>
+            <div className={`relative ${['mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes','bmw-x5-vs-audi-q7','bmw-x5-vs-mercedes-gle-maintenance-costs'].includes(post.slug) ? 'aspect-[1376/768]' : 'aspect-[21/9]'} bg-muted rounded-xl overflow-hidden shadow-xl`}>
               <img
                 src={heroImage}
                 alt={post.meta_tags?.featured_image_alt || `${post.title}: UK car warranty guide illustration`}
