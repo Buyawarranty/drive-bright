@@ -314,6 +314,12 @@ export const defaultTabs: Tab[] = [
     description: 'View reports and analytics'
   },
   {
+    id: 'lead-count',
+    label: 'Lead count',
+    icon: BarChart3,
+    description: 'Confirmed daily lead numbers, fake/dead leads and sources'
+  },
+  {
     id: 'direct-sales',
     label: 'Direct sales',
     icon: LineChart,
@@ -788,6 +794,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     if (!(userRole === 'admin' || userRole === 'super_admin')) base = base.filter(t => t.id !== 'direct-sales');
     // Agentic Assistant is super admin only — never via per-user grants.
     if (userRole !== 'super_admin' && (userPermissions as any)?.['tab_growth-agent'] !== true) base = base.filter(t => t.id !== 'growth-agent');
+    // Lead count: admin/super_admin, or explicitly granted — never sales roles.
+    {
+      const r = userRole || '';
+      const ok = !['sales', 'sales_lead', 'sales_manager'].includes(r)
+        && (r === 'admin' || r === 'super_admin' || (userPermissions as any)?.['tab_lead-count'] === true);
+      if (!ok) base = base.filter(t => t.id !== 'lead-count');
+    }
     base = base.filter(t => !['growth-sales', 'growth-leads', 'growth-marketing', 'growth-branding'].includes(t.id));
     if (!workstreamFlags) return base;
     return base.filter(t => {

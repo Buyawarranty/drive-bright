@@ -89,6 +89,7 @@ const ADMIN_TABS = [
   { id: 'marketing-audience', label: 'Marketing Contacts', description: 'Unified mailing list for remarketing' },
   { id: 'emails', label: 'Email Hub', description: 'Unified email management' },
   { id: 'analytics', label: 'Analytics', description: 'View reports and analytics' },
+  { id: 'lead-count', label: 'Lead count', description: 'Confirmed daily lead numbers by source (never for sales or sales managers)' },
   { id: 'growth-agent', label: 'Agentic Assistant', description: 'AI assistant for marketing and sales ideas — also tick the parts below' },
   { id: 'growth-sales', label: 'Agentic Assistant: Sales insights', description: 'Lets the assistant use sales, revenue and top-seller figures' },
   { id: 'growth-leads', label: 'Agentic Assistant: Lead follow-up', description: 'Lets the assistant look at open leads and suggest who to call' },
