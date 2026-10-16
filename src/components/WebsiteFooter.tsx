@@ -170,7 +170,7 @@ const WebsiteFooter = () => {
             <section aria-labelledby="footer-finance-heading" className="min-w-0">
               <h3 id="footer-finance-heading" className="text-sm font-normal text-foreground mb-3">Finance and regulation</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Buy A Warranty Limited (FRN 1062024) is an appointed representative of Carfinanced Limited (FRN 1014460), which is authorised and regulated by the <span className="whitespace-nowrap">Financial Conduct Authority</span>, for credit broking activities.
+                Buy A Warranty Limited (FRN 1062024) is an appointed representative of Carfinanced Limited (FRN 1014460), which is authorised and regulated by the <span className="font-bold text-foreground whitespace-nowrap">Financial Conduct Authority</span>, for credit broking activities.
               </p>
               <p className="text-sm text-muted-foreground mt-3">Buy A Warranty Limited acts as a credit broker, not a lender.</p>
               <p className="text-sm text-muted-foreground leading-relaxed mt-3">
