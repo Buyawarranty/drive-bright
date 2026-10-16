@@ -2,6 +2,7 @@ import React from 'react';
 import { Phone, Mail, MessageCircle } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import icoWordmark from '@/assets/ico-wordmark.png';
 import SocialLinks from '@/components/SocialLinks';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 
@@ -161,6 +162,10 @@ const WebsiteFooter = () => {
                 Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England.
               </p>
               <p className="text-sm text-muted-foreground mt-2">VAT registration number 519 1099 85.</p>
+              <div className="mt-5">
+                <img src={icoWordmark} alt="Information Commissioner's Office" className="h-8 w-auto max-w-full object-contain" loading="lazy" />
+                <p className="text-xs text-muted-foreground mt-2">Information Commissioner's Office</p>
+              </div>
             </section>
             <section aria-labelledby="footer-finance-heading" className="min-w-0">
               <h3 id="footer-finance-heading" className="text-sm font-semibold text-foreground mb-3">Finance and regulation</h3>
