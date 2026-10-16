@@ -27,8 +27,15 @@ export const OrrGoLiveSwitch: React.FC<{
       return;
     }
     const teamNames = selectedTeamIds.map(id => teamNamesById[id] || 'team').join(', ');
-    if (next && !window.confirm(`Turn Open Round Robin LIVE for: ${teamNames}? Real leads for those teams will start routing through it straight away.`)) return;
-    if (!next && !window.confirm('Switch Open Round Robin back to practice mode? Leads will go back to the normal New Leads rotation.')) return;
+    if (next && !window.confirm(
+      `Activate Open Round Robin for live customer leads for ${teamNames}?\n\n` +
+      `Team: ${teamNames}\n` +
+      `Current production distribution: Round Robin\n` +
+      `New distribution: Open Round Robin\n` +
+      `Effective for: New leads only\n` +
+      `Existing active Round Robin leads: Continue normally`,
+    )) return;
+    if (!next && !window.confirm('Switch Open Round Robin back to Sandbox? New leads will go back to the normal Round Robin.')) return;
 
     setSaving(true);
     try {
