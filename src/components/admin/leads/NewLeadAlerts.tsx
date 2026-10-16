@@ -264,7 +264,8 @@ export const NewLeadAlerts: React.FC = () => {
       )}
     </div>
     </AlertRailSlot>
-    <NewLeadCornerPopup leads={queue.filter((l) => l.pool_status !== 'offered')} onDismiss={dismissLead} />
+    {/* Standard round robin leads only — Open Round Robin leads never get the purple card. */}
+    <NewLeadCornerPopup leads={queue.filter((l) => l.pool_status !== 'offered' && !isOrrLead(l))} onDismiss={dismissLead} />
     </>
   );
 };
