@@ -803,6 +803,8 @@ export const CustomersTab = ({
     let statusLabel = 'sales';
     if (filterBySource === 'cancelled_refunded') {
       statusLabel = 'cancellations/refunds';
+    } else if (filterBySource === 'all_direct') {
+      statusLabel = 'direct sales (all sources)';
     } else if (filterBySource === 'website') {
       statusLabel = 'website sales';
     } else if (filterBySource === 'website_google') {
@@ -856,6 +858,7 @@ export const CustomersTab = ({
     const empty = () => ({ count: 0, revenue: 0 });
     const buckets: Record<string, { count: number; revenue: number }> = {
       all_view: empty(),
+      all_direct: empty(),
       website: empty(),
       website_google: empty(),
       google_all: empty(),
@@ -942,6 +945,8 @@ export const CustomersTab = ({
         (channel === 'google_ads' || channel === 'facebook_ads' || channel === 'bing_ads' || channel === 'tiktok_ads' || channel === 'website');
 
       if (isWebsite || channelOnly) {
+        buckets.all_direct.count += 1;
+        buckets.all_direct.revenue += amount;
         if (isWebsite) {
           buckets.website.count += 1;
           buckets.website.revenue += amount;
@@ -1640,6 +1645,15 @@ export const CustomersTab = ({
         } else if (filterBySource === 'agent_sales') {
           // Combined: BAW-S- (staff purchase) + ADM- (quote & orders)
           return warrantyNum.startsWith('BAW-S-') || warrantyNum.startsWith('ADM');
+        } else if (filterBySource === 'all_direct') {
+          // All direct sales: the customer bought themselves on the website,
+          // regardless of source (Google, Meta, TikTok, Bing, organic...).
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+          if (isWebsite) return true;
+          const isStaffOrAdm = warrantyNum.startsWith('BAW-S-') || warrantyNum.startsWith('ADM');
+          if (isStaffOrAdm) return false;
+          const channel = getCustomerAcquisitionChannel(customer);
+          return ['google_ads', 'facebook_ads', 'bing_ads', 'tiktok_ads', 'website'].includes(channel);
         } else if (filterBySource === 'cancelled_refunded') {
           const status = customer.status?.toLowerCase() || '';
           return status === 'cancelled' || status === 'refunded';
@@ -4908,7 +4922,7 @@ Buyawarranty.co.uk`,
             }
             if (canSeeSourceColumn && filterBySource !== 'all_view') {
               const srcLabels: Record<string, string> = {
-                website: 'Website (BAW)', website_google: 'Google web',
+                all_direct: 'All direct', website: 'Website (BAW)', website_google: 'Google web',
                 google_all: 'Google all', google_leads_sales: 'Google leads',
                 website_facebook: 'Website F',
                 website_bing: 'Website B (Bing)',
@@ -5061,6 +5075,7 @@ Buyawarranty.co.uk`,
                       <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Source" /></SelectTrigger>
                       <SelectContent className="max-w-[420px]">
                         <SelectItem value="all_view"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-gray-400" /><span>All Sources</span></div></SelectItem>
+                        <SelectItem value="all_direct"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-indigo-500" /><span>All direct (every source)</span></div></SelectItem>
                         <SelectItem value="website"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /><span>Website (BAW)</span></div></SelectItem>
                         <SelectItem value="website_google"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span>Google web (pure)</span></div></SelectItem>
                         <SelectItem value="google_all"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-600" /><span>Google all (web + leads)</span></div></SelectItem>
