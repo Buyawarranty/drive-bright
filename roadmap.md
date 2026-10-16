@@ -1,4 +1,4 @@
 # Roadmap
 
-- [ ] ORR Live + Overnight brief: Phase 1 migration done; finish sales_leads backfill (~6.1k rows left), then Phases 2-10 per .lovable/plan.md. ORR stays sandbox-only.
-- [ ] Customer Management: add "All direct" sales filter (any source: Meta/TikTok/Organic/Google etc.) for customers who bought themselves from step 4 to thank-you page; backdate so historic direct sales are included.
+- [x] Customer Management: "All direct (every source)" filter added to the Source dropdown — counts every customer who bought on the website themselves (Google/Meta/TikTok/Bing/organic), works on historic data. Build OK, preview-only.
+- [ ] ORR Live + Overnight brief: Phase 1 migration + backfill done (23,618 leads stamped ROUND_ROBIN/LIVE). Next: Phases 2-10 per .lovable/plan.md (sandbox routing, allocator, retry engine, staffing, agent/manager UI, test controls, go-live). ORR stays sandbox-only.
