@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { lazyWithRetry, forceFreshReload } from '@/utils/lazyWithRetry';
 import { SEOHead } from '@/components/SEOHead';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { isAnalyticsBlocked } from '@/lib/tabAccess';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -198,13 +199,6 @@ const MANAGEMENT_ONLY_TABS = new Set<string>(['claims']);
 const LIVE_CALLS_TAB_IDS = new Set(['overview', 'call-stats', 'live-calls-data']);
 const LEAD_ALLOCATION_TABS = new Set(['lead-teams', 'open-round-robin', 'orr-test-lab', 'orr-sandbox']);
 const LEAD_ALLOCATION_BLOCKED_ROLES = new Set(['sales', 'sales_lead']);
-
-// Analytics belongs to management and accounts. Sales agents, sales leads and
-// sales managers never get it — not through a role list, an explicit tab_ grant
-// or a saved shortcut, so a stray per-user tick can't reopen the whole CRM's
-// revenue picture for them.
-const ANALYTICS_BLOCKED_ROLES = new Set(['sales', 'sales_lead', 'sales_manager']);
-const ANALYTICS_TABS = new Set(['analytics']);
 
 // Payments pending belongs to accounts: the accounts team plus management always
 // see it, everyone else only via an explicit tab_payments-pending grant.
