@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Briefcase, Star, ThumbsDown, X } from 'lucide-react';
+import { Briefcase, FileText, Star, ThumbsDown, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
@@ -18,7 +19,7 @@ export const CareerApplicantsAlert: React.FC<{ onOpen?: () => void }> = ({ onOpe
   const load = useCallback(async () => {
     const { data } = await supabase
       .from('career_applications')
-      .select('id, full_name, role_applied, applied_at, rejection_due_at')
+      .select('id, full_name, role_applied, applied_at, rejection_due_at, cv_storage_path')
       .eq('status', 'new')
       .order('applied_at', { ascending: false })
       .limit(5);
@@ -35,6 +36,12 @@ export const CareerApplicantsAlert: React.FC<{ onOpen?: () => void }> = ({ onOpe
     await supabase.from('career_applications')
       .update({ status: 'shortlisted', decided_at: new Date().toISOString() }).eq('id', id);
     setBusy(null); load();
+  };
+  const viewCv = async (path: string) => {
+    const w = window.open('', '_blank');
+    const { data, error } = await supabase.storage.from('career-cvs').createSignedUrl(path, 300);
+    if (error || !data?.signedUrl) { w?.close(); toast.error('Could not open the CV'); return; }
+    if (w) w.location.href = data.signedUrl; else window.open(data.signedUrl, '_blank');
   };
   const decline = async (id: string) => {
     setBusy(id);
@@ -59,6 +66,11 @@ export const CareerApplicantsAlert: React.FC<{ onOpen?: () => void }> = ({ onOpe
                 className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
             </div>
             <div className="flex gap-1.5 mt-1.5">
+              {a.cv_storage_path && (
+                <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => viewCv(a.cv_storage_path)}>
+                  <FileText className="h-3 w-3 mr-1" />View CV
+                </Button>
+              )}
               <Button size="sm" variant="outline" className="h-7 text-xs" disabled={busy === a.id} onClick={() => shortlist(a.id)}>
                 <Star className="h-3 w-3 mr-1" />Shortlist
               </Button>
