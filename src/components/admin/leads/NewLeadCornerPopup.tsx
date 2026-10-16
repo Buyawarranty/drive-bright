@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Phone, Copy, Check, MessageCircle, UserCheck, Car } from 'lucide-react';
+import { X, VolumeX, Phone, Copy, Check, MessageCircle, UserCheck, Car } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import type { NewLeadAlertData } from '@/hooks/useNewLeadAlert';
@@ -20,6 +20,47 @@ const toWhatsApp = (p: string) => {
   if (d.startsWith('44')) return d;
   if (d.startsWith('0')) return '44' + d.slice(1);
   return d;
+};
+
+/**
+ * Five short beeps when a new round robin lead lands, then silence. Agents can
+ * stop it early with the Silence button. Deliberately separate from the
+ * session alert-sound budget at the user's request (Oct 2026).
+ */
+const BEEP_COUNT = 5;
+let beepCtx: AudioContext | null = null;
+let beepTimers: number[] = [];
+const stopBeeps = () => {
+  beepTimers.forEach((t) => clearTimeout(t));
+  beepTimers = [];
+  if (beepCtx && beepCtx.state !== 'closed') void beepCtx.close().catch(() => undefined);
+  beepCtx = null;
+};
+const playFiveBeeps = () => {
+  stopBeeps();
+  try {
+    const Ctor = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return;
+    const ac = new Ctor();
+    beepCtx = ac;
+    for (let i = 0; i < BEEP_COUNT; i += 1) {
+      beepTimers.push(window.setTimeout(() => {
+        if (beepCtx !== ac || ac.state === 'closed') return;
+        if (ac.state === 'suspended') void ac.resume();
+        const t = ac.currentTime;
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, t);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.18, t + 0.02);
+        gain.gain.linearRampToValueAtTime(0, t + 0.25);
+        osc.connect(gain); gain.connect(ac.destination);
+        osc.start(t); osc.stop(t + 0.26);
+      }, i * 1000));
+    }
+    beepTimers.push(window.setTimeout(() => { if (beepCtx === ac) stopBeeps(); }, BEEP_COUNT * 1000 + 300));
+  } catch { /* ignore */ }
 };
 
 const useMyName = () => {
@@ -137,11 +178,35 @@ const Card: React.FC<{ lead: NewLeadAlertData; owner: string; onClose: () => voi
 
 export const NewLeadCornerPopup: React.FC<{ leads: NewLeadAlertData[]; onDismiss: (id: string) => void }> = ({ leads, onDismiss }) => {
   const owner = useMyName();
+  const seenRef = useRef<Set<string>>(new Set());
+  const [beeping, setBeeping] = useState(false);
+  const idsKey = leads.map((l) => l.id).join(',');
+  useEffect(() => {
+    const fresh = leads.some((l) => !seenRef.current.has(l.id));
+    leads.forEach((l) => seenRef.current.add(l.id));
+    if (!fresh) return;
+    playFiveBeeps();
+    setBeeping(true);
+    const t = setTimeout(() => setBeeping(false), BEEP_COUNT * 1000 + 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey]);
+  useEffect(() => { if (leads.length === 0) { stopBeeps(); setBeeping(false); } }, [leads.length]);
+  useEffect(() => () => stopBeeps(), []);
   if (leads.length === 0 || typeof document === 'undefined') return null;
   const shown = leads.slice(0, 3);
   const more = leads.length - shown.length;
   return createPortal(
     <div className="fixed bottom-3 left-3 lg:left-[340px] z-[130] w-[300px] max-w-[calc(100vw-1.5rem)] flex flex-col gap-2">
+      {beeping && (
+        <button
+          type="button"
+          onClick={() => { stopBeeps(); setBeeping(false); }}
+          className="self-start inline-flex items-center gap-1.5 rounded-full bg-violet-900 text-white text-xs font-bold px-3 py-1.5 shadow ring-2 ring-violet-300 hover:bg-violet-800"
+        >
+          <VolumeX className="h-3.5 w-3.5" /> Silence
+        </button>
+      )}
       {more > 0 && (
         <div className="self-start rounded-full bg-violet-900 text-white text-xs font-semibold px-3 py-1 shadow">+{more} more new lead{more === 1 ? '' : 's'}</div>
       )}
