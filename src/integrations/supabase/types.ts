@@ -14889,6 +14889,7 @@ export type Database = {
       can_manage_lead_routing: { Args: { _user_id: string }; Returns: boolean }
       can_use_growth_agent: { Args: { _user_id: string }; Returns: boolean }
       can_view_chatbot_data: { Args: { _user_id: string }; Returns: boolean }
+      can_view_lead_count: { Args: { _uid: string }; Returns: boolean }
       can_view_staff_hub_doc: {
         Args: { _allowed_roles: string[]; _allowed_team_ids: string[] }
         Returns: boolean
@@ -14950,6 +14951,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      compute_daily_lead_counts: {
+        Args: { p_date: string; p_tz?: string }
+        Returns: Json
       }
       count_recontact_leads_available: {
         Args: never
@@ -15151,6 +15156,14 @@ export type Database = {
           last_at: string
           lead_id: string
           source: string
+        }[]
+      }
+      get_lead_count_report: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          counts: Json
+          day: string
+          is_locked: boolean
         }[]
       }
       get_lead_quick_note_counts: {
