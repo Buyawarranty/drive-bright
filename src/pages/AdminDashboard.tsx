@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { lazyWithRetry, forceFreshReload } from '@/utils/lazyWithRetry';
 import { SEOHead } from '@/components/SEOHead';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { isAnalyticsBlocked } from '@/lib/tabAccess';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -249,6 +250,9 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   // Lead Allocation is management-only: sales and sales_lead can never see or open
   // it, not even via an explicit tab_ grant or a saved shortcut.
   if (LEAD_ALLOCATION_BLOCKED_ROLES.has(role || '') && LEAD_ALLOCATION_TABS.has(tab)) return false;
+  // Analytics is hard-blocked for sales roles ahead of the explicit-grant check
+  // below, so a per-user tab_analytics tick can never reopen it for them.
+  if (isAnalyticsBlocked(tab, role)) return false;
   if (tab === 'overview' && role && LIVE_CALLS_ALWAYS_ALLOWED_ROLES.has(role)) return true;
   // Permissions win over role hardcoding: any user (any role, now or in future)
   // granted tab_<id> = true in User Permissions gets the tab. This is what makes
@@ -1050,8 +1054,10 @@ const AdminDashboard = () => {
           </Suspense>
         );
       case 'page-analytics':
+        if (isAnalyticsBlocked('page-analytics', effectiveUserRole)) return <AccessDenied label="Page Analytics" />;
         return <PageAnalyticsTab />;
       case 'social-analytics':
+        if (isAnalyticsBlocked('social-analytics', effectiveUserRole)) return <AccessDenied label="Social Analytics" />;
         return <SocialAnalyticsTab />;
       case 'google-ads':
         if (!['admin', 'super_admin', 'sales_manager', 'performance_manager', 'accounts_manager', 'lead_gen'].includes(effectiveUserRole) && effectiveUserPermissions?.['tab_google-ads'] !== true) {
