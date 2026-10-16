@@ -10,6 +10,7 @@ import { DateRangeFilter } from '../DateRangeFilter';
 import { DateRange } from 'react-day-picker';
 import { format, subDays, differenceInCalendarDays, eachDayOfInterval, startOfDay } from 'date-fns';
 import { toast } from 'sonner';
+import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const MAX_DAYS = 31;
 
@@ -114,7 +115,7 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
     return full || u.email || 'Unknown';
   };
 
-  const { data, agents, rows, totals } = useMemo(() => {
+  const { data, agents, rows, totals, websiteSources } = useMemo(() => {
     const resolveSaleCredit = buildSaleCreditResolver(salesAgentIds);
     const from = startOfDay(dateRange?.from || subDays(new Date(), 13));
     const to = startOfDay(dateRange?.to || dateRange?.from || new Date());
@@ -129,6 +130,7 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
     const grid = new Map<string, Map<string, { revenue: number; deals: number }>>();
     days.forEach(d => grid.set(d.key, new Map()));
     const agentTotals = new Map<string, { revenue: number; deals: number }>();
+    const webSources = new Map<string, { revenue: number; deals: number }>();
 
     customers.forEach(c => {
       if (isRevenueLost(c.status)) return;
@@ -150,6 +152,12 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
       t.revenue += amount;
       t.deals += 1;
       agentTotals.set(agentId, t);
+      if (agentId === 'website') {
+        const lbl = websiteSourceLabel(c);
+        const w = webSources.get(lbl) || { revenue: 0, deals: 0 };
+        w.revenue += amount; w.deals += 1;
+        webSources.set(lbl, w);
+      }
     });
 
     const agentList = Array.from(agentTotals.entries())
@@ -195,6 +203,7 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
       data: chart,
       agents: agentList,
       rows: tableRows,
+      websiteSources: Array.from(webSources.entries()).sort((a, b) => b[1].revenue - a[1].revenue),
       totals: {
         revenue: Math.round(revenue * 100) / 100,
         deals,
@@ -307,10 +316,29 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
                     return (
                       <tr key={r.id} className="border-b last:border-0">
                         <td className="py-2 pr-3">
+                          {r.id === 'website' ? (
+                            <TooltipProvider delayDuration={100}>
+                              <UiTooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex items-center gap-2 cursor-help underline decoration-dotted underline-offset-4">
+                                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: r.colour }} />
+                                    {r.label}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="text-xs">
+                                  <p className="font-semibold mb-1">Direct website sales — all sources</p>
+                                  {websiteSources.map(([lbl, v]) => (
+                                    <p key={lbl}>{lbl}: £{Math.round(v.revenue).toLocaleString('en-GB')} · {v.deals} {v.deals === 1 ? 'deal' : 'deals'}</p>
+                                  ))}
+                                </TooltipContent>
+                              </UiTooltip>
+                            </TooltipProvider>
+                          ) : (
                           <span className="inline-flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: r.colour }} />
                             {r.label}
                           </span>
+                          )}
                         </td>
                         <td className="py-2 pr-3 text-right font-medium">£{r.revenue.toLocaleString('en-GB')}</td>
                         <td className="py-2 pr-3 text-right">{r.deals}</td>
