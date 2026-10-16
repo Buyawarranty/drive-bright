@@ -13,6 +13,7 @@
 import blog15 from './blog15-content.json';
 import blog16 from './blog16-content.json';
 import blog17 from './blog17-content.json';
+import blog18 from './blog18-content.json';
 
 export interface RouteMeta {
   /** URL path, must start with `/`. Trailing slash is normalized. */
@@ -144,6 +145,16 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     ogImage: blog17.featured_image_url,
     articleHtml: blog17.html,
     articleSchema: blog17.structured_data,
+  },
+  {
+    path: `/thewarrantyhub/${blog18.slug}/`,
+    title: blog18.seo_title,
+    description: blog18.seo_description,
+    h1: blog18.title,
+    ogType: 'article',
+    ogImage: blog18.featured_image_url,
+    articleHtml: blog18.html,
+    articleSchema: blog18.structured_data,
   },
   {
     path: "/thewarrantyhub/platinum-warranty-cover-modifications-uk-vehicle-protection-guide/",
