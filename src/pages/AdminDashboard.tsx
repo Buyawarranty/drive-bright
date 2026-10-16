@@ -199,6 +199,13 @@ const LIVE_CALLS_TAB_IDS = new Set(['overview', 'call-stats', 'live-calls-data']
 const LEAD_ALLOCATION_TABS = new Set(['lead-teams', 'open-round-robin', 'orr-test-lab', 'orr-sandbox']);
 const LEAD_ALLOCATION_BLOCKED_ROLES = new Set(['sales', 'sales_lead']);
 
+// Analytics belongs to management and accounts. Sales agents, sales leads and
+// sales managers never get it — not through a role list, an explicit tab_ grant
+// or a saved shortcut, so a stray per-user tick can't reopen the whole CRM's
+// revenue picture for them.
+const ANALYTICS_BLOCKED_ROLES = new Set(['sales', 'sales_lead', 'sales_manager']);
+const ANALYTICS_TABS = new Set(['analytics']);
+
 // Payments pending belongs to accounts: the accounts team plus management always
 // see it, everyone else only via an explicit tab_payments-pending grant.
 const ACCOUNTS_ALLOWED_ROLES = new Set([
@@ -249,6 +256,9 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   // Lead Allocation is management-only: sales and sales_lead can never see or open
   // it, not even via an explicit tab_ grant or a saved shortcut.
   if (LEAD_ALLOCATION_BLOCKED_ROLES.has(role || '') && LEAD_ALLOCATION_TABS.has(tab)) return false;
+  // Analytics is hard-blocked for sales roles ahead of the explicit-grant check
+  // below, so a per-user tab_analytics tick can never reopen it for them.
+  if (ANALYTICS_BLOCKED_ROLES.has(role || '') && ANALYTICS_TABS.has(tab)) return false;
   if (tab === 'overview' && role && LIVE_CALLS_ALWAYS_ALLOWED_ROLES.has(role)) return true;
   // Permissions win over role hardcoding: any user (any role, now or in future)
   // granted tab_<id> = true in User Permissions gets the tab. This is what makes
