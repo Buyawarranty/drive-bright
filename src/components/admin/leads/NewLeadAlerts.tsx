@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useIsRepeatCustomer } from '@/hooks/useRepeatCustomers';
 import { toast } from 'sonner';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
+import { NewLeadCornerPopup } from './NewLeadCornerPopup';
 
 const formatUKPhoneShort = (p: string) => {
   const d = p.replace(/[^\d+]/g, '');
@@ -140,6 +141,7 @@ export const NewLeadAlerts: React.FC = () => {
   const headerFlame = allOrr ? 'text-blue-600' : 'text-emerald-600';
 
   return (
+    <>
     <AlertRailSlot order={ALERT_RAIL_ORDER.newLeadPopup}>
     <div className="w-full flex flex-col gap-1.5">
       <div className={`alert-scroll-x flex items-center justify-between rounded-xl text-gray-900 px-3 py-2 shadow-sm border border-l-4 ${headerBorder} shrink-0`}>
@@ -262,6 +264,8 @@ export const NewLeadAlerts: React.FC = () => {
       )}
     </div>
     </AlertRailSlot>
+    <NewLeadCornerPopup leads={queue.filter((l) => l.pool_status !== 'offered')} onDismiss={dismissLead} />
+    </>
   );
 };
 
