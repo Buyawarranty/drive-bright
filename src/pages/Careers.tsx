@@ -186,7 +186,8 @@ const Careers: React.FC = () => {
                 Vehicle Warranty Sales Executive
               </p>
               <p className="mt-3 max-w-xl text-base leading-7 text-[#6B7280]">
-                Fully remote (work from home anywhere in the UK) · Contract or permanent roles ·
+                <span className="font-bold">Fully remote</span> (work from home anywhere in the
+                UK) · Contract or permanent roles ·
                 Full-time PAYE or contract · Warm leads · Basic salary + uncapped commission ·
                 OTE £35,000–£80,000+
               </p>
