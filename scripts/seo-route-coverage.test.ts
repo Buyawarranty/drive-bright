@@ -7,6 +7,12 @@ describe('Public SEO route coverage', () => {
   const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => new URL(match[1]));
   const renderedPaths = new Set(PRERENDER_ROUTES.map(route => route.path));
 
+  it('has one metadata entry per output path and keeps the existing effective cancellation metadata', () => {
+    const paths = PRERENDER_ROUTES.map(route => route.path.replace(/\/+$/, '') || '/');
+    expect(paths.length).toBe(new Set(paths).size);
+    expect(PRERENDER_ROUTES.find(route => route.path === '/cancel-warranty/')?.title).toBe('Cancel Your Warranty | BuyAWarranty');
+  });
+
   it('provides build-time metadata for every non-homepage sitemap entry', () => {
     const missing = urls.filter(url => url.pathname !== '/' && !renderedPaths.has(url.pathname));
     expect(missing.map(url => url.pathname)).toEqual([]);

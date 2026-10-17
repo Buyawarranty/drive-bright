@@ -1,6 +1,6 @@
 # Project architecture rules
 - SEO Audit uses a versioned evidence snapshot for its report and assistant context, reusing Agentic Assistant chat, storage and permissions; dated observations are never represented as live scans and no automatic site mutations are introduced.
-- Missing public route metadata is added through the existing prerender inventory and static sitemap; retain the sitemap mechanism and existing schema, and never infer image dimensions from the default asset for overrides.
+- Missing public route metadata is added through the existing prerender inventory and static sitemap; retain the sitemap mechanism and existing schema, with one metadata entry per output path. Client and prerender sharing metadata use the shared image resolver to preserve approved descriptions and omit unverified custom-image dimensions.
 - Careers contact/experience requirements use a shared pure validator in the form and submission function, with strict server schemas, so bypassing browser controls cannot admit an ineligible application.
 - Careers rejection deadlines are stamped from dedicated settings in the database; postponement uses an access-checked RPC and the sweep uses an atomic dedicated lease, because admin_config only stores booleans. CV previews use short-lived signed storage links and render Word files as plain text.
 - New pricing versions mark `websiteDiscountMode: single` and apply the one website percentage to the completed total; legacy versions keep their original rules so historical prices and unpublished live settings are not rewritten.

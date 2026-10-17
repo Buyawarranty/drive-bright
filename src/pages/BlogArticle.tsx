@@ -502,7 +502,7 @@ const BlogArticle = () => {
         keywords={(post.seo_keywords || []).join(', ')}
         canonical={articleUrl}
         ogImage={heroImage}
-        ogImageAlt={post.title}
+        ogImageAlt={post.meta_tags?.featured_image_alt || post.title}
         ogType="article"
         publishedTime={post.published_at}
         modifiedTime={lastModified}

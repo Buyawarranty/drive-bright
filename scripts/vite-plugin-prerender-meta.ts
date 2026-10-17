@@ -10,6 +10,7 @@
 import type { Plugin } from "vite";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { socialImageMetadata } from '../src/lib/socialImageMetadata';
 import {
   PRERENDER_ROUTES,
   SITE_URL,
@@ -168,6 +169,7 @@ function setStaticBody(html: string, route: RouteMeta): string {
 function buildHtmlForRoute(template: string, route: RouteMeta): string {
   const canonical = `${SITE_URL}${route.path}`;
   const ogImage = route.ogImage ?? DEFAULT_OG_IMAGE_URL;
+  const imageMetadata = socialImageMetadata(ogImage, { alt: route.ogImageAlt, fallbackAlt: route.title });
 
   let html = template;
   html = setTitle(html, route.title);
@@ -190,7 +192,7 @@ function buildHtmlForRoute(template: string, route: RouteMeta): string {
   if (ogImage !== DEFAULT_OG_IMAGE_URL) {
     html = html.replace(/\s*<meta\s+property=["']og:image:(?:width|height)["'][^>]*>/gi, '');
   }
-  html = setMeta(html, { kind: "property", key: "og:image:alt" }, route.title);
+  html = setMeta(html, { kind: "property", key: "og:image:alt" }, imageMetadata.alt);
   html = setMeta(
     html,
     { kind: "property", key: "og:type" },
@@ -216,7 +218,7 @@ function buildHtmlForRoute(template: string, route: RouteMeta): string {
     route.description,
   );
   html = setMeta(html, { kind: "name", key: "twitter:image" }, ogImage);
-  html = setMeta(html, { kind: "name", key: "twitter:image:alt" }, route.title);
+  html = setMeta(html, { kind: "name", key: "twitter:image:alt" }, imageMetadata.alt);
   html = setMeta(html, { kind: "name", key: "twitter:site" }, "@buyawarranty");
 
   // Indexing directives for search + AI answer engines
