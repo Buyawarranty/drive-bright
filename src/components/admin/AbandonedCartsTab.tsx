@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
+import { filterEligibleAbandonedCarts } from '@/lib/abandonedCartEligibility';
 import { FollowUpEmailDialog } from './FollowUpEmailDialog';
 import { AbandonedCartExportPanel, buildAbandonedCartCsv, downloadAbandonedCartCsv } from './AbandonedCartExportPanel';
 import { 
@@ -87,9 +88,6 @@ interface CartEmail {
   price_amount: number | null;
 }
 
-const normalizeEmail = (email: string | null | undefined) => (email || '').trim().toLowerCase();
-const normalizeReg = (reg: string | null | undefined) => (reg || '').replace(/\s+/g, '').toUpperCase();
-
 export const AbandonedCartsTab: React.FC = () => {
   const [carts, setCarts] = useState<AbandonedCart[]>([]);
   const [rawCartCount, setRawCartCount] = useState(0);
@@ -145,6 +143,8 @@ export const AbandonedCartsTab: React.FC = () => {
   }, []);
 
   const fetchAbandonedCarts = async () => {
+    setLoading(true);
+    setCarts([]);
     try {
       // Paginate to bypass Supabase 1000-row default limit
       const pageSize = 1000;
@@ -166,55 +166,33 @@ export const AbandonedCartsTab: React.FC = () => {
 
       setRawCartCount(all.length);
 
-      // Only exclude carts that match a real active warranty customer
-      // (status = 'Active'). This matches what's visible in the Customers
-      // dashboard and prevents the count being inflated by quote payments,
-      // unconverted records, or cancelled/refunded customers.
-      const purchasedEmails = new Set<string>();
-      const purchasedRegs = new Set<string>();
-      let cOffset = 0;
-      while (true) {
-        const { data: cust, error: cErr } = await supabase
-          .from('customers')
-          .select('email,registration_plate')
-          .eq('is_deleted', false)
-          .ilike('status', 'active')
-          .range(cOffset, cOffset + pageSize - 1);
-        if (cErr) break;
-        const crows = (cust || []) as { email: string | null; registration_plate: string | null }[];
-        crows.forEach(c => {
-          const email = normalizeEmail(c.email);
-          const reg = normalizeReg(c.registration_plate);
-          if (email) purchasedEmails.add(email);
-          if (reg) purchasedRegs.add(reg);
-        });
-        if (crows.length < pageSize) break;
-        cOffset += pageSize;
-        if (cOffset > 100000) break;
-      }
-
-      const remarketable = all.filter(c => {
-        const e = normalizeEmail(c.email);
-        const reg = normalizeReg(c.vehicle_reg);
-        const cartStatus = (c.contact_status || '').toLowerCase();
-        return (
-          e &&
-          !c.is_converted &&
-          !c.converted_at &&
-          cartStatus !== 'converted' &&
-          !purchasedEmails.has(e) &&
-          (!reg || !purchasedRegs.has(reg))
-        );
-      });
+      const remarketable = await filterEligibleAbandonedCarts(all);
 
       setRemovedConvertedCount(all.length - remarketable.length);
       setCarts(remarketable);
       setNewCartsCount(0);
     } catch (error) {
+      setCarts([]);
+      setRemovedConvertedCount(0);
       console.error('Error fetching abandoned carts:', error);
       toast.error('Failed to load abandoned carts');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const exportAllCarts = async (platform: 'google' | 'facebook') => {
+    try {
+      const eligible = await filterEligibleAbandonedCarts(carts);
+      setCarts(eligible);
+      if (eligible.length === 0) {
+        toast.error('No eligible abandoned carts to export');
+        return;
+      }
+      downloadAbandonedCartCsv(buildAbandonedCartCsv(eligible, platform), `abandoned-carts-${platform}-all-${new Date().toISOString().slice(0, 10)}.csv`);
+    } catch {
+      setCarts([]);
+      toast.error('Export blocked: customer history could not be checked. Please refresh and try again.');
     }
   };
 
@@ -413,9 +391,9 @@ export const AbandonedCartsTab: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Removed purchasers</p>
+                <p className="text-sm text-gray-600">Excluded customers and history</p>
                 <p className="text-2xl font-bold text-purple-600">{removedConvertedCount.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mt-1">matched to a paid customer (excludes cancelled & refunded)</p>
+                <p className="text-xs text-gray-500 mt-1">existing customers, purchases, cancellations, refunds and claims</p>
               </div>
               <Calendar className="w-8 h-8 text-purple-400" />
             </div>
@@ -442,7 +420,7 @@ export const AbandonedCartsTab: React.FC = () => {
           Refresh
         </Button>
         <Button
-          onClick={() => downloadAbandonedCartCsv(buildAbandonedCartCsv(carts as any, 'google'), `abandoned-carts-google-all-${new Date().toISOString().slice(0, 10)}.csv`)}
+          onClick={() => void exportAllCarts('google')}
           disabled={carts.length === 0}
           className="gap-2"
         >
@@ -450,7 +428,7 @@ export const AbandonedCartsTab: React.FC = () => {
           Full Google CSV
         </Button>
         <Button
-          onClick={() => downloadAbandonedCartCsv(buildAbandonedCartCsv(carts as any, 'facebook'), `abandoned-carts-facebook-all-${new Date().toISOString().slice(0, 10)}.csv`)}
+          onClick={() => void exportAllCarts('facebook')}
           disabled={carts.length === 0}
           variant="outline"
           className="gap-2"
