@@ -1,6 +1,8 @@
 # Roadmap
 
 - [x] Homepage Complete Car Warranty image: replaced only this homepage placement with the supplied branded panda; descriptive car-warranty-used-older-car.png filename and accurate alt text on both layouts. Publication remains on hold.
+- [x] Homepage Unlimited Claims image: homepage-only swap to used-car-warranty-unlimited-claims-panda-orange-hatchback.png with accurate alt text; other pages keep the old image.
+- [x] Homepage Flexible Warranty Plans (Easy Options) image: homepage-only swap to lowest-cheapest-extended-warranty-uk.png with accurate alt text; HomepageB and brand landing pages keep the old image. Publication remains on hold.
 
 - [x] FAQs page: replaced the old savings panda with the uploaded branded panda, preserving its supplied filename, existing size, desktop-only placement, questions and schema. Preview-only.
 - [x] Weekly SEO optimisation reviews: scheduled Mondays 09:00 UTC; first deployed review checked 107 pages, stored 14 proposals and created two super-admin reminders. Two function tests pass; build OK. Private evidence and super-admin authorisation controls added; no automatic edits or publication. Authenticated staff UI remains unverified on external Supabase; frontend unpublished.
