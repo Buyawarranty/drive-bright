@@ -1077,7 +1077,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               <OptimizedImage 
                 src={unlimitedClaimsPanda.url}
                 alt="Miles the Panda in a buyawarranty shirt leaning on an orange hatchback and holding up a tablet showing a vehicle warranty quote in 60 seconds, for unlimited car warranty claims with no hidden fees" 
-                className="w-full h-auto max-w-[326px] md:max-w-[435px] mx-auto object-contain"
+                className="w-full h-auto max-w-[261px] md:max-w-[348px] mx-auto object-contain"
                 priority={false}
                 width={960}
                 height={720}
@@ -1100,7 +1100,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               <OptimizedImage 
                 src={flexiblePlansPanda.url} 
                 alt="Miles the Panda in a buyawarranty shirt holding a clipboard and pointing to flexible car warranty payment options — Monthly, Yearly and 1, 2, 3 Years cover plans — with a calendar and a covered badge" 
-                className="w-full h-auto max-w-[326px] md:max-w-[435px] mx-auto object-contain"
+                className="w-full h-auto max-w-[261px] md:max-w-[348px] mx-auto object-contain"
                 priority={false}
                 width={960}
                 height={720}
@@ -1190,7 +1190,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               <OptimizedImage 
                 src={highMileagePanda.url} 
                 alt="Miles the Panda in a buyawarranty shirt leaning against a high-mileage electric car plugged into a charging station, holding up a shield badge with a white check mark to show used and high-mileage cars can still get warranty cover" 
-                className="w-full h-auto max-w-[326px] md:max-w-[435px] mx-auto object-contain"
+                className="w-full h-auto max-w-[261px] md:max-w-[348px] mx-auto object-contain"
                 priority={false}
                 width={960}
                 height={720}
