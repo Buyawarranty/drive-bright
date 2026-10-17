@@ -8,10 +8,14 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WarrantyBenefitsSectionProps {
   headline?: string;
+  imageSrc?: string;
+  imageAlt?: string;
 }
 
 const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({ 
-  headline = "Complete Car Warranty." 
+  headline = "Complete Car Warranty.",
+  imageSrc = warrantyPandaMascot,
+  imageAlt = "Miles the Panda mascot with car"
 }) => {
   const isMobile = useIsMobile();
   const scrollToTop = () => {
@@ -125,8 +129,8 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
                   {/* Panda - left side */}
                   <div className="flex justify-start">
                     <img 
-                      src={warrantyPandaMascot} 
-                      alt="Miles the Panda mascot with car" 
+                      src={imageSrc}
+                      alt={imageAlt}
                       className="w-48 md:w-56 lg:w-64 h-auto object-contain"
                     />
                   </div>
@@ -152,8 +156,8 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
               {/* Panda */}
               <div className="flex justify-center">
                 <img 
-                  src={warrantyPandaMascot} 
-                  alt="Miles the Panda mascot with car" 
+                  src={imageSrc}
+                  alt={imageAlt}
                   className="w-48 md:w-56 h-auto object-contain"
                 />
               </div>
