@@ -81,13 +81,37 @@
     "This is a dated, on-demand audit, not scheduled monitoring or a live Google indexing inventory.",
     "All 116 primary public page URLs were fetched without JavaScript; 107 corresponding Lovable-host URLs were also checked. Seven Lovable pages were additionally rendered to distinguish working pages from missing HTML.",
     "HTTP 200 confirms reachability, not Google indexing. Unknown URLs still return HTTP 200 with a not-found screen after JavaScript.",
-    "Image checks covered 18 distinct references on the Lovable crawl and one emitted share image on the four additional primary-site articles, not every image or background. Core Web Vitals, backlinks, Meta reach and AI citations were not measured.",
+    "The initial live crawl checked 18 image references. A separate rendered preview check on 17 October covered 116 sitemap routes, 1,028 image instances and 300 distinct image sources, with no missing alt attributes. The 35 empty-alt instances used the decorative van icon. This is not a full visual review of every CMS image, background, responsive variant or future post. Core Web Vitals, backlinks, Meta reach and AI citations were not measured.",
     "The foundation scanner identifies the Lovable hostname as primary, whereas source canonicals and the selected Search Console property use buyawarranty.co.uk. Its wrong-host recommendations have not been applied blindly.",
     "Existing schema, Google Ads, payment logic, prices and article bodies were left unchanged.",
     "Preview corrections reach the live website only after publication. Recheck both hosts afterwards; latest articles already work on the Lovable host but return generic metadata on the primary host.",
     "A full factual review of every article remains outstanding, especially repair-cost evidence, absolute cover promises and two dealer-focused Panda Protect articles."
   ],
   "findings": [
+    {
+      "priority": "Medium",
+      "status": "Ready to publish",
+      "title": "Approved photo descriptions on article cards and related articles",
+      "evidence": "The Warranty Hub cards and related-article images used article titles even when approved featured_image_alt descriptions already existed. Seven real published article images, including the approved Mercedes EQE photo, were verified in the preview after correction.",
+      "action": "Reused the existing approved descriptions on featured, latest and related article images; retained title fallbacks where descriptions are absent. Generic fallback card artwork remains decorative. Also clarified the visible thumbs-up action in the Infiniti and Cadillac mascot descriptions. Photos, image URLs, article bodies, captions and schema are unchanged.",
+      "next": "Recheck the same article cards after authorised publication. Related articles share the approved-field fallback but were not separately exercised in the browser. Descriptive alt text improves image understanding and accessibility; Google rankings and AI citations are not guaranteed. The signed-in admin report remains unverified on external Supabase."
+    },
+    {
+      "priority": "Low",
+      "status": "Reviewed · URLs preserved",
+      "title": "Descriptive image filenames without breaking existing links",
+      "evidence": "Blogs 15–18 already use descriptive filenames identifying the Mercedes EQE, BMW X5, Audi Q7 and Mercedes GLE. The preview inventory recorded 300 distinct image sources; older upload IDs and remote assets need individual identity and reference checks before renaming.",
+      "action": "Preserved approved descriptive filenames and stable image URLs. No keyword-stuffed aliases, duplicate images or speculative renames were introduced, avoiding broken cached, shared or schema-linked image references.",
+      "next": "Review remaining opaque filenames individually with their actual images and all consumers before proposing a move. Keep meaningful existing filenames; filename changes alone do not establish higher rankings."
+    },
+    {
+      "priority": "Medium",
+      "status": "Needs image delivery check",
+      "title": "Image delivery failures observed in the preview",
+      "evidence": "Six visible images finished loading with zero natural width during the rendered preview check: the UK repair-cost article hero and remote Toyota, Ford, Kia, Hyundai and Volvo logos. This is a dated browser observation, not proof of permanent failure on the published website.",
+      "action": "Recorded the affected pages without replacing approved imagery or changing stable external URLs. Missing alt attributes were not the cause.",
+      "next": "Confirm the failing image responses individually on the primary website and review existing approved local replacements before making delivery changes."
+    },
     {
       "priority": "Medium",
       "status": "Ready to publish",

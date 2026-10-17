@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Image SEO wave: check public image descriptions and filenames, correct verified gaps without changing approved imagery, schema, tracking or stable external image URLs; record evidence in SEO Audit and verify rendering. Keep unpublished.
+- [x] Image SEO wave: inspected 116 rendered preview routes / 1,028 image instances / 300 sources; no missing alt attributes, 35 decorative van icons. Article cards and related images reuse approved photo descriptions; verified seven real published card photos and both clarified mascot descriptions. Filename review preserved already-descriptive names and stable URLs. Twelve SEO/access tests pass; build OK. Evidence and six observed delivery failures recorded in SEO Audit; no schema, tracking or imagery changes. Unpublished; signed-in admin report and related-article browser flow unverified on external Supabase.
 
 - [x] Lead count: distinct blue/gold/magenta received chart, contrasting source colours, all current statuses, callbacks booked, overlapping paid/hot/awaiting/reminder/return/checkout activity, source comparisons and CSV. Private access-checked aggregate preserves locked snapshots; migration checks actual cohort total and signed-out denial. Eight tests and isolated browser table/download checks pass; build OK. Signed-in end-to-end unavailable on external Supabase; unpublished. Existing unrelated security findings remain unchanged.
 
