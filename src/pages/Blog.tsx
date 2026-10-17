@@ -22,6 +22,7 @@ interface HubPost {
   title: string;
   excerpt: string | null;
   featured_image_url: string | null;
+  featured_image_alt?: string | null;
   published_at: string | null;
   read_time_minutes: number | null;
   category: string | null;
@@ -116,7 +117,7 @@ const Blog: React.FC = () => {
       try {
         const { data, error } = await supabase
           .from('blog_posts')
-          .select('id, slug, title, excerpt, featured_image_url, published_at, read_time_minutes, blog_categories(name), blog_authors(name)')
+          .select('id, slug, title, excerpt, featured_image_url, meta_tags, published_at, read_time_minutes, blog_categories(name), blog_authors(name)')
           .eq('status', 'published')
           .order('published_at', { ascending: false })
           .limit(20);
@@ -127,6 +128,7 @@ const Blog: React.FC = () => {
           title: p.title,
           excerpt: p.excerpt,
           featured_image_url: p.featured_image_url,
+          featured_image_alt: typeof p.meta_tags?.featured_image_alt === 'string' ? p.meta_tags.featured_image_alt : null,
           published_at: p.published_at,
           read_time_minutes: p.read_time_minutes,
           category: p.blog_categories?.name ?? 'Warranty Guides',
@@ -450,7 +452,7 @@ const Blog: React.FC = () => {
                     {featured && (
                       <img
                         src={featured.featured_image_url || FALLBACK_IMAGE}
-                        alt={featured.title}
+                        alt={featured.featured_image_url ? (featured.featured_image_alt || featured.title) : ''}
                         className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
                         loading="lazy"
                         width={800}
@@ -796,7 +798,7 @@ const ArticleCard: React.FC<{ post: HubPost; onClick: () => void }> = ({ post, o
         )}
         <img
           src={post.featured_image_url || FALLBACK_IMAGE}
-          alt={post.title}
+          alt={post.featured_image_url ? (post.featured_image_alt || post.title) : ''}
           loading="lazy"
           width={640}
           height={400}
