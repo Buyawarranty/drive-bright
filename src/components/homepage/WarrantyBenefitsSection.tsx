@@ -10,12 +10,14 @@ interface WarrantyBenefitsSectionProps {
   headline?: string;
   imageSrc?: string;
   imageAlt?: string;
+  imageClassName?: string;
 }
 
 const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({ 
   headline = "Complete Car Warranty.",
   imageSrc = warrantyPandaMascot,
-  imageAlt = "Miles the Panda mascot with car"
+  imageAlt = "Miles the Panda mascot with car",
+  imageClassName
 }) => {
   const isMobile = useIsMobile();
   const scrollToTop = () => {
@@ -131,7 +133,7 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
                     <img 
                       src={imageSrc}
                       alt={imageAlt}
-                      className="w-48 md:w-56 lg:w-64 h-auto object-contain"
+                      className={imageClassName ?? "w-48 md:w-56 lg:w-64 h-auto object-contain"}
                     />
                   </div>
                   
@@ -158,7 +160,7 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
                 <img 
                   src={imageSrc}
                   alt={imageAlt}
-                  className="w-48 md:w-56 h-auto object-contain"
+                  className={imageClassName ?? "w-48 md:w-56 h-auto object-contain"}
                 />
               </div>
               

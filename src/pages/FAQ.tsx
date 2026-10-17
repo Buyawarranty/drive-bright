@@ -1015,7 +1015,7 @@ const FAQ = () => {
                     <img 
                       src={pandaSavingsFaq.url} 
                       alt="Miles the Panda putting a coin into a savings jar" 
-                      className="w-32 h-32 object-contain"
+                      className="w-[109px] h-[109px] object-contain"
                     />
                   </div>
                 </div>
