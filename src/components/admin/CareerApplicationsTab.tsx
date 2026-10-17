@@ -74,11 +74,16 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
   const load = React.useCallback(async () => {
     setLoading(true);
     setLoadError('');
+    try {
     const { data, error } = await fetchAllRows<Application>(() => supabase
       .from('career_applications').select('*').order('applied_at', { ascending: false }).order('id'));
     if (error) { setLoadError('Applications could not be loaded. Please refresh or try again.'); toast.error(error.message); }
     else setRows(data);
-    setLoading(false);
+    } catch {
+      setLoadError('Applications could not be loaded. Please refresh or try again.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   React.useEffect(() => { load(); }, [load]);
@@ -381,21 +386,21 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
                       <Button
                         size="sm"
                         className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white"
-                        disabled={busy === row.id || row.status === 'shortlisted'}
+                        disabled={bulkBusy || busy === row.id || ['shortlisted', 'rejected', 'hired'].includes(row.status)}
                         onClick={() => setStatus(row, 'shortlisted')}
                       >
                         {busy === row.id ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Star className="h-3.5 w-3.5 mr-1.5" />}
                         Shortlist — we want to speak to them
                       </Button>
-                      <Button size="sm" variant="outline" className="h-8" disabled={busy === row.id}
+                      <Button size="sm" variant="outline" className="h-8" disabled={bulkBusy || busy === row.id || row.status === 'rejected' || row.status === 'hired'}
                         onClick={() => setStatus(row, 'interview')}>
                         <UserCheck className="h-3.5 w-3.5 mr-1.5" />Interview
                       </Button>
-                      <Button size="sm" variant="outline" className="h-8" disabled={busy === row.id}
+                      <Button size="sm" variant="outline" className="h-8" disabled={bulkBusy || busy === row.id || row.status === 'rejected' || row.status === 'hired'}
                         onClick={() => setStatus(row, 'hired')}>
                         <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />Hired
                       </Button>
-                      <Button size="sm" variant="outline" className="h-8" disabled={busy === row.id}
+                      <Button size="sm" variant="outline" className="h-8" disabled={bulkBusy || busy === row.id || row.status === 'rejected' || row.status === 'hired'}
                         onClick={() => setStatus(row, 'on_hold')}>
                         <PauseCircle className="h-3.5 w-3.5 mr-1.5" />No action — keep as-is
                       </Button>
@@ -411,6 +416,12 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
                           <ThumbsDown className="h-3.5 w-3.5 mr-1.5" />Reject now
                         </Button>
                       )}
+                      <Button size="sm" variant="outline" className="h-8" disabled={bulkBusy || busy === row.id} onClick={async () => {
+                        if (!window.confirm(`Delete ${row.full_name} and their CV permanently? A rejection email is sent first unless already sent.`)) return;
+                        setBusy(row.id);
+                        await rejectApplicants([row.id], 'delete');
+                        setBusy(null); void load();
+                      }}>Delete application</Button>
                     </div>
                   )}
 
