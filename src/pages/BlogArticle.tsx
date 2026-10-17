@@ -832,7 +832,7 @@ const BlogArticle = () => {
                     <div className="aspect-[16/9] overflow-hidden bg-slate-100">
                       <img
                         src={relatedPost.featured_image_url}
-                        alt={relatedPost.title}
+                        alt={relatedPost.meta_tags?.featured_image_alt || relatedPost.title}
                         width={800}
                         height={450}
                         loading="lazy"

@@ -258,7 +258,7 @@ const InfinitiWarrantyLanding: React.FC = () => {
                 </ul>
               </div>
               <div className="flex flex-col items-center order-first md:order-last">
-                <OptimizedImage src={pandaThumbsUp} alt="Miles the Panda" className="w-36 sm:w-48 md:w-64 h-auto object-contain mb-4" width={256} height={256} />
+                <OptimizedImage src={pandaThumbsUp} alt="Miles the Panda giving a thumbs up" className="w-36 sm:w-48 md:w-64 h-auto object-contain mb-4" width={256} height={256} />
                 <div className="bg-white/10 rounded-2xl px-8 py-4 backdrop-blur-sm"><p className="text-sm md:text-xl font-bold text-white">England • Scotland • Wales • N. Ireland</p></div>
               </div>
             </div>
