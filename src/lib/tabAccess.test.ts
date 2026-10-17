@@ -8,6 +8,7 @@ describe('SEO Audit assistant access', () => {
     expect(canAccessSeoAudit('admin', { 'tab_growth-agent': true })).toBe(true);
     expect(canAccessSeoAudit('sales', { 'tab_seo-audit': true })).toBe(false);
     expect(canAccessSeoAudit(null)).toBe(false);
+    expect(canAccessSeoAudit('lead_gen', { 'tab_seo-review': true })).toBe(true);
   });
 });
 

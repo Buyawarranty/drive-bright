@@ -20,7 +20,7 @@ const SOCIAL_ANALYTICS_BLOCKED_ROLES = new Set(['sales', 'sales_lead']);
 
 /** SEO Audit reuses the existing assistant permission, not a separate grant. */
 export function canAccessSeoAudit(role: string | null | undefined, permissions?: Record<string, boolean> | null): boolean {
-  return role === 'super_admin' || permissions?.['tab_growth-agent'] === true;
+  return role === 'super_admin' || permissions?.['tab_growth-agent'] === true || permissions?.['tab_seo-review'] === true;
 }
 
 /** True when this role must be denied this analytics-family tab. */
