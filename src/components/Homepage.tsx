@@ -1098,7 +1098,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             <div className="relative text-center">
               <OptimizedImage 
                 src={flexiblePlansPanda.url} 
-                alt="Miles the Panda in a buyawarranty shirt holding a clipboard and pointing to Monthly, Yearly and 1, 2, 3 Years car warranty cover options, with a calendar and a covered badge" 
+                alt="Miles the Panda in a buyawarranty shirt holding a clipboard and pointing to flexible car warranty payment options — Monthly, Yearly and 1, 2, 3 Years cover plans — with a calendar and a covered badge" 
                 className="w-full h-auto max-w-sm md:max-w-lg mx-auto object-contain"
                 priority={false}
                 width={960}
@@ -1188,7 +1188,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             <div className="relative text-center order-1 lg:order-2">
               <OptimizedImage 
                 src={highMileagePanda.url} 
-                alt="Miles the Panda in a buyawarranty shirt leaning against a dark grey electric car plugged into a charging station, holding up a shield badge with a white check mark" 
+                alt="Miles the Panda in a buyawarranty shirt leaning against a high-mileage electric car plugged into a charging station, holding up a shield badge with a white check mark to show used and high-mileage cars can still get warranty cover" 
                 className="w-full h-auto max-w-sm md:max-w-lg mx-auto object-contain"
                 priority={false}
                 width={960}
