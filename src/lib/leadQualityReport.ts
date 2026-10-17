@@ -10,7 +10,7 @@ export const LEAD_STATUSES = [
   ['dormant', 'Dormant'], ['unsubscribed', 'Unsubscribed'], ['archived', 'Archived'],
   ['upsell', 'Upsell'], ['upgraded', 'Upgraded'],
 ] as const;
-export const LEAD_ACTIVITIES = [['callbacks', 'Callback requests'], ['awaiting', 'Awaiting assignment'], ['paid', 'Paid'], ['hot', 'Hot'], ['repeat', 'Back in this period'], ['reminders', 'Active reminders']] as const;
+export const LEAD_ACTIVITIES = [['callbacks', 'Callback requests'], ['awaiting', 'Awaiting assignment'], ['paid', 'Paid'], ['hot', 'Hot'], ['repeat', 'Back in this period'], ['reminders', 'Active reminders'], ['checkout_struggle', 'Checkout struggle (last 24h)']] as const;
 export const QUALITY_SOURCES = [['google', 'Google'], ['facebook', 'Facebook / Meta'], ['organic', 'Organic'], ['other', 'Other (phone etc.)']] as const;
 export function qualityCategories(rows: QualityRow[]) {
   const known = new Set<string>(LEAD_STATUSES.map(([key]) => key));
