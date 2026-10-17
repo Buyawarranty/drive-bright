@@ -10,6 +10,7 @@ import { Message, MessageContent, MessageResponse } from '@/components/ai-elemen
 import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from '@/components/ai-elements/tool';
 import { PromptInput, PromptInputTextarea, PromptInputFooter, PromptInputSubmit } from '@/components/ai-elements/prompt-input';
 import SeoAuditReport from './SeoAuditReport';
+import WeeklySeoReviews from './WeeklySeoReviews';
 import audit from '@/data/seo-audit-2026-10-17.json';
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/growth-agent`;
@@ -114,7 +115,7 @@ export default function GrowthAgentTab({ seoAudit = false }: { seoAudit?: boolea
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loaded, setLoaded] = useState<{ id: string; messages: UIMessage[] } | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [seoView, setSeoView] = useState<'report' | 'assistant'>('report');
+  const [seoView, setSeoView] = useState<'report' | 'assistant' | 'weekly'>('weekly');
 
   const openThread = useCallback((id: string) => {
     setParams(prev => { const n = new URLSearchParams(prev); n.set('tab', seoAudit ? 'seo-audit' : 'growth-agent'); n.set('thread', id); return n; });
@@ -175,8 +176,8 @@ export default function GrowthAgentTab({ seoAudit = false }: { seoAudit?: boolea
         </div>
       </div>
       {err && <p className="text-sm text-destructive mb-2">{err}</p>}
-      {seoAudit && <div className="flex flex-wrap gap-2 mb-4"><Button variant={seoView === 'report' ? 'default' : 'outline'} onClick={() => setSeoView('report')}><Search className="h-4 w-4 mr-2" />Audit report</Button><Button variant={seoView === 'assistant' ? 'default' : 'outline'} onClick={() => setSeoView('assistant')}><Lightbulb className="h-4 w-4 mr-2" />Agentic Assistant</Button><Button variant="outline" onClick={() => setParams(prev => { const n = new URLSearchParams(prev); n.set('tab', 'semrush-seo'); n.delete('thread'); return n; })}><TrendingUp className="h-4 w-4 mr-2" />Semrush reports</Button></div>}
-      {seoAudit && seoView === 'report' ? <SeoAuditReport /> : <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
+      {seoAudit && <div className="flex flex-wrap gap-2 mb-4"><Button variant={seoView === 'weekly' ? 'default' : 'outline'} onClick={() => setSeoView('weekly')}><Search className="h-4 w-4 mr-2" />Weekly reviews</Button><Button variant={seoView === 'report' ? 'default' : 'outline'} onClick={() => setSeoView('report')}><Search className="h-4 w-4 mr-2" />Audit report</Button><Button variant={seoView === 'assistant' ? 'default' : 'outline'} onClick={() => setSeoView('assistant')}><Lightbulb className="h-4 w-4 mr-2" />Agentic Assistant</Button><Button variant="outline" onClick={() => setParams(prev => { const n = new URLSearchParams(prev); n.set('tab', 'semrush-seo'); n.delete('thread'); return n; })}><TrendingUp className="h-4 w-4 mr-2" />Semrush reports</Button></div>}
+      {seoAudit && seoView === 'weekly' ? <WeeklySeoReviews /> : seoAudit && seoView === 'report' ? <SeoAuditReport /> : <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
         <aside className="md:w-60 max-h-40 md:max-h-none shrink-0 flex flex-col border border-border rounded-lg p-2 min-h-0">
           <Button size="sm" onClick={newThread} className="mb-2"><Plus className="h-4 w-4 mr-1" />New conversation</Button>
           <div className="overflow-y-auto space-y-1">

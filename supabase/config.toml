@@ -353,3 +353,6 @@ verify_jwt = false
 
 [functions.deferred-payment-chase]
 verify_jwt = false
+
+[functions.weekly-seo-review]
+verify_jwt = false

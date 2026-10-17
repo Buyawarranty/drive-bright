@@ -22,6 +22,8 @@ interface AdminNotificationBellProps {
 
 const getIcon = (type: AdminNotification['type']) => {
   switch (type) {
+    case 'seo_review':
+      return <FileText className="h-4 w-4 text-primary" />;
     case 'contact':
       return <Mail className="h-4 w-4 text-blue-500" />;
     case 'claim':
@@ -35,6 +37,8 @@ const getIcon = (type: AdminNotification['type']) => {
 
 const getTabFromType = (type: AdminNotification['type']) => {
   switch (type) {
+    case 'seo_review':
+      return 'seo-audit';
     case 'contact':
       return 'contact-submissions';
     case 'claim':

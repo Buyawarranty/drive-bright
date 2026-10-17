@@ -1,0 +1,14 @@
+CREATE SCHEMA IF NOT EXISTS private; GRANT USAGE ON SCHEMA private TO authenticated,service_role;
+ALTER FUNCTION public.can_review_seo(uuid) SET SCHEMA private;
+ALTER FUNCTION public.seo_review_configuration() SET SCHEMA private;
+ALTER FUNCTION public.configure_seo_reviews(uuid,text) SET SCHEMA private;
+ALTER FUNCTION public.decide_seo_proposal(uuid,text,text) SET SCHEMA private;
+ALTER FUNCTION public.read_seo_notifications(uuid) SET SCHEMA private;
+CREATE FUNCTION public.can_review_seo(p_user uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY INVOKER SET search_path=public AS $$ SELECT private.can_review_seo(p_user); $$;
+CREATE FUNCTION public.seo_review_configuration() RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET search_path=public AS $$ SELECT private.seo_review_configuration(); $$;
+CREATE FUNCTION public.configure_seo_reviews(p_seo_admin_id uuid,p_site_url text DEFAULT NULL) RETURNS void LANGUAGE sql SECURITY INVOKER SET search_path=public AS $$ SELECT private.configure_seo_reviews(p_seo_admin_id,p_site_url); $$;
+CREATE FUNCTION public.decide_seo_proposal(p_id uuid,p_decision text,p_note text DEFAULT '') RETURNS void LANGUAGE sql SECURITY INVOKER SET search_path=public AS $$ SELECT private.decide_seo_proposal(p_id,p_decision,p_note); $$;
+CREATE FUNCTION public.read_seo_notifications(p_id uuid DEFAULT NULL) RETURNS void LANGUAGE sql SECURITY INVOKER SET search_path=public AS $$ SELECT private.read_seo_notifications(p_id); $$;
+REVOKE ALL ON FUNCTION public.can_review_seo(uuid),public.seo_review_configuration(),public.configure_seo_reviews(uuid,text),public.decide_seo_proposal(uuid,text,text),public.read_seo_notifications(uuid) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.can_review_seo(uuid) TO authenticated,service_role;
+GRANT EXECUTE ON FUNCTION public.seo_review_configuration(),public.configure_seo_reviews(uuid,text),public.decide_seo_proposal(uuid,text,text),public.read_seo_notifications(uuid) TO authenticated;

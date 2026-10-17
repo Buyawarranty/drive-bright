@@ -5,7 +5,7 @@ import { withBackgroundPriority } from '@/lib/requestQueue';
 
 export interface AdminNotification {
   id: string;
-  type: 'contact' | 'claim' | 'customer' | 'lead_resubmission';
+  type: 'contact' | 'claim' | 'customer' | 'lead_resubmission' | 'seo_review';
   title: string;
   message: string;
   created_at: string;
@@ -108,6 +108,8 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
       });
 
       const allNotifications: AdminNotification[] = [];
+      const { data: seoNotices } = await supabase.from('seo_review_notifications').select('id,run_id,title,message,created_at,read_at').order('created_at', { ascending: false }).limit(20);
+      seoNotices?.forEach(notice => allNotifications.push({ id: `seo-${notice.id}`, type: 'seo_review', title: notice.title, message: notice.message, created_at: notice.created_at, is_read: !!notice.read_at, reference_id: notice.run_id }));
 
       contacts?.forEach(c => {
         allNotifications.push({
@@ -349,6 +351,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
   }, [userRole, adminId]);
 
   const markAsRead = useCallback((notificationId: string) => {
+    if (notificationId.startsWith('seo-')) void supabase.rpc('read_seo_notifications', { p_id: notificationId.slice(4) });
     setReadIds(prev => {
       const newSet = new Set(prev);
       newSet.add(notificationId);
@@ -361,6 +364,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
   }, []);
 
   const markAllAsRead = useCallback(() => {
+    if (notifications.some(n => n.type === 'seo_review')) void supabase.rpc('read_seo_notifications');
     const allIds = notifications.map(n => n.id);
     setReadIds(prev => {
       const newSet = new Set([...prev, ...allIds]);
