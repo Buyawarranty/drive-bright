@@ -6,6 +6,8 @@ import { inspectHtml, verifiedProperties, SITE, type Proposal } from './audit.ts
 
 const schema = z.discriminatedUnion('action', [z.object({ action: z.literal('scheduled') }).strict(), z.object({ action: z.literal('properties') }).strict()]);
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+// This is the project's public browser key, not a privileged credential.
+const CALLBACK_PUBLIC_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16bHB1eHp3eXJjeXJncm9uZ2ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODc0MjUsImV4cCI6MjA2NjQ2MzQyNX0.bFu0Zj4ic61GN0LwipkINg9YJtgd8RnMgEmzE139MPU';
 
 Deno.serve(async req => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -30,7 +32,7 @@ Deno.serve(async req => {
     }
     // Public publishable-key callbacks can only consume a due job queued by the
     // database schedule. Clients cannot insert jobs or choose URLs/run IDs.
-    if (req.headers.get('apikey') !== anon) return json({ error: 'Invalid callback' }, 401);
+    if (req.headers.get('apikey') !== CALLBACK_PUBLIC_KEY) return json({ error: 'Invalid callback' }, 401);
     const { data: claimed, error: claimError } = await db.rpc('claim_weekly_seo_run');
     if (claimError) throw claimError;
     if (!claimed) return json({ skipped: 'No scheduled review due' });
