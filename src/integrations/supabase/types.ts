@@ -2627,6 +2627,30 @@ export type Database = {
           },
         ]
       }
+      career_rejection_settings: {
+        Row: {
+          created_at: string
+          id: boolean
+          rejection_days: number
+          sweep_lease_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: boolean
+          rejection_days?: number
+          sweep_lease_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: boolean
+          rejection_days?: number
+          sweep_lease_until?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       checkout_step_events: {
         Row: {
           amount: number | null
@@ -14982,6 +15006,7 @@ export type Database = {
       }
     }
     Functions: {
+      acquire_career_rejection_lease: { Args: never; Returns: boolean }
       add_working_days: {
         Args: { _days: number; _from: string }
         Returns: string
@@ -15172,6 +15197,10 @@ export type Database = {
       customer_cover_block_reason: {
         Args: { p_email?: string; p_phone?: string; p_reg?: string }
         Returns: string
+      }
+      delay_career_applications: {
+        Args: { _days?: number; _ids: string[] }
+        Returns: number
       }
       delete_admin_user_cascade: {
         Args: { p_admin_user_id: string }
