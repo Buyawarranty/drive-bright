@@ -13,6 +13,7 @@ import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import heroPandaVehiclesMobile from '@/assets/hero-panda-vehicles-mobile.webp.asset.json';
 import heroPandaVehiclesDesktop from '@/assets/hero-panda-vehicles-desktop.webp.asset.json';
 import completeWarrantyPanda from '@/assets/car-warranty-used-older-car.png.asset.json';
+import unlimitedClaimsPanda from '@/assets/used-car-warranty-unlimited-claims-panda-orange-hatchback.png.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
@@ -1071,8 +1072,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             {/* Right - Panda with vehicles */}
             <div className="relative text-center order-1 lg:order-2">
               <OptimizedImage 
-                src="/car-warranty-uk-compare-quotes.png" 
-                alt="Car warranty UK - Compare quotes - Panda mascot celebrating with orange car" 
+                src={unlimitedClaimsPanda.url}
+                alt="Miles the Panda in a buyawarranty shirt jumping for joy beside an orange hatchback, celebrating unlimited car warranty claims" 
                 className="w-full h-auto max-w-sm md:max-w-lg mx-auto object-contain"
                 priority={false}
                 width={600}
