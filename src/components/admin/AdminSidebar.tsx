@@ -254,6 +254,12 @@ export const defaultTabs: Tab[] = [
     description: 'Organic visibility, keywords and backlinks from Semrush'
   },
   {
+    id: 'seo-audit',
+    label: 'SEO Audit',
+    icon: Search,
+    description: 'Agentic Assistant SEO improvement suggestions'
+  },
+  {
     id: 'claims',
     label: 'Claims',
     icon: MessageSquare,
@@ -794,6 +800,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     if (!(userRole === 'admin' || userRole === 'super_admin')) base = base.filter(t => t.id !== 'direct-sales');
     // Agentic Assistant is super admin only — never via per-user grants.
     if (userRole !== 'super_admin' && (userPermissions as any)?.['tab_growth-agent'] !== true) base = base.filter(t => t.id !== 'growth-agent');
+    // SEO Audit uses the same authenticated assistant and access grants.
+    base = base.filter(t => t.id !== 'seo-audit');
+    if (userRole === 'super_admin' || (userPermissions as any)?.['tab_growth-agent'] === true) {
+      const seoTab = defaultTabs.find(t => t.id === 'seo-audit');
+      if (seoTab) base.push(seoTab);
+    }
     // Lead count: admin/super_admin, or explicitly granted — never sales roles.
     {
       const r = userRole || '';
