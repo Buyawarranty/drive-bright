@@ -18,6 +18,8 @@ import {
 import { SEOHead } from '@/components/SEOHead';
 import CareersApplyBlock from '@/components/careers/CareersApplyBlock';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
+import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import pandaThumbs from '@/assets/panda-thumbs-up.png';
 import careersHeroImage from '@/assets/careers-hero-panda-vehicles.png.asset.json';
 import pandaVehicles from '@/assets/panda-savings-vehicles.png';
@@ -436,21 +438,31 @@ const Careers: React.FC = () => {
         </section>
 
         {/* FAQs */}
-        <section aria-labelledby="careers-faq" className="mb-14">
-          <SectionHeader id="careers-faq" number={9} title="Frequently asked questions" />
-          <div className="space-y-4">
-            {faqSchema.mainEntity.map((item) => (
-              <div
-                key={item.name}
-                className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm"
-              >
-                <h3 className="text-sm font-bold text-[#111827]">{item.name}</h3>
-                <p className="mt-2 text-sm leading-7 text-[#374151]">
-                  {item.acceptedAnswer.text}
-                </p>
-              </div>
-            ))}
+        <section aria-labelledby="careers-faq" className="careers-faq-theme mb-14">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b-2 border-primary pb-4">
+            <h2 id="careers-faq" className="text-2xl font-bold text-foreground">
+              Frequently asked questions
+            </h2>
+            <TrustpilotMicroStarWidget className="w-[200px] max-w-full shrink-0" />
           </div>
+          <Accordion type="multiple" className="space-y-4">
+            {faqSchema.mainEntity.map((item, index) => (
+              <AccordionItem
+                key={item.name}
+                value={`careers-faq-${index}`}
+                className="careers-faq-item overflow-hidden rounded-[14px] border border-border border-l-4 bg-card transition-colors hover:bg-accent data-[state=open]:bg-accent"
+              >
+                <AccordionTrigger className="min-h-[88px] gap-4 px-6 py-6 text-left text-base font-semibold text-foreground hover:no-underline md:min-h-[100px] md:px-[30px] md:text-lg [&>svg]:h-4 [&>svg]:w-4 [&>svg]:text-primary">
+                  {item.name}
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6 md:px-[30px]">
+                  <p className="border-t border-border pt-4 text-base leading-7 text-muted-foreground">
+                    {item.acceptedAnswer.text}
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </section>
 
         {/* Apply */}

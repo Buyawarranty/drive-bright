@@ -93,6 +93,22 @@
   --footer-banner-foreground: 0 0% 100%;
 }
 
+.careers-faq-theme {
+  --primary: 22 100% 52%;
+  --foreground: 222 30% 12%;
+  --card: 0 0% 100%;
+  --border: 214 30% 89%;
+  --accent: 27 100% 98%;
+  --muted-foreground: 217 19% 27%;
+  --faq-edge: 25 100% 75%;
+  --faq-shadow: 0 4px 14px hsl(222 47% 11% / 0.04);
+}
+
+.careers-faq-item {
+  border-left-color: hsl(var(--faq-edge));
+  box-shadow: var(--faq-shadow);
+}
+
 .website-discount-theme {
   --primary: 275 72% 43%;
   --primary-foreground: 0 0% 100%;
