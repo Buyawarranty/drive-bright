@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { DateRange } from 'react-day-picker';
 import { format, subDays, startOfWeek, startOfMonth } from 'date-fns';
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -105,19 +105,24 @@ export const LeadCountTab: React.FC = () => {
 
           <Card>
             <CardHeader><CardTitle>Received, fake and dead</CardTitle>
+              <p className="text-2xl font-bold tabular-nums">
+                {isLoading ? 'Loading…' : `${fmt(totals.all)} total leads received`}
+              </p>
               <CardDescription>Dead = lost, wrong number, bought elsewhere, vehicle sold, do not contact.</CardDescription></CardHeader>
             <CardContent>
               {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : (
                 <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={rows}>
+                  <BarChart data={rows} margin={{ top: 28, right: 16, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                    <YAxis allowDecimals={false} />
+                    <YAxis allowDecimals={false} domain={[0, 'auto']} padding={{ top: 20 }} />
                     <Tooltip />
                     <Legend />
                     <Bar dataKey="real" name="Real leads" stackId="a" fill="hsl(var(--primary))" />
                     <Bar dataKey="dead" name="Dead leads" stackId="a" fill="hsl(var(--muted-foreground))" />
-                    <Bar dataKey="fake" name="Fake leads" stackId="a" fill="hsl(var(--destructive))" />
+                    <Bar dataKey="fake" name="Fake leads" stackId="a" fill="hsl(var(--destructive))">
+                      <LabelList dataKey="all" position="top" offset={8} formatter={value => fmt(Number(value))} fill="hsl(var(--foreground))" fontSize={11} />
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               )}
