@@ -1,0 +1,1770 @@
+{
+  "auditedAt": "2026-10-17",
+  "site": "https://buyawarranty.co.uk/",
+  "coverage": {
+    "primaryPages": 116,
+    "lovablePages": 107,
+    "publishedArticles": 41,
+    "sitemapBefore": 107,
+    "sitemapAfter": 116
+  },
+  "performance": {
+    "source": "Kam’s Google Search Console",
+    "property": "https://buyawarranty.co.uk/",
+    "from": "2026-09-18",
+    "to": "2026-10-15",
+    "clicks": 525,
+    "impressions": 48672,
+    "ctr": 1.08,
+    "position": 15.73
+  },
+  "searchPages": [
+    {
+      "path": "/",
+      "clicks": 168,
+      "impressions": 3345,
+      "ctr": 5.02,
+      "position": 8.93
+    },
+    {
+      "path": "/ev-warranty/",
+      "clicks": 84,
+      "impressions": 3716,
+      "ctr": 2.26,
+      "position": 6.1
+    },
+    {
+      "path": "/buy-a-used-car-warranty-reliable-warranties/",
+      "clicks": 46,
+      "impressions": 6694,
+      "ctr": 0.69,
+      "position": 18.38
+    },
+    {
+      "path": "/car-extended-warranty/land-rover/",
+      "clicks": 39,
+      "impressions": 6489,
+      "ctr": 0.6,
+      "position": 7.93
+    },
+    {
+      "path": "/thewarrantyhub/12-top-reliable-used-cars-under-15000-uk-2026/",
+      "clicks": 33,
+      "impressions": 2907,
+      "ctr": 1.14,
+      "position": 9.5
+    },
+    {
+      "path": "/car-extended-warranty/",
+      "clicks": 16,
+      "impressions": 4352,
+      "ctr": 0.37,
+      "position": 36.92
+    },
+    {
+      "path": "/car-extended-warranty/mercedes-benz/",
+      "clicks": 10,
+      "impressions": 1847,
+      "ctr": 0.54,
+      "position": 9.48
+    }
+  ],
+  "keywordEvidence": {
+    "source": "Semrush",
+    "market": "UK",
+    "keyword": "used car warranty",
+    "monthlySearches": 2400,
+    "difficulty": 22,
+    "worthItSearches": 170
+  },
+  "limitations": [
+    "This is a dated, on-demand audit, not scheduled monitoring or a live Google indexing inventory.",
+    "All 116 primary public page URLs were fetched without JavaScript; 107 corresponding Lovable-host URLs were also checked. Seven Lovable pages were additionally rendered to distinguish working pages from missing HTML.",
+    "HTTP 200 confirms reachability, not Google indexing. Unknown URLs still return HTTP 200 with a not-found screen after JavaScript.",
+    "Image checks covered 18 distinct references on the Lovable crawl and one emitted share image on the four additional primary-site articles, not every image or background. Core Web Vitals, backlinks, Meta reach and AI citations were not measured.",
+    "The foundation scanner identifies the Lovable hostname as primary, whereas source canonicals and the selected Search Console property use buyawarranty.co.uk. Its wrong-host recommendations have not been applied blindly.",
+    "Existing schema, Google Ads, payment logic, prices and article bodies were left unchanged.",
+    "Preview corrections reach the live website only after publication. Recheck both hosts afterwards; latest articles already work on the Lovable host but return generic metadata on the primary host.",
+    "A full factual review of every article remains outstanding, especially repair-cost evidence, absolute cover promises and two dealer-focused Panda Protect articles."
+  ],
+  "findings": [
+    {
+      "priority": "High",
+      "status": "Ready to publish",
+      "title": "Missing article metadata coverage",
+      "evidence": "Six sitemap articles had no build-time page-specific metadata; four published articles were missing from both the sitemap and metadata inventory.",
+      "action": "Added existing approved database titles, descriptions, H1s and images for ten articles, without rewriting their bodies or schemas.",
+      "next": "Publish, then check their returned HTML and social previews on both hosts."
+    },
+    {
+      "priority": "High",
+      "status": "Ready to publish",
+      "title": "Public-page sitemap gaps",
+      "evidence": "Five public canonical pages and four of the 41 published articles were absent from the static sitemap.",
+      "action": "Added nine entries to the existing sitemap. All 41 published articles are now represented. Existing lastmod values were preserved where provenance was unknown; new entries omit lastmod.",
+      "next": "After publication, recheck sitemap and submit the updated XML to the selected Search Console property."
+    },
+    {
+      "priority": "Medium",
+      "status": "Ready to publish",
+      "title": "Social-image metadata mismatch",
+      "evidence": "Prerender output defaulted to a 1600 × 254 PNG while advertising 1200 × 630.",
+      "action": "Reused the existing 1200 × 630 JPEG (about 90 KB) and removed inherited dimensions for unmeasured overrides; added page-specific image descriptions.",
+      "next": "Check Facebook/Meta, LinkedIn and WhatsApp previews after publication. Article-specific share-sized renditions remain a follow-up."
+    },
+    {
+      "priority": "Medium",
+      "status": "Ready to publish",
+      "title": "Warranty-transfer canonical consistency",
+      "evidence": "Build-time metadata omitted the trailing slash used by the live page.",
+      "action": "Aligned the build-time path and new sitemap entry with /warranty-transfer/.",
+      "next": "Confirm one self-referencing canonical after publication."
+    },
+    {
+      "priority": "Medium",
+      "status": "Ready to publish",
+      "title": "Missing articles should not be indexed",
+      "evidence": "The article-not-found branch inherited SEOHead’s indexable default.",
+      "action": "Added noindex to the missing-article branch only; successful article metadata remains unchanged.",
+      "next": "Browser-check an unknown article; hosting still needs real HTTP 404 support for genuinely absent paths."
+    },
+    {
+      "priority": "High",
+      "status": "Needs deployment check",
+      "title": "Primary-host publication differs from Lovable host",
+      "evidence": "The latest BMW X5 articles return page-specific metadata on drive-bright.lovable.app but generic homepage HTML on buyawarranty.co.uk; the primary homepage also has no initial canonical or H1.",
+      "action": "Kept the established primary-domain signals intact rather than redirecting search authority to the Lovable address.",
+      "next": "Check the primary domain’s deployment mapping and crawler delivery after the next authorised publish. Homepage content rendering needs a separate safe solution because index.html also serves private/payment fallback routes."
+    },
+    {
+      "priority": "High",
+      "status": "Editorial review",
+      "title": "Improve existing pages with Google demand",
+      "evidence": "Land Rover: 6,489 impressions, 39 clicks, 0.60% CTR, average position 7.93. Mercedes: 1,847 impressions, 10 clicks, 0.54% CTR, position 9.48. Main used-car page: 6,694 impressions, position 18.38.",
+      "action": "Prioritise clearer, evidence-led page answers and matching title/description wording on these pages, then link relevant guides to them. No keyword stuffing or invented repair prices.",
+      "next": "Review page-specific queries before selecting final wording; measure changes across comparable periods. Average position mixes queries and is not one keyword’s rank."
+    },
+    {
+      "priority": "Medium",
+      "status": "Needs Search Console action",
+      "title": "Erroneous homepage sitemap submission",
+      "evidence": "The valid /sitemap.xml entry has zero errors and zero warnings; a separate submission of the homepage as a sitemap has one error. Google supplied a count, not an exact cause.",
+      "action": "Recorded both results without claiming the valid XML sitemap is broken.",
+      "next": "Remove only the erroneous homepage-as-sitemap submission after confirming it is obsolete. Keep the valid XML submission; its recorded download is 10 October."
+    },
+    {
+      "priority": "Medium",
+      "status": "Editorial review",
+      "title": "Review inconsistent content and AI summaries",
+      "evidence": "Two published consumer-path articles contain Panda Protect dealer-focused titles; llms.txt links /whats-covered and /faqs instead of canonical /what-is-covered/ and /faq/. Some summaries contain precise prices and absolute cover claims.",
+      "action": "Preserved existing approved article wording and recorded the inconsistencies rather than silently rewriting contractual content.",
+      "next": "Approve a factual content pass and explicit llms.txt update. A linked AI summary is not a guarantee of citations or AI rankings."
+    },
+    {
+      "priority": "Medium",
+      "status": "Needs measurement",
+      "title": "Performance, links and AI/social visibility",
+      "evidence": "All primary HTML page fetches returned 200; that does not establish good mobile experience, backlink authority, Facebook reach or AI citations.",
+      "action": "Separated these unmeasured areas from observed technical defects.",
+      "next": "Run mobile field/lab performance checks and backlink research; measure actual social engagement and cited sources separately. SEO alone cannot guarantee social or AI platform placement."
+    }
+  ],
+  "pages": [
+    {
+      "url": "https://buyawarranty.co.uk/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 151.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/what-is-covered/",
+      "status": 200,
+      "title": "What's Covered | Complete UK Vehicle Warranty Coverage Guide",
+      "description": "See exactly what your warranty covers and what we pay. Unlimited claims, parts and labour included. Petrol, diesel, hybrid, EV and motorcycles.",
+      "canonical": "https://buyawarranty.co.uk/what-is-covered/",
+      "ogUrl": "https://buyawarranty.co.uk/what-is-covered/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "What's Covered"
+      ],
+      "textPresent": true,
+      "responseMs": 103.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/make-a-claim/",
+      "status": 200,
+      "title": "Make a Claim | Buy A Warranty",
+      "description": "Submit a warranty claim online. Fast claims process, dedicated claims line on 0330 229 5045.",
+      "canonical": "https://buyawarranty.co.uk/make-a-claim/",
+      "ogUrl": "https://buyawarranty.co.uk/make-a-claim/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Make a Claim"
+      ],
+      "textPresent": true,
+      "responseMs": 112.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/faq/",
+      "status": 200,
+      "title": "Frequently Asked Questions | Buy A Warranty",
+      "description": "Answers to common questions about car, van, EV and motorbike warranties — claims, cover, pricing and more.",
+      "canonical": "https://buyawarranty.co.uk/faq/",
+      "ogUrl": "https://buyawarranty.co.uk/faq/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Frequently Asked Questions"
+      ],
+      "textPresent": true,
+      "responseMs": 89.4
+    },
+    {
+      "url": "https://buyawarranty.co.uk/contact-us/",
+      "status": 200,
+      "title": "Contact Us | Buy A Warranty",
+      "description": "Get in touch with Buy A Warranty. Call 0330 229 5040, email support@buyawarranty.co.uk, or message us on WhatsApp.",
+      "canonical": "https://buyawarranty.co.uk/contact-us/",
+      "ogUrl": "https://buyawarranty.co.uk/contact-us/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Contact Us"
+      ],
+      "textPresent": true,
+      "responseMs": 195.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/buy-a-used-car-warranty-reliable-warranties/",
+      "status": 200,
+      "title": "Buy a Car Warranty Online | Trusted UK Cover",
+      "description": "Comprehensive used car warranty cover from 60p a day. Protect your car against unexpected repair bills.",
+      "canonical": "https://buyawarranty.co.uk/buy-a-used-car-warranty-reliable-warranties/",
+      "ogUrl": "https://buyawarranty.co.uk/buy-a-used-car-warranty-reliable-warranties/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Buy a Car Warranty Online"
+      ],
+      "textPresent": true,
+      "responseMs": 109.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/van-warranty/",
+      "status": 200,
+      "title": "Van Warranty | UK Van Cover | Buy A Warranty",
+      "description": "Affordable van warranty cover for tradespeople and businesses. Instant quotes, flexible plans.",
+      "canonical": "https://buyawarranty.co.uk/van-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/van-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Van Warranty"
+      ],
+      "textPresent": true,
+      "responseMs": 93.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/ev-warranty/",
+      "status": 200,
+      "title": "EV Warranty | Electric Vehicle Cover | Buy A Warranty",
+      "description": "Specialist warranty cover for electric vehicles. Battery, motor and drivetrain protection.",
+      "canonical": "https://buyawarranty.co.uk/ev-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/ev-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "EV Warranty"
+      ],
+      "textPresent": true,
+      "responseMs": 100.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/motorcycle-warranty/",
+      "status": 200,
+      "title": "Motorbike Warranty | UK Motorcycle Cover | Buy A Warranty",
+      "description": "Reliable warranty cover for motorbikes. Protect against unexpected mechanical and electrical failures.",
+      "canonical": "https://buyawarranty.co.uk/motorcycle-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/motorcycle-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Motorbike Warranty"
+      ],
+      "textPresent": true,
+      "responseMs": 96.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/",
+      "status": 200,
+      "title": "Extended Car Warranty UK | Buy A Warranty",
+      "description": "Extend your car warranty with flexible UK plans. Instant quotes, no hidden fees.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Extended Car Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 63.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/",
+      "status": 200,
+      "title": "Warranty Types | Choose Your Plan | Buy A Warranty",
+      "description": "Compare warranty types and find the right plan for your car, van, EV or motorbike.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Warranty Types"
+      ],
+      "textPresent": true,
+      "responseMs": 89.9
+    },
+    {
+      "url": "https://buyawarranty.co.uk/privacy/",
+      "status": 200,
+      "title": "Privacy Policy | Buy A Warranty",
+      "description": "How Buy A Warranty collects, uses and protects your personal data. GDPR-compliant privacy policy for UK customers.",
+      "canonical": "https://buyawarranty.co.uk/privacy/",
+      "ogUrl": "https://buyawarranty.co.uk/privacy/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Privacy Policy"
+      ],
+      "textPresent": true,
+      "responseMs": 76.4
+    },
+    {
+      "url": "https://buyawarranty.co.uk/terms/",
+      "status": 200,
+      "title": "Terms & Conditions | Buy A Warranty",
+      "description": "Terms and conditions for using buyawarranty.co.uk and purchasing a vehicle warranty plan.",
+      "canonical": "https://buyawarranty.co.uk/terms/",
+      "ogUrl": "https://buyawarranty.co.uk/terms/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Terms & Conditions"
+      ],
+      "textPresent": true,
+      "responseMs": 86.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/cookies/",
+      "status": 200,
+      "title": "Cookie Policy | Buy A Warranty",
+      "description": "How we use cookies on buyawarranty.co.uk and how you can manage your cookie preferences.",
+      "canonical": "https://buyawarranty.co.uk/cookies/",
+      "ogUrl": "https://buyawarranty.co.uk/cookies/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Cookie Policy"
+      ],
+      "textPresent": true,
+      "responseMs": 100.4
+    },
+    {
+      "url": "https://buyawarranty.co.uk/complaints/",
+      "status": 200,
+      "title": "Complaints Procedure | Buy A Warranty",
+      "description": "How to raise a complaint with Buy A Warranty. Our resolution process, response times and escalation steps.",
+      "canonical": "https://buyawarranty.co.uk/complaints/",
+      "ogUrl": "https://buyawarranty.co.uk/complaints/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Complaints Procedure"
+      ],
+      "textPresent": true,
+      "responseMs": 80.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/careers/",
+      "status": 200,
+      "title": "Warranty Sales Jobs UK | Remote PAYE Careers",
+      "description": "Remote UK Vehicle Warranty Sales Executive role. Full-time PAYE, warm leads, uncapped commission, OTE £35,000–£60,000+. Apply to join the Buyawarranty sales team.",
+      "canonical": "https://buyawarranty.co.uk/careers/",
+      "ogUrl": "https://buyawarranty.co.uk/careers/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Warranty Sales Jobs UK"
+      ],
+      "textPresent": true,
+      "responseMs": 62.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/",
+      "status": 200,
+      "title": "The Warranty Hub | Drive Smarter | Buy A Warranty",
+      "description": "Guides, tips and articles to help you drive smarter and protect your vehicle.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "The Warranty Hub"
+      ],
+      "textPresent": true,
+      "responseMs": 85.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/buying-used-vauxhall-astra-warranty-questions-uk/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 78.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/vauxhall-corsa-extended-warranty-after-3-years-uk/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 72.9
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/mercedes-extended-warranty-questions-before-buying-uk/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 72.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/buying-3-year-old-mercedes-uk-warranty-risks/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 107.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes/",
+      "status": 200,
+      "title": "Mercedes EQ Warranty UK | Out-of-Warranty EV Guide",
+      "description": "Mercedes EQ warranty UK: understand factory battery cover, onboard chargers, inverters and repair costs when your electric Mercedes leaves its original warranty.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes/",
+      "ogImage": "https://drive-bright.lovable.app/__l5e/assets-v1/3c81f3fe-5747-4371-be27-3c092f5bba59/mercedes-eq-electric-car-warranty-uk-violet-blue.jpg",
+      "h1": [
+        "Mercedes EQ Warranty UK: What Happens When Your Electric Mercedes Is Out of Its Original Warranty?"
+      ],
+      "textPresent": true,
+      "responseMs": 63.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/bmw-x5-vs-audi-q7/",
+      "status": 200,
+      "title": "BMW X5 vs Audi Q7: Which Used SUV Is Better?",
+      "description": "BMW X5 vs Audi Q7: compare comfort, space, running costs, common repair risks and warranty options before buying a used luxury SUV in the UK.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/bmw-x5-vs-audi-q7/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/bmw-x5-vs-audi-q7/",
+      "ogImage": "https://drive-bright.lovable.app/__l5e/assets-v1/9d56ab42-bdea-4e1c-a3eb-7de9912ba344/bmw-x5-vs-audi-q7-used-luxury-suv-uk-comparison.jpg",
+      "h1": [
+        "BMW X5 vs Audi Q7: Which Used Luxury SUV Is Better?"
+      ],
+      "textPresent": true,
+      "responseMs": 81.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/bmw-x5-vs-mercedes-gle-maintenance-costs/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 81.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/used-bmw-x5-repair-costs/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 82.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/platinum-warranty-cover-modifications-uk-vehicle-protection-guide/",
+      "status": 200,
+      "title": "Platinum Warranty Cover & Modifications | UK Guide 2026",
+      "description": "What Platinum car warranty cover includes for petrol, diesel, hybrid, EV and motorbike vehicles in the UK, plus exclusions and how engine remaps affect claims.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/platinum-warranty-cover-modifications-uk-vehicle-protection-guide/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/platinum-warranty-cover-modifications-uk-vehicle-protection-guide/",
+      "ogImage": "https://buyawarranty.co.uk/blog/platinum-warranty-cover-modifications-uk.jpg",
+      "h1": [
+        "Platinum Warranty Cover & Modifications"
+      ],
+      "textPresent": true,
+      "responseMs": 71.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/top-rated-car-warranty-uk-buyer-guide/",
+      "status": 200,
+      "title": "Top Rated Car Warranty UK 2026 | Buyer Guide & Cover Tiers",
+      "description": "How the top rated UK car warranties compare on cover tiers, labour rate limits, claim limits and garage choice, and how to pick the right plan in 2026.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/top-rated-car-warranty-uk-buyer-guide/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/top-rated-car-warranty-uk-buyer-guide/",
+      "ogImage": "https://buyawarranty.co.uk/blog/top-rated-car-warranty-uk-claim-approved.jpg",
+      "h1": [
+        "Top Rated Car Warranty UK 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 75.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/top-10-stolen-cars-uk-2026-trends-and-security/",
+      "status": 200,
+      "title": "Top 10 Stolen Cars UK 2026 | Theft Trends and Security",
+      "description": "The models UK thieves target most in 2026, how keyless relay theft works, and the security measures that actually stop it.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/top-10-stolen-cars-uk-2026-trends-and-security/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/top-10-stolen-cars-uk-2026-trends-and-security/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Top 10 Stolen Cars UK 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 67.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/dealership-vs-independent-cover-protect-used-car-uk-2026/",
+      "status": 200,
+      "title": "Dealership vs Independent Warranty UK 2026 | Which Is Better",
+      "description": "Dealer warranty or independent cover for your used car? Price, claim limits, garage choice and flexibility compared for UK buyers.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/dealership-vs-independent-cover-protect-used-car-uk-2026/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/dealership-vs-independent-cover-protect-used-car-uk-2026/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Dealership vs Independent Warranty UK 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 74.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/uk-car-theft-hotspots-2026-riskiest-areas-and-protection/",
+      "status": 200,
+      "title": "UK Car Theft Hotspots 2026 | Riskiest Areas & Protection",
+      "description": "The UK's riskiest areas for vehicle theft in 2026 and practical steps, devices and cover that protect your car.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/uk-car-theft-hotspots-2026-riskiest-areas-and-protection/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/uk-car-theft-hotspots-2026-riskiest-areas-and-protection/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "UK Car Theft Hotspots 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 74.9
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/do-electric-cars-need-mot-uk-rules-explained-2026/",
+      "status": 200,
+      "title": "Do Electric Cars Need an MOT? UK Rules Explained 2026",
+      "description": "Yes, electric cars need an MOT in the UK from age 3, then annually. What is tested, why the battery is not checked, top EV failure reasons and 2026 costs.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/do-electric-cars-need-mot-uk-rules-explained-2026/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/do-electric-cars-need-mot-uk-rules-explained-2026/",
+      "ogImage": "https://buyawarranty.co.uk/__l5e/assets-v1/ca53618a-c7fb-458c-b503-b3eb9d2993a0/do-electric-cars-need-mot-uk-2026-hero.jpg",
+      "h1": [
+        "Do Electric Cars Need an MOT? UK Rules Explained 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 77.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/electric-car-running-costs-uk-2026-tax-insurance-servicing/",
+      "status": 200,
+      "title": "Electric Car Running Costs UK 2026 | Tax, Insurance, Servicing",
+      "description": "What an EV really costs to run in the UK in 2026, covering VED, home and public charging, insurance, servicing and repairs.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/electric-car-running-costs-uk-2026-tax-insurance-servicing/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/electric-car-running-costs-uk-2026-tax-insurance-servicing/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Electric Car Running Costs UK 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 77.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/what-is-cat-n-car-uk-write-off-categories-guide-2026/",
+      "status": 200,
+      "title": "What Is a Cat N Car? UK Write-Off Categories Guide 2026",
+      "description": "Cat N, Cat S, Cat B and Cat A explained for UK buyers in 2026, what they mean for value, insurance and warranty cover.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/what-is-cat-n-car-uk-write-off-categories-guide-2026/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/what-is-cat-n-car-uk-write-off-categories-guide-2026/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "What Is a Cat N Car? UK Write-Off Categories Guide 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 73.9
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/good-mileage-used-car-uk-2026-buyers-guide/",
+      "status": 200,
+      "title": "Good Mileage for a Used Car UK | 2026 Buyer's Guide",
+      "description": "What counts as good mileage for a used car in the UK, how age and mileage interact, and when higher mileage is still a safe buy.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/good-mileage-used-car-uk-2026-buyers-guide/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/good-mileage-used-car-uk-2026-buyers-guide/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Good Mileage for a Used Car UK"
+      ],
+      "textPresent": true,
+      "responseMs": 73.7
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/12-top-reliable-used-cars-under-15000-uk-2026/",
+      "status": 200,
+      "title": "12 Reliable Used Cars Under £15,000 UK (2026)",
+      "description": "Twelve dependable used cars under £15,000 in the UK for 2026, with known weak points and running-cost notes.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/12-top-reliable-used-cars-under-15000-uk-2026/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/12-top-reliable-used-cars-under-15000-uk-2026/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "12 Reliable Used Cars Under £15,000 UK (2026)"
+      ],
+      "textPresent": true,
+      "responseMs": 65.9
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/",
+      "status": 200,
+      "title": "Are Car Warranties Worth It? Best Car Warranty UK 2026",
+      "description": "Whether a car warranty is worth it in the UK, typical repair bills it offsets, and how to compare the best cover in 2026.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Are Car Warranties Worth It? Best Car Warranty UK 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 67.5
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/is-maintenance-warranty-necessary-used-cars-uk-2026/",
+      "status": 200,
+      "title": "Is a Maintenance Warranty Necessary for a Used Car? UK 2026",
+      "description": "Whether a maintenance warranty is worth it on a UK used car, what it covers versus servicing, and who benefits most.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/is-maintenance-warranty-necessary-used-cars-uk-2026/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/is-maintenance-warranty-necessary-used-cars-uk-2026/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Is a Maintenance Warranty Necessary for a Used Car? UK 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 76.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/maintenance-warranty-vs-extended-warranty-uk-2026/",
+      "status": 200,
+      "title": "Maintenance Warranty vs Extended Warranty UK 2026",
+      "description": "Maintenance plan or extended warranty? What each covers in the UK, typical costs and which one suits your car.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/maintenance-warranty-vs-extended-warranty-uk-2026/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/maintenance-warranty-vs-extended-warranty-uk-2026/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Maintenance Warranty vs Extended Warranty UK 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 63.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/uk-car-repair-costs-2026-without-warranty/",
+      "status": 200,
+      "title": "UK Car Repair Costs 2026 | What Repairs Cost Without Cover",
+      "description": "2026 UK repair cost data — gearbox, clutch, turbo, EGR, hybrid battery and more — and what a warranty would have covered.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/uk-car-repair-costs-2026-without-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/uk-car-repair-costs-2026-without-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "UK Car Repair Costs 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 70.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/top-reasons-car-warranty-claims-rejected-uk-2026/",
+      "status": 200,
+      "title": "Top 7 Reasons UK Warranty Claims Get Rejected (2026)",
+      "description": "The most common reasons UK car warranty claims are rejected and the simple steps that keep your claim valid.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/top-reasons-car-warranty-claims-rejected-uk-2026/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/top-reasons-car-warranty-claims-rejected-uk-2026/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Top 7 Reasons UK Warranty Claims Get Rejected (2026)"
+      ],
+      "textPresent": true,
+      "responseMs": 71.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/private-car-warranty-uk-2026-safe-without-a-dealer/",
+      "status": 200,
+      "title": "Private Car Warranty UK 2026 | Safe to Buy Without a Dealer?",
+      "description": "Buying warranty cover for a privately bought car in the UK — eligibility, inspections, waiting periods and what to check first.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/private-car-warranty-uk-2026-safe-without-a-dealer/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/private-car-warranty-uk-2026-safe-without-a-dealer/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Private Car Warranty UK 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 70.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/auto-warranty-vs-extended-warranty-insurance-uk-2026/",
+      "status": 200,
+      "title": "Auto Warranty vs Extended Warranty Insurance UK 2026",
+      "description": "The real difference between an auto warranty and extended warranty insurance in the UK, and which protects you better.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/auto-warranty-vs-extended-warranty-insurance-uk-2026/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/auto-warranty-vs-extended-warranty-insurance-uk-2026/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Auto Warranty vs Extended Warranty Insurance UK 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 66.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/used-car-warranty-uk-2026-whats-covered-when-to-buy/",
+      "status": 200,
+      "title": "Used Car Warranty UK 2026 | What's Covered & When to Buy",
+      "description": "What a used car warranty covers in the UK, the best time to buy cover, claim limits, labour rates and how to make a claim.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/used-car-warranty-uk-2026-whats-covered-when-to-buy/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/used-car-warranty-uk-2026-whats-covered-when-to-buy/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Used Car Warranty UK 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 101.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/car-warranty-vs-breakdown-cover-vs-insurance-uk-2026/",
+      "status": 200,
+      "title": "Car Warranty vs Breakdown Cover vs Insurance UK 2026",
+      "description": "How warranty, breakdown cover and insurance differ in the UK, what each one pays for, and which combination UK drivers actually need.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/car-warranty-vs-breakdown-cover-vs-insurance-uk-2026/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/car-warranty-vs-breakdown-cover-vs-insurance-uk-2026/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Car Warranty vs Breakdown Cover vs Insurance UK 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 91.7
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/cheap-car-warranty-in-the-uk-what-is-covered-what-is-not-how-to-choose-smartly/",
+      "status": 200,
+      "title": "Cheap Car Warranty UK | What's Covered & How to Choose",
+      "description": "What a cheap UK car warranty covers, what it excludes, and how to judge genuine value instead of just the lowest monthly price.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/cheap-car-warranty-in-the-uk-what-is-covered-what-is-not-how-to-choose-smartly/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/cheap-car-warranty-in-the-uk-what-is-covered-what-is-not-how-to-choose-smartly/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Cheap Car Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 75.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/toyota-corolla-hybrid-ownership-cost-uk-fuel-savings-vs-warranty-protection/",
+      "status": 200,
+      "title": "Toyota Corolla Hybrid Ownership Cost UK | Fuel Savings vs Warranty",
+      "description": "Real UK running costs for the Toyota Corolla Hybrid — fuel savings, servicing, common repair bills and when warranty cover pays for itself.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/toyota-corolla-hybrid-ownership-cost-uk-fuel-savings-vs-warranty-protection/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/toyota-corolla-hybrid-ownership-cost-uk-fuel-savings-vs-warranty-protection/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Toyota Corolla Hybrid Ownership Cost UK"
+      ],
+      "textPresent": true,
+      "responseMs": 73.5
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/2026-toyota-corolla-cross-first-look-features-price-reliability/",
+      "status": 200,
+      "title": "2026 Toyota Corolla Cross First Look UK | Price & Reliability",
+      "description": "First look at the 2026 Toyota Corolla Cross with updated design and hybrid efficiency in the UK, plus price expectations, reliability insight and warranty advice.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/2026-toyota-corolla-cross-first-look-features-price-reliability/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/2026-toyota-corolla-cross-first-look-features-price-reliability/",
+      "ogImage": "https://buyawarranty.co.uk/blog/2026-toyota-corolla-cross-uk.jpg",
+      "h1": [
+        "2026 Toyota Corolla Cross First Look UK"
+      ],
+      "textPresent": true,
+      "responseMs": 73.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/stop-overpaying-for-repairs-maintenance-warranty-vs-extended-warranty/",
+      "status": 200,
+      "title": "Maintenance Warranty vs Extended Warranty UK | Key Differences",
+      "description": "Understand the difference between a maintenance warranty and an extended warranty in the UK, what each covers, 2026 costs and how to stop overpaying for repairs.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/stop-overpaying-for-repairs-maintenance-warranty-vs-extended-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/stop-overpaying-for-repairs-maintenance-warranty-vs-extended-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/blog/maintenance-vs-extended-warranty-uk.jpg",
+      "h1": [
+        "Maintenance Warranty vs Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 79.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/warranty-exclusions-uk-what-is-not-covered/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 65.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/vehicle-modifications-extended-warranty-uk/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 72.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/tesla-warranty-uk-2026-battery-cover-repair-costs-extended-options/",
+      "status": 200,
+      "title": "Tesla Warranty UK 2026 | Battery Cover & Repair Costs",
+      "description": "Tesla's UK warranty runs 4 years or 60,000 miles with 8 years of battery and drive unit cover. See 2026 repair costs, battery limits and extended options.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/tesla-warranty-uk-2026-battery-cover-repair-costs-extended-options/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/tesla-warranty-uk-2026-battery-cover-repair-costs-extended-options/",
+      "ogImage": "https://buyawarranty.co.uk/blog/tesla-warranty-uk-2026.jpg",
+      "h1": [
+        "Tesla Warranty UK 2026: Battery Cover, Repair Costs & Extended Options Explained"
+      ],
+      "textPresent": true,
+      "responseMs": 72.4
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/tesla-car-price-extended-warranty-uk-2026-ownership-guide/",
+      "status": 200,
+      "title": "Tesla Car Price & Extended Warranty UK 2026 | Ownership Guide",
+      "description": "Tesla UK prices, EV road tax, Helvetia extended cover and independent warranty options for older Tesla models in 2026.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/tesla-car-price-extended-warranty-uk-2026-ownership-guide/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/tesla-car-price-extended-warranty-uk-2026-ownership-guide/",
+      "ogImage": "https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/blog-images/tesla-car-price-extended-warranty-uk-2026.jpg",
+      "h1": [
+        "Tesla Car Price & Extended Warranty UK: 2026 Ownership Guide"
+      ],
+      "textPresent": true,
+      "responseMs": 73.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/petrol-diesel-vehicle-warranty-cover-complete-uk-drivers-guide/",
+      "status": 200,
+      "title": "Petrol & Diesel Car Warranty Cover UK | Complete Guide",
+      "description": "What's covered on a UK petrol or diesel extended warranty: engine, turbo, gearbox, wheel bearings, electrics and diagnostics, plus typical repair costs without cover.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/petrol-diesel-vehicle-warranty-cover-complete-uk-drivers-guide/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/petrol-diesel-vehicle-warranty-cover-complete-uk-drivers-guide/",
+      "ogImage": "https://buyawarranty.co.uk/blog/petrol-diesel-vehicle-warranty-cover-uk.jpg",
+      "h1": [
+        "Petrol & Diesel Vehicle Warranty Cover: Complete UK Driver's Guide"
+      ],
+      "textPresent": true,
+      "responseMs": 70.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/land-rover-extended-warranty-cost-uk-2026-prices-repair-costs/",
+      "status": 200,
+      "title": "Land Rover Warranty Cost UK 2026 | Repair Prices",
+      "description": "Compare Land Rover extended warranty costs in the UK for 2026, including prices from £19 a month, repair bills and what to check before buying.",
+      "canonical": "https://buyawarranty.co.uk/thewarrantyhub/land-rover-extended-warranty-cost-uk-2026-prices-repair-costs/",
+      "ogUrl": "https://buyawarranty.co.uk/thewarrantyhub/land-rover-extended-warranty-cost-uk-2026-prices-repair-costs/",
+      "ogImage": "https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/blog-images/land-rover-warranty-cost-uk-2026.jpg",
+      "h1": [
+        "Land Rover Extended Warranty Cost UK: 2026 Prices & Repair Costs"
+      ],
+      "textPresent": true,
+      "responseMs": 70.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/used-car-warranty-uk/",
+      "status": 200,
+      "title": "Used Car Warranty UK | Buy A Warranty",
+      "description": "Trusted UK used car warranty provider. 5-star reviews, instant online quotes from 60p a day.",
+      "canonical": "https://buyawarranty.co.uk/used-car-warranty-uk/",
+      "ogUrl": "https://buyawarranty.co.uk/used-car-warranty-uk/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Used Car Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 93.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/cancel-warranty/",
+      "status": 200,
+      "title": "Cancel Your Warranty | BuyAWarranty",
+      "description": "Cancel your used car warranty easily. Understand your cooling off rights, refund process and alternative options.",
+      "canonical": "https://buyawarranty.co.uk/cancel-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/cancel-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Cancel Your Warranty"
+      ],
+      "textPresent": true,
+      "responseMs": 112.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-plan/",
+      "status": 200,
+      "title": "12 Month Car Warranty UK | Affordable Cover | BuyA Warranty",
+      "description": "Get 12 month car warranty protection in the UK with BuyA Warranty. Affordable cover, flexible terms and reliable mechanical breakdown insurance.",
+      "canonical": "https://buyawarranty.co.uk/warranty-plan/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-plan/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "12 Month Car Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 134.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/vans-warranty/",
+      "status": 200,
+      "title": "Vans Warranty | Buy A Warranty",
+      "description": "Specialist vans warranty plans designed for trade and business use.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/vans-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/vans-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Van warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 133.5
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/ev-warranty/",
+      "status": 200,
+      "title": "EV Warranty UK | Electric Vehicle Cover | BuyA Warranty",
+      "description": "EV Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/ev-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/ev-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Electric vehicle warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 97.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/hybrid-warranty/",
+      "status": 200,
+      "title": "Hybrid Warranty UK | BuyA Warranty Protection",
+      "description": "Hybrid Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/hybrid-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/hybrid-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Hybrid car warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 132.5
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/phev-warranty/",
+      "status": 200,
+      "title": "PHEV Warranty UK | Plug-In Hybrid Cover | BuyA Warranty",
+      "description": "PHEV Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/phev-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/phev-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Plug-in hybrid warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 121.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/suv-warranty/",
+      "status": 200,
+      "title": "SUV Extended Warranty UK | 4x4 Cover from £21/mo | BuyAWarranty",
+      "description": "SUV Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/suv-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/suv-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "SUV extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 142.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/bmw-warranty/",
+      "status": 200,
+      "title": "BMW Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+      "description": "BMW Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/bmw-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/bmw-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "BMW extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 97.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/mercedes-warranty/",
+      "status": 200,
+      "title": "Mercedes Extended Warranty UK | Instant Quote | BuyA Warranty",
+      "description": "Mercedes Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/mercedes-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/mercedes-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Mercedes-Benz extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 144.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/honda-warranty/",
+      "status": 200,
+      "title": "Honda Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+      "description": "Honda Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/honda-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/honda-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Honda extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 101.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/toyota-warranty/",
+      "status": 200,
+      "title": "Toyota Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+      "description": "Toyota Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/toyota-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/toyota-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Toyota extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 80.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/ford-warranty/",
+      "status": 200,
+      "title": "Ford Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+      "description": "Ford Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/ford-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/ford-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Ford Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 57.5
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/kia-warranty/",
+      "status": 200,
+      "title": "Kia Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+      "description": "Kia Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/kia-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/kia-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Kia extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 98.9
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/hyundai-warranty/",
+      "status": 200,
+      "title": "Hyundai Extended Warranty UK | Tucson, i30, Kona, IONIQ 5 from £19/mo",
+      "description": "Hyundai Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/hyundai-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/hyundai-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Hyundai Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 104.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/citroen-warranty/",
+      "status": 200,
+      "title": "Citroën Extended Warranty UK | From £19/mo | Buy A Warranty",
+      "description": "Citroën Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/citroen-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/citroen-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Citroën extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 92.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/mg-warranty/",
+      "status": 200,
+      "title": "MG Extended Warranty UK | BuyA Warranty Cover",
+      "description": "MG Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/mg-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/mg-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "MG Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 105.7
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/skoda-warranty/",
+      "status": 200,
+      "title": "Skoda Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+      "description": "Skoda Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/skoda-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/skoda-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Skoda Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 130.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/ssangyong-warranty/",
+      "status": 200,
+      "title": "SsangYong Extended Warranty UK | Reliable Car Protection Plans",
+      "description": "SsangYong extended warranty cover in the UK from £19/month — Rexton, Korando and Tivoli protection with unlimited claims and instant online quotes.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/ssangyong-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/ssangyong-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "SsangYong Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 75.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/audi-warranty/",
+      "status": 200,
+      "title": "Audi Extended Warranty UK | Instant Quote | BuyA Warranty",
+      "description": "Audi Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/audi-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/audi-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Audi extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 82.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/nissan-warranty/",
+      "status": 200,
+      "title": "Nissan Extended Warranty UK | Get Your Instant Quote | Buy A Warranty",
+      "description": "Nissan Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/nissan-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/nissan-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Nissan extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 98.4
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/peugeot-warranty/",
+      "status": 200,
+      "title": "Peugeot Extended Warranty UK | Reliable Cover | BuyA Warranty",
+      "description": "Peugeot Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/peugeot-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/peugeot-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Peugeot Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 80.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/vauxhall-warranty/",
+      "status": 200,
+      "title": "Vauxhall Extended Warranty UK | Corsa, Astra, Grandland Cover from £19/mo",
+      "description": "Vauxhall Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/vauxhall-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/vauxhall-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Vauxhall extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 158.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/volvo-warranty/",
+      "status": 200,
+      "title": "Volvo Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+      "description": "Volvo Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/volvo-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/volvo-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Volvo Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 98.7
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/volkswagen-warranty/",
+      "status": 200,
+      "title": "Volkswagen Extended Warranty UK | Trusted Cover | BuyA Warranty",
+      "description": "Volkswagen Extended Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/volkswagen-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/volkswagen-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Volkswagen extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 108.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/motorbike-motorcycle-warranty/",
+      "status": 200,
+      "title": "Motorbike Warranty UK | Full Protection | BuyA Warranty",
+      "description": "Motorbike Warranty UK — UK extended warranty cover from £19/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/motorbike-motorcycle-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/motorbike-motorcycle-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Motorbike warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 72.5
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/audi/",
+      "status": 200,
+      "title": "Audi Extended Warranty Cover from £19/month | Buy A Warranty",
+      "description": "Protect your Audi from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/audi/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/audi/",
+      "ogImage": "https://buyawarranty.co.uk/__l5e/assets-v1/546b3135-5645-4d9f-b5ee-076fa2745d48/audi-hero-panda-cars.png",
+      "h1": [
+        "Audi Extended Warranty Cover from £19/month"
+      ],
+      "textPresent": true,
+      "responseMs": 112.7
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/bmw/",
+      "status": 200,
+      "title": "BMW Extended Warranty Cover from £19/month | Buy A Warranty",
+      "description": "Protect your BMW from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/bmw/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/bmw/",
+      "ogImage": "https://buyawarranty.co.uk/__l5e/assets-v1/c5a3804c-e712-43cb-aaf7-d8e1dff42533/bmw-panda-hero.png",
+      "h1": [
+        "BMW Extended Warranty Cover from £19/month"
+      ],
+      "textPresent": true,
+      "responseMs": 90.4
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/ford/",
+      "status": 200,
+      "title": "Ford Extended Warranty Cover from £19/month | Quote",
+      "description": "Protect your Ford from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/ford/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/ford/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Ford Extended Warranty Cover from £19/month"
+      ],
+      "textPresent": true,
+      "responseMs": 118.5
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/hyundai/",
+      "status": 200,
+      "title": "Hyundai Extended Warranty | Used Hyundai Cover & Instant Quotes",
+      "description": "Extend your Hyundai warranty and protect against expensive repairs. Get instant quotes for used Hyundai cover, including high-mileage cars up to 150,000 miles.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/hyundai/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/hyundai/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Hyundai Extended Warranty"
+      ],
+      "textPresent": true,
+      "responseMs": 105.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/jaguar/",
+      "status": 200,
+      "title": "Jaguar Car Extended Warranty | Cover for New & Used Models",
+      "description": "Protect your Jaguar with comprehensive extended warranty cover for new and used models. Get instant online quotes, flexible plans and protection from costly repairs.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/jaguar/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/jaguar/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Jaguar Car Extended Warranty"
+      ],
+      "textPresent": true,
+      "responseMs": 112.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/land-rover/",
+      "status": 200,
+      "title": "Land Rover Warranty UK | Discovery & Range Rover Cover",
+      "description": "Protect your Land Rover or Range Rover from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/land-rover/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/land-rover/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Land Rover Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 94.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/",
+      "status": 200,
+      "title": "Mercedes-Benz Extended Warranty Cover from £19/month | Buy A Warranty",
+      "description": "Protect your Mercedes-Benz from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/",
+      "ogImage": "https://buyawarranty.co.uk/__l5e/assets-v1/207b7a00-2fce-48b8-9893-e9deb63e4a0d/mercedes-panda-hero.png",
+      "h1": [
+        "Mercedes-Benz Extended Warranty Cover from £19/month"
+      ],
+      "textPresent": true,
+      "responseMs": 132.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/nissan/",
+      "status": 200,
+      "title": "Nissan Extended Warranty Cover from £19/month | Buy A Warranty",
+      "description": "Protect your Nissan from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/nissan/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/nissan/",
+      "ogImage": "https://buyawarranty.co.uk/__l5e/assets-v1/43bea0eb-75cf-4a29-9b93-7a3efd4e1de7/nissan-hero-panda-cars.png",
+      "h1": [
+        "Nissan Extended Warranty Cover from £19/month"
+      ],
+      "textPresent": true,
+      "responseMs": 111.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/skoda/",
+      "status": 200,
+      "title": "Škoda Car Extended Warranty | Cover for New & Used Models",
+      "description": "Protect your Škoda with comprehensive extended warranty cover for new and used models. Get instant quotes, flexible plans and protection from costly repairs.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/skoda/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/skoda/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Škoda Car Extended Warranty"
+      ],
+      "textPresent": true,
+      "responseMs": 93.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/volkswagen/",
+      "status": 200,
+      "title": "Volkswagen Extended Warranty Cover from £19/month | Buy A Warranty",
+      "description": "Protect your Volkswagen from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/volkswagen/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/volkswagen/",
+      "ogImage": "https://buyawarranty.co.uk/__l5e/assets-v1/a8654212-2d11-434d-84c0-7ac213730b6d/vw-panda-hero.png",
+      "h1": [
+        "Volkswagen Extended Warranty Cover from £19/month"
+      ],
+      "textPresent": true,
+      "responseMs": 66.5
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/tesla-warranty/",
+      "status": 200,
+      "title": "Tesla Warranty UK | Model 3, Y, S & X Cover | Buy A Warranty",
+      "description": "Tesla warranty cover in the UK for Model 3, Model Y, Model S and Model X — drive unit, on-board charger, power electronics and MCU protection with instant online quotes.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/tesla-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/tesla-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Tesla extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 65.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/dacia-warranty/",
+      "status": 200,
+      "title": "Dacia Extended Warranty UK | Sandero, Duster & Jogger Cover",
+      "description": "Dacia extended warranty cover in the UK for Sandero, Duster, Jogger and Spring — turbo, gearbox and electrics protection with instant online quotes.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/dacia-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/dacia-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Dacia extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 66.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/jeep-warranty/",
+      "status": 200,
+      "title": "Jeep Extended Warranty UK | Renegade, Compass & Cherokee",
+      "description": "Jeep extended warranty cover in the UK for Renegade, Compass, Cherokee and Wrangler — gearbox, 4x4 driveline and electronics protection, quoted online in 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/jeep-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/jeep-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Jeep extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 92.5
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/smart-warranty/",
+      "status": 200,
+      "title": "smart Car Warranty UK | fortwo & forfour Cover | Buy A Warranty",
+      "description": "smart car warranty cover in the UK for fortwo, forfour and EQ models — clutch actuator, gear selector and electrics protection with instant online quotes.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/smart-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/smart-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "smart car warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 88.7
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/subaru-warranty/",
+      "status": 200,
+      "title": "Subaru Extended Warranty UK | Forester, Outback & Impreza",
+      "description": "Subaru extended warranty cover in the UK for Forester, Outback, Impreza and XV — boxer engine, CVT and all-wheel-drive protection quoted online in 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/subaru-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/subaru-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Subaru extended warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 109.0
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/porsche-warranty/",
+      "status": 200,
+      "title": "Porsche Extended Warranty UK | Instant Quote | Buy A Warranty",
+      "description": "Porsche extended warranty cover in the UK for Macan, Cayenne, Boxster, Cayman and Panamera — specialist labour rates and instant online quotes.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/porsche-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/porsche-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Porsche Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 80.5
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/lexus-warranty/",
+      "status": 200,
+      "title": "Lexus Extended Warranty UK | Hybrid Cover | Buy A Warranty",
+      "description": "Lexus extended warranty cover in the UK for IS, NX, RX, UX and CT — hybrid transaxle, inverter and electronics protection with instant online quotes.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/lexus-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/lexus-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Lexus Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 114.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/mini-warranty/",
+      "status": 200,
+      "title": "MINI Extended Warranty UK | Hatch, Countryman & Clubman",
+      "description": "MINI extended warranty cover in the UK for Hatch, Countryman, Clubman and Convertible — timing chain, gearbox and electrics protection quoted online.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/mini-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/mini-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "MINI Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 77.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/alfa-romeo-warranty/",
+      "status": 200,
+      "title": "Alfa Romeo Extended Warranty UK | Giulia, Stelvio & Giulietta",
+      "description": "Alfa Romeo extended warranty cover in the UK for Giulia, Stelvio, Giulietta and MiTo — gearbox, turbo and electronics protection quoted online in 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/alfa-romeo-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/alfa-romeo-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Alfa Romeo Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 93.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/suzuki-warranty/",
+      "status": 200,
+      "title": "Suzuki Extended Warranty UK | Swift, Vitara & Jimny Cover",
+      "description": "Suzuki extended warranty cover in the UK for Swift, Vitara, S-Cross, Ignis and Jimny — mechanical and electrical protection with instant online quotes.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/suzuki-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/suzuki-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Suzuki Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 102.9
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/mitsubishi-warranty/",
+      "status": 200,
+      "title": "Mitsubishi Extended Warranty UK | Outlander PHEV & ASX",
+      "description": "Mitsubishi extended warranty cover in the UK for Outlander PHEV, ASX, Shogun and L200 — hybrid drive, gearbox and 4x4 protection quoted online.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/mitsubishi-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/mitsubishi-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Mitsubishi Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 99.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/byd-warranty/",
+      "status": 200,
+      "title": "BYD Warranty UK | Atto 3, Dolphin & Seal Cover | Buy A Warranty",
+      "description": "BYD warranty cover in the UK for Atto 3, Dolphin, Seal and Seal U — drive motor, on-board charger and power electronics protection with instant online quotes.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/byd-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/byd-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "BYD Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 106.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/chevrolet-warranty/",
+      "status": 200,
+      "title": "Chevrolet Extended Warranty UK | Captiva, Cruze & Spark",
+      "description": "Chevrolet extended warranty cover in the UK for Captiva, Cruze, Aveo, Spark and Orlando — engine, gearbox and electrics protection quoted online.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/chevrolet-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/chevrolet-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Chevrolet Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 86.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/chrysler-warranty/",
+      "status": 200,
+      "title": "Chrysler Extended Warranty UK | Grand Voyager & 300C Cover",
+      "description": "Chrysler extended warranty cover in the UK for Grand Voyager, 300C, Ypsilon and Delta — automatic gearbox, engine and electrics protection quoted online.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/chrysler-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/chrysler-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Chrysler Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 93.7
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/dodge-warranty/",
+      "status": 200,
+      "title": "Dodge Extended Warranty UK | Journey, Nitro & Caliber Cover",
+      "description": "Dodge extended warranty cover in the UK for Journey, Nitro, Caliber and Avenger — gearbox, driveline and electrics protection with instant online quotes.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/dodge-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/dodge-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Dodge Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 97.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/infiniti-warranty/",
+      "status": 200,
+      "title": "Infiniti Extended Warranty UK | Q30, QX30 & Q50 Cover",
+      "description": "Infiniti extended warranty cover in the UK for Q30, QX30, Q50 and FX — gearbox, turbo and electronics protection quoted online in 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/infiniti-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/infiniti-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Infiniti Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 85.6
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-types/cadillac-warranty/",
+      "status": 200,
+      "title": "Cadillac Extended Warranty UK | CTS, BLS & Escalade Cover",
+      "description": "Cadillac extended warranty cover in the UK for CTS, BLS, SRX and Escalade — automatic gearbox, engine and electrics protection quoted online.",
+      "canonical": "https://buyawarranty.co.uk/warranty-types/cadillac-warranty/",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-types/cadillac-warranty/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Cadillac Extended Warranty UK"
+      ],
+      "textPresent": true,
+      "responseMs": 83.7
+    },
+    {
+      "url": "https://buyawarranty.co.uk/appeals/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 57.2
+    },
+    {
+      "url": "https://buyawarranty.co.uk/cancellation-policy/",
+      "status": 200,
+      "title": "Cancellation Policy | Buy A Warranty",
+      "description": "Read our cancellation policy. 14-day money back guarantee, refund eligibility and how to cancel your warranty plan.",
+      "canonical": "https://buyawarranty.co.uk/cancellation-policy/",
+      "ogUrl": "https://buyawarranty.co.uk/cancellation-policy/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Cancellation Policy"
+      ],
+      "textPresent": true,
+      "responseMs": 79.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/discount-promo-offers/",
+      "status": 200,
+      "title": "Car Warranty Discount Codes 2026 | Buy A Warranty",
+      "description": "Latest discounts and promotional offers on car, van, EV and motorbike warranty plans.",
+      "canonical": "https://buyawarranty.co.uk/discount-promo-offers/",
+      "ogUrl": "https://buyawarranty.co.uk/discount-promo-offers/",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Car Warranty Discount Codes 2026"
+      ],
+      "textPresent": true,
+      "responseMs": 86.9
+    },
+    {
+      "url": "https://buyawarranty.co.uk/car-extended-warranty/vauxhall/",
+      "status": 200,
+      "title": "Vauxhall Extended Warranty Cover from £19/month | Buy A Warranty",
+      "description": "Protect your Vauxhall from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+      "canonical": "https://buyawarranty.co.uk/car-extended-warranty/vauxhall/",
+      "ogUrl": "https://buyawarranty.co.uk/car-extended-warranty/vauxhall/",
+      "ogImage": "https://buyawarranty.co.uk/__l5e/assets-v1/9d7591c8-b60e-4b72-95af-0623d578e089/vauxhall-hero-panda-cars.png",
+      "h1": [
+        "Vauxhall Extended Warranty Cover from £19/month"
+      ],
+      "textPresent": true,
+      "responseMs": 85.3
+    },
+    {
+      "url": "https://buyawarranty.co.uk/warranty-transfer/",
+      "status": 200,
+      "title": "Warranty Transfer | Buy A Warranty",
+      "description": "Selling your vehicle? Transfer your warranty to the new owner quickly and add value to the sale.",
+      "canonical": "https://buyawarranty.co.uk/warranty-transfer",
+      "ogUrl": "https://buyawarranty.co.uk/warranty-transfer",
+      "ogImage": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "h1": [
+        "Warranty Transfer"
+      ],
+      "textPresent": true,
+      "responseMs": 82.7
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/audi-a6-vs-bmw-5-series-uk-reliability-and-value-2026/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 59.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/motorcycle-extended-warranty-cost-uk-2026-prices-repair-costs/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 70.1
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/motorcycle-extended-warranty-uk-what-does-it-cover-how-does-it-work/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 79.8
+    },
+    {
+      "url": "https://buyawarranty.co.uk/thewarrantyhub/land-rover-extended-warranty-uk-what-does-it-cover-how-does-it-work/",
+      "status": 200,
+      "title": "Buy A Warranty | UK Vehicle Warranty & Extended Cover",
+      "description": "Car, van, EV and motorbike warranty from just 60p a day. Instant quote in 60 seconds, UK-wide approved repairs, no hidden fees. Rated Excellent on Trustpilot.",
+      "canonical": null,
+      "ogUrl": null,
+      "ogImage": "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
+      "h1": [],
+      "textPresent": false,
+      "responseMs": 81.6
+    }
+  ]
+}
