@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Homepage Easy Options / Flexible Warranty Plans image: homepage-only swap to the newly supplied picture as car-warranty-payment-options-monthly-yearly-3-years.png with a 960×720 webp copy (120 KB), transparent background preserved and accurate alt text; HomepageB and brand landing pages keep the old image. Publication remains on hold.
+
+
 - [x] Homepage High Mileage, No Problem! image: homepage-only swap to the newly supplied picture as high-mileage-electric-car-warranty-uk.png with a 960×720 webp copy (88 KB), transparent background preserved and accurate alt text; the previous homepage picture and all other pages are untouched. Publication remains on hold.
 
 
