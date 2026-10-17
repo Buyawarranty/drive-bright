@@ -12,6 +12,6 @@ export async function rejectApplicants(ids: string[], action: 'reject' | 'delete
   }
   const verb = action === 'delete' ? 'deleted' : 'declined';
   toast.success(`${data.done} applicant${data.done === 1 ? '' : 's'} ${verb} · ${data.emailed} rejection email${data.emailed === 1 ? '' : 's'} sent`);
-  if (data.failed?.length) toast.error(`Not completed (email failed): ${data.failed.join(', ')}`);
-  return true;
+  if (data.failed?.length) toast.error(`Not completed: ${data.failed.join(', ')}`);
+  return !data.failed?.length;
 }

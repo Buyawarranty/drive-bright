@@ -6,7 +6,7 @@ import { CAREERS_FROM, rejectionEmail } from '../_shared/careerEmails.ts';
  * Automatic careers rejection sweep.
  *
  * Runs on a schedule. Any application still sitting on status `new` once its
- * three-working-day deadline has passed gets the polite rejection letter and is
+ * configured working-day deadline has passed gets the polite rejection letter and is
  * moved to `rejected`. Giving an applicant ANY other status (shortlisted,
  * interview, hired, on hold) permanently takes them out of this sweep.
  *
@@ -18,8 +18,6 @@ import { CAREERS_FROM, rejectionEmail } from '../_shared/careerEmails.ts';
  */
 
 const BATCH_SIZE = 25;
-const LEASE_KEY = 'career_rejection_sweep_lease';
-const LEASE_MINUTES = 10;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -44,28 +42,12 @@ Deno.serve(async (req) => {
 
     // ---- Single-flight lease -------------------------------------------------
     const now = new Date();
-    const { data: lease } = await supabase
-      .from('admin_config')
-      .select('config_value')
-      .eq('config_key', LEASE_KEY)
-      .maybeSingle();
-
-    const heldUntil = (lease?.config_value as any)?.until
-      ? new Date((lease!.config_value as any).until)
-      : null;
-    if (heldUntil && heldUntil > now) {
+    const { data: acquired, error: leaseError } = await supabase.rpc('acquire_career_rejection_lease');
+    if (leaseError) return json({ error: leaseError.message }, 500);
+    if (!acquired) {
       console.log('[career-rejection-sweep] another run holds the lease, exiting');
       return json({ skipped: 'locked' });
     }
-
-    await supabase.from('admin_config').upsert(
-      {
-        config_key: LEASE_KEY,
-        config_value: { until: new Date(now.getTime() + LEASE_MINUTES * 60_000).toISOString() },
-        updated_at: now.toISOString(),
-      },
-      { onConflict: 'config_key' },
-    );
 
     // ---- Find applications whose deadline has passed ------------------------
     const { data: due, error: dueErr } = await supabase
@@ -144,14 +126,7 @@ Deno.serve(async (req) => {
     }
 
     // Release the lease.
-    await supabase.from('admin_config').upsert(
-      {
-        config_key: LEASE_KEY,
-        config_value: { until: new Date().toISOString() },
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'config_key' },
-    );
+    await supabase.from('career_rejection_settings').update({ sweep_lease_until: null }).eq('id', true);
 
     console.log(`[career-rejection-sweep] sent=${sent} skipped=${skipped} failed=${failures.length}`);
     return json({ success: true, sent, skipped, failed: failures.length });
