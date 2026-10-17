@@ -15,7 +15,7 @@ import heroPandaVehiclesDesktop from '@/assets/hero-panda-vehicles-desktop.webp.
 import completeWarrantyPanda from '@/assets/car-warranty-used-older-car.webp.asset.json';
 import unlimitedClaimsPanda from '@/assets/used-car-warranty-unlimited-claims-panda-orange-hatchback.webp.asset.json';
 import flexiblePlansPanda from '@/assets/lowest-cheapest-extended-warranty-uk.webp.asset.json';
-import highMileagePanda from '@/assets/ev-hybrid-extended-car-warranty-uk.webp.asset.json';
+import highMileagePanda from '@/assets/high-mileage-electric-car-warranty-uk.webp.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
@@ -1188,7 +1188,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             <div className="relative text-center order-1 lg:order-2">
               <OptimizedImage 
                 src={highMileagePanda.url} 
-                alt="Miles the Panda in a buyawarranty shirt cheering beside a dark grey electric car plugged into a charging station" 
+                alt="Miles the Panda in a buyawarranty shirt leaning against a dark grey electric car plugged into a charging station, holding up a shield badge with a white check mark" 
                 className="w-full h-auto max-w-sm md:max-w-lg mx-auto object-contain"
                 priority={false}
                 width={960}

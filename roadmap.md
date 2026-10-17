@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Homepage High Mileage, No Problem! image: homepage-only swap to the newly supplied picture as high-mileage-electric-car-warranty-uk.png with a 960×720 webp copy (88 KB), transparent background preserved and accurate alt text; the previous homepage picture and all other pages are untouched. Publication remains on hold.
+
+
 - [x] Compress five replacement pictures: homepage WebP copies at 960×720 and FAQs copy at 384×288, preserving transparency, approved descriptions and descriptive filename stems; originals retained for earlier deployments. Publication remains on hold.
 
 - [x] Homepage Complete Car Warranty image: replaced only this homepage placement with the supplied branded panda; descriptive car-warranty-used-older-car.png filename and accurate alt text on both layouts. Publication remains on hold.
