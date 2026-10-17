@@ -1,4 +1,5 @@
 # Project architecture rules
+- Abandoned Cart lists and every export use the shared fail-closed eligibility loader and an active-staff-checked history RPC returning only excluded cart IDs; cross-table matches remain server-side so restricted claims data is never exposed and cancelled/refunded customers cannot re-enter exports.
 - SEO Audit uses a versioned evidence snapshot for its report and assistant context, reusing Agentic Assistant chat, storage and permissions; dated observations are never represented as live scans and no automatic site mutations are introduced.
 - Missing public route metadata is added through the existing prerender inventory and static sitemap; retain the sitemap mechanism and existing schema, with one metadata entry per output path. Client and prerender sharing metadata use the shared image resolver to preserve approved descriptions and omit unverified custom-image dimensions.
 - Careers contact/experience requirements use a shared pure validator in the form and submission function, with strict server schemas, so bypassing browser controls cannot admit an ineligible application.

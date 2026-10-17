@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { filterEligibleAbandonedCarts } from '@/lib/abandonedCartEligibility';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -314,7 +315,12 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
     }
     setExporting(true);
     try {
-      const csv = buildAbandonedCartCsv(uniqueByEmail, platform, {
+      const eligible = await filterEligibleAbandonedCarts(uniqueByEmail);
+      if (eligible.length === 0) {
+        toast.error('No eligible abandoned carts to export');
+        return;
+      }
+      const csv = buildAbandonedCartCsv(eligible, platform, {
         conversionName,
         timeZone: 'Europe/London',
       });
@@ -333,7 +339,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
           platform,
           date_from: from.toISOString(),
           date_to: to.toISOString(),
-          cart_count: uniqueByEmail.length,
+          cart_count: eligible.length,
           exported_by: userId,
           exported_by_email: userEmail,
         })
@@ -343,7 +349,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
       if (exportErr) throw exportErr;
 
       // Insert items in chunks of 500
-      const items = uniqueByEmail.map(c => ({
+      const items = eligible.map(c => ({
         export_id: exportRow.id,
         abandoned_cart_id: c.id,
         platform,
@@ -354,7 +360,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
         await supabase.from('abandoned_cart_export_items').insert(chunk);
       }
 
-      toast.success(`Exported ${uniqueByEmail.length} carts for ${platform === 'google' ? 'Google' : 'Facebook'} and logged.`);
+      toast.success(`Exported ${eligible.length} carts for ${platform === 'google' ? 'Google' : 'Facebook'} and logged.`);
       await loadLogs();
       await loadPreviouslyExportedIds(platform);
     } catch (e: any) {

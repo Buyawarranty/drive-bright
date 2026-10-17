@@ -15006,6 +15006,10 @@ export type Database = {
       }
     }
     Functions: {
+      abandoned_cart_contact_keys: {
+        Args: { p_email: string; p_phone: string; p_reg: string }
+        Returns: string[]
+      }
       acquire_career_rejection_lease: { Args: never; Returns: boolean }
       add_working_days: {
         Args: { _days: number; _from: string }
@@ -15358,6 +15362,12 @@ export type Database = {
           id: string
           plan_type: string
           version: string
+        }[]
+      }
+      get_excluded_abandoned_cart_ids: {
+        Args: { p_cart_ids: string[] }
+        Returns: {
+          id: string
         }[]
       }
       get_lead_agent_activity: {
