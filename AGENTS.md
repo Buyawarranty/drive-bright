@@ -19,3 +19,4 @@
 - Date of birth is collected on Bumper's own page, not in our Step 4; Step 4 hands straight to Bumper after validation so payment pricing and provider logic stay shared.
 - The CRM Agentic Assistant is read-only; super admins get every part, other staff only the parts granted via tab_growth-* permissions (checked server-side + RLS); it suggests actions but must never get tools that change data or send messages, so nothing happens without a person acting.
 - Lead count tab: visibility = admin/super_admin or tab_lead-count grant, never sales roles; data via get_lead_count_report RPC (checks server-side) using locked daily snapshots.
+- Detailed lead quality uses a separately access-checked, read-only aggregate RPC with private privileged matching; current unique-lead outcomes and overlapping activity are separate from immutable daily snapshots so historical received totals are never rewritten.

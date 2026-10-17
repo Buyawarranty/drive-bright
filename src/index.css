@@ -287,6 +287,12 @@ html, body {
     --pricing-discount: 211 100% 50%;
 
     /* Analytics charts */
+    --lead-chart-1: 213 82% 43%;
+    --lead-chart-2: 43 96% 48%;
+    --lead-chart-3: 332 78% 43%;
+    --lead-chart-4: 160 78% 30%;
+    --lead-chart-5: 275 65% 48%;
+    --lead-chart-6: 218 13% 43%;
     --analytics-revenue: 168 72% 34%;
     --analytics-revenue-strong: 168 78% 27%;
     --analytics-goal: 166 42% 86%;
@@ -315,6 +321,12 @@ html, body {
   }
 
   .dark {
+    --lead-chart-1: 213 90% 65%;
+    --lead-chart-2: 43 96% 58%;
+    --lead-chart-3: 332 85% 68%;
+    --lead-chart-4: 160 65% 53%;
+    --lead-chart-5: 275 80% 72%;
+    --lead-chart-6: 218 15% 68%;
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
