@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SEOHead } from '@/components/SEOHead';
 import { FAQSchema } from '@/components/schema/FAQSchema';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import pandaSavingsFaq from '@/assets/the-best-car-warranty-uk-company.png.asset.json';
+import pandaSavingsFaq from '@/assets/the-best-car-warranty-uk-company.webp.asset.json';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotBadge from '@/assets/trustpilot-badge.png';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';

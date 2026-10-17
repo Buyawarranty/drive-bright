@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Compress five replacement pictures: homepage WebP copies at 960×720 and FAQs copy at 384×288, preserving transparency, approved descriptions and descriptive filename stems; originals retained for earlier deployments. Publication remains on hold.
+
 - [x] Homepage Complete Car Warranty image: replaced only this homepage placement with the supplied branded panda; descriptive car-warranty-used-older-car.png filename and accurate alt text on both layouts. Publication remains on hold.
 - [x] Homepage Unlimited Claims image: homepage-only swap to used-car-warranty-unlimited-claims-panda-orange-hatchback.png with accurate alt text; other pages keep the old image.
 - [x] Homepage Flexible Warranty Plans (Easy Options) image: homepage-only swap to lowest-cheapest-extended-warranty-uk.png with accurate alt text; HomepageB and brand landing pages keep the old image. Publication remains on hold.

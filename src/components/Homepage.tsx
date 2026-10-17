@@ -12,10 +12,10 @@ import LazySection from './homepage/LazySection';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import heroPandaVehiclesMobile from '@/assets/hero-panda-vehicles-mobile.webp.asset.json';
 import heroPandaVehiclesDesktop from '@/assets/hero-panda-vehicles-desktop.webp.asset.json';
-import completeWarrantyPanda from '@/assets/car-warranty-used-older-car.png.asset.json';
-import unlimitedClaimsPanda from '@/assets/used-car-warranty-unlimited-claims-panda-orange-hatchback.png.asset.json';
-import flexiblePlansPanda from '@/assets/lowest-cheapest-extended-warranty-uk.png.asset.json';
-import highMileagePanda from '@/assets/ev-hybrid-extended-car-warranty-uk.png.asset.json';
+import completeWarrantyPanda from '@/assets/car-warranty-used-older-car.webp.asset.json';
+import unlimitedClaimsPanda from '@/assets/used-car-warranty-unlimited-claims-panda-orange-hatchback.webp.asset.json';
+import flexiblePlansPanda from '@/assets/lowest-cheapest-extended-warranty-uk.webp.asset.json';
+import highMileagePanda from '@/assets/ev-hybrid-extended-car-warranty-uk.webp.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
@@ -1078,8 +1078,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 alt="Miles the Panda in a buyawarranty shirt jumping for joy beside an orange hatchback, celebrating unlimited car warranty claims" 
                 className="w-full h-auto max-w-sm md:max-w-lg mx-auto object-contain"
                 priority={false}
-                width={600}
-                height={600}
+                width={960}
+                height={720}
               />
               
               <div className="mt-4 max-w-xs mx-auto">
@@ -1101,8 +1101,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 alt="Miles the Panda in a buyawarranty shirt juggling Monthly, Yearly and 1,2,3 Years flexible car warranty plan options" 
                 className="w-full h-auto max-w-sm md:max-w-lg mx-auto object-contain"
                 priority={false}
-                width={600}
-                height={600}
+                width={960}
+                height={720}
               />
             </div>
 
@@ -1191,8 +1191,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 alt="Miles the Panda in a buyawarranty shirt cheering beside a dark grey electric car plugged into a charging station" 
                 className="w-full h-auto max-w-sm md:max-w-lg mx-auto object-contain"
                 priority={false}
-                width={1448}
-                height={1086}
+                width={960}
+                height={720}
               />
               <div className="mt-4 max-w-xs mx-auto">
                 <TrustpilotMicroStarWidget />
