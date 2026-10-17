@@ -23,6 +23,8 @@ export interface RouteMeta {
   description: string;
   /** Optional override for OG image. Falls back to the site default. */
   ogImage?: string;
+  /** Approved image description; separate from the page headline. */
+  ogImageAlt?: string;
   /** Optional Open Graph type override, e.g. "article" for editorial pages. */
   ogType?: string;
   /** Static <h1> for the crawler-visible fallback body. Defaults to the title minus its brand suffix. */
@@ -49,12 +51,6 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     title: "Cancellation Policy | Buy A Warranty",
     description:
       "Read our cancellation policy. 14-day money back guarantee, refund eligibility and how to cancel your warranty plan.",
-  },
-  {
-    path: "/cancel-warranty/",
-    title: "Cancel Your Warranty | Buy A Warranty",
-    description:
-      "Need to cancel your warranty? Check refund eligibility and submit a cancellation request online in minutes.",
   },
   {
     path: "/privacy/",
@@ -125,6 +121,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     h1: blog15.title,
     ogType: 'article',
     ogImage: blog15.featured_image_url,
+    ogImageAlt: blog15.meta_tags.featured_image_alt,
     articleHtml: blog15.html,
     articleSchema: blog15.structured_data,
   },
@@ -135,6 +132,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     h1: blog16.title,
     ogType: 'article',
     ogImage: blog16.featured_image_url,
+    ogImageAlt: blog16.meta_tags.featured_image_alt,
     articleHtml: blog16.html,
     articleSchema: blog16.structured_data,
   },
@@ -145,6 +143,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     h1: blog17.title,
     ogType: 'article',
     ogImage: blog17.featured_image_url,
+    ogImageAlt: blog17.meta_tags.featured_image_alt,
     articleHtml: blog17.html,
     articleSchema: blog17.structured_data,
   },
@@ -155,6 +154,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     h1: blog18.title,
     ogType: 'article',
     ogImage: blog18.featured_image_url,
+    ogImageAlt: blog18.meta_tags.featured_image_alt,
     articleHtml: blog18.html,
     articleSchema: blog18.structured_data,
   },

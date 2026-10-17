@@ -89,6 +89,22 @@
   ],
   "findings": [
     {
+      "priority": "Medium",
+      "status": "Ready to publish",
+      "title": "Consistent article image descriptions and dimensions",
+      "evidence": "Client-side sharing tags assigned 1200 × 630 to custom images without measured dimensions. Blogs 15–18 had approved photo descriptions but sharing tags used page titles instead.",
+      "action": "Shared the image-metadata rules between client and prerender output. Kept verified default dimensions, omitted unverified custom dimensions and reused approved article image descriptions without changing photos, copy or schema.",
+      "next": "Validate default-image and custom-image metadata in the preview; recheck social previews after authorised publication. No change to article body content or warranty terms."
+    },
+    {
+      "priority": "Low",
+      "status": "Ready to publish",
+      "title": "Duplicate metadata inventory and footer link variants",
+      "evidence": "The cancellation page had two metadata entries writing to the same file; the later entry already controlled the published output. Three footer destinations omitted the canonical trailing slash.",
+      "action": "Removed only the overwritten cancellation entry, preserving its effective title and description. Normalised FAQ, contact and transfer footer links to their existing canonical routes.",
+      "next": "Run route uniqueness and coverage checks and open the footer destinations. No routes were removed and no redirects or page schemas were altered."
+    },
+    {
       "priority": "High",
       "status": "Ready to publish",
       "title": "Missing article metadata coverage",

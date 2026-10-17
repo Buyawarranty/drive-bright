@@ -1,5 +1,6 @@
 import { useLayoutEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { DEFAULT_SOCIAL_IMAGE, socialImageMetadata } from '@/lib/socialImageMetadata';
 
 const SITE_ORIGIN = 'https://buyawarranty.co.uk';
 
@@ -62,10 +63,10 @@ export const SEOHead = ({
   keywords = "car warranty UK, vehicle warranty, used car warranty, extended car warranty, warranty prices UK, cheap car warranty, best car warranty, van warranty, EV warranty, motorbike warranty",
   ogTitle,
   ogDescription,
-  ogImage = "https://buyawarranty.co.uk/og-buyawarranty.jpg?v=2",
-  ogImageWidth = "1200",
-  ogImageHeight = "630",
-  ogImageAlt = "Buy A Warranty — car, van, EV and motorbike warranty from just 60p a day",
+  ogImage = DEFAULT_SOCIAL_IMAGE,
+  ogImageWidth,
+  ogImageHeight,
+  ogImageAlt,
   canonical,
   geoRegion = 'GB',
   geoPlacename = 'United Kingdom',
@@ -84,6 +85,7 @@ export const SEOHead = ({
   const canonicalUrl =
     normaliseCanonical(canonical) || `${SITE_ORIGIN}${normalisePath(window.location.pathname)}`;
   const ogImageUrl = absoluteUrl(ogImage);
+  const imageMetadata = socialImageMetadata(ogImageUrl, { width: ogImageWidth, height: ogImageHeight, alt: ogImageAlt, fallbackAlt: ogTitle || title });
 
   // index.html ships sitewide fallback tags for non-JS social crawlers, and some
   // routes render their own <Helmet> head tags alongside this component. Once a
@@ -91,12 +93,19 @@ export const SEOHead = ({
   // single canonical / og:url per page (Semrush "Multiple canonical URLs").
   useLayoutEffect(() => {
     const dedupe = () => {
+      // Static fallback dimensions must not survive on unrelated images.
+      if (!imageMetadata.width) document.head.querySelectorAll('meta[property="og:image:width"]').forEach(node => node.remove());
+      if (!imageMetadata.height) document.head.querySelectorAll('meta[property="og:image:height"]').forEach(node => node.remove());
       const selectors = [
         'meta[name="description"]',
         'meta[property="og:image"]',
         'meta[property="og:url"]',
         'meta[property="og:title"]',
         'meta[property="og:description"]',
+        'meta[property="og:image:width"]',
+        'meta[property="og:image:height"]',
+        'meta[property="og:image:alt"]',
+        'meta[name="twitter:image:alt"]',
         'link[rel="canonical"]',
       ];
       selectors.forEach((selector) => {
@@ -115,7 +124,7 @@ export const SEOHead = ({
     const observer = new MutationObserver(dedupe);
     observer.observe(document.head, { childList: true });
     return () => observer.disconnect();
-  }, [canonicalUrl, description, ogImageUrl, title]);
+  }, [canonicalUrl, description, ogImageUrl, title, imageMetadata.width, imageMetadata.height, imageMetadata.alt]);
 
 
 
@@ -138,9 +147,9 @@ export const SEOHead = ({
       <meta property="og:title" content={ogTitle || title} />
       <meta property="og:description" content={ogDescription || description} />
       <meta property="og:image" content={ogImageUrl} />
-      <meta property="og:image:width" content={ogImageWidth} />
-      <meta property="og:image:height" content={ogImageHeight} />
-      <meta property="og:image:alt" content={ogImageAlt} />
+      {imageMetadata.width && <meta property="og:image:width" content={imageMetadata.width} />}
+      {imageMetadata.height && <meta property="og:image:height" content={imageMetadata.height} />}
+      <meta property="og:image:alt" content={imageMetadata.alt} />
       <meta property="og:type" content={ogType} />
       <meta property="og:locale" content="en_GB" />
       <meta property="og:site_name" content="Buy A Warranty" />
@@ -158,7 +167,7 @@ export const SEOHead = ({
       <meta name="twitter:title" content={ogTitle || title} />
       <meta name="twitter:description" content={ogDescription || description} />
       <meta name="twitter:image" content={ogImageUrl} />
-      <meta name="twitter:image:alt" content={ogImageAlt} />
+      <meta name="twitter:image:alt" content={imageMetadata.alt} />
       <meta name="twitter:site" content="@buyawarranty" />
 
       {/* Bot directives */}
