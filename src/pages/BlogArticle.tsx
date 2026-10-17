@@ -271,6 +271,7 @@ const BlogArticle = () => {
         <SEOHead 
           title="Article Not Found | The Warranty Hub"
           description="The article you're looking for doesn't exist."
+          noindex
         />
         <div className="w-full px-4 pt-4">
           <div className="max-w-6xl mx-auto">

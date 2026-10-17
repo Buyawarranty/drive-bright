@@ -14,6 +14,7 @@ import blog15 from './blog15-content.json';
 import blog16 from './blog16-content.json';
 import blog17 from './blog17-content.json';
 import blog18 from './blog18-content.json';
+import { SEO_AUDIT_ROUTE_ADDITIONS } from './seo-audit-route-additions';
 
 export interface RouteMeta {
   /** URL path, must start with `/`. Trailing slash is normalized. */
@@ -35,12 +36,13 @@ export interface RouteMeta {
 
 
 const SITE = "https://buyawarranty.co.uk";
-const DEFAULT_OG_IMAGE = `${SITE}/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png`;
+const DEFAULT_OG_IMAGE = `${SITE}/og-buyawarranty.jpg?v=2`;
 
 export const DEFAULT_OG_IMAGE_URL = DEFAULT_OG_IMAGE;
 export const SITE_URL = SITE;
 
 export const PRERENDER_ROUTES: RouteMeta[] = [
+  ...SEO_AUDIT_ROUTE_ADDITIONS,
   // ---------------- Footer / legal ----------------
   {
     path: "/cancellation-policy/",
@@ -97,7 +99,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
       "Submit a warranty claim online. Fast claims process, dedicated claims line on 0330 229 5045.",
   },
   {
-    path: "/warranty-transfer",
+    path: "/warranty-transfer/",
     title: "Warranty Transfer | Buy A Warranty",
     description:
       "Selling your vehicle? Transfer your warranty to the new owner quickly and add value to the sale.",
