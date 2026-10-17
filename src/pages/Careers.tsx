@@ -157,12 +157,12 @@ const Careers: React.FC = () => {
   return (
     <main className="min-h-screen bg-[#F9FAFB] text-[#111827]">
       <SEOHead
-        title="Fully Remote Telesales Jobs UK | Warranty Sales Careers"
-        description="Fully remote UK Vehicle Warranty Sales Executive jobs — permanent PAYE or contract roles. Ideal for extensive telesales or car finance broker experience. Warm leads, uncapped commission, OTE £35,000–£60,000+."
-        keywords="fully remote sales jobs UK, work from home telesales jobs, remote telesales jobs UK, contract sales jobs, permanent sales jobs, fixed-term contract telesales, self-employed sales roles, warranty sales jobs, experienced telesales jobs, extensive telesales experience, telesales executive jobs, vehicle warranty sales executive, car finance broker jobs, finance broker jobs, car finance brokerage jobs, motor finance sales jobs, vehicle finance sales jobs, dealership finance and insurance jobs, GAP insurance sales jobs, PAYE sales jobs, uncapped commission sales, buyawarranty careers"
+        title="Remote Vehicle Warranty Sales & Telesales Jobs UK | Buyawarranty"
+        description="Remote UK vehicle warranty sales jobs for experienced warranty sellers, car finance brokers and dealership salespeople. Telesales preferred; direct sales welcomed."
+        keywords="vehicle warranty sales jobs, car warranty sales jobs, van warranty sales jobs, motorbike warranty sales jobs, motorcycle warranty sales jobs, warranty company jobs, warranty sales experience, vehicle warranty upselling, dealership warranty sales, forecourt sales jobs, used car dealership sales, car finance broker jobs, motor finance sales jobs, vehicle finance sales jobs, remote telesales jobs UK, telephone sales jobs, inbound telesales, outbound telesales, experienced telesales executives, direct sales experience, work from home sales jobs, permanent sales jobs, contract sales jobs, uncapped commission sales, buyawarranty careers"
         canonical={CAREERS_URL}
-        ogTitle="Fully Remote Vehicle Warranty Sales Jobs – Contract or Permanent | Buyawarranty"
-        ogDescription="Fully remote UK telesales role, permanent PAYE or contract. Warm leads, uncapped commission, OTE £35,000–£60,000+."
+        ogTitle="Remote Vehicle Warranty Sales Jobs | Buyawarranty Careers"
+        ogDescription="UK home-based warranty sales roles for experienced warranty sellers, car finance brokers and dealership or forecourt salespeople. Telesales experience preferred."
       />
       <Helmet>
         <script type="application/ld+json">{JSON.stringify(jobPostingSchema)}</script>
@@ -224,23 +224,28 @@ const Careers: React.FC = () => {
           <SectionHeader id="join-team" number={1} title="Join our growing sales team" />
           <div className="space-y-4 text-sm leading-7 text-[#374151]">
             <p>
-              Buyawarranty is expanding its UK vehicle warranty sales team and is looking for
-              experienced, confident sales professionals who know how to turn customer enquiries
-              into sales.
+              Buyawarranty is expanding its UK vehicle warranty sales team. We are looking for
+              experienced, confident sales professionals who have sold vehicle warranties and
+              know how to turn customer enquiries into sales. Experience at a warranty company,
+              a car dealership or a forecourt, or as a car finance broker selling warranty products,
+              is particularly relevant.
             </p>
             <p>
               This is a fully remote, work-from-home telephone sales role working with customers
               who have already shown an interest in vehicle warranty products. You will help
               customers understand their options, recommend suitable levels of cover and guide them
-              through the sales process. There is no office attendance and no commuting — you can
-              be based anywhere in the UK.
+              through the sales process. We welcome experience selling or upselling warranties for
+              cars, vans and motorbikes, including dealership add-on products and motor finance sales.
+              There is no office attendance and no commuting. You can be based anywhere in the UK.
             </p>
             <p>
               We hire on both a permanent and a contract basis. Permanent roles are full-time PAYE
               employment with a basic salary plus uncapped commission. Contract roles are open to
               experienced sales people who prefer fixed-term, seasonal or self-employed contract
               work with commission-led earnings. Either way, the role is open to candidates based
-              in the UK who can work UK business hours.
+              in the UK who can work UK business hours. Telesales experience is preferred, including
+              inbound telephone sales, outbound telesales, handling objections and closing sales.
+              Relevant direct sales experience is also welcomed, alongside vehicle warranty sales experience.
             </p>
             <p>
               High performers will also have opportunities for long-term career development and
@@ -333,13 +338,14 @@ const Careers: React.FC = () => {
               <p className="mb-6 max-w-2xl text-sm leading-6 text-[#6B7280]">
                 We are looking for reliable, motivated and experienced sales professionals who
                 are confident working independently from home. This role is well suited to
-                someone with extensive telesales experience, or a car finance broker from a car
-                finance brokerage or motor finance background.
+                someone with vehicle warranty sales experience from a warranty company, car
+                dealership or forecourt, or a car finance broker who has sold warranty products.
               </p>
               <TickList
                 items={[
-                  'A minimum of two years’ telesales experience (extensive telesales experience preferred)',
-                  'Car finance broker or car finance brokerage experience is highly valued',
+                  'Experience selling vehicle warranties is required',
+                  'Telesales experience is preferred; relevant direct sales experience is also welcomed',
+                  'Warranty-company, dealership, forecourt or car finance broker experience is highly valued',
                   'Strong telephone sales and closing skills',
                   'A confident and professional telephone manner',
                   'Experience handling objections',
@@ -371,6 +377,13 @@ const Careers: React.FC = () => {
           <div className="flex flex-wrap gap-2">
             {[
               'Extensive telesales experience',
+              'Vehicle warranty sales',
+              'Warranty company experience',
+              'Dealership warranty sales',
+              'Forecourt warranty sales',
+              'Car, van and motorbike warranty upselling',
+              'Direct sales experience',
+              'Inbound and outbound telephone sales',
               'Car finance broker',
               'Car finance brokerage',
               'Motor finance sales',
@@ -423,9 +436,9 @@ const Careers: React.FC = () => {
               remotely, speak with warm prospects and be rewarded for strong performance.
             </p>
             <p>
-              It is particularly well suited to someone with extensive telesales experience, or a
-              car finance broker from a car finance brokerage, motor finance or vehicle finance
-              background. It may also suit candidates from automotive sales, warranty sales,
+              It is particularly well suited to someone with telesales or direct sales experience
+              who has sold vehicle warranties, whether at a warranty company, car dealership,
+              forecourt or car finance brokerage. It may also suit candidates from automotive sales, warranty sales,
               insurance, dealership finance and insurance (F&amp;I), GAP insurance, call-centre
               sales or another high-volume telephone sales environment.
             </p>
@@ -490,9 +503,9 @@ const Careers: React.FC = () => {
             </p>
             <ul className="space-y-2 text-sm text-[#374151]">
               {[
-                'Your previous sales experience',
+                'Your previous vehicle sales experience',
                 'Your strongest sales results',
-                'Why you believe you would succeed in vehicle warranty sales',
+                'Why you believe you would succeed in car warranty sales',
               ].map((line) => (
                 <li key={line} className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-[#F97316] mt-0.5 flex-none" />
