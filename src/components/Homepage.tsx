@@ -12,6 +12,7 @@ import LazySection from './homepage/LazySection';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import heroPandaVehiclesMobile from '@/assets/hero-panda-vehicles-mobile.webp.asset.json';
 import heroPandaVehiclesDesktop from '@/assets/hero-panda-vehicles-desktop.webp.asset.json';
+import completeWarrantyPanda from '@/assets/car-warranty-used-older-car.png.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
@@ -997,7 +998,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       {/* Why Choose Our Warranty Plans Section - Lazy Loaded */}
       <LazySection>
         <Suspense fallback={<div className="py-12 md:py-20 bg-white min-h-[400px]" />}>
-          <WarrantyBenefitsSection />
+          <WarrantyBenefitsSection
+            imageSrc={completeWarrantyPanda.url}
+            imageAlt="Miles the Panda in a Buyawarranty shirt giving a thumbs up beside the words ‘Just honest cover.’"
+          />
         </Suspense>
       </LazySection>
 
