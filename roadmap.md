@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Lead count: distinctly coloured charts and a detailed agent-set category breakdown including callbacks booked, preserving total incoming leads and locked history.
+
 - [x] Abandoned Carts: list and every export use a fail-closed, active-staff-checked history filter covering all customer records (including deleted/cancelled/refunded), policies, claims, purchased quotes and completed provider payments, matched by normalised email, UK phone or registration. Exports recheck history before downloading. Eight tests pass; database evidence confirms customer, policy and claim matches; preview build OK. Signed-in staff flow cannot be verified on external Supabase. Frontend remains unpublished; checkout and outreach unchanged.
 
 - [x] Continue prioritised SEO improvements: shared social-image metadata preserves approved descriptions and removes unverified custom dimensions; duplicate cancellation inventory removed without changing effective output; footer link variants normalised. Audit evidence extended. Twelve tests pass; browser confirms FAQ default dimensions, Blog 15 approved alt with no invented dimensions, contact/transfer pages rendered and no uncaught errors. Build OK; pricing, tracking and schema unchanged. Publication remains on hold.
