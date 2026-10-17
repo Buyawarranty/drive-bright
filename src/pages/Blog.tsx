@@ -5,6 +5,7 @@ import {
   TrendingUp, Zap, Car, HelpCircle, Wrench, BatteryCharging, Mail, Lock, MapPin
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import WebsiteFooter from '@/components/WebsiteFooter';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -762,6 +763,7 @@ const Blog: React.FC = () => {
         </div>
         <div className="md:hidden h-20" aria-hidden />
       </main>
+      <WebsiteFooter />
     </>
   );
 };
