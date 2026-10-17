@@ -15,6 +15,7 @@ import heroPandaVehiclesDesktop from '@/assets/hero-panda-vehicles-desktop.webp.
 import completeWarrantyPanda from '@/assets/car-warranty-used-older-car.png.asset.json';
 import unlimitedClaimsPanda from '@/assets/used-car-warranty-unlimited-claims-panda-orange-hatchback.png.asset.json';
 import flexiblePlansPanda from '@/assets/lowest-cheapest-extended-warranty-uk.png.asset.json';
+import highMileagePanda from '@/assets/ev-hybrid-extended-car-warranty-uk.png.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
@@ -1186,12 +1187,12 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             {/* Right - Panda with warranty active */}
             <div className="relative text-center order-1 lg:order-2">
               <OptimizedImage 
-                src="/car-warranty-uk-trusted-provider.png" 
-                alt="Car warranty UK - Trusted provider - Panda with EV charging station" 
+                src={highMileagePanda.url} 
+                alt="Miles the Panda in a buyawarranty shirt cheering beside a dark grey electric car plugged into a charging station" 
                 className="w-full h-auto max-w-sm md:max-w-lg mx-auto object-contain"
                 priority={false}
-                width={600}
-                height={600}
+                width={1448}
+                height={1086}
               />
               <div className="mt-4 max-w-xs mx-auto">
                 <TrustpilotMicroStarWidget />
