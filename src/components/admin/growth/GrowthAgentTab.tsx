@@ -9,6 +9,8 @@ import { Conversation, ConversationContent, ConversationScrollButton } from '@/c
 import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message';
 import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from '@/components/ai-elements/tool';
 import { PromptInput, PromptInputTextarea, PromptInputFooter, PromptInputSubmit } from '@/components/ai-elements/prompt-input';
+import SeoAuditReport from './SeoAuditReport';
+import audit from '@/data/seo-audit-2026-10-17.json';
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/growth-agent`;
 const db = supabase as any;
@@ -29,7 +31,7 @@ const SEO_STARTERS = [
   'Create a prioritised SEO action plan and identify the evidence still needed.',
 ];
 
-const SEO_CONTEXT = `SEO Audit for Buyawarranty.co.uk. Always focus this conversation on practical SEO improvement suggestions. Use your available recent_blogs tool before making claims about existing articles. Give priority, affected page, evidence, suggested improvement and next check. Clearly distinguish observed issues from opportunities and unverified checks. You cannot crawl pages, inspect Search Console or retrieve Semrush rankings with your current tools: ask for the relevant page content or report rather than claiming a full-site scan or inventing scores, traffic or rankings. Only suggest wording, metadata, headings, internal links and image optimisation; do not suggest changes to existing schema markup, pricing, payment integrations or tracking. Never make changes or publish anything.\n\nRequest: `;
+const SEO_CONTEXT = `SEO Audit for Buyawarranty.co.uk. Always focus this conversation on practical SEO improvement suggestions. Use your available recent_blogs tool before making claims about existing articles. Give priority, affected page, evidence, suggested improvement and next check. Clearly distinguish observed issues from opportunities and unverified checks. You cannot perform a fresh crawl, inspect Search Console or retrieve Semrush rankings with your current tools. A dated audit is supplied below; cite its date and source, never treat it as live evidence or invent scores, traffic or rankings. Only suggest wording, metadata, headings, internal links and image optimisation; do not suggest changes to existing schema markup, pricing, payment integrations or tracking. Never make changes or publish anything.\n\nSaved audit: ${JSON.stringify({ auditedAt: audit.auditedAt, coverage: audit.coverage, performance: audit.performance, searchPages: audit.searchPages, keywordEvidence: audit.keywordEvidence, findings: audit.findings, limitations: audit.limitations })}\n\nRequest: `;
 
 function ChatWindow({ threadId, initialMessages, onActivity, seoAudit = false }: { threadId: string; initialMessages: UIMessage[]; onActivity: () => void; seoAudit?: boolean }) {
   const composerRef = useRef<HTMLDivElement>(null);
@@ -112,6 +114,7 @@ export default function GrowthAgentTab({ seoAudit = false }: { seoAudit?: boolea
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loaded, setLoaded] = useState<{ id: string; messages: UIMessage[] } | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [seoView, setSeoView] = useState<'report' | 'assistant'>('report');
 
   const openThread = useCallback((id: string) => {
     setParams(prev => { const n = new URLSearchParams(prev); n.set('tab', seoAudit ? 'seo-audit' : 'growth-agent'); n.set('thread', id); return n; });
@@ -172,8 +175,8 @@ export default function GrowthAgentTab({ seoAudit = false }: { seoAudit?: boolea
         </div>
       </div>
       {err && <p className="text-sm text-destructive mb-2">{err}</p>}
-      {seoAudit && <div className="flex flex-wrap gap-2 mb-4"><Button variant="outline" onClick={() => setParams(prev => { const n = new URLSearchParams(prev); n.set('tab', 'semrush-seo'); n.delete('thread'); return n; })}><TrendingUp className="h-4 w-4 mr-2" />Semrush reports</Button><span className="self-center text-xs text-muted-foreground">Suggestions only · No automatic edits · AI usage uses workspace credits</span></div>}
-      <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
+      {seoAudit && <div className="flex flex-wrap gap-2 mb-4"><Button variant={seoView === 'report' ? 'default' : 'outline'} onClick={() => setSeoView('report')}><Search className="h-4 w-4 mr-2" />Audit report</Button><Button variant={seoView === 'assistant' ? 'default' : 'outline'} onClick={() => setSeoView('assistant')}><Lightbulb className="h-4 w-4 mr-2" />Agentic Assistant</Button><Button variant="outline" onClick={() => setParams(prev => { const n = new URLSearchParams(prev); n.set('tab', 'semrush-seo'); n.delete('thread'); return n; })}><TrendingUp className="h-4 w-4 mr-2" />Semrush reports</Button></div>}
+      {seoAudit && seoView === 'report' ? <SeoAuditReport /> : <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
         <aside className="md:w-60 max-h-40 md:max-h-none shrink-0 flex flex-col border border-border rounded-lg p-2 min-h-0">
           <Button size="sm" onClick={newThread} className="mb-2"><Plus className="h-4 w-4 mr-1" />New conversation</Button>
           <div className="overflow-y-auto space-y-1">
@@ -200,7 +203,7 @@ export default function GrowthAgentTab({ seoAudit = false }: { seoAudit?: boolea
             <p className="m-auto text-sm text-muted-foreground">Loading…</p>
           )}
         </section>
-      </div>
+      </div>}
     </div>
   );
 }
