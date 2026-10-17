@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Image SEO wave: check public image descriptions and filenames, correct verified gaps without changing approved imagery, schema, tracking or stable external image URLs; record evidence in SEO Audit and verify rendering. Keep unpublished.
+
 - [x] Lead count: distinct blue/gold/magenta received chart, contrasting source colours, all current statuses, callbacks booked, overlapping paid/hot/awaiting/reminder/return/checkout activity, source comparisons and CSV. Private access-checked aggregate preserves locked snapshots; migration checks actual cohort total and signed-out denial. Eight tests and isolated browser table/download checks pass; build OK. Signed-in end-to-end unavailable on external Supabase; unpublished. Existing unrelated security findings remain unchanged.
 
 - [x] Abandoned Carts: list and every export use a fail-closed, active-staff-checked history filter covering all customer records (including deleted/cancelled/refunded), policies, claims, purchased quotes and completed provider payments, matched by normalised email, UK phone or registration. Exports recheck history before downloading. Eight tests pass; database evidence confirms customer, policy and claim matches; preview build OK. Signed-in staff flow cannot be verified on external Supabase. Frontend remains unpublished; checkout and outreach unchanged.
