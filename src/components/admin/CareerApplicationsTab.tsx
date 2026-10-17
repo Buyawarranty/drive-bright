@@ -13,6 +13,9 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { rejectApplicants } from '@/lib/careerReject';
+import { CareerCvDialog, downloadCareerCv } from '@/components/admin/CareerCvDialog';
+import { DEFAULT_CAREER_REJECTION_DAYS, canDelayApplication, validCareerDelay } from '@/lib/careerRules';
+import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 
 type Status = 'new' | 'shortlisted' | 'interview' | 'hired' | 'rejected' | 'on_hold';
 
@@ -57,25 +60,67 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
   const [rows, setRows] = React.useState<Application[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [busy, setBusy] = React.useState<string | null>(null);
-  const [filter, setFilter] = React.useState<'live' | 'all' | Status>('live');
+  const [filter, setFilter] = React.useState<'live' | 'all' | Status>('all');
   const [search, setSearch] = React.useState('');
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = React.useState(false);
   const [noteDraft, setNoteDraft] = React.useState<Record<string, string>>({});
+  const [loadError, setLoadError] = React.useState('');
+  const [rejectionDays, setRejectionDays] = React.useState(DEFAULT_CAREER_REJECTION_DAYS);
+  const [delayDays, setDelayDays] = React.useState(DEFAULT_CAREER_REJECTION_DAYS);
+  const [settingsBusy, setSettingsBusy] = React.useState(false);
+  const [cv, setCv] = React.useState<Application | null>(null);
 
   const load = React.useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('career_applications')
-      .select('*')
-      .order('applied_at', { ascending: false })
-      .limit(500);
-    if (error) toast.error(error.message);
-    setRows((data || []) as Application[]);
+    setLoadError('');
+    const { data, error } = await fetchAllRows<Application>(() => supabase
+      .from('career_applications').select('*').order('applied_at', { ascending: false }).order('id'));
+    if (error) { setLoadError('Applications could not be loaded. Please refresh or try again.'); toast.error(error.message); }
+    else setRows(data);
     setLoading(false);
   }, []);
 
   React.useEffect(() => { load(); }, [load]);
+  React.useEffect(() => {
+    void supabase.from('career_rejection_settings').select('rejection_days').eq('id', true).maybeSingle()
+      .then(({ data, error }) => {
+        if (error) { toast.error('Could not load rejection settings'); return; }
+        const days = data?.rejection_days ?? DEFAULT_CAREER_REJECTION_DAYS;
+        setRejectionDays(days); setDelayDays(days);
+      });
+  }, []);
+
+  const saveSettings = async () => {
+    if (!validCareerDelay(rejectionDays)) { toast.error('Choose 1–90 whole working days'); return; }
+    setSettingsBusy(true);
+    const { error } = await supabase.from('career_rejection_settings')
+      .upsert({ id: true, rejection_days: rejectionDays }, { onConflict: 'id' });
+    setSettingsBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`New applications will be rejected after ${rejectionDays} working days`);
+  };
+
+  const delayApplications = async (ids: string[]) => {
+    if (!validCareerDelay(delayDays)) { toast.error('Choose 1–90 whole working days'); return; }
+    setBulkBusy(true);
+    const { data, error } = await supabase.rpc('delay_career_applications', { _ids: ids, _days: delayDays });
+    setBulkBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`${data} application(s) delayed by ${delayDays} working days; no email sent now`);
+    setSelected(new Set()); void load();
+  };
+
+  const bulkStatus = async (status: 'shortlisted' | 'on_hold') => {
+    const ids = filtered.filter(row => selected.has(row.id) && row.status !== 'rejected' && row.status !== 'hired').map(row => row.id);
+    if (!ids.length) return;
+    setBulkBusy(true);
+    const { error } = await supabase.from('career_applications').update({ status, auto_reject_enabled: false, decided_at: new Date().toISOString() }).in('id', ids);
+    setBulkBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`${ids.length} application(s) marked ${STATUS_META[status].label}; no email sent`);
+    setSelected(new Set()); void load();
+  };
 
   const setStatus = async (row: Application, status: Status) => {
     if (status === 'rejected') {
@@ -91,7 +136,7 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
     }
     const { error } = await supabase
       .from('career_applications')
-      .update({ status, decided_by: adminId, decided_at: new Date().toISOString() })
+      .update({ status, auto_reject_enabled: false, decided_by: adminId, decided_at: new Date().toISOString() })
       .eq('id', row.id);
     setBusy(null);
     if (error) { toast.error(error.message); return; }
@@ -116,15 +161,6 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
     load();
   };
 
-  const downloadCv = async (row: Application) => {
-    if (!row.cv_storage_path) { toast.error('No CV stored for this application'); return; }
-    const { data, error } = await supabase.storage
-      .from('career-cvs')
-      .createSignedUrl(row.cv_storage_path, 300);
-    if (error || !data?.signedUrl) { toast.error(error?.message || 'Could not open the CV'); return; }
-    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
-  };
-
   const filtered = rows.filter(r => {
     if (filter === 'live' && r.status !== 'new') return false;
     if (filter !== 'live' && filter !== 'all' && r.status !== filter) return false;
@@ -145,7 +181,10 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
     const word = action === 'delete' ? 'Delete' : 'Decline';
     if (!window.confirm(`${word} ${ids.length} applicant${ids.length === 1 ? '' : 's'}? Each one is sent the polite rejection email (unless they already had it).${action === 'delete' ? ' Their profile and CV are then removed permanently.' : ''}`)) return;
     setBulkBusy(true);
-    await rejectApplicants(ids, action);
+    for (let start = 0; start < ids.length; start += 200) {
+      const completed = await rejectApplicants(ids.slice(start, start + 200), action);
+      if (!completed) break;
+    }
     setBulkBusy(false); setSelected(new Set()); load();
   };
 
@@ -173,11 +212,6 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
             <Briefcase className="h-6 w-6 text-muted-foreground" />
             Careers Applications
           </h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            Every application from the careers page lands here. Anyone still awaiting a decision after
-            3 working days is sent the polite rejection letter automatically — shortlist the people you want to
-            speak to and their clock stops for good.
-          </p>
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
           <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
@@ -202,34 +236,38 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
         ))}
       </div>
 
-      <Card className="border-amber-300 bg-amber-50/60">
-        <CardContent className="py-3 px-4 text-xs text-amber-900 flex items-start gap-2">
-          <ShieldCheck className="h-4 w-4 mt-0.5 shrink-0" />
-          <span>
-            <strong>How this works.</strong> Applicants get an instant acknowledgement when they apply. If you do
-            nothing, the rejection letter sends automatically on working day 5 (Mon–Fri, bank holidays skipped).
-            Marking someone <strong>Shortlisted</strong>, <strong>Interview</strong>, <strong>Hired</strong> or
-            <strong> No action</strong> stops their rejection permanently — No action keeps the application exactly
-            as it is with no email sent, so you can decide whenever suits you.
-          </span>
-        </CardContent>
-      </Card>
+      <section className="border-y py-4 space-y-3">
+        <h2 className="font-semibold">Automatic rejection</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <label htmlFor="career-rejection-days" className="text-sm">New applications: reject after</label>
+          <Input id="career-rejection-days" type="number" min={1} max={90} step={1} value={rejectionDays} onChange={e => setRejectionDays(Number(e.target.value))} disabled={!canEdit} className="w-20 h-9" />
+          <span className="text-sm text-muted-foreground">working days (Mon–Fri, excluding bank holidays)</span>
+          {canEdit && <Button size="sm" variant="outline" disabled={settingsBusy} onClick={saveSettings}>Save setting</Button>}
+        </div>
+        <p className="text-xs text-muted-foreground">Existing deadlines stay unchanged. No action, Shortlisted, Interview and Hired stop automatic rejection.</p>
+        {canEdit && <div className="flex flex-wrap items-center gap-3">
+          <label htmlFor="career-delay-days" className="text-sm">Postpone rejection by</label>
+          <Input id="career-delay-days" type="number" min={1} max={90} step={1} value={delayDays} onChange={e => setDelayDays(Number(e.target.value))} className="w-20 h-9" />
+          <span className="text-sm text-muted-foreground">working days from today</span>
+        </div>}
+      </section>
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
         {FILTERS.map(f => (
-          <button
+          <Button
             key={f.id}
             type="button"
             onClick={() => setFilter(f.id)}
-            className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
+            variant="outline" size="sm"
+            className={`px-3 py-1 h-8 text-xs font-medium border transition-colors ${
               filter === f.id
                 ? 'bg-foreground text-background border-foreground'
                 : 'bg-background text-muted-foreground border-border hover:bg-muted'
             }`}
           >
-            {f.label}
-          </button>
+            {f.label} ({rows.filter(r => f.id === 'all' || (f.id === 'live' ? r.status === 'new' : r.status === f.id)).length})
+          </Button>
         ))}
         <Input
           value={search}
@@ -244,8 +282,11 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <Checkbox checked={allSelected} onCheckedChange={toggleAll} /> Select all ({filtered.length})
           </label>
-          <span className="text-xs text-muted-foreground">{selected.size} selected</span>
-          <div className="ml-auto flex gap-2">
+          <span className="text-xs text-muted-foreground">{filtered.filter(r => selected.has(r.id)).length} selected</span>
+          <div className="ml-auto flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" disabled={bulkBusy || !filtered.some(r => selected.has(r.id) && canDelayApplication(r))} onClick={() => delayApplications(filtered.filter(r => selected.has(r.id) && canDelayApplication(r)).map(r => r.id))}><Clock className="h-3.5 w-3.5 mr-1" />Delay {delayDays} days</Button>
+            <Button size="sm" variant="outline" disabled={bulkBusy || !filtered.some(r => selected.has(r.id) && r.status !== 'rejected' && r.status !== 'hired')} onClick={() => bulkStatus('shortlisted')}><Star className="h-3.5 w-3.5 mr-1" />Shortlist selected</Button>
+            <Button size="sm" variant="outline" disabled={bulkBusy || !filtered.some(r => selected.has(r.id) && r.status !== 'rejected' && r.status !== 'hired')} onClick={() => bulkStatus('on_hold')}><PauseCircle className="h-3.5 w-3.5 mr-1" />No action</Button>
             <Button size="sm" variant="outline" className="h-8" disabled={bulkBusy || !selected.size} onClick={() => runBulk('reject')}>
               {bulkBusy ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <ThumbsDown className="h-3.5 w-3.5 mr-1.5" />}Decline selected
             </Button>
@@ -257,7 +298,7 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
       )}
 
       {/* List */}
-      {loading ? (
+      {loadError ? <div role="alert" className="border border-destructive rounded-md p-4 text-sm text-destructive">{loadError}</div> : loading ? (
         <div className="py-16 text-center text-sm text-muted-foreground">Loading applications…</div>
       ) : filtered.length === 0 ? (
         <Card>
@@ -295,13 +336,10 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
                           </a>
                         )}
                         {row.cv_storage_path ? (
-                          <button
-                            type="button"
-                            onClick={() => downloadCv(row)}
-                            className="inline-flex items-center gap-1 text-primary hover:underline"
-                          >
-                            <Download className="h-3 w-3" />{row.cv_file_name || 'CV'}
-                          </button>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" className="h-8" onClick={() => setCv(row)}><FileText className="h-3.5 w-3.5 mr-1" />View CV</Button>
+                            <Button variant="outline" size="sm" className="h-8" onClick={() => downloadCareerCv(row)}><Download className="h-3.5 w-3.5 mr-1" />Download</Button>
+                          </div>
                         ) : row.cv_file_name ? (
                           <span className="inline-flex items-center gap-1 text-muted-foreground">
                             <FileText className="h-3 w-3" />{row.cv_file_name} (emailed only)
@@ -361,7 +399,8 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
                         onClick={() => setStatus(row, 'on_hold')}>
                         <PauseCircle className="h-3.5 w-3.5 mr-1.5" />No action — keep as-is
                       </Button>
-                      {row.status === 'new' && (
+                      {canDelayApplication(row) && <Button size="sm" variant="outline" disabled={bulkBusy || busy === row.id} onClick={() => delayApplications([row.id])}><Clock className="h-3.5 w-3.5 mr-1" />Delay rejection {delayDays} days</Button>}
+                      {row.status !== 'rejected' && row.status !== 'hired' && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -396,6 +435,7 @@ export const CareerApplicationsTab: React.FC<{ canEdit?: boolean }> = ({ canEdit
           })}
         </div>
       )}
+      <CareerCvDialog cv={cv} onClose={() => setCv(null)} />
     </div>
   );
 };
