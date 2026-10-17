@@ -15386,6 +15386,10 @@ export type Database = {
           is_locked: boolean
         }[]
       }
+      get_lead_quality_report: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
       get_lead_quick_note_counts: {
         Args: { p_lead_ids: string[] }
         Returns: {
