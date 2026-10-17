@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Abandoned Carts: exclude all existing customers and anyone with purchase, cancellation, refund or claim history from the list and exports; test each exclusion without changing checkout or outreach.
+
 - [x] Continue prioritised SEO improvements: shared social-image metadata preserves approved descriptions and removes unverified custom dimensions; duplicate cancellation inventory removed without changing effective output; footer link variants normalised. Audit evidence extended. Twelve tests pass; browser confirms FAQ default dimensions, Blog 15 approved alt with no invented dimensions, contact/transfer pages rendered and no uncaught errors. Build OK; pricing, tracking and schema unchanged. Publication remains on hold.
 
 - [x] Public-site technical SEO audit: 116 public URLs and 41 published articles recorded in SEO Audit with Google Search Console evidence, prioritised actions and assistant context. Added missing metadata/sitemap routes, corrected social-image metadata and transfer URL, and noindexed missing articles. Eight tests and preview checks pass; isolated report filtering/download verified. Authenticated staff view unavailable on external Supabase. Unpublished; schema, tracking and pricing unchanged.
