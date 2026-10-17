@@ -34,7 +34,7 @@ const jobPostingSchema = {
   '@type': 'JobPosting',
   title: 'Vehicle Warranty Sales Executive',
   description:
-    '<p>Buyawarranty is hiring a remote UK-based Vehicle Warranty Sales Executive. Full-time PAYE employment with warm inbound and outbound leads, full training, uncapped commission and long-term career progression. Realistic OTE £35,000–£60,000+.</p><p>You will handle warm enquiries, recommend suitable vehicle warranty cover, explain benefits, close sales over the telephone and maintain accurate CRM records. Minimum two years telesales experience required.</p><p>This role would suit someone with extensive telesales experience, or a car finance broker / finance broker from a car finance brokerage, motor finance, vehicle finance, dealership F&amp;I, GAP insurance or add-on product sales background.</p>',
+    '<p>Buyawarranty is hiring a remote UK-based Vehicle Warranty Sales Executive. Full-time PAYE employment with warm inbound and outbound leads, full training, uncapped commission and long-term career progression. Realistic OTE £35,000–£80,000+.</p><p>You will handle warm enquiries, recommend suitable vehicle warranty cover, explain benefits, close sales over the telephone and maintain accurate CRM records. Minimum two years telesales experience required.</p><p>This role would suit someone with extensive telesales experience, or a car finance broker / finance broker from a car finance brokerage, motor finance, vehicle finance, dealership F&amp;I, GAP insurance or add-on product sales background.</p>',
   identifier: {
     '@type': 'PropertyValue',
     name: 'Buyawarranty',
@@ -67,7 +67,7 @@ const jobPostingSchema = {
     value: {
       '@type': 'QuantitativeValue',
       minValue: 25000,
-      maxValue: 60000,
+      maxValue: 80000,
       unitText: 'YEAR',
     },
   },
@@ -122,7 +122,7 @@ const faqSchema = {
       name: 'How much can I earn as a Vehicle Warranty Sales Executive?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Realistic on-target earnings are £35,000 to £60,000 or more. New starters typically earn £25,000 to £35,000, experienced sales executives £35,000 to £50,000, and top performers £50,000 to £60,000 or more. Commission is uncapped and paid on every warranty sale. Earnings examples are based on performance in similar sales roles and are not guaranteed.',
+        text: 'Realistic on-target earnings are £35,000 to £80,000 or more. New starters typically earn £25,000 to £35,000, experienced sales executives £35,000 to £50,000, and top performers £50,000 to £80,000 or more. Commission is uncapped and paid on every warranty sale. Earnings examples are based on performance in similar sales roles and are not guaranteed.',
       },
     },
     {
@@ -188,7 +188,7 @@ const Careers: React.FC = () => {
               <p className="mt-3 max-w-xl text-base leading-7 text-[#6B7280]">
                 Fully remote (work from home anywhere in the UK) · Contract or permanent roles ·
                 Full-time PAYE or contract · Warm leads · Basic salary + uncapped commission ·
-                OTE £35,000–£60,000+
+                OTE £35,000–£80,000+
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <a
@@ -278,7 +278,7 @@ const Careers: React.FC = () => {
           <div className="grid gap-5 md:grid-cols-3">
             <EarningsCard tier="New starter" range="£25,000–£35,000" />
             <EarningsCard tier="Experienced Sales Executive" range="£35,000–£50,000" highlight />
-            <EarningsCard tier="Top Performer" range="£50,000–£60,000+" />
+            <EarningsCard tier="Top Performer" range="£50,000–£80,000+" />
           </div>
           <p className="mt-6 text-sm leading-6 text-[#6B7280]">
             Commission is paid on every warranty sale, with additional earning potential for
@@ -523,7 +523,7 @@ const Careers: React.FC = () => {
             <SummaryItem Icon={Briefcase} label="Job type" value="Full-time" />
             <SummaryItem Icon={Award} label="Employment type" value="PAYE employee" />
             <SummaryItem Icon={Home} label="Location" value="Remote, United Kingdom" />
-            <SummaryItem Icon={PoundSterling} label="Realistic OTE" value="£35,000–£60,000+" />
+            <SummaryItem Icon={PoundSterling} label="Realistic OTE" value="£35,000–£80,000+" />
             <SummaryItem Icon={Clock} label="Experience" value="Min. 2 years' telesales" />
             <SummaryItem Icon={TrendingUp} label="Commission" value="Uncapped" />
           </div>
