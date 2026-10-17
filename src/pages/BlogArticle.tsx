@@ -865,6 +865,7 @@ const BlogArticle = () => {
         )}
       </div>
 
+      <WebsiteFooter />
     </div>
   );
 };
