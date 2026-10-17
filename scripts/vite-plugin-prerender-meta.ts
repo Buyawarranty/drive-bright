@@ -185,6 +185,12 @@ function buildHtmlForRoute(template: string, route: RouteMeta): string {
   );
   html = setMeta(html, { kind: "property", key: "og:url" }, canonical);
   html = setMeta(html, { kind: "property", key: "og:image" }, ogImage);
+  // The default has known dimensions. Do not advertise those dimensions for
+  // unrelated article/vehicle images whose aspect ratios have not been measured.
+  if (ogImage !== DEFAULT_OG_IMAGE_URL) {
+    html = html.replace(/\s*<meta\s+property=["']og:image:(?:width|height)["'][^>]*>/gi, '');
+  }
+  html = setMeta(html, { kind: "property", key: "og:image:alt" }, route.title);
   html = setMeta(
     html,
     { kind: "property", key: "og:type" },
