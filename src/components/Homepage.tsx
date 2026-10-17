@@ -13,7 +13,7 @@ import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import heroPandaVehiclesMobile from '@/assets/hero-panda-vehicles-mobile.webp.asset.json';
 import heroPandaVehiclesDesktop from '@/assets/hero-panda-vehicles-desktop.webp.asset.json';
 import completeWarrantyPanda from '@/assets/car-warranty-used-older-car.webp.asset.json';
-import unlimitedClaimsPanda from '@/assets/used-car-warranty-unlimited-claims-panda-orange-hatchback.webp.asset.json';
+import unlimitedClaimsPanda from '@/assets/unlimited-claims-car-warranty-panda-quote-tablet.webp.asset.json';
 import flexiblePlansPanda from '@/assets/car-warranty-payment-options-monthly-yearly-3-years.webp.asset.json';
 import highMileagePanda from '@/assets/high-mileage-electric-car-warranty-uk.webp.asset.json';
 
@@ -1036,9 +1036,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             {/* Left - Content */}
             <div className="space-y-6 md:space-y-8 order-2 lg:order-1">
               <div className="mb-4 md:mb-6">
-                <div className="text-green-600 text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">
+                <h2 className="text-green-600 text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">
                   Unlimited Claims
-                </div>
+                </h2>
               </div>
               
               <div className="space-y-4">
@@ -1075,7 +1075,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             <div className="relative text-center order-1 lg:order-2">
               <OptimizedImage 
                 src={unlimitedClaimsPanda.url}
-                alt="Miles the Panda in a buyawarranty shirt jumping for joy beside an orange hatchback, celebrating unlimited car warranty claims" 
+                alt="Miles the Panda in a buyawarranty shirt leaning on an orange hatchback and holding up a tablet showing a vehicle warranty quote in 60 seconds, for unlimited car warranty claims with no hidden fees" 
                 className="w-full h-auto max-w-sm md:max-w-lg mx-auto object-contain"
                 priority={false}
                 width={960}
