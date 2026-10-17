@@ -1,5 +1,5 @@
 # Project architecture rules
-- Shared warranty benefits imagery accepts page-level overrides so homepage image replacements do not change other landing pages.
+- Shared warranty imagery accepts page-level overrides so homepage swaps don't change other pages. Verify new CDN assets on the published lovable.app URL: the dev server answers asset paths with the app shell and the custom domain only serves images in the deployed build, so primary-domain delivery is only provable after publish.
 - Abandoned Cart lists and every export use the shared fail-closed eligibility loader and an active-staff-checked history RPC returning only excluded cart IDs, so restricted claims data stays server-side and cancelled/refunded customers cannot re-enter exports.
 - SEO Audit uses a versioned evidence snapshot for its report and assistant context, reusing Agentic Assistant chat, storage and permissions; dated observations are never represented as live scans and no automatic site mutations are introduced.
 - Weekly SEO reviews use database-queued, idempotent server-side published-site reads and private access-checked review records; only super admins decide proposals, and decisions never execute edits or publication. The selected SEO account receives a dedicated review grant without expanding assistant permissions.
