@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       cvPath = null;
     }
 
-    // ---- Record the application (starts the 3-working-day clock) ------------
+    // ---- Record the application (database sets the configured deadline) -----
     const { data: inserted, error: insErr } = await supabase
       .from('career_applications')
       .insert({
@@ -92,14 +92,19 @@ Deno.serve(async (req) => {
       .select('id, rejection_due_at')
       .single();
 
-    if (insErr) console.error('Could not record career application', insErr);
+    if (insErr) {
+      console.error('Could not record career application', insErr);
+      return new Response(JSON.stringify({ error: 'Could not save your application. Please try again.' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // ---- Notify the team ---------------------------------------------------
     const dueText = inserted?.rejection_due_at
       ? new Date(inserted.rejection_due_at).toLocaleDateString('en-GB', {
           weekday: 'short', day: 'numeric', month: 'short',
         })
-      : 'in 3 working days';
+      : 'on the configured rejection date';
 
     const html = `
       <h2>New Careers Application</h2>

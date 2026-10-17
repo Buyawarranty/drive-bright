@@ -1,4 +1,5 @@
 # Project architecture rules
+- Careers rejection deadlines are stamped from dedicated settings in the database; postponement uses an access-checked RPC and the sweep uses an atomic dedicated lease, because admin_config only stores booleans. CV previews use short-lived signed storage links and render Word files as plain text.
 - New pricing versions mark `websiteDiscountMode: single` and apply the one website percentage to the completed total; legacy versions keep their original rules so historical prices and unpublished live settings are not rewritten.
 - Published document blogs may supply exact article HTML and schema through route metadata so crawler output preserves the same approved content as the database article without altering existing page schemas.
 - Reuse CallMeBackPanel and sandbox-callback-request for optional chat phone capture, so submitted numbers follow existing chatbot lead and admin-alert delivery.
