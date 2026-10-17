@@ -14,6 +14,7 @@ import heroPandaVehiclesMobile from '@/assets/hero-panda-vehicles-mobile.webp.as
 import heroPandaVehiclesDesktop from '@/assets/hero-panda-vehicles-desktop.webp.asset.json';
 import completeWarrantyPanda from '@/assets/car-warranty-used-older-car.png.asset.json';
 import unlimitedClaimsPanda from '@/assets/used-car-warranty-unlimited-claims-panda-orange-hatchback.png.asset.json';
+import flexiblePlansPanda from '@/assets/lowest-cheapest-extended-warranty-uk.png.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
@@ -1095,8 +1096,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             {/* Left - Panda with plan badges */}
             <div className="relative text-center">
               <OptimizedImage 
-                src="/extended-warranty-uk-car-reliable.png" 
-                alt="Extended warranty UK - Car reliable - Panda mascot with Monthly, Yearly, 1,2,3 Years options" 
+                src={flexiblePlansPanda.url} 
+                alt="Miles the Panda in a buyawarranty shirt juggling Monthly, Yearly and 1,2,3 Years flexible car warranty plan options" 
                 className="w-full h-auto max-w-sm md:max-w-lg mx-auto object-contain"
                 priority={false}
                 width={600}
