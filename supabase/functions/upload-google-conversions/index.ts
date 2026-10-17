@@ -151,7 +151,7 @@ async function uploadConversion(
   orderId?: string | null,
   currencyCode: string = 'GBP',
 ) {
-  const url = `https://googleads.googleapis.com/v22/customers/${customerId}:uploadClickConversions`;
+  const url = `https://googleads.googleapis.com/v26/customers/${customerId}:uploadClickConversions`;
 
   const conversion: Record<string, unknown> = {
     conversionAction: `customers/${customerId}/conversionActions/${conversionActionId}`,
