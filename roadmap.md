@@ -1,7 +1,8 @@
 # Roadmap
 
+- [ ] FAQs page: review the two uploaded images and clarify their intended placement or replacement before changing the page.
 - [x] Weekly SEO optimisation reviews: scheduled Mondays 09:00 UTC; first deployed review checked 107 pages, stored 14 proposals and created two super-admin reminders. Two function tests pass; build OK. Private evidence and super-admin authorisation controls added; no automatic edits or publication. Authenticated staff UI remains unverified on external Supabase; frontend unpublished.
-- [ ] Weekly SEO setup: designate the existing SEO staff account (no active seo@ account found), select a verified Google property, and restore Semrush authorisation (provider returns access_denied). Until configured, reminders reach super admins only and Google/backlink evidence remains incomplete.
+- [ ] Weekly SEO setup: whole-domain Google property verified and saved. seo@buyawarranty.co.uk has no staff or sign-in account yet, so recipient access awaits account creation. Semrush reconnect was interrupted and remains incomplete (expired authorisation). Reminders currently reach super admins only; backlink evidence remains incomplete.
 
 - [x] Image SEO wave: inspected 116 rendered preview routes / 1,028 image instances / 300 sources; no missing alt attributes, 35 decorative van icons. Article cards and related images reuse approved photo descriptions; verified seven real published card photos, two related images and both clarified mascot descriptions. Filename review preserved already-descriptive names and stable URLs. Twelve SEO/access tests pass; build OK. Evidence and six observed delivery failures recorded in SEO Audit; no schema, tracking or imagery changes. Unpublished; signed-in admin report unverified on external Supabase.
 
