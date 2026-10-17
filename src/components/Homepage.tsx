@@ -1074,14 +1074,16 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
             {/* Right - Panda with vehicles */}
             <div className="relative text-center order-1 lg:order-2">
+              <div className="mx-auto w-full max-w-[261px] md:max-w-[348px]">
               <OptimizedImage 
                 src={unlimitedClaimsPanda.url}
                 alt="Miles the Panda in a buyawarranty shirt leaning on an orange hatchback and holding up a tablet showing a vehicle warranty quote in 60 seconds, for unlimited car warranty claims with no hidden fees" 
-                className="w-full h-auto max-w-[261px] md:max-w-[348px] mx-auto object-contain"
+                className="w-full h-auto object-contain"
                 priority={false}
                 width={960}
                 height={720}
               />
+              </div>
               
               <div className="mt-4 max-w-xs mx-auto">
                 <TrustpilotMicroStarWidget />
@@ -1097,14 +1099,16 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
           <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
             {/* Left - Panda with plan badges */}
             <div className="relative text-center">
+              <div className="mx-auto w-full max-w-[261px] md:max-w-[348px]">
               <OptimizedImage 
                 src={flexiblePlansPanda.url} 
                 alt="Miles the Panda in a buyawarranty shirt holding a clipboard and pointing to flexible car warranty payment options — Monthly, Yearly and 1, 2, 3 Years cover plans — with a calendar and a covered badge" 
-                className="w-full h-auto max-w-[261px] md:max-w-[348px] mx-auto object-contain"
+                className="w-full h-auto object-contain"
                 priority={false}
                 width={960}
                 height={720}
               />
+              </div>
             </div>
 
             {/* Right - Content */}
@@ -1187,14 +1191,16 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
             {/* Right - Panda with warranty active */}
             <div className="relative text-center order-1 lg:order-2">
+              <div className="mx-auto w-full max-w-[261px] md:max-w-[348px]">
               <OptimizedImage 
                 src={highMileagePanda.url} 
                 alt="Miles the Panda in a buyawarranty shirt leaning against a high-mileage electric car plugged into a charging station, holding up a shield badge with a white check mark to show used and high-mileage cars can still get warranty cover" 
-                className="w-full h-auto max-w-[261px] md:max-w-[348px] mx-auto object-contain"
+                className="w-full h-auto object-contain"
                 priority={false}
                 width={960}
                 height={720}
               />
+              </div>
               <div className="mt-4 max-w-xs mx-auto">
                 <TrustpilotMicroStarWidget />
               </div>
