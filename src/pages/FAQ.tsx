@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SEOHead } from '@/components/SEOHead';
 import { FAQSchema } from '@/components/schema/FAQSchema';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import pandaSavingsFaq from '@/assets/panda-savings-faq.png';
+import pandaSavingsFaq from '@/assets/the-best-car-warranty-uk-company.png.asset.json';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotBadge from '@/assets/trustpilot-badge.png';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
@@ -1013,8 +1013,8 @@ const FAQ = () => {
                   {/* Panda with Coins Image */}
                   <div className="flex-shrink-0 hidden md:block">
                     <img 
-                      src={pandaSavingsFaq} 
-                      alt="Panda mascot saving money with warranty protection" 
+                      src={pandaSavingsFaq.url} 
+                      alt="Miles the Panda putting a coin into a savings jar" 
                       className="w-32 h-32 object-contain"
                     />
                   </div>
