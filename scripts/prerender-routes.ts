@@ -494,7 +494,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     path: "/careers/",
     title: "Warranty Sales Jobs UK | Remote PAYE Careers",
     description:
-      "Remote UK Vehicle Warranty Sales Executive role. Full-time PAYE, warm leads, uncapped commission, OTE \u00a335,000\u2013\u00a360,000+. Apply to join the Buyawarranty sales team.",
+      "Remote UK Vehicle Warranty Sales Executive role. Full-time PAYE, warm leads, uncapped commission, OTE \u00a335,000\u2013\u00a380,000+. Apply to join the Buyawarranty sales team.",
   },
   {
     path: "/warranty-plan/",
