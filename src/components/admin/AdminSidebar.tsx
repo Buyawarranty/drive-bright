@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { canAccessSeoAudit } from '@/lib/tabAccess';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -252,6 +253,12 @@ export const defaultTabs: Tab[] = [
     label: 'Semrush SEO',
     icon: LineChart,
     description: 'Organic visibility, keywords and backlinks from Semrush'
+  },
+  {
+    id: 'seo-audit',
+    label: 'SEO Audit',
+    icon: Search,
+    description: 'Agentic Assistant SEO improvement suggestions'
   },
   {
     id: 'claims',
@@ -794,6 +801,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     if (!(userRole === 'admin' || userRole === 'super_admin')) base = base.filter(t => t.id !== 'direct-sales');
     // Agentic Assistant is super admin only — never via per-user grants.
     if (userRole !== 'super_admin' && (userPermissions as any)?.['tab_growth-agent'] !== true) base = base.filter(t => t.id !== 'growth-agent');
+    // SEO Audit uses the same authenticated assistant and access grants.
+    base = base.filter(t => t.id !== 'seo-audit');
+    if (canAccessSeoAudit(userRole, userPermissions)) {
+      const seoTab = defaultTabs.find(t => t.id === 'seo-audit');
+      if (seoTab) base.push(seoTab);
+    }
     // Lead count: admin/super_admin, or explicitly granted — never sales roles.
     {
       const r = userRole || '';

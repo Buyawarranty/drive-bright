@@ -1,4 +1,5 @@
 # Project architecture rules
+- SEO Audit reuses the Agentic Assistant chat, conversation storage and access permissions in a dedicated SEO-focused view; no second AI service or automatic site mutations are introduced.
 - Careers contact/experience requirements use a shared pure validator in the form and submission function, with strict server schemas, so bypassing browser controls cannot admit an ineligible application.
 - Careers rejection deadlines are stamped from dedicated settings in the database; postponement uses an access-checked RPC and the sweep uses an atomic dedicated lease, because admin_config only stores booleans. CV previews use short-lived signed storage links and render Word files as plain text.
 - New pricing versions mark `websiteDiscountMode: single` and apply the one website percentage to the completed total; legacy versions keep their original rules so historical prices and unpublished live settings are not rewritten.
