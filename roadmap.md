@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Full public-site SEO audit: crawl sitemap pages, verify metadata/crawl/social defects, put an evidence-led report in SEO Audit and apply safe verified corrections; preserve schema, tracking and pricing; no publishing without explicit instruction.
+- [x] Public-site technical SEO audit: 116 public URLs and 41 published articles recorded in SEO Audit with Google Search Console evidence, prioritised actions and assistant context. Added missing metadata/sitemap routes, corrected social-image metadata and transfer URL, and noindexed missing articles. Eight tests and preview checks pass; isolated report filtering/download verified. Authenticated staff view unavailable on external Supabase. Unpublished; schema, tracking and pricing unchanged.
+- [ ] Remaining SEO checks: factual/contractual article review needs approved content decisions; primary-domain delivery needs explicit publication and deployment access; full speed/link and AI/social visibility measurement needs further audit evidence. These gaps are listed in SEO Audit, not represented as completed checks.
 
 - [x] SEO Audit: dedicated admin section reusing Agentic Assistant and its permissions for on-demand SEO suggestions and saved conversations; existing AI service, integrations, pricing, tracking and schema unchanged. Build and access tests pass. Staff-session AI response verification unavailable on external Supabase; not published. Full-site crawling and scheduled audits are not included.
 
