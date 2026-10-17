@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { DateRangeFilter } from './DateRangeFilter';
 import { QuickWeekFilter } from './QuickWeekFilter';
 import { QuickMonthFilter } from './QuickMonthFilter';
+import { LeadQualityPanel } from './leads/LeadQualityPanel';
 
 type Group = 'day' | 'week' | 'month';
 type Row = { day: string; counts: Record<string, number>; is_locked: boolean };
@@ -118,9 +119,9 @@ export const LeadCountTab: React.FC = () => {
                     <YAxis allowDecimals={false} domain={[0, 'auto']} padding={{ top: 20 }} />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="real" name="Real leads" stackId="a" fill="hsl(var(--primary))" />
-                    <Bar dataKey="dead" name="Dead leads" stackId="a" fill="hsl(var(--muted-foreground))" />
-                    <Bar dataKey="fake" name="Fake leads" stackId="a" fill="hsl(var(--destructive))">
+                    <Bar dataKey="real" name="Real leads" stackId="a" fill="hsl(var(--lead-chart-1))" stroke="hsl(var(--card))" />
+                    <Bar dataKey="dead" name="Dead leads" stackId="a" fill="hsl(var(--lead-chart-2))" stroke="hsl(var(--card))" />
+                    <Bar dataKey="fake" name="Fake leads" stackId="a" fill="hsl(var(--lead-chart-3))" stroke="hsl(var(--card))">
                       <LabelList dataKey="all" position="top" offset={8} formatter={value => fmt(Number(value))} fill="hsl(var(--foreground))" fontSize={11} />
                     </Bar>
                   </BarChart>
@@ -139,14 +140,16 @@ export const LeadCountTab: React.FC = () => {
                   <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="google" name="Google" stackId="s" fill="#10b981" />
-                  <Bar dataKey="facebook" name="Facebook / Meta" stackId="s" fill="#3b82f6" />
-                  <Bar dataKey="organic" name="Organic" stackId="s" fill="#f59e0b" />
-                  <Bar dataKey="other" name="Other" stackId="s" fill="#94a3b8" />
+                  <Bar dataKey="google" name="Google" stackId="s" fill="hsl(var(--lead-chart-4))" stroke="hsl(var(--card))" />
+                  <Bar dataKey="facebook" name="Facebook / Meta" stackId="s" fill="hsl(var(--lead-chart-1))" stroke="hsl(var(--card))" />
+                  <Bar dataKey="organic" name="Organic" stackId="s" fill="hsl(var(--lead-chart-2))" stroke="hsl(var(--card))" />
+                  <Bar dataKey="other" name="Other" stackId="s" fill="hsl(var(--lead-chart-5))" stroke="hsl(var(--card))" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
+
+          <LeadQualityPanel from={from} to={to} />
 
           <Card>
             <CardContent className="overflow-x-auto pt-6">
