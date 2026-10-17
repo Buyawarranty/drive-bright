@@ -12602,6 +12602,171 @@ export type Database = {
           },
         ]
       }
+      seo_review_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read_at: string | null
+          run_id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read_at?: string | null
+          run_id: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read_at?: string | null
+          run_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_review_notifications_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "seo_review_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_review_proposals: {
+        Row: {
+          category: string
+          created_at: string
+          decision: string
+          evidence: string
+          id: string
+          page_url: string
+          priority: string
+          proposed_change: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          run_id: string
+          title: string
+          updated_at: string
+          verification: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          decision?: string
+          evidence: string
+          id?: string
+          page_url: string
+          priority: string
+          proposed_change: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          run_id: string
+          title: string
+          updated_at?: string
+          verification: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          decision?: string
+          evidence?: string
+          id?: string
+          page_url?: string
+          priority?: string
+          proposed_change?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          run_id?: string
+          title?: string
+          updated_at?: string
+          verification?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_review_proposals_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "seo_review_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_review_runs: {
+        Row: {
+          audit_week: string
+          created_at: string
+          id: string
+          lease_until: string | null
+          report: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          audit_week: string
+          created_at?: string
+          id?: string
+          lease_until?: string | null
+          report?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          audit_week?: string
+          created_at?: string
+          id?: string
+          lease_until?: string | null
+          report?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      seo_review_settings: {
+        Row: {
+          created_at: string
+          id: boolean
+          seo_admin_id: string | null
+          site_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: boolean
+          seo_admin_id?: string | null
+          site_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: boolean
+          seo_admin_id?: string | null
+          site_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_review_settings_seo_admin_id_fkey"
+            columns: ["seo_admin_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shark_tank_agent_caps: {
         Row: {
           admin_user_id: string
@@ -15097,6 +15262,7 @@ export type Database = {
       }
       can_manage_claim_reminders: { Args: never; Returns: boolean }
       can_manage_lead_routing: { Args: { _user_id: string }; Returns: boolean }
+      can_review_seo: { Args: { p_user: string }; Returns: boolean }
       can_use_growth_agent: { Args: { _user_id: string }; Returns: boolean }
       can_view_chatbot_data: { Args: { _user_id: string }; Returns: boolean }
       can_view_lead_count: { Args: { _uid: string }; Returns: boolean }
@@ -15124,6 +15290,7 @@ export type Database = {
           claimed_id: string
         }[]
       }
+      claim_weekly_seo_run: { Args: never; Returns: string }
       claim_whatsapp_conversation: {
         Args: { _agent_id: string; _conversation_id: string }
         Returns: {
@@ -15166,6 +15333,10 @@ export type Database = {
         Args: { p_date: string; p_tz?: string }
         Returns: Json
       }
+      configure_seo_reviews: {
+        Args: { p_seo_admin_id: string; p_site_url?: string }
+        Returns: undefined
+      }
       count_recontact_leads_available: {
         Args: never
         Returns: {
@@ -15201,6 +15372,10 @@ export type Database = {
       customer_cover_block_reason: {
         Args: { p_email?: string; p_phone?: string; p_reg?: string }
         Returns: string
+      }
+      decide_seo_proposal: {
+        Args: { p_decision: string; p_id: string; p_note?: string }
+        Returns: undefined
       }
       delay_career_applications: {
         Args: { _days?: number; _ids: string[] }
@@ -15994,6 +16169,7 @@ export type Database = {
         Args: { _version_id: string }
         Returns: undefined
       }
+      read_seo_notifications: { Args: { p_id?: string }; Returns: undefined }
       reassign_whatsapp_conversation: {
         Args: { _agent_id: string; _conversation_id: string }
         Returns: {
@@ -16177,6 +16353,7 @@ export type Database = {
           vehicle_year: string
         }[]
       }
+      seo_review_configuration: { Args: never; Returns: Json }
       set_agent_auto_freeze: {
         Args: { _admin_user_id: string; _enabled: boolean }
         Returns: undefined
