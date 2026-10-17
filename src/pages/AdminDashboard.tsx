@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { lazyWithRetry, forceFreshReload } from '@/utils/lazyWithRetry';
 import { SEOHead } from '@/components/SEOHead';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { isAnalyticsBlocked } from '@/lib/tabAccess';
+import { isAnalyticsBlocked, canAccessSeoAudit } from '@/lib/tabAccess';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -235,7 +235,7 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   const permKey = `tab_${tab}`;
   if (tab === 'account') return true;
   if (tab === 'unsubscribe') return true;
-  if (tab === 'seo-audit') return role === 'super_admin' || permissions?.['tab_growth-agent'] === true;
+  if (tab === 'seo-audit') return canAccessSeoAudit(role, permissions);
   if (role === 'super_admin' || role === 'dev_tester') return true;
   // Payments pending is the accounts team's verification queue — accounts roles and
   // management always get it, without needing a per-user grant.
@@ -1134,7 +1134,7 @@ const AdminDashboard = () => {
         return <LeadCountTab />;
       }
       case 'seo-audit':
-        if (effectiveUserRole !== 'super_admin' && (effectiveUserPermissions as any)?.['tab_growth-agent'] !== true) return <AccessDenied label="SEO Audit" />;
+        if (!canAccessSeoAudit(effectiveUserRole, effectiveUserPermissions)) return <AccessDenied label="SEO Audit" />;
         return <GrowthAgentTab seoAudit />;
       case 'growth-agent':
         if (effectiveUserRole !== 'super_admin' && (effectiveUserPermissions as any)?.['tab_growth-agent'] !== true) return <AccessDenied label="Agentic Assistant" />;

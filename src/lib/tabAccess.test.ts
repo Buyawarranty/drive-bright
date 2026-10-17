@@ -1,5 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { isAnalyticsBlocked } from './tabAccess';
+import { isAnalyticsBlocked, canAccessSeoAudit } from './tabAccess';
+
+describe('SEO Audit assistant access', () => {
+  it('uses the existing assistant grant for staff and always allows super admins', () => {
+    expect(canAccessSeoAudit('super_admin')).toBe(true);
+    expect(canAccessSeoAudit('admin')).toBe(false);
+    expect(canAccessSeoAudit('admin', { 'tab_growth-agent': true })).toBe(true);
+    expect(canAccessSeoAudit('sales', { 'tab_seo-audit': true })).toBe(false);
+    expect(canAccessSeoAudit(null)).toBe(false);
+  });
+});
 
 describe('Analytics visibility by role', () => {
   it('blocks the sales roles from Analytics', () => {

@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { canAccessSeoAudit } from '@/lib/tabAccess';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -802,7 +803,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     if (userRole !== 'super_admin' && (userPermissions as any)?.['tab_growth-agent'] !== true) base = base.filter(t => t.id !== 'growth-agent');
     // SEO Audit uses the same authenticated assistant and access grants.
     base = base.filter(t => t.id !== 'seo-audit');
-    if (userRole === 'super_admin' || (userPermissions as any)?.['tab_growth-agent'] === true) {
+    if (canAccessSeoAudit(userRole, userPermissions)) {
       const seoTab = defaultTabs.find(t => t.id === 'seo-audit');
       if (seoTab) base.push(seoTab);
     }
