@@ -1,0 +1,1 @@
+ALTER FUNCTION public.delay_career_applications(uuid[], integer) SECURITY INVOKER;
