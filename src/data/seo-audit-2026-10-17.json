@@ -94,7 +94,7 @@
       "title": "Approved photo descriptions on article cards and related articles",
       "evidence": "The Warranty Hub cards and related-article images used article titles even when approved featured_image_alt descriptions already existed. Seven real published article images, including the approved Mercedes EQE photo, were verified in the preview after correction.",
       "action": "Reused the existing approved descriptions on featured, latest and related article images; retained title fallbacks where descriptions are absent. Generic fallback card artwork remains decorative. Also clarified the visible thumbs-up action in the Infiniti and Cadillac mascot descriptions. Photos, image URLs, article bodies, captions and schema are unchanged.",
-      "next": "Recheck the same article cards after authorised publication. Related articles share the approved-field fallback but were not separately exercised in the browser. Descriptive alt text improves image understanding and accessibility; Google rankings and AI citations are not guaranteed. The signed-in admin report remains unverified on external Supabase."
+      "next": "Recheck the same article cards after authorised publication. Two real related-article images were also verified against their stored approved descriptions or existing title fallbacks, with no uncaught browser errors. Descriptive alt text improves image understanding and accessibility; Google rankings and AI citations are not guaranteed. The signed-in admin report remains unverified on external Supabase."
     },
     {
       "priority": "Low",
