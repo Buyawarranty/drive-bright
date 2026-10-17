@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] FAQs page: review the two uploaded images and clarify their intended placement or replacement before changing the page.
+- [x] FAQs page: replaced the old savings panda with the uploaded branded panda, preserving its supplied filename, existing size, desktop-only placement, questions and schema. Preview-only.
 - [x] Weekly SEO optimisation reviews: scheduled Mondays 09:00 UTC; first deployed review checked 107 pages, stored 14 proposals and created two super-admin reminders. Two function tests pass; build OK. Private evidence and super-admin authorisation controls added; no automatic edits or publication. Authenticated staff UI remains unverified on external Supabase; frontend unpublished.
 - [ ] Weekly SEO setup: whole-domain Google property verified and saved. seo@buyawarranty.co.uk has no staff or sign-in account yet, so recipient access awaits account creation. Semrush reconnect was interrupted and remains incomplete (expired authorisation). Reminders currently reach super admins only; backlink evidence remains incomplete.
 
