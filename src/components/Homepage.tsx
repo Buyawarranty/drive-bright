@@ -14,7 +14,7 @@ import heroPandaVehiclesMobile from '@/assets/hero-panda-vehicles-mobile.webp.as
 import heroPandaVehiclesDesktop from '@/assets/hero-panda-vehicles-desktop.webp.asset.json';
 import completeWarrantyPanda from '@/assets/car-warranty-used-older-car.webp.asset.json';
 import unlimitedClaimsPanda from '@/assets/used-car-warranty-unlimited-claims-panda-orange-hatchback.webp.asset.json';
-import flexiblePlansPanda from '@/assets/lowest-cheapest-extended-warranty-uk.webp.asset.json';
+import flexiblePlansPanda from '@/assets/car-warranty-payment-options-monthly-yearly-3-years.webp.asset.json';
 import highMileagePanda from '@/assets/high-mileage-electric-car-warranty-uk.webp.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
@@ -1098,7 +1098,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             <div className="relative text-center">
               <OptimizedImage 
                 src={flexiblePlansPanda.url} 
-                alt="Miles the Panda in a buyawarranty shirt juggling Monthly, Yearly and 1,2,3 Years flexible car warranty plan options" 
+                alt="Miles the Panda in a buyawarranty shirt holding a clipboard and pointing to Monthly, Yearly and 1, 2, 3 Years car warranty cover options, with a calendar and a covered badge" 
                 className="w-full h-auto max-w-sm md:max-w-lg mx-auto object-contain"
                 priority={false}
                 width={960}
