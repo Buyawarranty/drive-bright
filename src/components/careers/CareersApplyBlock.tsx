@@ -2,10 +2,13 @@ import React, { useRef, useState } from 'react';
 import { Copy, Check, Mail, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { careerContactError } from '../../../supabase/functions/_shared/careerApplicationRules';
 
 const RECIPIENT = 'info@buyawarranty.co.uk';
 const SUBJECT = 'Vehicle Warranty Sales Executive Application';
-const BODY = `Please find my CV attached.\n\nA short note covering:\n- Previous sales experience\n- Strongest sales results\n- Why I would succeed in vehicle warranty sales\n`;
+const BODY = `Please find my CV attached.\n\nA short note covering:\n- Previous vehicle sales experience\n- Strongest sales results\n- Why I would succeed in car warranty sales\n`;
 
 const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
   RECIPIENT,
@@ -34,6 +37,7 @@ export const CareersApplyBlock: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
+  const [warrantySalesExperience, setWarrantySalesExperience] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,6 +58,19 @@ export const CareersApplyBlock: React.FC = () => {
       toast.error('Please enter your name');
       return;
     }
+    const contactError = careerContactError({ email, phone, warrantySalesExperience });
+    if (contactError) {
+      toast.error(contactError);
+      return;
+    }
+    const contact = z.object({
+      email: z.string().trim().email().max(255),
+      phone: z.string().trim().min(7).max(40).regex(/^[+\d\s().-]+$/),
+    }).safeParse({ email, phone });
+    if (!contact.success) {
+      toast.error('Please enter a valid email address and phone number');
+      return;
+    }
     if (!file) {
       toast.error('Please attach your CV');
       return;
@@ -72,6 +89,7 @@ export const CareersApplyBlock: React.FC = () => {
           email: email.trim(),
           phone: phone.trim(),
           note: note.trim(),
+          warrantySalesExperience,
           fileName: file.name,
           fileType: file.type || 'application/octet-stream',
           fileBase64,
@@ -85,6 +103,7 @@ export const CareersApplyBlock: React.FC = () => {
       setEmail('');
       setPhone('');
       setNote('');
+      setWarrantySalesExperience(false);
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
@@ -162,9 +181,10 @@ export const CareersApplyBlock: React.FC = () => {
             />
           </label>
           <label className="block">
-            <span className="text-xs font-semibold text-[#374151]">Email (optional)</span>
+            <span className="text-xs font-semibold text-[#374151]">Email*</span>
             <input
               type="email"
+              required
               maxLength={255}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -173,9 +193,11 @@ export const CareersApplyBlock: React.FC = () => {
             />
           </label>
           <label className="block sm:col-span-2">
-            <span className="text-xs font-semibold text-[#374151]">Phone (optional)</span>
+            <span className="text-xs font-semibold text-[#374151]">Phone*</span>
             <input
               type="tel"
+              required
+              minLength={7}
               maxLength={40}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -191,7 +213,7 @@ export const CareersApplyBlock: React.FC = () => {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               className="mt-1 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm focus:border-[#F97316] focus:outline-none focus:ring-2 focus:ring-orange-100"
-              placeholder="Sales experience, strongest results, why warranty sales..."
+              placeholder="Previous vehicle sales experience, strongest sales results, why you would succeed in car warranty sales..."
             />
           </label>
           <label className="block sm:col-span-2">
@@ -216,19 +238,23 @@ export const CareersApplyBlock: React.FC = () => {
           </label>
         </div>
 
-        <button
+        <label className="mt-5 flex items-start gap-3 text-sm font-medium text-foreground">
+          <input
+            type="checkbox"
+            required
+            checked={warrantySalesExperience}
+            onChange={(e) => setWarrantySalesExperience(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+          />
+          <span>I have experience of selling vehicle warranties*</span>
+        </label>
+        <Button
           type="submit"
-          disabled={submitting}
-          className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#F97316] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#EA580C] disabled:opacity-60 sm:w-auto"
+          disabled={submitting || !warrantySalesExperience}
+          className="mt-5 h-auto w-full px-6 py-3 text-sm font-bold sm:w-auto"
         >
-          {submitting ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Sending...
-            </>
-          ) : (
-            'Send CV now'
-          )}
-        </button>
+          {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending...</> : 'Send CV now'}
+        </Button>
         <p className="mt-3 text-sm text-[#6B7280]">
           Or email your CV to{' '}
           <a href={mailtoUrl} target="_top" rel="noopener" className="font-semibold text-[#F97316] hover:underline">

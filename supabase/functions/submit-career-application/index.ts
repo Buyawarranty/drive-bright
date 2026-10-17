@@ -2,11 +2,13 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { z } from 'npm:zod@3.23.8';
 import { CAREERS_FROM, acknowledgementEmail } from '../_shared/careerEmails.ts';
+import { careerContactError } from '../_shared/careerApplicationRules.ts';
 
 const BodySchema = z.object({
   name: z.string().trim().min(1).max(120),
-  email: z.string().trim().email().max(255).optional().or(z.literal('')),
-  phone: z.string().trim().max(40).optional().or(z.literal('')),
+  email: z.string().trim().email().max(255),
+  phone: z.string().trim().min(7).max(40).regex(/^[+\d\s().-]+$/),
+  warrantySalesExperience: z.literal(true),
   note: z.string().trim().max(2000).optional().or(z.literal('')),
   role: z.string().trim().max(160).optional().or(z.literal('')),
   fileName: z.string().trim().min(1).max(200),
@@ -37,6 +39,10 @@ Deno.serve(async (req) => {
       });
     }
     const { name, email, phone, note, role, fileName, fileType, fileBase64 } = parsed.data;
+    const contactError = careerContactError(parsed.data);
+    if (contactError) return new Response(JSON.stringify({ error: contactError }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
     const roleApplied = (role || '').trim() || DEFAULT_ROLE;
 
     const allowed = ['pdf', 'doc', 'docx', 'rtf', 'txt', 'odt'];
@@ -112,6 +118,7 @@ Deno.serve(async (req) => {
       <p><strong>Name:</strong> ${safeName}</p>
       ${safeEmail ? `<p><strong>Email:</strong> ${safeEmail}</p>` : ''}
       ${safePhone ? `<p><strong>Phone:</strong> ${safePhone}</p>` : ''}
+      <p><strong>Vehicle warranty sales experience:</strong> Confirmed by applicant</p>
       ${safeNote ? `<p><strong>Note:</strong><br>${safeNote}</p>` : ''}
       <p><strong>CV:</strong> attached (${fileName})</p>
       <hr>
