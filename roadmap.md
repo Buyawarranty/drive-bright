@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Replace the legacy Semrush-dependent page with the existing Agentic SEO workspace; preserve saved conversations and permissions, include dated weekly evidence in recommendations, and verify without changing public website pages.
+
 - [x] Homepage image sizes: Unlimited Claims, Easy Options / Flexible Warranty Plans and High Mileage pictures reduced by 20% (348px desktop, 261px phone). Each cap now sits on the image's wrapper because a mobile media query forces `img { max-width: 100% !important }`, which overrode image-level size classes. Verified at 1280 and 393 widths with the real files loaded; build OK; nothing published.
 
 - [x] Homepage Unlimited Claims image: homepage-only swap to the newly supplied picture as unlimited-claims-car-warranty-panda-quote-tablet.png with a 960×720 webp copy (111 KB), transparent background preserved, accurate alt text and the section label marked up as a heading; the previous homepage picture and all other pages are untouched. Publication remains on hold.
