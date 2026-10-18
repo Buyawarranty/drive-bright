@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Legacy semrush-seo page now opens Agentic SEO recommendations using the existing assistant and saved conversations, dated audit and accessible weekly Google/site evidence; no Semrush API required for recommendations, no public-page changes. Eight evidence/access tests pass; build OK. Preview-only.
+- [ ] Verify a signed-in SEO recommendation response: external Supabase does not provide a managed test session; authenticated end-to-end remains unverified. Publication remains on hold.
+
 - [x] Homepage image sizes: Unlimited Claims, Easy Options / Flexible Warranty Plans and High Mileage pictures reduced by 20% (348px desktop, 261px phone). Each cap now sits on the image's wrapper because a mobile media query forces `img { max-width: 100% !important }`, which overrode image-level size classes. Verified at 1280 and 393 widths with the real files loaded; build OK; nothing published.
 
 - [x] Homepage Unlimited Claims image: homepage-only swap to the newly supplied picture as unlimited-claims-car-warranty-panda-quote-tablet.png with a 960×720 webp copy (111 KB), transparent background preserved, accurate alt text and the section label marked up as a heading; the previous homepage picture and all other pages are untouched. Publication remains on hold.

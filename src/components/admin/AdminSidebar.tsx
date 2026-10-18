@@ -250,9 +250,9 @@ export const defaultTabs: Tab[] = [
   },
   {
     id: 'semrush-seo',
-    label: 'Semrush SEO',
+    label: 'Agentic SEO',
     icon: LineChart,
-    description: 'Organic visibility, keywords and backlinks from Semrush'
+    description: 'Evidence-based SEO recommendations and review approvals'
   },
   {
     id: 'seo-audit',
@@ -802,6 +802,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     // Agentic Assistant is super admin only — never via per-user grants.
     if (userRole !== 'super_admin' && (userPermissions as any)?.['tab_growth-agent'] !== true) base = base.filter(t => t.id !== 'growth-agent');
     // SEO Audit uses the same authenticated assistant and access grants.
+    if (!canAccessSeoAudit(userRole, userPermissions)) base = base.filter(t => t.id !== 'semrush-seo');
     base = base.filter(t => t.id !== 'seo-audit');
     if (canAccessSeoAudit(userRole, userPermissions)) {
       const seoTab = defaultTabs.find(t => t.id === 'seo-audit');

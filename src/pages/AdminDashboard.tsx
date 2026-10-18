@@ -79,7 +79,6 @@ const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({
 const ChatbotDataTab = lazy(() => import('@/components/admin/chatbot/ChatbotDataTab'));
 const WhatsAppLeadsTab = lazy(() => import('@/components/admin/whatsapp/WhatsAppLeadsTab'));
 const WhatsAppHotLeadAlertsGlobal = lazy(() => import('@/components/admin/whatsapp/WhatsAppHotLeadAlertsGlobal'));
-const SemrushSeoTab = lazy(() => import('@/components/admin/semrush/SemrushSeoTab'));
 const ContactSubmissionsTab = lazy(() => import('@/components/admin/ContactSubmissionsTab'));
 const ComplaintsTab = lazy(() => import('@/components/admin/ComplaintsTab'));
 const CareerApplicationsTab = lazy(() => import('@/components/admin/CareerApplicationsTab'));
@@ -235,7 +234,7 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   const permKey = `tab_${tab}`;
   if (tab === 'account') return true;
   if (tab === 'unsubscribe') return true;
-  if (tab === 'seo-audit') return canAccessSeoAudit(role, permissions);
+  if (tab === 'seo-audit' || tab === 'semrush-seo') return canAccessSeoAudit(role, permissions);
   if (role === 'super_admin' || role === 'dev_tester') return true;
   // Payments pending is the accounts team's verification queue — accounts roles and
   // management always get it, without needing a per-user grant.
@@ -930,15 +929,8 @@ const AdminDashboard = () => {
       case 'chatbot-data':
         return <ChatbotDataTab />;
       case 'semrush-seo':
-        if (!['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole)) {
-          return (
-            <div className="p-6">
-              <h2 className="text-xl font-semibold">Access denied</h2>
-              <p className="text-sm text-muted-foreground mt-1">Semrush SEO data is restricted to management.</p>
-            </div>
-          );
-        }
-        return <SemrushSeoTab />;
+        if (!canAccessSeoAudit(effectiveUserRole, effectiveUserPermissions)) return <AccessDenied label="SEO Audit" />;
+        return <GrowthAgentTab seoAudit legacySeo />;
       case 'reviews':
         return <ReviewsTab />;
       case 'contact':

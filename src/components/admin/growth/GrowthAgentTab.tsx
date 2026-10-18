@@ -12,6 +12,7 @@ import { PromptInput, PromptInputTextarea, PromptInputFooter, PromptInputSubmit 
 import SeoAuditReport from './SeoAuditReport';
 import WeeklySeoReviews from './WeeklySeoReviews';
 import audit from '@/data/seo-audit-2026-10-17.json';
+import { buildSeoRecommendationContext, visibleSeoRequest, type SeoReviewEvidence } from '@/lib/seoRecommendationContext';
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/growth-agent`;
 const db = supabase as any;
@@ -26,15 +27,15 @@ const STARTERS = [
 ];
 
 const SEO_STARTERS = [
-  'Review our latest blog SEO titles and suggest the highest-priority improvements.',
-  'Suggest search-focused blog topics we have not covered yet.',
-  'Review the page title, description and headings I provide below.',
-  'Create a prioritised SEO action plan and identify the evidence still needed.',
+  'Recommend the five highest-priority improvements from our available website and Google evidence, protecting pages that already rank well.',
+  'Review our latest blog posts and recommend useful content gaps without duplicating existing articles.',
+  'Review the latest weekly proposals and explain which are safe to prepare for approval, with ranking risks and verification steps.',
+  'Prepare a page-by-page SEO action plan with exact suggested changes, dated evidence and anything still needing investigation.',
 ];
 
 const SEO_CONTEXT = `SEO Audit for Buyawarranty.co.uk. Always focus this conversation on practical SEO improvement suggestions. Use your available recent_blogs tool before making claims about existing articles. Give priority, affected page, evidence, suggested improvement and next check. Clearly distinguish observed issues from opportunities and unverified checks. You cannot perform a fresh crawl, inspect Search Console or retrieve Semrush rankings with your current tools. A dated audit is supplied below; cite its date and source, never treat it as live evidence or invent scores, traffic or rankings. Only suggest wording, metadata, headings, internal links and image optimisation; do not suggest changes to existing schema markup, pricing, payment integrations or tracking. Never make changes or publish anything.\n\nSaved audit: ${JSON.stringify({ auditedAt: audit.auditedAt, coverage: audit.coverage, performance: audit.performance, searchPages: audit.searchPages, keywordEvidence: audit.keywordEvidence, findings: audit.findings, limitations: audit.limitations })}\n\nRequest: `;
 
-function ChatWindow({ threadId, initialMessages, onActivity, seoAudit = false }: { threadId: string; initialMessages: UIMessage[]; onActivity: () => void; seoAudit?: boolean }) {
+function ChatWindow({ threadId, initialMessages, onActivity, seoAudit = false, seoContext = SEO_CONTEXT }: { threadId: string; initialMessages: UIMessage[]; onActivity: () => void; seoAudit?: boolean; seoContext?: string }) {
   const composerRef = useRef<HTMLDivElement>(null);
   const transport = useMemo(() => new DefaultChatTransport({
     api: CHAT_URL,
@@ -52,7 +53,7 @@ function ChatWindow({ threadId, initialMessages, onActivity, seoAudit = false }:
   const send = (t: string) => {
     const v = t.trim();
     if (!v || status === 'submitted' || status === 'streaming') return;
-    sendMessage({ text: seoAudit ? `${SEO_CONTEXT}${v}` : v });
+    sendMessage({ text: seoAudit ? `${seoContext}${v}` : v });
     setText('');
     setTimeout(onActivity, 800);
   };
@@ -77,7 +78,7 @@ function ChatWindow({ threadId, initialMessages, onActivity, seoAudit = false }:
                 {m.parts.map((p: any, i) => {
                   if (p.type === 'text') return m.role === 'assistant'
                     ? <MessageResponse key={i}>{p.text}</MessageResponse>
-                    : <p key={i} className="whitespace-pre-wrap">{seoAudit && p.text.startsWith(SEO_CONTEXT) ? p.text.slice(SEO_CONTEXT.length) : p.text}</p>;
+                    : <p key={i} className="whitespace-pre-wrap">{seoAudit ? visibleSeoRequest(p.text) : p.text}</p>;
                   if (typeof p.type === 'string' && p.type.startsWith('tool-')) return (
                     <Tool key={i} defaultOpen={false}>
                       <ToolHeader type={p.type} state={p.state} title={p.type.slice(5).replace(/_/g, ' ')} />
@@ -109,17 +110,43 @@ function ChatWindow({ threadId, initialMessages, onActivity, seoAudit = false }:
   );
 }
 
-export default function GrowthAgentTab({ seoAudit = false }: { seoAudit?: boolean }) {
+export default function GrowthAgentTab({ seoAudit = false, legacySeo = false }: { seoAudit?: boolean; legacySeo?: boolean }) {
   const [params, setParams] = useSearchParams();
   const threadId = params.get('thread');
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loaded, setLoaded] = useState<{ id: string; messages: UIMessage[] } | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [seoView, setSeoView] = useState<'report' | 'assistant' | 'weekly'>('weekly');
+  const [seoView, setSeoView] = useState<'report' | 'assistant' | 'weekly'>(() => legacySeo || params.get('thread') ? 'assistant' : 'weekly');
+  const [reviewEvidence, setReviewEvidence] = useState<SeoReviewEvidence | null>(null);
+  const [evidenceLoading, setEvidenceLoading] = useState(seoAudit);
+  const [evidenceError, setEvidenceError] = useState('');
+  const seoContext = useMemo(() => buildSeoRecommendationContext({ auditedAt: audit.auditedAt, coverage: audit.coverage, performance: audit.performance, searchPages: audit.searchPages, findings: audit.findings, limitations: audit.limitations }, reviewEvidence), [reviewEvidence]);
+
+  useEffect(() => {
+    if (!seoAudit) return;
+    let active = true;
+    const loadEvidence = async () => {
+      try {
+        const { data: runs, error } = await supabase.from('seo_review_runs').select('id,status,audit_week,report').in('status', ['complete', 'partial']).order('audit_week', { ascending: false }).limit(1);
+        if (error) throw error;
+        const run = runs?.[0];
+        if (!run) return;
+        const { data: proposals, error: proposalError } = await supabase.from('seo_review_proposals').select('title,page_url,evidence,proposed_change,verification,priority,decision').eq('run_id', run.id).order('created_at');
+        if (proposalError) throw proposalError;
+        if (active) setReviewEvidence({ ...run, report: run.report as SeoReviewEvidence['report'], proposals: proposals || [] });
+      } catch {
+        if (active) setEvidenceError('Latest weekly evidence is unavailable for this login. Recommendations can still use the dated audit.');
+      } finally {
+        if (active) setEvidenceLoading(false);
+      }
+    };
+    void loadEvidence();
+    return () => { active = false; };
+  }, [seoAudit]);
 
   const openThread = useCallback((id: string) => {
-    setParams(prev => { const n = new URLSearchParams(prev); n.set('tab', seoAudit ? 'seo-audit' : 'growth-agent'); n.set('thread', id); return n; });
-  }, [setParams, seoAudit]);
+    setParams(prev => { const n = new URLSearchParams(prev); n.set('tab', legacySeo ? 'semrush-seo' : seoAudit ? 'seo-audit' : 'growth-agent'); n.set('thread', id); return n; });
+  }, [setParams, seoAudit, legacySeo]);
 
   const loadThreads = useCallback(async () => {
     const { data, error } = await db.from('growth_agent_threads').select('id,title,updated_at').order('updated_at', { ascending: false });
@@ -176,7 +203,7 @@ export default function GrowthAgentTab({ seoAudit = false }: { seoAudit?: boolea
         </div>
       </div>
       {err && <p className="text-sm text-destructive mb-2">{err}</p>}
-      {seoAudit && <div className="flex flex-wrap gap-2 mb-4"><Button variant={seoView === 'weekly' ? 'default' : 'outline'} onClick={() => setSeoView('weekly')}><Search className="h-4 w-4 mr-2" />Weekly reviews</Button><Button variant={seoView === 'report' ? 'default' : 'outline'} onClick={() => setSeoView('report')}><Search className="h-4 w-4 mr-2" />Audit report</Button><Button variant={seoView === 'assistant' ? 'default' : 'outline'} onClick={() => setSeoView('assistant')}><Lightbulb className="h-4 w-4 mr-2" />Agentic Assistant</Button><Button variant="outline" onClick={() => setParams(prev => { const n = new URLSearchParams(prev); n.set('tab', 'semrush-seo'); n.delete('thread'); return n; })}><TrendingUp className="h-4 w-4 mr-2" />Semrush reports</Button></div>}
+      {seoAudit && <><div className="flex flex-wrap gap-2 mb-4"><Button variant={seoView === 'assistant' ? 'default' : 'outline'} onClick={() => setSeoView('assistant')}><Lightbulb className="h-4 w-4 mr-2" />Recommendations</Button><Button variant={seoView === 'weekly' ? 'default' : 'outline'} onClick={() => setSeoView('weekly')}><Search className="h-4 w-4 mr-2" />Weekly reviews and approvals</Button><Button variant={seoView === 'report' ? 'default' : 'outline'} onClick={() => setSeoView('report')}><Search className="h-4 w-4 mr-2" />Audit report</Button></div><p className="text-xs text-muted-foreground mb-3">{evidenceLoading ? 'Loading available review evidence…' : reviewEvidence ? `Weekly evidence: ${reviewEvidence.report.checkedAt ? new Date(reviewEvidence.report.checkedAt).toLocaleString('en-GB') : reviewEvidence.audit_week} · ${reviewEvidence.report.checkedPages ?? 0} pages · ${reviewEvidence.proposals.length} proposals` : 'Saved website audit: 17 October 2026 · Latest weekly evidence unavailable'} · No automatic changes or publication</p>{evidenceError && <p role="status" className="text-sm text-muted-foreground mb-3">{evidenceError}</p>}</>}
       {seoAudit && seoView === 'weekly' ? <WeeklySeoReviews /> : seoAudit && seoView === 'report' ? <SeoAuditReport /> : <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
         <aside className="md:w-60 max-h-40 md:max-h-none shrink-0 flex flex-col border border-border rounded-lg p-2 min-h-0">
           <Button size="sm" onClick={newThread} className="mb-2"><Plus className="h-4 w-4 mr-1" />New conversation</Button>
@@ -199,7 +226,7 @@ export default function GrowthAgentTab({ seoAudit = false }: { seoAudit?: boolea
               <Button onClick={newThread}><Plus className="h-4 w-4 mr-1" />New conversation</Button>
             </div>
           ) : loaded?.id === threadId ? (
-            <ChatWindow key={`${seoAudit ? 'seo' : 'growth'}-${threadId}`} threadId={threadId} initialMessages={loaded.messages} onActivity={loadThreads} seoAudit={seoAudit} />
+            evidenceLoading ? <p className="m-auto text-sm text-muted-foreground">Loading review evidence…</p> : <ChatWindow key={`${seoAudit ? 'seo' : 'growth'}-${threadId}`} threadId={threadId} initialMessages={loaded.messages} onActivity={loadThreads} seoAudit={seoAudit} seoContext={seoContext} />
           ) : (
             <p className="m-auto text-sm text-muted-foreground">Loading…</p>
           )}
