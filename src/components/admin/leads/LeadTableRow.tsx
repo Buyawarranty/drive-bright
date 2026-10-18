@@ -256,6 +256,9 @@ const getRowUrgencyClass = (
 ): string => {
   if (lead.is_paid) return 'bg-green-50 hover:bg-green-100/70';
   if ((lead.resubmission_count || 0) > 0) return 'bg-purple-50 hover:bg-purple-100/70';
+  // Renewal leads get a cyan tint so they stand out in the New Leads list,
+  // whether assigned via normal round robin or the Open Round Robin sandbox.
+  if (isRenewalLead(lead)) return 'bg-cyan-50 hover:bg-cyan-100/70';
 
   // Reminder-based urgency colouring (kept in every tab)
   if (reminderTime) {
