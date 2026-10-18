@@ -1076,7 +1076,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             <div className="relative text-center order-1 lg:order-2">
               <div className="mx-auto w-full max-w-[261px] md:max-w-[348px]">
               <OptimizedImage 
-                src={unlimitedClaimsPanda.url}
+                src={new URL(unlimitedClaimsPanda.url, 'https://drive-bright.lovable.app').href}
                 alt="Miles the Panda in a buyawarranty shirt leaning on an orange hatchback and holding up a tablet showing a vehicle warranty quote in 60 seconds, for unlimited car warranty claims with no hidden fees" 
                 className="w-full h-auto object-contain"
                 priority={false}
@@ -1101,7 +1101,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             <div className="relative text-center">
               <div className="mx-auto w-full max-w-[261px] md:max-w-[348px]">
               <OptimizedImage 
-                src={flexiblePlansPanda.url} 
+                src={new URL(flexiblePlansPanda.url, 'https://drive-bright.lovable.app').href} 
                 alt="Miles the Panda in a buyawarranty shirt holding a clipboard and pointing to flexible car warranty payment options — Monthly, Yearly and 1, 2, 3 Years cover plans — with a calendar and a covered badge" 
                 className="w-full h-auto object-contain"
                 priority={false}
