@@ -1,5 +1,6 @@
 import React from 'react';
-import { ChevronDown, FlaskConical, Rocket, TriangleAlert } from 'lucide-react';
+import { ChevronDown, FlaskConical, Rocket, TriangleAlert, User, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
@@ -23,13 +24,15 @@ import { useOrrLiveSettings } from '@/hooks/useOrrLiveSettings';
  * This component adds a section; it changes no existing Lead Allocation
  * behaviour, queries or settings beyond the ORR go-live switch it already owned.
  */
-export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean }> = ({ isManagement, sandboxTab = false }) => {
+export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean; showViewToggle?: boolean }> = ({ isManagement, sandboxTab = false, showViewToggle = false }) => {
   // Live settings, shared with the Lead Allocation page and kept in step by
   // realtime — a change there shows here (and in the sandbox) without a reload.
   const { orrLive: liveOrrLive, enabledTeamIds, teamNamesById, refresh } = useOrrLiveSettings(isManagement);
   const [orrLiveOverride, setOrrLiveOverride] = React.useState<boolean | null>(null);
   const [teamSelectionOverride, setTeamSelectionOverride] = React.useState<string[] | null>(null);
   const [sandboxOpen, setSandboxOpen] = React.useState(true);
+  const [view, setView] = React.useState<'manager' | 'agent'>('manager');
+  const agentView = showViewToggle && view === 'agent';
 
   const orrLive = orrLiveOverride ?? liveOrrLive;
   const selectedTeamIds = teamSelectionOverride ?? enabledTeamIds;
@@ -66,6 +69,20 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean 
 
   return (
     <div id="open-round-robin" className="space-y-4 scroll-mt-28">
+
+      {showViewToggle && (
+        <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background p-3">
+          <span className="text-base font-semibold text-foreground">{agentView ? 'Sales agent view' : 'Manager view'}</span>
+          <div role="group" aria-label="ORR view" className="grid grid-cols-2 gap-1 rounded-md border border-border p-1">
+            <Button variant={agentView ? 'default' : 'ghost'} aria-pressed={agentView} onClick={() => { setView('agent'); setSandboxOpen(true); }}>
+              <User /> Sales agent view
+            </Button>
+            <Button variant={!agentView ? 'default' : 'ghost'} aria-pressed={!agentView} onClick={() => setView('manager')}>
+              <Users /> Manager view
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Big, unmistakable section header — Open Round Robin is NOT live Round Robin. */}
       {sandboxTab ? (
@@ -147,6 +164,7 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean 
       )}
 
       {/* 1. Setup ------------------------------------------------------- */}
+      {!agentView && <>
       <div className="rounded-lg border border-border bg-card shadow-sm p-4 space-y-4">
         <div className="flex items-center gap-2">
           <Rocket className="h-4 w-4 text-primary" />
@@ -200,6 +218,7 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean 
       </div>
 
       {/* 3. Sandbox ----------------------------------------------------- */}
+      </>}
       <div className="rounded-lg border-2 border-amber-400 bg-amber-50/60 overflow-hidden">
         <button
           type="button"
@@ -241,7 +260,7 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean 
               </ul>
             </div>
             <WidgetErrorBoundary label="Sandbox — testing only">
-              <OpenRoundRobinTestPanel />
+              <OpenRoundRobinTestPanel viewOverride={showViewToggle ? view : undefined} />
             </WidgetErrorBoundary>
 
           </div>

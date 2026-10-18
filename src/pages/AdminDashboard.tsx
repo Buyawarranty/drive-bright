@@ -1109,7 +1109,7 @@ const AdminDashboard = () => {
         if (!isTabAllowedForRole('lead-teams', effectiveUserRole, effectiveUserPermissions)) {
           return <AccessDenied label="Lead Allocation" />;
         }
-        return <OrrTabView onNavigateToTab={handleTabChange} />;
+        return <OrrTabView onNavigateToTab={handleTabChange} userRole={effectiveUserRole} />;
       case 'orr-sandbox':
         if (!isTabAllowedForRole('lead-teams', effectiveUserRole, effectiveUserPermissions)) {
           return <AccessDenied label="Open Round Robin Sandbox" />;

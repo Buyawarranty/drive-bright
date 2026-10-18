@@ -645,7 +645,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
   team?: OrrPracticeTeam;
   mode?: 'sandbox' | 'live';
   canWrite?: boolean;
-}> = ({ team = 'green', mode = 'sandbox', canWrite = false }) => {
+  viewOverride?: 'manager' | 'agent';
+}> = ({ team = 'green', mode = 'sandbox', canWrite = false, viewOverride }) => {
   const isLive = mode === 'live';
   const theme = ORR_THEMES[team];
   const { toast } = useToast();
@@ -654,7 +655,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
   const [simulatedAgentId, setSimulatedAgentId] = useState<string>('all');
   const [roleView, setRoleView] = useState<'manager' | 'agent'>('manager');
   // Live mode is always the manager view — there is nothing to rehearse as.
-  const isManagerView = isLive ? true : roleView === 'manager';
+  const isManagerView = isLive ? true : (viewOverride ?? roleView) === 'manager';
   // How many agents are "on shift" for this rehearsal (1–4).
   // Default rehearsal: two agents live, which is the everyday picture on the floor.
   const [agentCount, setAgentCount] = useState(2);
@@ -1706,7 +1707,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
   return (
     <div className="space-y-4">
       {/* Who is practising — manager/super admin view vs sales agent view (sandbox only) */}
-      {!isLive && (
+      {!isLive && !viewOverride && (
       <div className="rounded-xl border border-border bg-card shadow-sm p-3 flex flex-wrap items-center gap-3">
         <span className="text-sm font-semibold text-foreground">Practice as</span>
         <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
