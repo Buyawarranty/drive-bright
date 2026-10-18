@@ -8,6 +8,8 @@ import {
   ChevronRight,
   Clock,
   Copy,
+  Eye,
+  EyeOff,
   FileText,
   FlaskConical,
   Loader2,
@@ -654,6 +656,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState<string>('all');
   const [roleView, setRoleView] = useState<'manager' | 'agent'>('manager');
+  const [showSourceColumn, setShowSourceColumn] = useState(true);
   // Live mode is always the manager view — there is nothing to rehearse as.
   const isManagerView = isLive ? true : (viewOverride ?? roleView) === 'manager';
   // How many agents are "on shift" for this rehearsal (1–4).
@@ -1364,6 +1367,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
       firstName: lead.firstName || 'Customer',
       lastName: lead.lastName || '',
       email: lead.email,
+      leadSource: lead.source,
       status: 'queued',
       displayStatus: 'new',
       assignedTo: null,
@@ -2208,6 +2212,12 @@ export const OpenRoundRobinTestPanel: React.FC<{
             </div>
           </div>
           <div className="flex items-center gap-5 text-[11px] font-medium text-muted-foreground">
+            {isManagerView && (
+              <Button variant="outline" size="sm" aria-pressed={showSourceColumn} onClick={() => setShowSourceColumn(current => !current)}>
+                {showSourceColumn ? <EyeOff /> : <Eye />}
+                {showSourceColumn ? 'Hide source' : 'Show source'}
+              </Button>
+            )}
             <span>Fair</span>
             <span className="text-border">|</span>
             <span>Transparent</span>
@@ -2272,6 +2282,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                   <th className="px-2 py-2 text-left w-9"></th>
                   <th className="px-2 py-2 text-left">Lead type</th>
                   <th className="px-2 py-2 text-left">Agent</th>
+                  {isManagerView && showSourceColumn && <th className="px-2 py-2 text-center">Src</th>}
                   <th className="px-2 py-2 text-left">Time to Lead</th>
                   <th className="px-2 py-2 text-left">Status</th>
                   <th className="px-2 py-2 text-center">Calls</th>
@@ -2305,8 +2316,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                       key={lead.id}
                       className={cn(
                         'border-t border-border align-middle',
-                        expired ? 'bg-muted/40' : 'bg-background',
-                        orrLead && !expired && 'bg-emerald-50/70',
+                        'bg-background',
                       )}
                     >
                       <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
@@ -2359,6 +2369,16 @@ export const OpenRoundRobinTestPanel: React.FC<{
                           )}
                         </div>
                       </td>
+
+                      {isManagerView && showSourceColumn && (
+                        <td className="px-2 py-2 text-center">
+                          {lead.leadSource ? (
+                            <span className="orr-source-badge inline-flex items-center rounded border px-2 py-1 text-[10px] font-bold uppercase whitespace-nowrap" data-source={lead.leadSource} title={lead.leadSource.replaceAll('_', ' ')}>
+                              {({ google_ad: 'Google', social_ad: 'Meta', bing_ad: 'Bing', tiktok_ad: 'TikTok', organic: 'Organic', renewal: 'Renewal' } as Record<string, string>)[lead.leadSource] ?? lead.leadSource.replaceAll('_', ' ')}
+                            </span>
+                          ) : <span className="text-muted-foreground" title="Source not recorded">—</span>}
+                        </td>
+                      )}
 
                       <td className="px-2 py-2">
                         {!orrLead ? (

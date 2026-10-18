@@ -5,6 +5,35 @@
 @tailwind components;
 @tailwind utilities;
 
+.orr-source-badge {
+  --source-surface: 210 20% 96%;
+  --source-ink: 215 20% 30%;
+  --source-border: 215 18% 80%;
+  background: hsl(var(--source-surface));
+  color: hsl(var(--source-ink));
+  border-color: hsl(var(--source-border));
+}
+.orr-source-badge[data-source="social_ad"] {
+  --source-surface: 214 95% 93%;
+  --source-ink: 224 65% 35%;
+  --source-border: 214 75% 76%;
+}
+.orr-source-badge[data-source="google_ad"] {
+  --source-surface: 152 76% 92%;
+  --source-ink: 163 88% 20%;
+  --source-border: 156 60% 70%;
+}
+.orr-source-badge[data-source="bing_ad"] {
+  --source-surface: 166 76% 92%;
+  --source-ink: 175 80% 22%;
+  --source-border: 168 65% 70%;
+}
+.orr-source-badge[data-source="renewal"] {
+  --source-surface: 185 90% 92%;
+  --source-ink: 192 85% 25%;
+  --source-border: 185 65% 70%;
+}
+
 /* Focused daily CRM feedback workspace. Scoped so the public site keeps its brand theme. */
 .crm-survey-theme {
   --primary: 217 91% 60%;
