@@ -79,7 +79,6 @@ const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({
 const ChatbotDataTab = lazy(() => import('@/components/admin/chatbot/ChatbotDataTab'));
 const WhatsAppLeadsTab = lazy(() => import('@/components/admin/whatsapp/WhatsAppLeadsTab'));
 const WhatsAppHotLeadAlertsGlobal = lazy(() => import('@/components/admin/whatsapp/WhatsAppHotLeadAlertsGlobal'));
-const SemrushSeoTab = lazy(() => import('@/components/admin/semrush/SemrushSeoTab'));
 const ContactSubmissionsTab = lazy(() => import('@/components/admin/ContactSubmissionsTab'));
 const ComplaintsTab = lazy(() => import('@/components/admin/ComplaintsTab'));
 const CareerApplicationsTab = lazy(() => import('@/components/admin/CareerApplicationsTab'));

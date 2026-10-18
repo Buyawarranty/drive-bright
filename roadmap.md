@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Replace the legacy Semrush-dependent page with the existing Agentic SEO workspace; preserve saved conversations and permissions, include dated weekly evidence in recommendations, and verify without changing public website pages.
+- [x] Legacy semrush-seo page now opens Agentic SEO recommendations using the existing assistant and saved conversations, dated audit and accessible weekly Google/site evidence; no Semrush API required for recommendations, no public-page changes. Eight evidence/access tests pass; build OK. Preview-only.
+- [ ] Verify a signed-in SEO recommendation response: external Supabase does not provide a managed test session; authenticated end-to-end remains unverified. Publication remains on hold.
 
 - [x] Homepage image sizes: Unlimited Claims, Easy Options / Flexible Warranty Plans and High Mileage pictures reduced by 20% (348px desktop, 261px phone). Each cap now sits on the image's wrapper because a mobile media query forces `img { max-width: 100% !important }`, which overrode image-level size classes. Verified at 1280 and 393 widths with the real files loaded; build OK; nothing published.
 
