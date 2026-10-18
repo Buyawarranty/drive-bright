@@ -165,6 +165,7 @@ const WebsiteFooter = () => {
               <div className="mt-5">
                 <img src={icoWordmark} alt="Information Commissioner's Office" className="h-8 w-auto max-w-full object-contain" loading="lazy" />
                 <p className="text-xs text-muted-foreground mt-2">Information Commissioner's Office</p>
+                <p className="text-xs text-muted-foreground mt-1">ICO registered no C1994014</p>
               </div>
             </section>
             <section aria-labelledby="footer-finance-heading" className="min-w-0">
