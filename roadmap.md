@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Repair Unlimited Claims and Flexible Plans image delivery on the primary domain; verify published rendering without publishing unrelated changes.
+- [ ] Add only the six vehicle metadata fallbacks to the shared sale email, test precedence and missing-data behaviour, deploy without resending.
+
 - [x] ORR rows: removed ordinary green row tint; manager view shows recorded source badges with Show/Hide source. Read-only copies retain source; sales agent preview hides it. Unpublished; authenticated staff checks unavailable on external Supabase.
 
 - [x] ORR: page-top Sales agent view / Manager view switch for management; agent preview hides setup and real pool controls. Preview-only; signed-in verification unavailable with external Supabase.
