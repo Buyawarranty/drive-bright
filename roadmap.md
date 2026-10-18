@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] ORR rows: removed ordinary green row tint; manager view shows recorded source badges with Show/Hide source. Read-only copies retain source; sales agent preview hides it. Unpublished; authenticated staff checks unavailable on external Supabase.
+
 - [x] ORR: page-top Sales agent view / Manager view switch for management; agent preview hides setup and real pool controls. Preview-only; signed-in verification unavailable with external Supabase.
 
 - [x] Legacy semrush-seo page now opens Agentic SEO recommendations using the existing assistant and saved conversations, dated audit and accessible weekly Google/site evidence; no Semrush API required for recommendations, no public-page changes. Eight evidence/access tests pass; build OK. Preview-only.
