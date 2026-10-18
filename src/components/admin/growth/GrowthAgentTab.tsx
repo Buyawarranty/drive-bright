@@ -226,7 +226,7 @@ export default function GrowthAgentTab({ seoAudit = false, legacySeo = false }: 
               <Button onClick={newThread}><Plus className="h-4 w-4 mr-1" />New conversation</Button>
             </div>
           ) : loaded?.id === threadId ? (
-            {evidenceLoading ? <p className="m-auto text-sm text-muted-foreground">Loading review evidence…</p> : <ChatWindow key={`${seoAudit ? 'seo' : 'growth'}-${threadId}`} threadId={threadId} initialMessages={loaded.messages} onActivity={loadThreads} seoAudit={seoAudit} seoContext={seoContext} />}
+            evidenceLoading ? <p className="m-auto text-sm text-muted-foreground">Loading review evidence…</p> : <ChatWindow key={`${seoAudit ? 'seo' : 'growth'}-${threadId}`} threadId={threadId} initialMessages={loaded.messages} onActivity={loadThreads} seoAudit={seoAudit} seoContext={seoContext} />
           ) : (
             <p className="m-auto text-sm text-muted-foreground">Loading…</p>
           )}
