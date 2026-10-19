@@ -88,8 +88,9 @@ Deno.serve(async req => {
     const body = input.data;
     if(body.action==='scheduled') {
       // The scheduler has no caller privileges: it can only process enabled, due rows atomically claimed below.
-      if(req.headers.get('apikey')!==Deno.env.get('SUPABASE_ANON_KEY')) return respond({error:'Unauthorized'},401);
       const client = db();
+      const config = checked(await client.from('reporting_scheduler_config').select('publishable_key').eq('id',true).single()) as any;
+      if(!config?.publishable_key || req.headers.get('apikey')!==config.publishable_key) return respond({error:'Unauthorized'},401);
       const accounts = checked(await client.from('reporting_accounts').select('*').eq('enabled',true).order('id').limit(100)) as any[];
       let processed=0;
       for(const account of accounts) {
