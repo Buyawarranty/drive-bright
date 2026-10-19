@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Daily revenue by agent: group direct website sales across Google, Facebook/Instagram and other channels under a clear Website label; preserve agent-entered attribution.
+
 - [x] Analytics monthly chart: pale target outlines removed, only the current London month has a horizontal target marker; saved historical goals and revenue calculations preserved. Three tests pass; isolated rendered chart confirms one marker and no outline bars; build OK. Unpublished; signed-in staff chart remains unavailable on external Supabase.
 
 - [x] Both original homepage WebPs verified directly in R2 and rendered on published drive-bright.lovable.app (960×720); preview now uses that working origin for these two images only. Build OK; no asset duplication or other image changes.
