@@ -814,6 +814,25 @@ export function SandboxChatWindow({
     },
   });
 
+  // Read only this browser token's human replies through the existing safe boundary.
+  useEffect(() => {
+    if (!isGuest || !guestToken || !liveAgent.enabled) return;
+    let active = true;
+    const poll = async () => {
+      if (document.hidden || status === 'streaming' || status === 'submitted') return;
+      const { data, error: pollError } = await supabase.functions.invoke('chat-live-reply', { body: { action: 'poll', guestToken } });
+      if (!active || pollError || !Array.isArray(data?.messages)) return;
+      setMessages((current) => {
+        const ids = new Set(current.map((m) => m.id));
+        const incoming: UIMessage[] = data.messages.filter((m: { id: string }) => !ids.has(m.id)).map((m: { id: string; text: string; created_at: string }) => ({ id: m.id, role: 'assistant', parts: [{ type: 'text', text: m.text }], metadata: { sender: 'agent' } }));
+        return incoming.length ? [...current, ...incoming] : current;
+      });
+    };
+    void poll();
+    const interval = window.setInterval(poll, 5000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, [guestToken, isGuest, liveAgent.enabled, setMessages, status]);
+
   // Website visitors keep their transcript across page navigations (e.g. the
   // "Continue to checkout" hand-off to step 3).
   useEffect(() => {
