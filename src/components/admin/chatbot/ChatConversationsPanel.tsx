@@ -174,11 +174,14 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
         );
       }
 
-      setPendingThreadIds(pendingIds);
       const allThreads = [...baseThreads, ...extraThreads]
         .filter((thread, index, all) => all.findIndex((candidate) => candidate.id === thread.id) === index)
         .sort((a, b) => +new Date(b.updated_at || b.created_at) - +new Date(a.updated_at || a.created_at));
       setThreads(allThreads);
+      // Only count pending replies the selected date range actually shows.
+      const visibleIds = new Set(allThreads.map((t) => t.id));
+      if (initialThreadId) visibleIds.add(initialThreadId);
+      setPendingThreadIds(new Set([...pendingIds].filter((id) => visibleIds.has(id))));
 
       // Tag each conversation with what it is about, from what the customer typed.
       const tagIds = allThreads.slice(0, 200).map((thread) => thread.id);
