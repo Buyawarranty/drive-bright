@@ -18,9 +18,9 @@ type Row = { day: string; counts: Record<string, number>; is_locked: boolean };
 const DEAD_KEYS = ['lost', 'wrong_number', 'bought_elsewhere', 'vehicle_sold', 'do_not_contact'];
 
 export const LeadCountTab: React.FC = () => {
-  const [range, setRange] = useState<DateRange | undefined>({ from: subDays(new Date(), 29), to: new Date() });
+  const [range, setRange] = useState<DateRange | undefined>({ from: startOfMonth(new Date()), to: new Date() });
   const [group, setGroup] = useState<Group>('day');
-  const from = format(range?.from ?? subDays(new Date(), 29), 'yyyy-MM-dd');
+  const from = format(range?.from ?? startOfMonth(new Date()), 'yyyy-MM-dd');
   const to = format(range?.to ?? range?.from ?? new Date(), 'yyyy-MM-dd');
 
   const { data, isLoading, error } = useQuery({

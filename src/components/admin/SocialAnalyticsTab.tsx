@@ -44,7 +44,7 @@ const gbp = (n: number) =>
   new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(n || 0);
 
 export const SocialAnalyticsTab: React.FC = () => {
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>('30days');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('this_month');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);

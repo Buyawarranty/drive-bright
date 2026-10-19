@@ -485,7 +485,7 @@ const URL_PERIOD_KEYS: PeriodKey[] = [
 const URL_DATE_SCOPES: DateScope[] = ['signup', 'payment', 'deals', 'revenue'];
 
 const coerceUrlPeriod = (value: string | null): PeriodKey => (
-  URL_PERIOD_KEYS.includes(value as PeriodKey) ? value as PeriodKey : 'today'
+  URL_PERIOD_KEYS.includes(value as PeriodKey) ? value as PeriodKey : 'this_month'
 );
 
 const coerceUrlScope = (value: string | null): DateScope => (
@@ -554,7 +554,7 @@ export const CustomersTab = ({
   const initialUrlScope = coerceUrlScope(searchParams.get('ltScope'));
   const initialUrlPeriod = coerceUrlPeriod(searchParams.get('ltPeriod'));
   const initialUrlCustomRange = getUrlCustomRange(searchParams.get('ltFrom'), searchParams.get('ltTo'));
-  const initialPeriod = initialUrlPeriod === 'custom' && !initialUrlCustomRange ? 'today' : initialUrlPeriod;
+  const initialPeriod = initialUrlPeriod === 'custom' && !initialUrlCustomRange ? 'this_month' : initialUrlPeriod;
   const initialActiveRange = getRangeForPeriod(initialPeriod, initialUrlCustomRange);
   const [customers, setCustomers] = useState<Customer[]>([]);
   // Ids of everyone who can hold sales credit (sales + sales_lead, incl. archived agents)
