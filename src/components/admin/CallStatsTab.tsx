@@ -89,7 +89,7 @@ const agentName = (a: AgentRow) => {
 };
 
 export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictToAgentIds, selfView }) => {
-  const [period, setPeriod] = useState<PeriodKey>('today');
+  const [period, setPeriod] = useState<PeriodKey>('this_month');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const activeRange = useMemo<DateRange | undefined>(() => {
     if (period === 'custom') return customRange;
