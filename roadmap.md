@@ -1,5 +1,6 @@
 # Roadmap
-- [ ] Chatbot: clearly attributed unanswered-question summaries and draft suggestions; optional callback-phone prompts creating leads; live-person offers obey main switch. No publication.
+- [x] Chatbot: question reviews distinguish customer wording, topic, turn-matched Miles/staff replies, next action and draft suggestion; Save draft is separate from explicit approval. Main management switch added, off by default; deployed availability/request gates fail closed and reject unsigned changes. Customer chat tested with real AI response: honest off-state and callback form; 11 tests pass, build OK. Website unpublished.
+- [ ] Chatbot authenticated verification: management switch saving, answer approval and real callback lead creation/readback remain unverified because external Supabase provides no signed-in test session; no live-chat activation or test callback notifications sent.
 
 - [x] Daily revenue by agent: all self-serve website channels group as Website (all direct sales), even with legacy agent references; agent-entered/quote/external and staff-purchase attribution unchanged. Website filter uses the same predicate. 21 tests pass; isolated browser verifies £1,500 website vs £700 agent and Google/Facebook/organic breakdown; build OK. Unpublished; authenticated real-data chart remains unverified on external Supabase.
 
