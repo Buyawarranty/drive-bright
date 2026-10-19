@@ -526,6 +526,10 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
               All conversations
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Newest first. Conversations follow the date filter above — chats waiting for a reply stay
+            listed until a person answers, for the dates you have selected.
+          </p>
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
