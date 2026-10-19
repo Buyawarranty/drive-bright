@@ -12,7 +12,7 @@
 - Use the shared sale-subject formatter for manager direct-sale email source labels in both subject and body; keep existing attribution and delivery logic unchanged to avoid affecting payment flows.
 - ORR uses one sandbox (including legacy URLs), with a page-level practice-view switch hiding manager controls, not changing permissions; Lead Allocation mirrors read-only.
 
-- Keep Analytics goals in `monthly_revenue_targets`, separate from agent targets; shared London-month selection and bar shape preserve stored goals and revenue maths.
+- Analytics goals stay separate in `monthly_revenue_targets`; shared month selector/bar shape preserve maths. Daily seller grouping is presentation-only, never changes sale credit.
 - Multi-year Quotes & Orders offers only 12 monthly instalments or BAW PayLater; PayLater records and credits one yearly payment at collection because uncollected future years are not revenue.
 - A manual Quotes & Orders total is the final BAW PayLater term total; split it across yearly collections without adding the standard 10% uplift again.
 - Route renewal leads only to active agents with the Renewals workstream; prefer the original seller, otherwise use longest-waiting rotation so new starters never receive catch-up batches.

@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Daily revenue by agent: all self-serve website channels group as Website (all direct sales), even with legacy agent references; agent-entered/quote/external and staff-purchase attribution unchanged. Website filter uses the same predicate. 21 tests pass; isolated browser verifies £1,500 website vs £700 agent and Google/Facebook/organic breakdown; build OK. Unpublished; authenticated real-data chart remains unverified on external Supabase.
+
 - [x] Analytics monthly chart: pale target outlines removed, only the current London month has a horizontal target marker; saved historical goals and revenue calculations preserved. Three tests pass; isolated rendered chart confirms one marker and no outline bars; build OK. Unpublished; signed-in staff chart remains unavailable on external Supabase.
 
 - [x] Both original homepage WebPs verified directly in R2 and rendered on published drive-bright.lovable.app (960×720); preview now uses that working origin for these two images only. Build OK; no asset duplication or other image changes.
