@@ -6,6 +6,7 @@
 // The chat only offers "talk to an agent" when this returns live: true.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { LIVE_CHAT_KEY, readLiveChatEnabled, liveChatAllowed } from '../_shared/live-chat-policy.ts';
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -45,6 +46,19 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
+    const body = await req.json().catch(() => ({}));
+    if (body.action === 'set_enabled') {
+      if (typeof body.enabled !== 'boolean') return json({ message: 'Choose on or off.' }, 400);
+      const token = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '') ?? '';
+      const { data: auth, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !auth.user) return json({ message: 'Please sign in.' }, 401);
+      const { data: allowed, error: permissionError } = await supabase.rpc('is_management', { _user_id: auth.user.id });
+      if (permissionError || allowed !== true) return json({ message: 'Only management can change live chat.' }, 403);
+      const { error: saveError } = await supabase.from('admin_config').upsert({ config_key: LIVE_CHAT_KEY, config_value: body.enabled, updated_at: new Date().toISOString() }, { onConflict: 'config_key' });
+      if (saveError) return json({ message: 'Could not save live chat.' }, 500);
+    }
+    const enabled = await readLiveChatEnabled(supabase);
+    if (!enabled) return json({ enabled: false, live: false, count: 0, names: [], within_hours: withinOpeningHours() });
     const { data, error } = await supabase
       .from('ai_sandbox_specialist_presence')
       .select('display_name, is_online, last_seen_at, override_hours')
@@ -61,7 +75,8 @@ Deno.serve(async (req) => {
       .filter(Boolean);
 
     return json({
-      live: rows.length > 0,
+      enabled,
+      live: liveChatAllowed(enabled, rows.length > 0),
       count: rows.length,
       names,
       within_hours: open,
@@ -69,6 +84,6 @@ Deno.serve(async (req) => {
   } catch (e) {
     console.error('chat-agent-availability failed', e);
     // Fail safe: never promise a live agent we cannot confirm.
-    return json({ live: false, count: 0, names: [], within_hours: withinOpeningHours() });
+    return json({ enabled: false, live: false, count: 0, names: [], within_hours: withinOpeningHours() });
   }
 });

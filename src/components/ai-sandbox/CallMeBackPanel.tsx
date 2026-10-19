@@ -97,7 +97,7 @@ export function CallMeBackPanel({
   const [touched, setTouched] = useState(false);
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [preference, setPreference] = useState<Preference>('email');
+  const [preference, setPreference] = useState<Preference>('call');
   const [topic, setTopic] = useState<Topic | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -248,11 +248,11 @@ export function CallMeBackPanel({
         <button
           type="button"
           onClick={() => setStep('method')}
-          title="Leave your email address or WhatsApp us"
+          title="Request a callback or WhatsApp us"
           className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
         >
           <MessageCircle className="h-4 w-4 shrink-0 text-[#B4501F]" />
-          <span className="truncate">Message me back</span>
+          <span className="truncate">Request a callback</span>
         </button>
       );
     }
@@ -267,7 +267,7 @@ export function CallMeBackPanel({
         >
           <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
           <span className="flex-1 truncate text-xs font-bold text-foreground">
-             Leave your email address or WhatsApp us
+             Leave your number for a callback, or WhatsApp us
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
         </button>

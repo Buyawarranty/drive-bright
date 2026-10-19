@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 const URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-agent-availability`;
 
 export type LiveAgentState = {
+  enabled: boolean;
   /** True only while a specialist has themselves switched on as live. */
   live: boolean;
   count: number;
@@ -17,7 +18,7 @@ export type LiveAgentState = {
  * only promise a live person when one is genuinely there.
  */
 export function useLiveAgentAvailable(pollMs = 60000): LiveAgentState {
-  const [state, setState] = useState<LiveAgentState>({ live: false, count: 0, names: [] });
+  const [state, setState] = useState<LiveAgentState>({ enabled: false, live: false, count: 0, names: [] });
 
   useEffect(() => {
     let cancelled = false;
@@ -27,12 +28,13 @@ export function useLiveAgentAvailable(pollMs = 60000): LiveAgentState {
         const data = await res.json().catch(() => null);
         if (cancelled || !data) return;
         setState({
-          live: Boolean(data.live),
+          enabled: data.enabled === true,
+          live: res.ok && data.enabled === true && data.live === true,
           count: Number(data.count ?? 0),
           names: Array.isArray(data.names) ? data.names.slice(0, 3) : [],
         });
       } catch {
-        if (!cancelled) setState({ live: false, count: 0, names: [] });
+        if (!cancelled) setState({ enabled: false, live: false, count: 0, names: [] });
       }
     };
     check();

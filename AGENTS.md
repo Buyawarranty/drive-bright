@@ -1,5 +1,5 @@
 # Project architecture rules
-- Warranty imagery supports page overrides. Verify assets on both published domains; external hosting and dev may return the app shell. The two repaired homepage images use the published Lovable asset origin to bypass missing external routing. Mobile size caps go on wrappers because CSS forces `img { max-width: 100% !important }`.
+- Warranty imagery supports page overrides. Verify both published domains; external hosting/dev may return HTML. Repaired homepage images use the published Lovable origin. Mobile caps go on wrappers because CSS forces `img { max-width: 100% !important }`.
 - Abandoned Cart lists and every export use the shared fail-closed eligibility loader and an active-staff-checked history RPC returning only excluded cart IDs, so restricted claims data stays server-side and cancelled/refunded customers cannot re-enter exports.
 - SEO Audit and the legacy semrush-seo URL share Agentic Assistant chat, storage and permissions; recommendations combine a versioned audit with RLS-readable weekly evidence, never depend on Semrush or imply a live scan, and never execute website edits.
 - Weekly SEO reviews use database-queued, idempotent server-side published-site reads and private access-checked review records; only super admins decide proposals, and decisions never execute edits or publication. The selected SEO account receives a dedicated review grant without expanding assistant permissions.
@@ -8,7 +8,7 @@
 - Careers rejection deadlines are stamped from dedicated settings in the database; postponement uses an access-checked RPC and the sweep uses an atomic dedicated lease, because admin_config only stores booleans. CV previews use short-lived signed storage links and render Word files as plain text.
 - New pricing versions mark `websiteDiscountMode: single` and apply the one website percentage to the completed total; legacy versions keep their original rules so historical prices and unpublished live settings are not rewritten.
 - Published document blogs may supply exact article HTML and schema through route metadata so crawler output preserves the same approved content as the database article without altering existing page schemas.
-- Reuse CallMeBackPanel and sandbox-callback-request for optional chat phone capture, so submitted numbers follow existing chatbot lead and admin-alert delivery.
+- Reuse CallMeBackPanel/sandbox-callback-request for callback leads. Gate live offers/requests on server config plus fresh presence; management changes it via the availability endpoint. Pair question replies to their turn; drafts need explicit approval.
 - Use the shared sale-subject formatter for manager direct-sale email source labels in both subject and body; keep existing attribution and delivery logic unchanged to avoid affecting payment flows.
 - ORR uses one sandbox (including legacy URLs), with a page-level practice-view switch hiding manager controls, not changing permissions; Lead Allocation mirrors read-only.
 
