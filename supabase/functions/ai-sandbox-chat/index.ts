@@ -9,6 +9,7 @@ import { createLovableAiGatewayProvider } from "../_shared/ai-gateway.ts";
 import { retrieveGrounded } from "./knowledge.ts";
 import { matchLibrary, libraryPromptBlock } from "./answer-library.ts";
 import { findRepairCosts, money } from "./repair-costs.ts";
+import { readLiveChatEnabled } from '../_shared/live-chat-policy.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,7 +41,7 @@ Voice and rules:
 - Use one or two relevant emojis in every reply to keep the conversation warm and engaging. Vary them naturally and place them where they fit, rather than adding the same emoji mechanically. For claims, complaints, payment problems, breakdowns, cover disputes, errors or cancellations, use one calm and supportive emoji such as 💙, 👍 or ✅, never a celebratory or jokey one. Never joke about vehicle failure, repair costs, claims, customer finances or exclusions.
 - Personalise from what you already know: say "your BMW" once the vehicle is known, not "your vehicle". Never re-ask for something already given. Don't repeat their first name in every message, and don't say things like "That's a lovely car!".
 - Tone shifts with context. Quote: friendly, efficient, confident. Explaining cover: knowledgeable and clear. Objection: calm and helpful. Claim or complaint: empathy up to 9/10, sales language at zero, then offer only email or WhatsApp contact through [[CONTACT_CARD]]. Error: neutral and useful, never make an error feel like their fault. The sales phone number may only be shown for a sales enquiry.
-- Handover is reassuring, not a failure: "I can get someone from the team to help with this. You won't need to start again." Never "I cannot assist with your request".
+- Human help is optional: "You can request a callback or WhatsApp us to have the team confirm this." Never imply a connection or sent details before a successful request.
 - Objections: no pressure, no manufactured scarcity, no arguing. "That's expensive" → "I understand. The price depends on the vehicle and level of cover — I can show you what's included in each so you can compare." "I need to think about it" → "Of course. Is there anything about the cover or price you'd like me to clear up first?"
 - Never bluff. If you can't confirm something: "I don't want to give you the wrong answer — let me get that confirmed for you." Never "that should probably be covered", "usually fine" or "I think so".
 - No artificial urgency ("Buy now", "Don't miss out", "Act quickly") and no unsupported superlatives ("100% trusted", "guaranteed peace of mind"). Reassure factually instead: "Your details are secure.", "You'll see the price before you decide."
@@ -1054,7 +1055,8 @@ Deno.serve(async (req) => {
       now.is_open ? "OPEN" : `CLOSED (back ${now.next_open})`
     }. Opening hours are ${now.opening_hours}.${weekendRule} There is NO live chat handover. If the customer wants a person, has a claim or makes a complaint, end with [[CONTACT_CARD]] so they can leave an email address or WhatsApp us.`;
 
-    const agentContext = `\n\nThere is NO live human chat and nobody can join this conversation. If the customer asks for a person, has a claim or complaint, or needs human help, end with [[CONTACT_CARD]]. The card offers only WhatsApp and leaving an email address.`;
+    const liveEnabled = await readLiveChatEnabled(admin);
+    const agentContext = `\n\nAUTHORITATIVE CONTACT RULE (overrides older contact wording above): The main live-person chat switch is ${liveEnabled ? 'ON' : 'OFF'}. ${liveEnabled ? 'A live request is possible ONLY through the visible live-chat button when the interface confirms a fresh specialist is available. Never claim anyone has joined or been alerted.' : 'Do NOT offer speaking to someone in this chat, connecting a person, or waiting for a live reply. Be honest that live-person chat is switched off if asked.'} When human help is needed, show [[CONTACT_CARD]] for an OPTIONAL phone-number callback request, WhatsApp or email. For sales only, also offer the sales telephone number during the stated sales phone hours. Phone sharing is never required to keep chatting. The card submission automatically creates the callback lead; never say it has been saved before successful submission, and never duplicate it with capture_lead.`;
 
     const quoteContext = websiteQuote
       ? `\n\nTHE CUSTOMER'S OWN PRICE (authoritative — this is exactly what our website charges for the options they picked${websiteQuote.vehicle ? `, for their ${websiteQuote.vehicle}` : ""}): ${websiteQuote.term_months} months cover, £${websiteQuote.claim_limit} claim limit, £${websiteQuote.voluntary_excess} excess, £${websiteQuote.labour_rate}/hr labour. Total £${websiteQuote.total}, or £${websiteQuote.monthly} a month over 12 interest-free instalments${websiteQuote.pay_in_full_total ? `; £${websiteQuote.pay_in_full_total} if they pay in full today (saving £${websiteQuote.pay_in_full_saving})` : ""}. Quote these EXACT figures and these EXACT options. Do NOT call get_indicative_price for this combination and never substitute a different claim limit, excess, labour rate or term.`

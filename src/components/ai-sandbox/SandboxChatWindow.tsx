@@ -55,6 +55,7 @@ import {
 } from '@/components/ai-sandbox/chatAttachments';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import TrustAndInfoAccordion from '@/components/step3/TrustAndInfoAccordion';
+import { useLiveAgentAvailable } from '@/hooks/useLiveAgentAvailable';
 
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-chat`;
@@ -100,7 +101,7 @@ const STARTERS: Array<{ text: string; description: string; Icon: LucideIcon; act
   { text: 'Get a quote', description: 'Find your price in seconds', Icon: CarFront, action: 'quote' },
   { text: "Check what’s covered", description: "See what’s included", Icon: ShieldCheck, action: 'message' },
   { text: 'Make a claim', description: 'Get help with your claim', Icon: FileText, action: 'message' },
-  { text: 'Speak to the team', description: 'Request a call, WhatsApp or email', Icon: UserRound, action: 'message' },
+  { text: 'Request a callback', description: 'Leave your number, or WhatsApp us', Icon: PhoneCall, action: 'message' },
 ];
 
 
@@ -720,6 +721,9 @@ export function SandboxChatWindow({
   autoFocus?: boolean;
 }) {
   const isGuest = Boolean(guestToken);
+  const liveAgent = useLiveAgentAvailable(15000);
+  const [liveRequestBusy, setLiveRequestBusy] = useState(false);
+  const [liveRequestNote, setLiveRequestNote] = useState('');
   const chatId = threadId || `guest-${guestToken}`;
 
   const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(() =>
@@ -1035,8 +1039,15 @@ export function SandboxChatWindow({
     sendMessage({ text: trimmed }, extraBody ? { body: extraBody } : undefined);
   };
 
-  // There is no live-agent handover: customers either call us, or leave a
-  // number and the team calls or WhatsApps them back (CallMeBackPanel).
+  const requestLiveChat = async () => {
+    if (!liveAgent.live || liveRequestBusy) return;
+    setLiveRequestBusy(true);
+    const { data, error: requestError } = await supabase.functions.invoke('sandbox-live-agent-request', { body: { guestToken, threadId, source, registration: detectedReg } });
+    setLiveRequestBusy(false);
+    setLiveRequestNote(requestError || !data?.ok ? 'A live request is not available. Please request a callback or WhatsApp us.' : 'Your live-chat request is saved. A reply has not arrived yet.');
+    if (requestError || !data?.ok) setContactOpen(true);
+    else loadHandover();
+  };
 
 
 
@@ -1114,6 +1125,8 @@ export function SandboxChatWindow({
         </div>
       )}
 
+      {isGuest && liveAgent.live && <div className="border-b border-border px-4 py-2"><Button size="sm" variant="outline" onClick={requestLiveChat} disabled={liveRequestBusy}><Headset className="mr-2 h-4 w-4" />Speak to someone in chat</Button></div>}
+      {liveRequestNote && <p role="status" className="px-4 py-2 text-sm text-foreground">{liveRequestNote}</p>}
       {(waiting || leadCaptured) && (
         <div className="flex flex-wrap items-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-900">
           <PhoneCall className="h-3.5 w-3.5" />
@@ -1170,10 +1183,9 @@ export function SandboxChatWindow({
                         setQuoteStartOpen(true);
                         return;
                       }
+                      if (text === 'Request a callback') { setContactOpen(true); return; }
                       send(
-                        text === 'Speak to the team'
-                          ? 'I would like to speak to a warranty specialist'
-                          : text.includes('covered')
+                        text.includes('covered')
                             ? "Please list in full everything the Platinum Plan covers, what's included as standard, and the main exclusions."
                             : text,
                       );

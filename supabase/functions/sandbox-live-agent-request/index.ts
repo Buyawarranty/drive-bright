@@ -8,6 +8,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+import { readLiveChatEnabled } from '../_shared/live-chat-policy.ts';
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -39,6 +41,7 @@ Deno.serve(async (req) => {
 
   try {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
+    if (!await readLiveChatEnabled(admin)) return json({ ok: false, error: 'live_chat_off', message: 'Live chat with a person is switched off. Please request a callback, call us or WhatsApp us.' }, 409);
     const body = await req.json().catch(() => ({}));
 
     const guestToken = String(body?.guestToken ?? "").slice(0, 64);

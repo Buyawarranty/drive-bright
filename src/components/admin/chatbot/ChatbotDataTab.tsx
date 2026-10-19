@@ -14,6 +14,7 @@ import ChatActionQueuePanel from './ChatActionQueuePanel';
 import ChatbotImprovementPanel from './ChatbotImprovementPanel';
 import ChatbotAnswerLibraryPanel from './ChatbotAnswerLibraryPanel';
 import ChatResponseStatsPanel from './ChatResponseStatsPanel';
+import LiveChatMasterControl from './LiveChatMasterControl';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 
@@ -297,6 +298,7 @@ export default function ChatbotDataTab() {
 
       </div>
 
+      <LiveChatMasterControl />
       <UnifiedDateFilter
         scope="signup"
         availableScopes={['signup']}
@@ -359,8 +361,7 @@ export default function ChatbotDataTab() {
 
         <TabsContent value="unanswered" forceMount className="pt-4 data-[state=inactive]:hidden">
           <p className="mb-3 text-sm text-muted-foreground">
-            Questions customers asked that Miles could not answer from the approved plan documents. Write the answer once and save it —
-            Miles uses your wording from then on and the question drops off this list.
+            Review the customer's question and our actual reply, then prepare a draft answer for approval.
           </p>
           <ChatbotAnswerLibraryPanel fromIso={fromIso} toIso={toIso} onlyUngrounded onWaitingCount={setUnansweredCount} />
         </TabsContent>

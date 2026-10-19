@@ -95,7 +95,7 @@ export function retrieveGrounded(query: string, limit = 5) {
     })),
     instruction: confident
       ? "Answer ONLY from these approved passages. Do not add cover, limits, exclusions or terms that are not written above. If the passages do not actually answer the question, treat it as not confident."
-      : "NOT GROUNDED: the approved website, product and terms material does not clearly answer this. Do NOT guess or generalise about cover, exclusions, limits or contractual terms. Say plainly that you want to get it confirmed, then offer to connect a warranty specialist (check_availability first) or take their details for a callback.",
+      : "NOT GROUNDED: the approved website, product and terms material does not clearly answer this. Do NOT guess or generalise about cover, exclusions, limits or contractual terms. Say plainly that you want to get it confirmed, then show [[CONTACT_CARD]] for an optional callback or WhatsApp. Never claim to connect anyone or say details have been sent before successful submission.",
   };
 }
 
