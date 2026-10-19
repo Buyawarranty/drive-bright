@@ -11768,6 +11768,30 @@ export type Database = {
           },
         ]
       }
+      reporting_scheduler_config: {
+        Row: {
+          callback_url: string
+          created_at: string
+          id: boolean
+          publishable_key: string
+          updated_at: string
+        }
+        Insert: {
+          callback_url: string
+          created_at?: string
+          id?: boolean
+          publishable_key: string
+          updated_at?: string
+        }
+        Update: {
+          callback_url?: string
+          created_at?: string
+          id?: boolean
+          publishable_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       round_robin_state: {
         Row: {
           id: string
