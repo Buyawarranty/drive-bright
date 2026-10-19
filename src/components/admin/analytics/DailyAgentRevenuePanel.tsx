@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
+import { dailyRevenueSeller, isDirectWebsiteRevenue } from '@/lib/dailyRevenueSeller';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,11 +28,7 @@ function matchesSource(customer: any, sourceFilter: string) {
   const isManual = customer.is_manual_entry === true;
   const warrantyNum = customer.warranty_reference_number || '';
   if (sourceFilter === 'website') {
-    const isBawS = warrantyNum.startsWith('BAW-S-');
-    return !isBawS && !isManual && (
-      source === 'website' || source === 'stripe' || source === 'bumper' ||
-      source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === ''
-    );
+    return isDirectWebsiteRevenue(customer);
   }
   if (sourceFilter === 'staff_purchase') return warrantyNum.startsWith('BAW-S-');
   if (sourceFilter === 'sales_team') {
@@ -139,10 +136,11 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
       const key = format(new Date(c.signup_date), 'yyyy-MM-dd');
       if (!dayKeys.has(key)) return;
 
-      const agentId = resolveSaleCredit(c) || 'website';
+      const agentId = dailyRevenueSeller(c, resolveSaleCredit);
 
       const amount = Number(c.final_amount) || 0;
-      const dayMap = grid.get(key)!;
+      const dayMap = grid.get(key);
+      if (!dayMap) return;
       const cell = dayMap.get(agentId) || { revenue: 0, deals: 0 };
       cell.revenue += amount;
       cell.deals += 1;
@@ -164,15 +162,15 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
       .sort((a, b) => b[1].revenue - a[1].revenue)
       .map(([id], i) => ({
         id,
-        label: id === 'website' ? 'Website (no agent)' : agentName(id),
+        label: id === 'website' ? 'Website (all direct sales)' : agentName(id),
         colour: PALETTE[i % PALETTE.length],
       }));
 
     const chart = days.map(d => {
       const row: Record<string, any> = { day: d.day, key: d.key, total: 0 };
-      const dayMap = grid.get(d.key)!;
+      const dayMap = grid.get(d.key);
       agentList.forEach(a => {
-        const cell = dayMap.get(a.id);
+        const cell = dayMap?.get(a.id);
         row[a.label] = cell ? Math.round(cell.revenue * 100) / 100 : 0;
         row[`${a.label}__deals`] = cell?.deals || 0;
         row.total += cell?.revenue || 0;
@@ -182,9 +180,9 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
     });
 
     const tableRows = agentList.map(a => {
-      const t = agentTotals.get(a.id)!;
+      const t = agentTotals.get(a.id) || { revenue: 0, deals: 0 };
       const byDay = days.map(d => {
-        const cell = grid.get(d.key)!.get(a.id);
+        const cell = grid.get(d.key)?.get(a.id);
         return { key: d.key, day: d.day, revenue: cell?.revenue || 0, deals: cell?.deals || 0 };
       });
       return {
