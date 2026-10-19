@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Reporting: manager/accounts admin option, editable email/Word templates, percentage-of-sales head office invoices, invoice/payment ledger and configurable opt-in scheduled delivery; verify rules and off-state without sending email.
 - [x] Chatbot: question reviews distinguish customer wording, topic, turn-matched Miles/staff replies, next action and draft suggestion; Save draft is separate from explicit approval. Main management switch added, off by default; deployed availability/request gates fail closed and reject unsigned changes. Customer chat tested with real AI response: honest off-state and callback form; 11 tests pass, build OK. Website unpublished.
 - [ ] Chatbot authenticated verification: management switch saving, answer approval and real callback lead creation/readback remain unverified because external Supabase provides no signed-in test session; no live-chat activation or test callback notifications sent.
 

@@ -474,6 +474,12 @@ export const defaultTabs: Tab[] = [
     description: 'Track work hours, deals and commissions'
   },
   {
+    id: 'reporting',
+    label: 'Reporting & invoices',
+    icon: Receipt,
+    description: 'Sales reports, head office invoices and payments ledger'
+  },
+  {
     id: 'attendance',
     label: 'Attendance',
     icon: Wifi,
@@ -792,6 +798,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     ]);
     const priceUpdatesAllowed = !!userRole && PRICE_UPDATES_ROLES.has(userRole);
     let base = priceUpdatesAllowed ? withPerms : withPerms.filter(t => t.id !== 'price-updates');
+    base = base.filter(t => t.id !== 'reporting');
+    if (priceUpdatesAllowed) {
+      const reporting = defaultTabs.find(t => t.id === 'reporting');
+      if (reporting) base.push(reporting);
+    }
     // WhatsApp Leads is hard-restricted to management only (admin, super_admin,
     // sales_manager), regardless of any per-user tab permission grant.
     const WHATSAPP_LEADS_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
