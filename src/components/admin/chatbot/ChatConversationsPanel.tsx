@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2, Send, Mail, X } from 'lucide-react';
 import { classifyChatTopic, type ChatTopicTag } from '@/lib/chatTopicTags';
+import { conversationInRange } from '@/lib/chatConversationRange';
 
 type Thread = {
   id: string;
