@@ -90,6 +90,7 @@ const SpecialVehiclePlansTab = lazy(() => import('@/components/admin/SpecialVehi
 const DiscountCodesTab = lazy(() => import('@/components/admin/DiscountCodesTab').then(m => ({ default: m.DiscountCodesTab })));
 const ReferralsTab = lazy(() => import('@/components/admin/ReferralsTab').then(m => ({ default: m.ReferralsTab })));
 const AnalyticsTab = lazy(() => import('@/components/admin/AnalyticsTab').then(m => ({ default: m.AnalyticsTab })));
+const ReportingTab = lazy(() => import('@/components/admin/reporting/ReportingTab'));
 const DirectSalesTab = lazy(() => import('@/components/admin/DirectSalesTab').then(m => ({ default: m.DirectSalesTab })));
 const UnifiedEmailHub = lazy(() => import('@/components/admin/UnifiedEmailHub'));
 const AccountSettings = lazy(() => import('@/components/admin/AccountSettings'));
@@ -234,6 +235,7 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   const permKey = `tab_${tab}`;
   if (tab === 'account') return true;
   if (tab === 'unsubscribe') return true;
+  if (tab === 'reporting') return ['admin','super_admin','sales_manager','accounts','accounts_manager','accounts_payroll'].includes(role || '');
   if (tab === 'seo-audit' || tab === 'semrush-seo') return canAccessSeoAudit(role, permissions);
   if (role === 'super_admin' || role === 'dev_tester') return true;
   // Payments pending is the accounts team's verification queue — accounts roles and
@@ -1197,6 +1199,9 @@ const AdminDashboard = () => {
         return <SellingTipsSection />;
       case 'timesheets':
         return <TimesheetsTab onNavigateToTab={handleTabChange} />;
+      case 'reporting':
+        if (!['admin','super_admin','sales_manager','accounts','accounts_manager','accounts_payroll'].includes(effectiveUserRole || '')) return <AccessDenied label="Reporting" />;
+        return <ReportingTab />;
       case 'sales-agent-targets': {
         const canSetTargets = ['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole);
         if (!canSetTargets) {

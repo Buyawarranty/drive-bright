@@ -1,0 +1,11 @@
+import { describe, it, expect } from 'vitest';
+import { canUseReporting, invoiceAmounts, nextReportingSend, scheduledReportingPeriod, reportingEligible } from '../../supabase/functions/_shared/reporting-rules';
+describe('Head office reporting rules', () => {
+  it('charges the configured percentage of total sales, not staff commission', () => { expect(invoiceAmounts(10000, 5)).toEqual({ commission: 500, vat: 0, total: 500 }); });
+  it('supports separately chosen invoice VAT', () => { expect(invoiceAmounts(10000, 5, 20)).toEqual({ commission: 500, vat: 100, total: 600 }); });
+  it('allows management and accounts, not agents or sales leads', () => { for (const role of ['admin','super_admin','sales_manager','accounts','accounts_manager','accounts_payroll']) expect(canUseReporting(role)).toBe(true); for (const role of ['sales','sales_lead','performance_manager',null]) expect(canUseReporting(role)).toBe(false); });
+  it('schedules Saturday in London and follows winter clock change', () => { expect(nextReportingSend({ frequency:'weekly',weekday:6,monthday:1,send_hour:9 },new Date('2026-10-19T11:14:00Z'))).toBe('2026-10-24T08:00:00.000Z'); expect(nextReportingSend({ frequency:'weekly',weekday:6,monthday:1,send_hour:9 },new Date('2026-10-24T08:01:00Z'))).toBe('2026-10-31T09:00:00.000Z'); });
+  it('weekly Saturday reports cover the previous seven complete days', () => { expect(scheduledReportingPeriod({frequency:'weekly',weekday:6,monthday:1,send_hour:9},new Date('2026-10-24T08:00:00Z'))).toEqual({from:'2026-10-17',to:'2026-10-23'}); });
+  it('monthly reports cover the previous complete calendar month', () => { expect(scheduledReportingPeriod({frequency:'monthly',weekday:6,monthday:1,send_hour:9},new Date('2026-11-01T09:00:00Z'))).toEqual({from:'2026-10-01',to:'2026-10-31'}); });
+  it('excludes cancellations and refunds', () => { expect(reportingEligible({status:'Cancelled',final_amount:500})).toBe(false); expect(reportingEligible({status:'Refunded',final_amount:500})).toBe(false); expect(reportingEligible({status:'active',final_amount:500})).toBe(true); });
+});

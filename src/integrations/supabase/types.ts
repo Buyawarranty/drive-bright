@@ -11578,6 +11578,196 @@ export type Database = {
           },
         ]
       }
+      reporting_accounts: {
+        Row: {
+          commission_pct: number
+          created_at: string
+          document_intro: string
+          email_body: string
+          email_subject: string
+          enabled: boolean
+          frequency: string
+          id: string
+          invoice_from: string
+          invoice_to: string
+          last_attempt_at: string | null
+          last_error: string | null
+          monthday: number
+          name: string
+          next_send_at: string | null
+          payment_details: string
+          recipient_email: string
+          sales_source: string
+          send_hour: number
+          updated_at: string
+          vat_pct: number
+          weekday: number
+        }
+        Insert: {
+          commission_pct?: number
+          created_at?: string
+          document_intro?: string
+          email_body?: string
+          email_subject?: string
+          enabled?: boolean
+          frequency?: string
+          id?: string
+          invoice_from?: string
+          invoice_to?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          monthday?: number
+          name: string
+          next_send_at?: string | null
+          payment_details?: string
+          recipient_email?: string
+          sales_source?: string
+          send_hour?: number
+          updated_at?: string
+          vat_pct?: number
+          weekday?: number
+        }
+        Update: {
+          commission_pct?: number
+          created_at?: string
+          document_intro?: string
+          email_body?: string
+          email_subject?: string
+          enabled?: boolean
+          frequency?: string
+          id?: string
+          invoice_from?: string
+          invoice_to?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          monthday?: number
+          name?: string
+          next_send_at?: string | null
+          payment_details?: string
+          recipient_email?: string
+          sales_source?: string
+          send_hour?: number
+          updated_at?: string
+          vat_pct?: number
+          weekday?: number
+        }
+        Relationships: []
+      }
+      reporting_invoices: {
+        Row: {
+          account_id: string
+          commission_amount: number
+          commission_pct: number
+          created_at: string
+          email_error: string | null
+          email_status: string
+          id: string
+          invoice_number: string
+          period_from: string
+          period_to: string
+          sales_count: number
+          sales_total: number
+          scheduled_key: string | null
+          sent_at: string | null
+          snapshot: Json
+          total: number
+          updated_at: string
+          vat_amount: number
+          vat_pct: number
+        }
+        Insert: {
+          account_id: string
+          commission_amount: number
+          commission_pct: number
+          created_at?: string
+          email_error?: string | null
+          email_status?: string
+          id?: string
+          invoice_number: string
+          period_from: string
+          period_to: string
+          sales_count: number
+          sales_total: number
+          scheduled_key?: string | null
+          sent_at?: string | null
+          snapshot: Json
+          total: number
+          updated_at?: string
+          vat_amount: number
+          vat_pct: number
+        }
+        Update: {
+          account_id?: string
+          commission_amount?: number
+          commission_pct?: number
+          created_at?: string
+          email_error?: string | null
+          email_status?: string
+          id?: string
+          invoice_number?: string
+          period_from?: string
+          period_to?: string
+          sales_count?: number
+          sales_total?: number
+          scheduled_key?: string | null
+          sent_at?: string | null
+          snapshot?: Json
+          total?: number
+          updated_at?: string
+          vat_amount?: number
+          vat_pct?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reporting_invoices_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "reporting_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reporting_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string
+          paid_on: string
+          recorded_by: string
+          reference: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_id: string
+          paid_on: string
+          recorded_by: string
+          reference: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          paid_on?: string
+          recorded_by?: string
+          reference?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reporting_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "reporting_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       round_robin_state: {
         Row: {
           id: string
@@ -15262,6 +15452,7 @@ export type Database = {
       }
       can_manage_claim_reminders: { Args: never; Returns: boolean }
       can_manage_lead_routing: { Args: { _user_id: string }; Returns: boolean }
+      can_manage_reporting: { Args: { _uid?: string }; Returns: boolean }
       can_review_seo: { Args: { p_user: string }; Returns: boolean }
       can_use_growth_agent: { Args: { _user_id: string }; Returns: boolean }
       can_view_chatbot_data: { Args: { _user_id: string }; Returns: boolean }
@@ -16254,6 +16445,21 @@ export type Database = {
       renewal_pool_stamp_ownership: {
         Args: { _agent: string; _policy: string }
         Returns: undefined
+      }
+      reporting_claim_due: {
+        Args: { _account: string; _due: string }
+        Returns: boolean
+      }
+      reporting_claim_email: { Args: { _invoice: string }; Returns: boolean }
+      reporting_next_invoice_number: { Args: never; Returns: string }
+      reporting_record_payment: {
+        Args: {
+          _amount: number
+          _invoice: string
+          _paid_on: string
+          _reference: string
+        }
+        Returns: string
       }
       reset_agent_caps_daily: { Args: never; Returns: undefined }
       reset_daily_caps: { Args: never; Returns: undefined }
