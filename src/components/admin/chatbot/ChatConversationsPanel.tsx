@@ -165,7 +165,13 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
           .from('ai_sandbox_threads')
           .select('id, title, source, created_at, updated_at, sales_lead_id, guest_token')
           .in('id', extraIds);
-        extraThreads = (extraData ?? []) as Thread[];
+        // Waiting-for-a-reply conversations obey the date filter like everything
+        // else; only a chat opened straight from a pop-up always stays visible.
+        extraThreads = ((extraData ?? []) as Thread[]).filter(
+          (t) =>
+            t.id === initialThreadId ||
+            conversationInRange(t.created_at, { fromIso, toIso, rangeDays }),
+        );
       }
 
       setPendingThreadIds(pendingIds);
