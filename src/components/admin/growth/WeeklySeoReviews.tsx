@@ -50,6 +50,19 @@ export default function WeeklySeoReviews() {
     if (error) setError(error.message); else setProposals(rows => rows.map(row => row.id === id ? { ...row, decision } : row));
     setBusy(false);
   };
+  const authoriseAll = async () => {
+    const pending = proposals.filter(p => p.decision === 'pending');
+    if (!pending.length || !confirm(`Authorise all ${pending.length} pending proposals? Nothing is changed or published automatically.`)) return;
+    setBusy(true); setError('');
+    const done: string[] = [];
+    for (const p of pending) {
+      const { error } = await supabase.rpc('decide_seo_proposal', { p_id: p.id, p_decision: 'approved', p_note: note });
+      if (error) { setError(error.message); break; }
+      done.push(p.id);
+    }
+    setProposals(rows => rows.map(row => done.includes(row.id) ? { ...row, decision: 'approved' } : row));
+    setBusy(false);
+  };
   const properties = async () => {
     setBusy(true);
     const { data, error } = await supabase.functions.invoke('weekly-seo-review', { body: { action: 'properties' } });
@@ -71,6 +84,7 @@ export default function WeeklySeoReviews() {
     {run && <><div className="flex flex-wrap items-center gap-3"><Badge variant="outline">{run.status}</Badge><span className="text-sm">{run.report.checkedPages ?? 0} / {run.report.sitemapPages ?? 0} sitemap pages checked</span><span className="text-sm text-muted-foreground">{run.report.checkedAt ? new Date(run.report.checkedAt).toLocaleString('en-GB') : 'Awaiting review'}</span></div>
       <details className="border-b border-border pb-4"><summary className="cursor-pointer font-medium">Evidence and coverage gaps</summary><ul className="list-disc pl-5 py-3 space-y-2 text-sm">{[...(run.report.gaps || []), ...(run.report.limitations || [])].map((gap, index) => <li key={index}>{gap}</li>)}</ul><details><summary className="cursor-pointer text-sm">Google performance evidence</summary><pre className="whitespace-pre-wrap break-all text-xs py-3">{JSON.stringify(run.report.google ?? 'Not available for this review', null, 2)}</pre></details><details><summary className="cursor-pointer text-sm">Semrush backlink evidence</summary><pre className="whitespace-pre-wrap break-all text-xs py-3">{JSON.stringify(run.report.backlinks ?? 'Not available for this review', null, 2)}</pre></details><details><summary className="cursor-pointer text-sm">Pages and crawler access evidence</summary><pre className="whitespace-pre-wrap break-all text-xs py-3">{JSON.stringify({ pages: run.report.pages, robots: run.report.robots }, null, 2)}</pre></details></details>
       {config.is_super_admin && <Textarea aria-label="Authorisation note" value={note} onChange={event => setNote(event.target.value)} maxLength={2000} placeholder="Optional review note…" />}
+      {config.is_super_admin && proposals.some(p => p.decision === 'pending') && <Button disabled={busy} onClick={authoriseAll}><Check className="h-4 w-4 mr-2" />Authorise all pending ({proposals.filter(p => p.decision === 'pending').length})</Button>}
       <div className="divide-y divide-border">{proposals.map(proposal => <article key={proposal.id} className="py-5 space-y-3"><div className="flex flex-wrap items-center gap-2"><Badge variant={proposal.priority === 'High' ? 'destructive' : 'secondary'}>{proposal.priority}</Badge><Badge variant="outline">{proposal.decision === 'approved' ? 'Authorised · not implemented' : proposal.decision}</Badge><h3 className="font-semibold">{proposal.title}</h3></div><a href={proposal.page_url} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm break-all">{proposal.page_url}</a><p className="text-sm whitespace-pre-wrap"><strong>Evidence: </strong>{proposal.evidence}</p><p className="text-sm"><strong>Proposed change: </strong>{proposal.proposed_change}</p><p className="text-sm text-muted-foreground"><strong>Verification: </strong>{proposal.verification}</p>{config.is_super_admin && proposal.decision === 'pending' && <div className="flex gap-2"><Button disabled={busy} onClick={() => decide(proposal.id, 'approved')}><Check className="h-4 w-4 mr-2" />Authorise proposed change</Button><Button disabled={busy} variant="outline" onClick={() => decide(proposal.id, 'rejected')}><X className="h-4 w-4 mr-2" />Reject</Button></div>}</article>)}</div>
       {!proposals.length && <p className="text-muted-foreground"><Bell className="inline h-4 w-4 mr-2" />No proposals recorded for this review. Check coverage before drawing conclusions.</p>}
     </>}
