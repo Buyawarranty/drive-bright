@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2, Send, Mail, X } from 'lucide-react';
 import { classifyChatTopic, type ChatTopicTag } from '@/lib/chatTopicTags';
+import { conversationInRange } from '@/lib/chatConversationRange';
 
 type Thread = {
   id: string;
@@ -164,14 +165,23 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
           .from('ai_sandbox_threads')
           .select('id, title, source, created_at, updated_at, sales_lead_id, guest_token')
           .in('id', extraIds);
-        extraThreads = (extraData ?? []) as Thread[];
+        // Waiting-for-a-reply conversations obey the date filter like everything
+        // else; only a chat opened straight from a pop-up always stays visible.
+        extraThreads = ((extraData ?? []) as Thread[]).filter(
+          (t) =>
+            t.id === initialThreadId ||
+            conversationInRange(t.created_at, { fromIso, toIso, rangeDays }),
+        );
       }
 
-      setPendingThreadIds(pendingIds);
       const allThreads = [...baseThreads, ...extraThreads]
         .filter((thread, index, all) => all.findIndex((candidate) => candidate.id === thread.id) === index)
         .sort((a, b) => +new Date(b.updated_at || b.created_at) - +new Date(a.updated_at || a.created_at));
       setThreads(allThreads);
+      // Only count pending replies the selected date range actually shows.
+      const visibleIds = new Set(allThreads.map((t) => t.id));
+      if (initialThreadId) visibleIds.add(initialThreadId);
+      setPendingThreadIds(new Set([...pendingIds].filter((id) => visibleIds.has(id))));
 
       // Tag each conversation with what it is about, from what the customer typed.
       const tagIds = allThreads.slice(0, 200).map((thread) => thread.id);
@@ -516,6 +526,10 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
               All conversations
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Newest first. Conversations follow the date filter above — chats waiting for a reply stay
+            listed until a person answers, for the dates you have selected.
+          </p>
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
