@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Analytics monthly chart: remove pale target outlines, plot only a current-month horizontal target marker; preserve historical goals and revenue calculations.
+
 - [x] Both original homepage WebPs verified directly in R2 and rendered on published drive-bright.lovable.app (960×720); preview now uses that working origin for these two images only. Build OK; no asset duplication or other image changes.
 - [ ] Primary-domain image fix awaits frontend deployment to external buyawarranty.co.uk hosting (no external deployment access available here). Its current relative image paths still return HTML and render broken; no unrelated site changes were published.
 - [x] Shared sale email: only six inline vehicle metadata fallbacks changed; six regression tests pass for exact values, payload precedence and Unknown fallback. handle-successful-payment deployed successfully; build OK. No payments processed and no emails resent.

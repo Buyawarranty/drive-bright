@@ -45,6 +45,8 @@ import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, 
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { cn } from '@/lib/utils';
 import { AgentProjectionsPanel } from './analytics/AgentProjectionsPanel';
+import { MonthlyGoalBarShape } from './analytics/MonthlyGoalBarShape';
+import { monthlyChartTarget } from '@/lib/monthlyRevenueGoal';
 
 interface Customer {
   id: string;
@@ -77,44 +79,6 @@ interface AdminUser {
   last_name: string | null;
   email: string;
 }
-
-const MonthlyGoalBarShape = ({ x, y, width, height, payload }: any) => {
-  const revenue = Math.max(0, Number(payload?.revenue) || 0);
-  const target = Math.max(0, Number(payload?.target) || 0);
-  const chartValue = Math.max(revenue, target, 1);
-  const baseline = y + height;
-  const targetHeight = target > 0 ? height * (target / chartValue) : 0;
-  const revenueHeight = height * (revenue / chartValue);
-  const targetY = baseline - targetHeight;
-  const revenueY = baseline - revenueHeight;
-
-  return (
-    <g>
-      {target > 0 && (
-        <rect
-          x={x}
-          y={targetY}
-          width={width}
-          height={targetHeight}
-          rx={4}
-          fill="hsl(var(--analytics-goal))"
-          stroke="hsl(var(--analytics-goal-border))"
-          strokeWidth={2}
-        />
-      )}
-      <rect
-        x={x + 3}
-        y={revenueY}
-        width={Math.max(width - 6, 0)}
-        height={revenueHeight}
-        rx={3}
-        fill={payload?.isSelected ? 'hsl(var(--analytics-revenue-strong))' : 'hsl(var(--analytics-revenue))'}
-        stroke={payload?.isSelected ? 'hsl(var(--analytics-revenue-strong))' : 'none'}
-        strokeWidth={payload?.isSelected ? 2 : 0}
-      />
-    </g>
-  );
-};
 
 // Test names to exclude from analytics (matching CustomersTab filtering)
 const TEST_NAMES = ['kamran qureshi', 'prajwal chauhan', 'accepttest'];
@@ -961,6 +925,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         isSelected: false,
         target: monthlyRevenueTargets[`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`] || 0,
         percentageAchieved: 0,
+        chartTarget: 0,
         chartValue: 0
       };
     }).reverse();
@@ -1019,7 +984,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     months.forEach(m => {
       m.aov = m.salesCount > 0 ? Math.round(m.revenue / m.salesCount) : 0;
       m.percentageAchieved = m.target > 0 ? Math.round((m.revenue / m.target) * 100) : 0;
-      m.chartValue = Math.max(m.revenue, m.target);
+      m.chartTarget = monthlyChartTarget(m.monthKey, m.target);
+      m.chartValue = Math.max(m.revenue, m.chartTarget);
     });
 
     return months;
@@ -1618,7 +1584,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                         <p>Avg Order Value: £{point.aov.toLocaleString('en-GB')}</p>
                         <p>Revenue: £{Math.round(point.revenue).toLocaleString('en-GB')}</p>
                         <p>Warranties Sold: {point.salesCount.toLocaleString('en-GB')}</p>
-                        {point.target > 0 && (
+                        {point.chartTarget > 0 && (
                           <>
                             <p>Monthly Goal: £{Math.round(point.target).toLocaleString('en-GB')}</p>
                             <p className="font-semibold text-primary">Goal Achieved: {point.percentageAchieved}%</p>
@@ -1628,11 +1594,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                     );
                   }}
                 />
-                <Legend formatter={(value) => value === 'chartValue' ? 'Revenue toward monthly goal' : value === 'aov' ? 'Avg Order Value' : value === 'salesCount' ? 'Warranties Sold' : value} />
+                <Legend formatter={(value) => value === 'chartValue' ? 'Revenue' : value === 'aov' ? 'Avg Order Value' : value === 'salesCount' ? 'Warranties Sold' : value} />
                 <Bar
                   yAxisId="left"
                   dataKey="chartValue"
-                  name="Revenue toward monthly goal"
+                  name="Revenue"
                   shape={<MonthlyGoalBarShape />}
                   fill="hsl(var(--analytics-revenue))"
                   barSize={48}
