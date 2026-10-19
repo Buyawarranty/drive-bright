@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { BookOpen, Check, Pause, Play, Plus, RefreshCw, Save, Trash2, Wand2 } from 'lucide-react';
 import { useRealAdminId } from '@/hooks/useCurrentAdminId';
+import { questionReplies, type QuestionMessage } from '@/lib/chatQuestionReplies';
 
 /**
  * Answer library — every question a customer asks Miles can be given a perfect
@@ -35,6 +36,8 @@ type Asked = {
   grounded: boolean;
   threadId: string | null;
   milesSaid: string | null;
+  topic: string | null;
+  replies: QuestionMessage[];
 };
 
 const STOP = new Set([
@@ -123,30 +126,29 @@ export default function ChatbotAnswerLibraryPanel({
       let msgQ = supabase
         .from('ai_sandbox_messages')
         .select('thread_id, role, content, created_at')
-        .eq('role', 'assistant')
         .order('created_at', { ascending: false })
         .limit(2000);
       if (fromIso) msgQ = msgQ.gte('created_at', fromIso);
 
       const [evRes, libRes, msgRes] = await Promise.all([evQ, libQ, msgQ]);
       if ((libRes as any)?.error) throw (libRes as any).error;
+      if ((evRes as any)?.error) throw (evRes as any).error;
+      if (msgRes.error) throw msgRes.error;
 
       const library = (((libRes as any)?.data ?? []) as LibraryRow[]);
       setRows(library);
 
-      const lastMiles = new Map<string, string>();
-      (((msgRes as any)?.data ?? []) as any[]).forEach((m) => {
-        if (m.thread_id && m.content && !lastMiles.has(m.thread_id)) lastMiles.set(m.thread_id, m.content);
-      });
+      const messages = (msgRes.data ?? []) as QuestionMessage[];
 
       const map = new Map<string, Asked>();
       (((evRes as any)?.data ?? []) as any[]).forEach((e) => {
         const q = String(e.customer_wording || e.topic || '').trim();
         if (q.length < 5) return;
         const key = words(q).slice(0, 8).join(' ') || q.toLowerCase();
+        const replies = questionReplies(e.thread_id, q, e.created_at, messages);
         const cur =
           map.get(key) ??
-          ({ question: q, count: 0, lastSeen: e.created_at, grounded: e.knowledge_confident !== false, threadId: e.thread_id, milesSaid: lastMiles.get(e.thread_id) ?? null } as Asked);
+          ({ question: q, count: 0, lastSeen: e.created_at, grounded: e.knowledge_confident !== false, threadId: e.thread_id, milesSaid: replies.filter((m) => m.role === 'assistant').map((m) => m.content).join('\n') || null, topic: e.topic, replies } as Asked);
         cur.count += 1;
         if (e.knowledge_confident === false) cur.grounded = false;
         if (+new Date(e.created_at) > +new Date(cur.lastSeen)) cur.lastSeen = e.created_at;
@@ -170,7 +172,7 @@ export default function ChatbotAnswerLibraryPanel({
     void load();
   }, [load]);
 
-  const saveAnswer = async (question: string, answer: string, threadId: string | null) => {
+  const saveAnswer = async (question: string, answer: string, threadId: string | null, approve = false) => {
     const q = question.trim();
     const a = answer.trim();
     if (q.length < 5 || a.length < 5) {
@@ -183,10 +185,10 @@ export default function ChatbotAnswerLibraryPanel({
       answer: a,
       normalized_question: words(q).join(' '),
       keywords: words(q).slice(0, 12),
-      status: 'approved',
+      status: approve ? 'approved' : 'paused',
       created_by: adminId,
-      approved_by: adminId,
-      approved_at: new Date().toISOString(),
+      approved_by: approve ? adminId : null,
+      approved_at: approve ? new Date().toISOString() : null,
       source_thread_id: threadId,
     });
     setSaving(false);
@@ -194,7 +196,7 @@ export default function ChatbotAnswerLibraryPanel({
       toast.error(`Could not save: ${error.message}`);
       return;
     }
-    toast.success('Saved — Miles will use this answer from now on');
+    toast.success(approve ? 'Approved — Miles can now use this answer' : 'Draft saved — not used by Miles');
     setDrafts((d) => ({ ...d, [q]: '' }));
     setNewQuestion('');
     setNewAnswer('');
@@ -269,9 +271,7 @@ export default function ChatbotAnswerLibraryPanel({
             <BookOpen className="h-4 w-4" /> Questions waiting for your answer
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Write the answer you want customers to get, or press <strong>Suggest an answer</strong> and Miles drafts one from the
-            approved plan documents for you to check. Once you save, Miles uses your wording straight away and reuses it whenever
-            someone asks the same or a similar question — so the chat learns from every question it could not answer before.
+            Suggested answers stay drafts until you explicitly approve them. Saving a draft does not send a reply or publish the website.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -287,12 +287,15 @@ export default function ChatbotAnswerLibraryPanel({
                 <Badge variant="secondary" className="text-xs">Asked {a.count}×</Badge>
                 <span className="text-xs text-muted-foreground">{new Date(a.lastSeen).toLocaleString('en-GB')}</span>
               </div>
-              <p className="text-sm font-medium">“{a.question}”</p>
-              {a.milesSaid && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Miles said: “{a.milesSaid.slice(0, 260)}”
-                </p>
-              )}
+              <div className="space-y-3 text-sm">
+                <div><h4 className="font-semibold">What did the customer say?</h4><p className="whitespace-pre-wrap">“{a.question}”</p></div>
+                <div><h4 className="font-semibold">What did they want to know?</h4><p>{a.topic || a.question}</p></div>
+                <div><h4 className="font-semibold">What did we say?</h4>
+                  {a.replies.length ? a.replies.map((m, i) => <p key={`${m.created_at}-${i}`} className="mt-1 whitespace-pre-wrap"><strong>{m.role === 'agent' ? 'Specialist' : 'Miles (AI)'}:</strong> {m.content}</p>) : <p className="text-muted-foreground">No reply recorded for this question.</p>}
+                </div>
+                <div><h4 className="font-semibold">What do we need to do?</h4><p>Check the approved plan documents and confirm the correct answer. If they do not cover this question, ask the relevant team before approving any wording.</p></div>
+                <h4 className="font-semibold">Suggested answer · draft only</h4>
+              </div>
               <Textarea
                 className="mt-2 text-sm"
                 rows={3}
@@ -302,7 +305,10 @@ export default function ChatbotAnswerLibraryPanel({
               />
               <div className="mt-2 flex flex-wrap gap-2">
                 <Button size="sm" onClick={() => saveAnswer(a.question, drafts[a.question] ?? '', a.threadId)} disabled={saving}>
-                  <Check className="mr-1 h-4 w-4" /> Save and use this answer
+                  <Save className="mr-1 h-4 w-4" /> Save draft
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => saveAnswer(a.question, drafts[a.question] ?? '', a.threadId, true)} disabled={saving}>
+                  <Check className="mr-1 h-4 w-4" /> Approve and use answer
                 </Button>
                 <Button
                   size="sm"
@@ -318,7 +324,7 @@ export default function ChatbotAnswerLibraryPanel({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setDrafts((d) => ({ ...d, [a.question]: a.milesSaid! }))}
+                    onClick={() => setDrafts((d) => ({ ...d, [a.question]: a.milesSaid ?? '' }))}
                   >
                     Start from what Miles said
                   </Button>
@@ -340,7 +346,7 @@ export default function ChatbotAnswerLibraryPanel({
           <Input placeholder="The customer question, in their words" value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)} />
           <Textarea rows={3} placeholder="The answer Miles should give" value={newAnswer} onChange={(e) => setNewAnswer(e.target.value)} />
           <Button size="sm" onClick={() => saveAnswer(newQuestion, newAnswer, null)} disabled={saving}>
-            <Save className="mr-1 h-4 w-4" /> Save answer
+            <Save className="mr-1 h-4 w-4" /> Save draft
           </Button>
         </CardContent>
       </Card>

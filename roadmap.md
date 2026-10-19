@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Chatbot: clearly attributed unanswered-question summaries and draft suggestions; optional callback-phone prompts creating leads; live-person offers obey main switch. No publication.
 
 - [x] Daily revenue by agent: all self-serve website channels group as Website (all direct sales), even with legacy agent references; agent-entered/quote/external and staff-purchase attribution unchanged. Website filter uses the same predicate. 21 tests pass; isolated browser verifies £1,500 website vs £700 agent and Google/Facebook/organic breakdown; build OK. Unpublished; authenticated real-data chart remains unverified on external Supabase.
 
