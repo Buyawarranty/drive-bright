@@ -11,6 +11,7 @@ import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from '@/componen
 import { PromptInput, PromptInputTextarea, PromptInputFooter, PromptInputSubmit } from '@/components/ai-elements/prompt-input';
 import SeoAuditReport from './SeoAuditReport';
 import WeeklySeoReviews from './WeeklySeoReviews';
+import SalesRecommendationsPanel from './SalesRecommendationsPanel';
 import audit from '@/data/seo-audit-2026-10-17.json';
 import { buildSeoRecommendationContext, visibleSeoRequest, type SeoReviewEvidence } from '@/lib/seoRecommendationContext';
 
@@ -202,6 +203,7 @@ export default function GrowthAgentTab({ seoAudit = false, legacySeo = false }: 
           <p className="text-sm text-muted-foreground">{seoAudit ? 'Agentic Assistant · SEO recommendations' : "Uses the parts of the CRM you've been given access to and suggests what to do — it never changes or sends anything."}</p>
         </div>
       </div>
+      {!seoAudit && <SalesRecommendationsPanel />}
       {err && <p className="text-sm text-destructive mb-2">{err}</p>}
       {seoAudit && <><div className="flex flex-wrap gap-2 mb-4"><Button variant={seoView === 'assistant' ? 'default' : 'outline'} onClick={() => setSeoView('assistant')}><Lightbulb className="h-4 w-4 mr-2" />Recommendations</Button><Button variant={seoView === 'weekly' ? 'default' : 'outline'} onClick={() => setSeoView('weekly')}><Search className="h-4 w-4 mr-2" />Weekly reviews and approvals</Button><Button variant={seoView === 'report' ? 'default' : 'outline'} onClick={() => setSeoView('report')}><Search className="h-4 w-4 mr-2" />Audit report</Button></div><p className="text-xs text-muted-foreground mb-3">{evidenceLoading ? 'Loading available review evidence…' : reviewEvidence ? `Weekly evidence: ${reviewEvidence.report.checkedAt ? new Date(reviewEvidence.report.checkedAt).toLocaleString('en-GB') : reviewEvidence.audit_week} · ${reviewEvidence.report.checkedPages ?? 0} pages · ${reviewEvidence.proposals.length} proposals` : 'Saved website audit: 17 October 2026 · Latest weekly evidence unavailable'} · No automatic changes or publication</p>{evidenceError && <p role="status" className="text-sm text-muted-foreground mb-3">{evidenceError}</p>}</>}
       {seoAudit && seoView === 'weekly' ? <WeeklySeoReviews /> : seoAudit && seoView === 'report' ? <SeoAuditReport /> : <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
