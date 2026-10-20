@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import WebsiteDiscountPanel from './pricing/WebsiteDiscountPanel';
+import PercentagePriceSave from './pricing/PercentagePriceSave';
 import { normalizeWebsiteDiscount, readWebsiteDiscountDraft, saveWebsiteDiscountDraft, WEBSITE_DISCOUNT_CHANGED_EVENT } from '@/lib/pricing/websiteDiscount';
 import { type VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 import { getLiveRiskBandConfig } from '@/lib/pricing/liveRiskBands';
@@ -243,7 +244,6 @@ export default function PriceUpdatesTab() {
     window.addEventListener(WEBSITE_DISCOUNT_CHANGED_EVENT, sync);
     return () => window.removeEventListener(WEBSITE_DISCOUNT_CHANGED_EVENT, sync);
   }, []);
-  const [bulkPct, setBulkPct] = useState('15');
 
   const [matrix, setMatrix] = useState<PricingMatrixShape>(() => buildCodeAdminMatrix());
   const [busy, setBusy] = useState(false);
@@ -360,20 +360,6 @@ export default function PriceUpdatesTab() {
     });
   }
 
-  function bulkApplyPct(pct: number) {
-    setMatrix(prev => {
-      const next = cloneMatrix(prev);
-      for (const p of Object.keys(next)) {
-        for (const e of Object.keys(next[p])) {
-          for (const l of Object.keys(next[p][e])) {
-            next[p][e][l] = Math.round(next[p][e][l] * (1 + pct / 100));
-          }
-        }
-      }
-      return next;
-    });
-    toast.success(`Applied ${pct > 0 ? '+' : ''}${pct}% to every price in the draft`);
-  }
 
   async function handleCreateDraft() {
     setBusy(true);
@@ -497,22 +483,25 @@ export default function PriceUpdatesTab() {
   }
 
 
-  async function handleSave() {
-    if (!selectedId) return;
+  async function handleSave(adjustedMatrix?: PricingMatrixShape): Promise<boolean> {
+    if (!selectedId || !drafts.some(d => d.id === selectedId)) return false;
     setBusy(true);
     try {
       await saveVersion(selectedId, {
         label,
         notes,
-        admin_matrix: roundMatrixWhole(matrix),
+        admin_matrix: roundMatrixWhole(adjustedMatrix ?? matrix),
         step3_discount_pct: discountPct,
         claim_limit_factors: currentClaimLimitFactors(),
         labour_rate_factors: currentLabourRateFactors(),
         vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
+      if (adjustedMatrix) setMatrix(adjustedMatrix);
       toast.success('Draft saved (test only — not live)');
+      return true;
     } catch (e: any) {
       toast.error(e?.message || 'Could not save draft');
+      return false;
     } finally {
       setBusy(false);
     }
@@ -1358,60 +1347,7 @@ export default function PriceUpdatesTab() {
                 </div>
               </div>
 
-              <div className="rounded-md border bg-muted/30 p-3 space-y-3">
-                <div>
-                  <Label>Quick change to every price</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Applies to every cell in all three terms. All prices stay whole pounds — no
-                    decimals.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {[5, 10, 15, 20, 25].map(p => (
-                    <Button key={p} variant="outline" size="sm" onClick={() => bulkApplyPct(p)}>
-                      +{p}%
-                    </Button>
-                  ))}
-                  {[5, 10, 15, 20].map(p => (
-                    <Button key={-p} variant="outline" size="sm" onClick={() => bulkApplyPct(-p)}>
-                      -{p}%
-                    </Button>
-                  ))}
-                </div>
-                <div className="flex flex-wrap items-end gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Your own amount (%)</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={200}
-                      step={1}
-                      className="h-9 w-28"
-                      value={bulkPct}
-                      onChange={e => setBulkPct(e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => bulkApplyPct(Math.abs(Number(bulkPct) || 0))}
-                    disabled={!Number(bulkPct)}
-                  >
-                    Increase all
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => bulkApplyPct(-Math.abs(Number(bulkPct) || 0))}
-                    disabled={!Number(bulkPct)}
-                  >
-                    Decrease all
-                  </Button>
-                  <Button size="sm" onClick={handlePublish} disabled={busy}>
-                    <Rocket className="h-4 w-4 mr-1" /> Push live
-                  </Button>
-                </div>
-              </div>
+              <PercentagePriceSave key={selectedId} matrix={matrix} busy={busy || !drafts.some(d => d.id === selectedId)} onSave={handleSave} />
 
 
               <div className="space-y-1">
@@ -1587,7 +1523,7 @@ export default function PriceUpdatesTab() {
               </Tabs>
 
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" onClick={handleSave} disabled={busy}>
+                <Button variant="outline" onClick={() => handleSave()} disabled={busy}>
                   <Save className="h-4 w-4 mr-1" /> Save draft (test only)
                 </Button>
                 <Button onClick={handlePublish} disabled={busy}>
