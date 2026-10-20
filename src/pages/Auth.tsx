@@ -16,6 +16,7 @@ import AdminLoginDebug from '@/components/admin/AdminLoginDebug';
 import CustomerLoginDebugTool from '@/components/admin/CustomerLoginDebugTool';
 import { AuthPasswordGate } from '@/components/auth/AuthPasswordGate';
 import { logLoginAttempt } from '@/lib/loginActivityLogger';
+import { checkLoginLockout, lockoutMessage } from '@/lib/loginLockout';
 import { withTimeout } from '@/lib/withTimeout';
 
 const Auth = () => {
@@ -250,7 +251,18 @@ const Auth = () => {
     
     try {
       console.log("Attempting to sign in with:", email);
-      
+
+      // Brute-force protection: block before even attempting when locked.
+      const preLock = await checkLoginLockout(email);
+      if (preLock.locked) {
+        toast({
+          title: "Account temporarily locked",
+          description: lockoutMessage(preLock.retryAfterSeconds),
+          variant: "destructive",
+        });
+        return;
+      }
+
       let { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -290,9 +302,12 @@ const Auth = () => {
           success: false,
           failure_reason: error.message,
         });
+        const postLock = await checkLoginLockout(email);
         toast({
-          title: "Sign In Failed",
-          description: error.message || "Authentication failed. Please check your credentials.",
+          title: postLock.locked ? "Account temporarily locked" : "Sign In Failed",
+          description: postLock.locked
+            ? lockoutMessage(postLock.retryAfterSeconds)
+            : error.message || "Authentication failed. Please check your credentials.",
           variant: "destructive",
         });
         return;

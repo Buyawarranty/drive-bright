@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { DealerPublicHeader } from '@/components/dealer/DealerPublicHeader';
+import { logLoginAttempt } from '@/lib/loginActivityLogger';
+import { checkLoginLockout, lockoutMessage } from '@/lib/loginLockout';
 
 const DealerLogin = () => {
   const [email, setEmail] = useState('');
@@ -23,8 +25,23 @@ const DealerLogin = () => {
     setLoading(true);
     setUnconfirmedEmail(null);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Brute-force protection: block before even attempting when locked.
+      const preLock = await checkLoginLockout(normalizedEmail);
+      if (preLock.locked) {
+        toast({ title: 'Account temporarily locked', description: lockoutMessage(preLock.retryAfterSeconds), variant: 'destructive' });
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
       if (error) {
+        logLoginAttempt({ email: normalizedEmail, event_type: 'login_failed', success: false, failure_reason: error.message });
+        const postLock = await checkLoginLockout(normalizedEmail);
+        if (postLock.locked) {
+          toast({ title: 'Account temporarily locked', description: lockoutMessage(postLock.retryAfterSeconds), variant: 'destructive' });
+          return;
+        }
         if (error.message?.toLowerCase().includes('email not confirmed')) {
           setUnconfirmedEmail(email);
           toast({
@@ -43,6 +60,8 @@ const DealerLogin = () => {
         toast({ title: 'Access denied', description: 'No dealer account found for this email.', variant: 'destructive' });
         return;
       }
+
+      logLoginAttempt({ email: normalizedEmail, event_type: 'login_success', success: true });
 
       const redirect = searchParams.get('redirect');
       const reg = searchParams.get('reg') || localStorage.getItem('dealerPendingReg');
