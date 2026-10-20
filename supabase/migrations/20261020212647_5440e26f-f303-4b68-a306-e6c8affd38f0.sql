@@ -1,0 +1,3 @@
+CREATE POLICY "No direct gateway settings access" ON public.login_gateway_settings FOR ALL TO anon,authenticated USING(false) WITH CHECK(false);
+CREATE POLICY "No direct gateway attempt access" ON public.login_gateway_attempts FOR ALL TO anon,authenticated USING(false) WITH CHECK(false);
+CREATE POLICY "No direct gateway receipt access" ON public.login_gateway_sessions FOR ALL TO anon,authenticated USING(false) WITH CHECK(false);
