@@ -5,6 +5,7 @@ import { DefaultChatTransport, type UIMessage } from 'ai';
 import { Lightbulb, Plus, Trash2, TrendingUp, Search, Archive, History, RotateCcw, CalendarDays } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ai-elements/conversation';
 import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message';
 import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from '@/components/ai-elements/tool';
@@ -222,14 +223,28 @@ export default function GrowthAgentTab({ seoAudit = false, legacySeo = false }: 
       <div className="flex items-center gap-2 mb-4">
         {seoAudit ? <Search className="h-6 w-6 text-primary" /> : <Lightbulb className="h-6 w-6 text-primary" />}
         <div>
-          <h1 className="text-xl font-semibold">{seoAudit ? 'SEO Audit' : 'Agentic assistant'}</h1>
+          <h1 className="text-xl font-semibold">{seoAudit ? 'SEO workspace' : 'Agentic assistant'}</h1>
           <p className="text-sm text-muted-foreground">{seoAudit ? 'Agentic Assistant · SEO recommendations' : "Uses the parts of the CRM you've been given access to and suggests what to do — it never changes or sends anything."}</p>
         </div>
       </div>
       {!seoAudit && <SalesRecommendationsPanel />}
       {seoAudit && seoView !== 'weekly' && <details className="mb-4 shrink-0"><summary className="cursor-pointer font-medium text-sm">Who acts on recommendations? What do the buttons do?</summary><div className="pt-3"><SeoActionGuide /></div></details>}
       {err && <p className="text-sm text-destructive mb-2">{err}</p>}
-      {seoAudit && <><div className="flex flex-wrap gap-2 mb-4"><Button variant={seoView === 'assistant' ? 'default' : 'outline'} onClick={() => setSeoView('assistant')}><Lightbulb className="h-4 w-4 mr-2" />Recommendations</Button><Button variant={seoView === 'weekly' ? 'default' : 'outline'} onClick={() => setSeoView('weekly')}><Search className="h-4 w-4 mr-2" />Weekly reviews and approvals</Button><Button variant={seoView === 'report' ? 'default' : 'outline'} onClick={() => setSeoView('report')}><Search className="h-4 w-4 mr-2" />Audit report</Button></div><p className="text-xs text-muted-foreground mb-3">{evidenceLoading ? 'Loading available review evidence…' : reviewEvidence ? `Weekly evidence: ${reviewEvidence.report.checkedAt ? new Date(reviewEvidence.report.checkedAt).toLocaleString('en-GB') : reviewEvidence.audit_week} · ${reviewEvidence.report.checkedPages ?? 0} pages · ${reviewEvidence.proposals.length} proposals` : 'Saved website audit: 17 October 2026 · Latest weekly evidence unavailable'} · No automatic changes or publication</p>{evidenceError && <p role="status" className="text-sm text-muted-foreground mb-3">{evidenceError}</p>}</>}
+      {seoAudit && <section className="border-b border-border pb-4 mb-4 shrink-0 space-y-2">
+        <label id="seo-task-label" className="text-sm font-semibold">What would you like to do?</label>
+        <Select value={seoView} onValueChange={value => { if (value === 'assistant' || value === 'weekly' || value === 'report') setSeoView(value); }}>
+          <SelectTrigger aria-labelledby="seo-task-label" className="w-full max-w-md"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="assistant">Ask questions and get recommendations</SelectItem>
+            <SelectItem value="weekly">Review and authorise weekly suggestions</SelectItem>
+            <SelectItem value="report">See saved audit findings</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-sm text-muted-foreground">{seoView === 'assistant' ? 'Ask the Agentic Assistant what to improve, prepare a daily review question, or revisit your conversations. It proposes work using available saved evidence; it does not edit or publish pages.' : seoView === 'weekly' ? 'Read the scheduled weekly findings and proposed work. A super admin can authorise or reject suggestions. Authorisation records a decision only; you must separately request implementation and publication.' : 'Read and filter the saved website audit, its evidence, priorities and coverage gaps. This is a dated report, not a new scan, and opening it does not change the website.'}</p>
+        <details className="text-sm"><summary className="cursor-pointer font-medium">Explain all three choices</summary><dl className="pt-2 space-y-2 text-muted-foreground"><div><dt className="font-semibold text-foreground">Questions and recommendations</dt><dd>A conversation with the assistant to understand issues and plan suggested improvements. Saved chats can be archived into History or deleted.</dd></div><div><dt className="font-semibold text-foreground">Weekly suggestions and authorisation</dt><dd>The scheduled review’s proposal list and super-admin decisions. Approval does not start work; request the approved change in Lovable project chat or assign your website editor.</dd></div><div><dt className="font-semibold text-foreground">Saved audit findings</dt><dd>The underlying dated report: what was checked, what was found and what still needs investigation. It supplies evidence, not an implementation action.</dd></div></dl></details>
+        <p className="text-xs text-muted-foreground">{evidenceLoading ? 'Loading available review evidence…' : reviewEvidence ? `Weekly evidence: ${reviewEvidence.report.checkedAt ? new Date(reviewEvidence.report.checkedAt).toLocaleString('en-GB') : reviewEvidence.audit_week} · ${reviewEvidence.report.checkedPages ?? 0} pages · ${reviewEvidence.proposals.length} proposals` : 'Saved website audit: 17 October 2026 · Latest weekly evidence unavailable'} · Nothing is changed or published by selecting a view</p>
+        {evidenceError && <p role="status" className="text-sm text-muted-foreground">{evidenceError}</p>}
+      </section>}
       {seoAudit && seoView === 'weekly' ? <WeeklySeoReviews /> : seoAudit && seoView === 'report' ? <SeoAuditReport /> : <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
         <aside className="md:w-60 max-h-40 md:max-h-none shrink-0 flex flex-col border border-border rounded-lg p-2 min-h-0">
           <Button size="sm" onClick={() => newThread()} disabled={threadBusy} className="mb-2"><Plus className="h-4 w-4 mr-1" />New conversation</Button>
