@@ -31,7 +31,7 @@ export function LoginGateway({ onUnlock }: { onUnlock: () => void }) {
         <Lock className="h-8 w-8 text-primary mx-auto mb-4" />
         <CardTitle>Protected area</CardTitle><CardDescription>This page requires a password to access</CardDescription>
       </CardHeader>
-      <CardContent><form onSubmit={submit} className="space-y-4">
+      <CardContent><p role="note" className="mb-4 text-sm text-muted-foreground">If the gateway password has been updated, please contact your manager for the current password.</p><form onSubmit={submit} className="space-y-4">
         <div><Label htmlFor="gateway-password">Gateway password</Label><div className="relative">
           <Input id="gateway-password" type={visible ? 'text' : 'password'} value={password} onChange={e => { setPassword(e.target.value); setError(''); }} required maxLength={128} autoComplete="current-password" className="pr-12" />
           <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2" aria-label={visible ? 'Hide password' : 'Show password'} onClick={() => setVisible(!visible)}>{visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
