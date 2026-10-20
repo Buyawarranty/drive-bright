@@ -1,0 +1,2 @@
+UPDATE public.login_gateway_settings SET password_hash='$2a$' || substring(password_hash from 5) WHERE id=true AND password_hash LIKE '$2b$%';
+DELETE FROM public.login_gateway_attempts WHERE window_start >= '2026-10-20 21:28:00+00' AND window_start <= '2026-10-20 21:32:00+00';

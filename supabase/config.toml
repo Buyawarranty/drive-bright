@@ -1,4 +1,6 @@
 project_id = "mzlpuxzwyrcyrgrongeb"
+[functions.login-gateway]
+verify_jwt = false
 
 
 

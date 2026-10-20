@@ -9288,6 +9288,66 @@ export type Database = {
         }
         Relationships: []
       }
+      login_gateway_attempts: {
+        Row: {
+          failures: number
+          source_key: string
+          window_start: string
+        }
+        Insert: {
+          failures?: number
+          source_key: string
+          window_start?: string
+        }
+        Update: {
+          failures?: number
+          source_key?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      login_gateway_sessions: {
+        Row: {
+          expires_at: string
+          token: string
+          version: number
+        }
+        Insert: {
+          expires_at?: string
+          token?: string
+          version: number
+        }
+        Update: {
+          expires_at?: string
+          token?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      login_gateway_settings: {
+        Row: {
+          id: boolean
+          password_hash: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          id?: boolean
+          password_hash: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          id?: boolean
+          password_hash?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       manager_discount_access: {
         Row: {
           created_at: string
@@ -15982,6 +16042,15 @@ export type Database = {
           p_policy_id: string
         }
         Returns: string
+      }
+      login_gateway_manage: {
+        Args: { p_password?: string; p_user_id: string }
+        Returns: Json
+      }
+      login_gateway_validate: { Args: { p_token: string }; Returns: boolean }
+      login_gateway_verify: {
+        Args: { p_password: string; p_source_key: string }
+        Returns: Json
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       mark_claim_misrepresented: {

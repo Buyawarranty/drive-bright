@@ -15,6 +15,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import AdminLoginDebug from '@/components/admin/AdminLoginDebug';
 import CustomerLoginDebugTool from '@/components/admin/CustomerLoginDebugTool';
 import { AuthPasswordGate } from '@/components/auth/AuthPasswordGate';
+import { useGatewayUnlock } from '@/lib/loginGateway';
 import { logLoginAttempt } from '@/lib/loginActivityLogger';
 import { checkLoginLockout, lockoutMessage } from '@/lib/loginLockout';
 import { withTimeout } from '@/lib/withTimeout';
@@ -26,9 +27,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   
   // Password gate state - check session storage on mount
-  const [isUnlocked, setIsUnlocked] = useState(() => {
-    return sessionStorage.getItem('authPageUnlocked') === 'true';
-  });
+  const { isUnlocked, setIsUnlocked } = useGatewayUnlock();
   
   const [loading, setLoading] = useState(false);
   const [isAdminUser, setIsAdminUser] = useState(false);
