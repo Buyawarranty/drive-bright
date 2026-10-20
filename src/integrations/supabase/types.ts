@@ -15488,6 +15488,7 @@ export type Database = {
         Args: { _allowed_roles: string[]; _allowed_team_ids: string[] }
         Returns: boolean
       }
+      check_login_lockout: { Args: { p_email: string }; Returns: Json }
       claim_lead_for_agent: {
         Args: { p_agent_id: string; p_lead_id: string }
         Returns: Json

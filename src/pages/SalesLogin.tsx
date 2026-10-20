@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { SalesLoginGate } from '@/components/auth/SalesLoginGate';
 import { withTimeout } from '@/lib/withTimeout';
+import { logLoginAttempt } from '@/lib/loginActivityLogger';
+import { checkLoginLockout, lockoutMessage } from '@/lib/loginLockout';
 
 const SalesLogin = () => {
   const [email, setEmail] = useState('');
@@ -64,14 +66,29 @@ const SalesLogin = () => {
     setLoading(true);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Brute-force protection: block before even attempting when locked.
+      const preLock = await checkLoginLockout(normalizedEmail);
+      if (preLock.locked) {
+        throw new Error(lockoutMessage(preLock.retryAfterSeconds));
+      }
+
       // Sign in with email and password
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         password,
       });
 
       if (authError) {
-        throw authError;
+        logLoginAttempt({
+          email: normalizedEmail,
+          event_type: 'login_failed',
+          success: false,
+          failure_reason: authError.message,
+        });
+        const postLock = await checkLoginLockout(normalizedEmail);
+        throw new Error(postLock.locked ? lockoutMessage(postLock.retryAfterSeconds) : authError.message);
       }
 
       if (!authData.user) {
@@ -148,6 +165,12 @@ const SalesLogin = () => {
         .from('admin_users')
         .update({ last_login: new Date().toISOString() })
         .eq('user_id', authData.user.id);
+
+      logLoginAttempt({
+        email: normalizedEmail,
+        event_type: 'login_success',
+        success: true,
+      });
 
       toast({
         title: "Welcome back!",
