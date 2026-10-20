@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { prerenderMetaPlugin } from "./scripts/vite-plugin-prerender-meta";
+import { portableAssetsPlugin } from "./scripts/vite-plugin-portable-assets";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -15,6 +16,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
+    portableAssetsPlugin(),
     react(),
     mode === 'development' &&
     componentTagger(),
