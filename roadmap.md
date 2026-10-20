@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] SEO conversations: daily review prompt, archive/history/restore and confirmed permanent deletion; preserve existing private ownership and read-only assistant.
 - [x] PayLater claims-made tag/filter in Customer Management for admin/super_admin/Accounts only, respecting impersonation; service-only protected-role lookup, linked-policy matching, batch-loaded historical matches, refresh/focus/60-second updates. Twelve role tests pass, build OK; unsigned endpoint 401, direct anon/authenticated RPC denied. Payments and claims unchanged; unpublished.
 - [ ] PayLater claims signed-in verification: external Supabase has no managed staff session and zero PayLater customer records, so real claim-to-tag/filter readback remains unverified. Existing unrelated security findings remain.
 - [x] Shared gateway password control added to User permissions; active admins/super admins only, service-only hashes and versioned receipts, 5/15-minute gateway throttle. Eleven tests pass, build OK; real existing password unlocks both login pages and unsigned settings returns 401. Personal sign-in unchanged; frontend unpublished.
