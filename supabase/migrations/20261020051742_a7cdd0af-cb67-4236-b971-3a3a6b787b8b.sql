@@ -1,0 +1,1 @@
+ALTER TABLE public.reporting_accounts ADD COLUMN IF NOT EXISTS cc_email text;

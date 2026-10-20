@@ -11580,6 +11580,7 @@ export type Database = {
       }
       reporting_accounts: {
         Row: {
+          cc_email: string | null
           commission_pct: number
           created_at: string
           document_intro: string
@@ -11604,6 +11605,7 @@ export type Database = {
           weekday: number
         }
         Insert: {
+          cc_email?: string | null
           commission_pct?: number
           created_at?: string
           document_intro?: string
@@ -11628,6 +11630,7 @@ export type Database = {
           weekday?: number
         }
         Update: {
+          cc_email?: string | null
           commission_pct?: number
           created_at?: string
           document_intro?: string

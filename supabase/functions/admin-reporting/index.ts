@@ -70,7 +70,8 @@ async function sendInvoice(client: any, invoice: any) {
     const subject = fillReportingTemplate(current.email_subject,values);
     const content = fillReportingTemplate(current.email_body,values);
     const attachments = await Promise.all(['report','invoice'].map(async kind => ({filename:`${invoice.invoice_number}-${kind}.docx`,content:await reportingWord(invoice.snapshot,kind==='invoice'?invoice.invoice_number:undefined)})));
-    const response = await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json','Idempotency-Key':`reporting-${invoice.id}`},body:JSON.stringify({from:INTERNAL_NOTIFICATION_FROM,to:[current.recipient_email],subject,text:content,attachments})});
+    const cc = z.string().email().safeParse(String(current.cc_email ?? '').trim()).success ? [String(current.cc_email).trim()] : [];
+    const response = await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json','Idempotency-Key':`reporting-${invoice.id}`},body:JSON.stringify({from:INTERNAL_NOTIFICATION_FROM,to:[current.recipient_email],...(cc.length?{cc}:{}),subject,text:content,attachments})});
     if(!response.ok) throw new Error(`Email provider rejected delivery (${response.status})`);
     checked(await client.from('reporting_invoices').update({email_status:'sent',email_error:null,sent_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',invoice.id));
     await logCustomerEmail({recipient_email:current.recipient_email,subject,template_name:'head_office_reporting',source_function:'admin-reporting',status:'sent',metadata:{invoice_id:invoice.id}});
