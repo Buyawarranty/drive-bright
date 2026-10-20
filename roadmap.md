@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] BAW PayLater: analytics recognise yearly money only when collected; agents receive yearly scoreboard/commission credit with clear PayLater identification. Verify £502 now, not £1,004 for 2-year cover.
 - [x] Central portableAssetsPlugin normalizes all 113 imported asset pointers to absolute published-origin URLs in dev/build; canonical CLI pointers unchanged. Homepage one-off workarounds removed; three tests pass, all 113 CDN files return non-HTML HTTP 200, both images render 960×720; automatic build OK.
 - [ ] Verify clean GitHub ZIP production bundle and external deployment: automatic build reports OK but its output is unavailable here for bundle inspection; external buyawarranty.co.uk deployment access is unavailable. No production-bundle or external-site fix claim until checked.
 - [ ] Add branded Stripe refund-fee invoices in admin: editable drafts, explicit email send, payment status; no automatic refunds or subscription cancellation; enforce existing no-fee cooling-off and claim rules.
