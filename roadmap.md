@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Add admin/super-admin-only shared gateway password rotation in User permissions, server-verified on both login gateways; preserve personal sign-in and lockout.
 - [x] BAW PayLater: shared yearly-only sale amounts; paid anniversaries credited by collection date to sale owner without extra deal counts; analytics and agent/timesheet PayLater labels; commission claims read saved yearly value. Nine tests pass (£502 not £1,004, no double division, unpaid/first-year excluded); preview build OK. Unpublished.
 - [ ] PayLater authenticated collection/commission verification: no live PayLater records or managed session on external Supabase; actual commission payouts and collection readback remain unverified. Team-target RPC and daily charts still need anniversary parity before claiming every reporting surface complete.
 - [x] Central portableAssetsPlugin normalizes all 113 imported asset pointers to absolute published-origin URLs in dev/build; canonical CLI pointers unchanged. Homepage one-off workarounds removed; three tests pass, all 113 CDN files return non-HTML HTTP 200, both images render 960×720; automatic build OK.
