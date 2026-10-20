@@ -1,0 +1,1 @@
+ALTER TABLE public.growth_agent_threads ADD COLUMN archived_at timestamptz DEFAULT NULL;
