@@ -23,4 +23,4 @@
 - Lead count tab: visibility = admin/super_admin or tab_lead-count grant, never sales roles; data via get_lead_count_report RPC (checks server-side) using locked daily snapshots.
 - Lead quality: access-checked read-only RPC, private matching; live outcomes never rewrite snapshots.
 - Reporting: immutable invoices, locked payments, service-only email claims; hourly job only when enabled, independent of staff commissions.
-- Login lockout: sign-in pages pre-check check_login_lockout RPC (5 fails/15 min, reset on success) via fail-open src/lib/loginLockout.ts.
+- Login: fail-open check_login_lockout (5/15min); server-hashed gateways/versioned receipts rotate only for active admins/super admins.
