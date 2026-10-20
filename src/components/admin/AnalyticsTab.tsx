@@ -732,33 +732,38 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     const salesTiktok = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'tiktok');
     const salesOrganic = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'organic');
 
-    const calcStats = (custs: Customer[]) => {
-      const revenue = custs.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+    const calcStats = (custs: Customer[], matches: (c: Customer) => boolean = () => true) => {
+      const saleRevenue = custs.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+      const collected = periodCollections.reduce((sum, row) => {
+        const customer = customers.find(c => c.id === row.customer_id);
+        return sum + (customer && matches(customer) ? row.revenue : 0);
+      }, 0);
+      const revenue = saleRevenue + collected;
       return {
         count: custs.length,
         revenue,
-        aov: custs.length > 0 ? Math.round(revenue / custs.length) : 0
+        aov: custs.length > 0 ? Math.round(saleRevenue / custs.length) : 0
       };
     };
 
     return {
       allSources: calcStats(paid),
-      website: calcStats(websiteCustomers),
-      staffPurchase: calcStats(staffPurchaseCustomers),
-      salesTeam: calcStats(salesTeamCustomers),
-      google: calcStats(googleCustomers),
-      facebook: calcStats(facebookCustomers),
-      bing: calcStats(bingCustomers),
-      tiktok: calcStats(tiktokCustomers),
-      pureWebsite: calcStats(pureWebsiteCustomers),
-      salesGoogle: calcStats(salesGoogle),
-      salesFacebook: calcStats(salesFacebook),
-      salesBing: calcStats(salesBing),
-      salesTiktok: calcStats(salesTiktok),
-      salesOrganic: calcStats(salesOrganic),
+      website: calcStats(websiteCustomers, c => getCustomerSource(c) === 'website'),
+      staffPurchase: calcStats(staffPurchaseCustomers, c => getCustomerSource(c) === 'staff_purchase'),
+      salesTeam: calcStats(salesTeamCustomers, c => getCustomerSource(c) === 'sales_team'),
+      google: calcStats(googleCustomers, c => getCustomerSource(c) === 'website' && getWebsiteChannel(c) === 'google'),
+      facebook: calcStats(facebookCustomers, c => getCustomerSource(c) === 'website' && getWebsiteChannel(c) === 'facebook'),
+      bing: calcStats(bingCustomers, c => getCustomerSource(c) === 'website' && getWebsiteChannel(c) === 'bing'),
+      tiktok: calcStats(tiktokCustomers, c => getCustomerSource(c) === 'website' && getWebsiteChannel(c) === 'tiktok'),
+      pureWebsite: calcStats(pureWebsiteCustomers, c => getCustomerSource(c) === 'website' && getWebsiteChannel(c) === 'pure'),
+      salesGoogle: calcStats(salesGoogle, c => getCustomerSource(c) === 'sales_team' && getSalesTeamLeadSource(c) === 'google'),
+      salesFacebook: calcStats(salesFacebook, c => getCustomerSource(c) === 'sales_team' && getSalesTeamLeadSource(c) === 'facebook'),
+      salesBing: calcStats(salesBing, c => getCustomerSource(c) === 'sales_team' && getSalesTeamLeadSource(c) === 'bing'),
+      salesTiktok: calcStats(salesTiktok, c => getCustomerSource(c) === 'sales_team' && getSalesTeamLeadSource(c) === 'tiktok'),
+      salesOrganic: calcStats(salesOrganic, c => getCustomerSource(c) === 'sales_team' && getSalesTeamLeadSource(c) === 'organic'),
     };
 
-  }, [activeRevenueCustomers]);
+  }, [activeRevenueCustomers, customers, payLaterCollections, effectiveDateRange, sourceFilter]);
 
   // Price metrics by source: lowest, highest, average — respects both date AND source filter
   const priceMetrics = useMemo(() => {
