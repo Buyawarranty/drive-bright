@@ -1,16 +1,16 @@
 # Project architecture rules
-- Asset pointers stay CLI-generated; portableAssetsPlugin resolves all imported pointer URLs to the published Lovable origin for external hosting. Keep overrides; mobile image caps belong on wrappers (forced max-width).
-- Abandoned Cart lists and every export use the shared fail-closed eligibility loader and an active-staff-checked history RPC returning only excluded cart IDs, so restricted claims data stays server-side and cancelled/refunded customers cannot re-enter exports.
+- Asset pointers stay CLI-generated; portableAssetsPlugin resolves imported pointer URLs to the published Lovable origin for external hosting; mobile image caps belong on wrappers.
+- Abandoned Cart lists and exports use the shared fail-closed eligibility loader and active-staff-checked history RPC returning only excluded cart IDs, keeping restricted claims data server-side and barring cancelled/refunded customers.
 - SEO Audit and the legacy semrush-seo URL share Agentic Assistant chat, storage and permissions; recommendations combine a versioned audit with RLS-readable weekly evidence, never depend on Semrush or imply a live scan, and never execute website edits.
 - Weekly SEO reviews use database-queued, idempotent server-side published-site reads and private access-checked review records; only super admins decide proposals, and decisions never execute edits or publication. The selected SEO account receives a dedicated review grant without expanding assistant permissions.
 - Missing route metadata is added through the existing prerender inventory and static sitemap; retain that mechanism and schema, with one metadata entry per output path. Sharing metadata and article/related images use the shared image resolver and approved alt metadata, preserving approved descriptions, omitting unverified dimensions and keeping stable URLs.
 - Careers contact/experience requirements use a shared pure validator in the form and submission function, with strict server schemas, so bypassing browser controls cannot admit an ineligible application.
-- Careers rejection deadlines are stamped from dedicated settings in the database; postponement uses an access-checked RPC and the sweep uses an atomic dedicated lease, because admin_config only stores booleans. CV previews use short-lived signed storage links and render Word files as plain text.
+- Careers rejection deadlines are stamped from dedicated settings in the database; postponement uses an access-checked RPC and the sweep uses an atomic dedicated lease. CV previews use short-lived signed storage links and render Word files as plain text.
 - New pricing versions mark `websiteDiscountMode: single` and apply the one website percentage to the completed total; legacy versions keep their original rules so historical prices and unpublished live settings are not rewritten.
 - Published document blogs may supply exact article HTML and schema through route metadata so crawler output preserves the same approved content as the database article without altering existing page schemas.
 - Reuse CallMeBackPanel/sandbox-callback-request for callback leads. Gate live offers/requests on server config plus fresh presence; management changes it via the availability endpoint. Pair question replies to their turn; drafts need explicit approval.
 - Use the shared sale-subject formatter for manager direct-sale email source labels in both subject and body; keep existing attribution and delivery logic unchanged to avoid affecting payment flows.
-- ORR uses one sandbox (including legacy URLs), with a page-level practice-view switch hiding manager controls, not changing permissions; Lead Allocation mirrors read-only.
+- ORR uses one sandbox, with a page-level practice-view switch hiding manager controls, not changing permissions; Lead Allocation mirrors read-only.
 
 - Analytics goals stay separate in `monthly_revenue_targets`; shared month selector/bar shape preserve maths. Daily seller grouping is presentation-only, never changes sale credit.
 - Multi-year quotes offer 12 instalments or BAW PayLater. Shared yearlySaleRevenue avoids double division; paginated paid anniversaries use collection date and sale owner, never new-deal credit; future money is not revenue.
@@ -23,3 +23,4 @@
 - Lead count tab: visibility = admin/super_admin or tab_lead-count grant, never sales roles; data via get_lead_count_report RPC (checks server-side) using locked daily snapshots.
 - Lead quality: access-checked read-only RPC, private matching; live outcomes never rewrite snapshots.
 - Reporting: immutable invoices, locked payments, service-only email claims; hourly job only when enabled, independent of staff commissions.
+- Login lockout: sign-in pages pre-check check_login_lockout RPC (5 fails/15 min, reset on success) via fail-open src/lib/loginLockout.ts.
