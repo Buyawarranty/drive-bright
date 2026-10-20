@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
 import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
+import { canViewPayLaterClaims, hasPayLaterClaim } from '@/lib/payLaterClaims';
 
 import { ReferencePriceCell } from '@/components/admin/customers/ReferencePriceCell';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
@@ -565,6 +566,11 @@ export const CustomersTab = ({
   const resolveSaleCredit = useMemo(() => buildSaleCreditResolver(salesCreditAgentIds), [salesCreditAgentIds]);
   const [claimEmails, setClaimEmails] = useState<Set<string>>(new Set());
   const [claimRegs, setClaimRegs] = useState<Set<string>>(new Set());
+  const [payLaterClaimIds, setPayLaterClaimIds] = useState<Set<string>>(new Set());
+  const [payLaterClaimCustomers, setPayLaterClaimCustomers] = useState<Customer[]>([]);
+  const [payLaterClaimsLoading, setPayLaterClaimsLoading] = useState(false);
+  const [payLaterClaimsError, setPayLaterClaimsError] = useState(false);
+  const [filterPayLaterClaims, setFilterPayLaterClaims] = useState(false);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [deletedCustomers, setDeletedCustomers] = useState<Customer[]>([]);
   const [filteredDeletedCustomers, setFilteredDeletedCustomers] = useState<Customer[]>([]);
@@ -728,6 +734,58 @@ export const CustomersTab = ({
     : currentAdminUser?.id;
   const isSuperAdmin = normalizedRole === 'super_admin';
   const isAdmin = normalizedRole === 'admin';
+  const canSeePayLaterClaims = canViewPayLaterClaims(normalizedRole);
+
+  useEffect(() => {
+    let cancelled = false;
+    let inFlight = false;
+    if (!canSeePayLaterClaims) {
+      setPayLaterClaimIds(new Set());
+      setPayLaterClaimCustomers([]);
+      setFilterPayLaterClaims(false);
+      return;
+    }
+    const load = async () => {
+      if (inFlight) return;
+      inFlight = true;
+      setPayLaterClaimsLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('paylater-claims');
+        if (error || !Array.isArray(data?.customer_ids)) throw error || new Error('Invalid claims response');
+        const ids: string[] = data.customer_ids.filter((id: unknown): id is string => typeof id === 'string');
+        const rows: Customer[] = [];
+        for (let offset = 0; offset < ids.length; offset += 100) {
+          const { data: batch, error: batchError } = await supabase.from('customers')
+            .select('*, customer_policies!customer_id(*), admin_users!assigned_to(id, first_name, last_name, email)')
+            .in('id', ids.slice(offset, offset + 100));
+          if (batchError) throw batchError;
+          rows.push(...(batch || []).map(c => ({
+            ...c,
+            warranty_expiry: c.customer_policies?.[0]?.policy_end_date,
+            policy_start_date: c.customer_policies?.[0]?.policy_start_date,
+          })) as unknown as Customer[]);
+        }
+        if (!cancelled) {
+          setPayLaterClaimIds(new Set(ids));
+          setPayLaterClaimCustomers(rows);
+          setPayLaterClaimsError(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setPayLaterClaimIds(new Set());
+          setPayLaterClaimCustomers([]);
+          setPayLaterClaimsError(true);
+        }
+      } finally {
+        inFlight = false;
+        if (!cancelled) setPayLaterClaimsLoading(false);
+      }
+    };
+    void load();
+    const timer = window.setInterval(load, 60000);
+    window.addEventListener('focus', load);
+    return () => { cancelled = true; window.clearInterval(timer); window.removeEventListener('focus', load); };
+  }, [canSeePayLaterClaims, effectiveAdminUserId, customers]);
   const isLeadGen = normalizedRole === 'lead_gen';
   const isClaimsManager = normalizedRole === 'claims_manager';
   // Management only: raise a "save the deal" rescue lead straight from a customer record
@@ -1399,7 +1457,7 @@ export const CustomersTab = ({
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [debouncedSearchTerm, customers, serverSearchResults, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [debouncedSearchTerm, customers, serverSearchResults, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating, filterPayLaterClaims, canSeePayLaterClaims, payLaterClaimIds, payLaterClaimCustomers]);
 
 
   const fetchAvailableTags = async () => {
@@ -1419,6 +1477,10 @@ export const CustomersTab = ({
 
   const applyFiltersAndSort = useCallback(() => {
     let filtered = [...customers];
+    if (canSeePayLaterClaims && filterPayLaterClaims) {
+      const known = new Set(filtered.map(c => c.id));
+      filtered.push(...payLaterClaimCustomers.filter(c => !known.has(c.id)));
+    }
 
     // Fold in server-side search hits that aren't in the currently loaded page.
     if (debouncedSearchTerm && serverSearchResults.length) {
@@ -1426,6 +1488,9 @@ export const CustomersTab = ({
       for (const c of serverSearchResults) {
         if (!known.has(c.id)) filtered.push(c);
       }
+    }
+    if (canSeePayLaterClaims && filterPayLaterClaims) {
+      filtered = filtered.filter(c => payLaterClaimIds.has(c.id));
     }
 
     // Apply search filter — sales/sales_lead restricted to name, email, phone, reg plate only
@@ -1548,7 +1613,7 @@ export const CustomersTab = ({
           customer.status?.toLowerCase() === filterByStatus.toLowerCase()
         );
       }
-    } else if (filterBySource !== 'cancelled_refunded' && !debouncedSearchTerm) {
+    } else if (filterBySource !== 'cancelled_refunded' && !debouncedSearchTerm && !(canSeePayLaterClaims && filterPayLaterClaims)) {
       // Default view hides cancelled/refunded customers — they belong in the
       // "Cancellations & Refunds" source filter only.
       // While searching we keep them so any customer can be found.
@@ -1830,7 +1895,7 @@ export const CustomersTab = ({
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, serverSearchResults, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, showPendingConfirmationOnly, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, filterByPartPayment, partPaymentPlans, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [customers, serverSearchResults, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, showPendingConfirmationOnly, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, filterByPartPayment, partPaymentPlans, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating, filterPayLaterClaims, canSeePayLaterClaims, payLaterClaimIds, payLaterClaimCustomers]);
 
   const getCurrentUser = async () => {
     try {
@@ -4907,6 +4972,9 @@ Buyawarranty.co.uk`,
           {(() => {
             // Build active filter chips (only show non-defaults)
             const chips: { key: string; label: string; value: string; onRemove: () => void }[] = [];
+            if (canSeePayLaterClaims && filterPayLaterClaims) {
+              chips.push({ key: 'paylater-claims', label: 'Claims', value: 'PayLater claims made', onRemove: () => setFilterPayLaterClaims(false) });
+            }
             if (showPendingConfirmationOnly) {
               chips.push({ key: 'awaiting-confirm', label: 'Showing', value: 'Awaiting payment confirmation', onRemove: () => setShowPendingConfirmationOnly(false) });
             }
@@ -4948,6 +5016,7 @@ Buyawarranty.co.uk`,
             }
 
             const clearAll = () => {
+              setFilterPayLaterClaims(false);
               setSearchTerm('');
               setFilterByStatus('all');
               setSortBy('newest');
@@ -5107,6 +5176,13 @@ Buyawarranty.co.uk`,
                       <SelectItem value="completed">Part payment completed</SelectItem>
                     </SelectContent>
                   </Select>
+                  {canSeePayLaterClaims && (
+                    <Button variant={filterPayLaterClaims ? 'default' : 'outline'} size="sm"
+                      aria-pressed={filterPayLaterClaims} onClick={() => setFilterPayLaterClaims(value => !value)}
+                      className="h-9 gap-1.5">
+                      <FileText className="h-3.5 w-3.5" />PayLater claims made
+                    </Button>
+                  )}
 
 
 
@@ -5455,6 +5531,7 @@ Buyawarranty.co.uk`,
                     setSearchTerm('');
                     setSortBy('newest');
                     setFilterByPlan('all');
+                    setFilterPayLaterClaims(false);
                     setFilterByStatus('all');
                     setFilterByTag('all');
                     setFilterByWarrantyPeriod('all');
@@ -5476,6 +5553,12 @@ Buyawarranty.co.uk`,
             </div>
 
 
+          {canSeePayLaterClaims && payLaterClaimsLoading && (
+            <div role="status" className="text-sm text-muted-foreground">Checking PayLater claims…</div>
+          )}
+          {canSeePayLaterClaims && payLaterClaimsError && (
+            <div role="alert" className="text-sm text-destructive">PayLater claims could not be loaded. Refresh to try again.</div>
+          )}
           {/* H (Payment + SRC) toggle now lives inline with the Date row above. */}
 
 
@@ -5483,6 +5566,7 @@ Buyawarranty.co.uk`,
       <CustomersMobileCards
         className="md:hidden mt-2"
         customers={customersPagination.paginatedData}
+        payLaterClaimIds={canSeePayLaterClaims ? payLaterClaimIds : undefined}
         onOpen={openCustomerDialog}
       />
 
@@ -7006,6 +7090,9 @@ Please log in and change your password after first login.`;
                   <TableCell>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <NumberPlate plateNumber={customer.registration_plate} />
+                      {hasPayLaterClaim(customer.id, payLaterClaimIds, normalizedRole) && (
+                        <Badge variant="destructive" className="text-[11px] font-semibold">PayLater · Claim made</Badge>
+                      )}
                       {isDuplicate(customer.registration_plate) && (
                         <button
                           onClick={() => openMergeForReg(customer.registration_plate)}

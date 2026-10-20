@@ -1,0 +1,1 @@
+DROP FUNCTION public.get_paylater_claim_customer_ids();

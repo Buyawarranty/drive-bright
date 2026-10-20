@@ -27,6 +27,7 @@ interface AnyCustomer {
 
 interface CustomersMobileCardsProps {
   customers: AnyCustomer[];
+  payLaterClaimIds?: ReadonlySet<string>;
   className?: string;
   onOpen?: (customer: AnyCustomer) => void;
 }
@@ -52,6 +53,7 @@ export const CustomersMobileCards: React.FC<CustomersMobileCardsProps> = ({
   customers,
   className,
   onOpen,
+  payLaterClaimIds,
 }) => {
   if (!customers || customers.length === 0) {
     return (
@@ -93,6 +95,9 @@ export const CustomersMobileCards: React.FC<CustomersMobileCardsProps> = ({
                       <Shield className="h-2.5 w-2.5 mr-1" />
                       {c.warranty_type || c.plan_type}
                     </Badge>
+                  )}
+                  {payLaterClaimIds?.has(c.id) && (
+                    <Badge variant="destructive" className="text-[11px]">PayLater · Claim made</Badge>
                   )}
                 </div>
               </div>

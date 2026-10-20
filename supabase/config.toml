@@ -1,4 +1,7 @@
 project_id = "mzlpuxzwyrcyrgrongeb"
+[functions.paylater-claims]
+verify_jwt = false
+
 [functions.login-gateway]
 verify_jwt = false
 

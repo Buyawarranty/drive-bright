@@ -15863,6 +15863,10 @@ export type Database = {
         | { Args: { p_exclude_agent_id?: string }; Returns: string }
       get_next_sales_user: { Args: never; Returns: string }
       get_next_warranty_serial: { Args: never; Returns: number }
+      get_paylater_claim_customer_ids_for_staff: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       get_pinned_shortcuts: { Args: never; Returns: string[] }
       get_price_change_performance: { Args: { _from?: string }; Returns: Json }
       get_public_vehicle_pricing_rules: {

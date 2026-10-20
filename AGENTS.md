@@ -3,7 +3,7 @@
 - Abandoned Cart lists and exports use the shared fail-closed eligibility loader and active-staff-checked history RPC returning only excluded cart IDs, keeping restricted claims data server-side and barring cancelled/refunded customers.
 - SEO Audit and the legacy semrush-seo URL share Agentic Assistant chat, storage and permissions; recommendations combine a versioned audit with RLS-readable weekly evidence, never depend on Semrush or imply a live scan, and never execute website edits.
 - Weekly SEO reviews use database-queued, idempotent server-side published-site reads and private access-checked review records; only super admins decide proposals, and decisions never execute edits or publication. The selected SEO account receives a dedicated review grant without expanding assistant permissions.
-- Missing route metadata is added through the existing prerender inventory and static sitemap; retain that mechanism and schema, with one metadata entry per output path. Sharing metadata and article/related images use the shared image resolver and approved alt metadata, preserving approved descriptions, omitting unverified dimensions and keeping stable URLs.
+- Missing metadata uses existing prerender inventory/static sitemap, one entry per path; preserve schema. Shared image resolver/approved alt serve sharing and article images; preserve descriptions and stable URLs, omit unverified dimensions.
 - Careers contact/experience requirements use a shared pure validator in the form and submission function, with strict server schemas, so bypassing browser controls cannot admit an ineligible application.
 - Careers rejection deadlines are stamped from dedicated settings in the database; postponement uses an access-checked RPC and the sweep uses an atomic dedicated lease. CV previews use short-lived signed storage links and render Word files as plain text.
 - New pricing versions mark `websiteDiscountMode: single` and apply the one website percentage to the completed total; legacy versions keep their original rules so historical prices and unpublished live settings are not rewritten.
@@ -16,7 +16,7 @@
 - Multi-year quotes offer 12 instalments or BAW PayLater. Shared yearlySaleRevenue avoids double division; paginated paid anniversaries use collection date and sale owner, never new-deal credit; future money is not revenue.
 - A manual Quotes & Orders total is the final BAW PayLater term total; split it across yearly collections without adding the standard 10% uplift again.
 - Route renewal leads only to active agents with the Renewals workstream; prefer the original seller, otherwise use longest-waiting rotation so new starters never receive catch-up batches.
-- Auto-create renewal leads only when there is no claim, cancellation, or refund history; claim/cancel/refund renewals wait in Renewal approval and enter New Leads only after a recorded management approval, because management decides whether to re-offer cover.
+- Auto-create renewals only without claim/cancel/refund history; others wait in Renewal approval until recorded management approval to re-offer cover.
 - Keep the sales phone availability rule separate from live-chat presence: phone calls are offered Mon–Fri 9am–6pm and Sat 12pm–4pm UK time, with callback/WhatsApp outside those hours.
 - Date of birth is collected on Bumper's own page, not in our Step 4; Step 4 hands straight to Bumper after validation so payment pricing and provider logic stay shared.
 - The CRM Agentic Assistant is read-only; super admins get every part, other staff only the parts granted via tab_growth-* permissions (checked server-side + RLS); it suggests actions but must never get tools that change data or send messages, so nothing happens without a person acting.
@@ -24,3 +24,4 @@
 - Lead quality: access-checked read-only RPC, private matching; live outcomes never rewrite snapshots.
 - Reporting: immutable invoices, locked payments, service-only email claims; hourly job only when enabled, independent of staff commissions.
 - Login: fail-open check_login_lockout (5/15min); server-hashed gateways/versioned receipts rotate only for active admins/super admins.
+- PayLater claim flags use a service-only protected-role lookup through authenticated edge access, returning customer IDs only; match linked policies first and batch-load matches before pagination to retain older records without exposing claim details.
