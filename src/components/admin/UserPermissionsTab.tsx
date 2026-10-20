@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PopupPermissionsSection } from './PopupPermissionsSection';
+import { GatewayPasswordSettings } from './GatewayPasswordSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { BackupLoginPanel } from '@/components/admin/BackupLoginPanel';
 import { TempDevLoginPanel } from '@/components/admin/TempDevLoginPanel';
@@ -1614,6 +1615,7 @@ export const UserPermissionsTab = () => {
 
   return (
     <div className="space-y-6">
+      <GatewayPasswordSettings />
       <ClaimsDataAccessManager />
       {loadError && (
         <Card className="border-amber-200 bg-amber-50/70">

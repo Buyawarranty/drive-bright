@@ -8,6 +8,7 @@ import { LogIn, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { SalesLoginGate } from '@/components/auth/SalesLoginGate';
+import { useGatewayUnlock } from '@/lib/loginGateway';
 import { withTimeout } from '@/lib/withTimeout';
 import { logLoginAttempt } from '@/lib/loginActivityLogger';
 import { checkLoginLockout, lockoutMessage } from '@/lib/loginLockout';
@@ -18,9 +19,7 @@ const SalesLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
-  const [isUnlocked, setIsUnlocked] = useState(
-    typeof window !== 'undefined' && sessionStorage.getItem('salesLoginGateUnlocked') === 'true'
-  );
+  const { isUnlocked, setIsUnlocked } = useGatewayUnlock();
   const navigate = useNavigate();
   const { toast } = useToast();
 
