@@ -243,6 +243,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const canOverrideAge = ['super_admin', 'admin', 'sales_manager', 'performance_manager', 'claims_manager'].includes(userRole || '');
   const tyreCoverEnabled = useFeatureEnabled('addon_tyre_cover', false);
   const [step, setStep] = useState(1);
+  // Agent's edits to the copy/paste quote email (null = use the generated text).
+  const [copyEmailEdit, setCopyEmailEdit] = useState<string | null>(null);
   // Invoice builder (available to every sales agent from Step 2)
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
   const [regNumber, setRegNumber] = useState('');
@@ -7715,6 +7717,7 @@ Questions? Call 0330 229 5040`;
 
           {/* Email Preview Dialog */}
           <Dialog open={showEmailDialog} onOpenChange={(open) => {
+            if (!open) setCopyEmailEdit(null);
             setShowEmailDialog(open);
             if (!open) {
               // Closing the preview dialog should NOT wipe the whole quote —
@@ -7930,7 +7933,7 @@ Questions? Call 0330 229 5040`;
                       const bonus = freeExtendedCover !== 'none' ? ` + ${selectedBonusMonths} free bonus months` : '';
                       const claim = (boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString();
                       const linkHref = quoteLink || '#';
-                      const body =
+                      const generatedBody =
 `Hi ${firstName},
 
 Your personalised warranty quote is ready. You can choose monthly or pay in full from the secure quote page below.
@@ -7949,6 +7952,8 @@ ${quoteLink || '(quote link is still generating)'}
 
 Kind regards,
 Buy A Warranty`;
+                      const body = copyEmailEdit ?? generatedBody;
+                      const bodyEdited = copyEmailEdit !== null && copyEmailEdit !== generatedBody;
 
                       const htmlBody = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f4f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1f2937;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:24px 0;"><tr><td align="center">
@@ -7998,7 +8003,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
 
                       const copyRichEmail = async (): Promise<boolean> => {
                         try {
-                          if ((window as any).ClipboardItem && navigator.clipboard.write) {
+                          if (!bodyEdited && (window as any).ClipboardItem && navigator.clipboard.write) {
                             const item = new ClipboardItem({
                               'text/html': new Blob([htmlBody], { type: 'text/html' }),
                               'text/plain': new Blob([body], { type: 'text/plain' }),
@@ -8098,11 +8103,18 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               <Copy className="w-3.5 h-3.5 mr-1.5" />Copy plain text
                             </Button>
                           </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] text-muted-foreground">You can edit this email before copying or opening it.</span>
+                            {bodyEdited && (
+                              <Button type="button" variant="ghost" size="sm" className="h-6 text-[11px]" onClick={() => setCopyEmailEdit(null)}>
+                                Reset to original
+                              </Button>
+                            )}
+                          </div>
                           <Textarea
-                            readOnly
                             value={body}
-                            className="h-32 text-xs font-mono resize-none"
-                            onFocus={(e) => e.currentTarget.select()}
+                            onChange={(e) => setCopyEmailEdit(e.target.value)}
+                            className="h-48 text-xs font-mono resize-y"
                           />
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <Button type="button" variant="default" size="sm" disabled={!customerEmail} onClick={() => openWith(gmailHref, 'Gmail')}>
