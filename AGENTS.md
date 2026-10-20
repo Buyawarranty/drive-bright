@@ -1,7 +1,7 @@
 # Project architecture rules
 - Asset pointers stay CLI-generated; portableAssetsPlugin resolves imported pointer URLs to the published Lovable origin for external hosting; mobile image caps belong on wrappers.
 - Abandoned Cart lists and exports use the shared fail-closed eligibility loader and active-staff-checked history RPC returning only excluded cart IDs, keeping restricted claims data server-side and barring cancelled/refunded customers.
-- SEO Audit and the legacy semrush-seo URL share Agentic Assistant chat, storage and permissions; recommendations combine a versioned audit with RLS-readable weekly evidence, never depend on Semrush or imply a live scan, and never execute website edits.
+- SEO Audit/semrush-seo share chat, storage and permissions; use versioned audit + RLS weekly evidence, never Semrush or live-scan claims. Shared action guide/proposal details separate decisions from externally requested edits and publication.
 - Weekly SEO reviews use database-queued, idempotent server-side published-site reads and private access-checked review records; only super admins decide proposals, and decisions never execute edits or publication. The selected SEO account receives a dedicated review grant without expanding assistant permissions.
 - Missing metadata uses existing prerender inventory/static sitemap, one entry per path; preserve schema. Shared image resolver/approved alt serve sharing and article images; preserve descriptions and stable URLs, omit unverified dimensions.
 - Careers contact/experience requirements use a shared pure validator in the form and submission function, with strict server schemas, so bypassing browser controls cannot admit an ineligible application.
