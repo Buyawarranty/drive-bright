@@ -13,6 +13,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { SaleCreditOverrideDialog } from './SaleCreditOverrideDialog';
 import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
 
+import { yearlySaleRevenue } from '@/lib/bawPayLater';
+
 interface Props {
   agent: AgentScore | null;
   period: TimePeriod;
@@ -31,6 +33,8 @@ interface CustomerDeal {
   name: string;
   registration_plate: string | null;
   final_amount: number;
+  baw_paylater: boolean | null;
+  baw_paylater_yearly_amount: number | null;
   created_at: string;
   status: string;
   assigned_to: string | null;
@@ -64,7 +68,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
       const idList = Array.from(new Set([...salesAgentIds, agent.id])).join(',');
       const { data: allCustomers } = await supabase
         .from('customers')
-        .select('created_at, final_amount, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id')
+        .select('created_at, final_amount, baw_paylater, baw_paylater_yearly_amount, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id')
         .eq('is_deleted', false)
         .ilike('status', 'active')
         .or(`sale_credit_admin_user_id.in.(${idList}),payment_confirmed_by.in.(${idList}),quote_sent_by.in.(${idList}),assigned_to.in.(${idList})`)
@@ -84,7 +88,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
         const existing = dayMap.get(key);
         if (existing) {
           existing.count++;
-          existing.revenue += c.final_amount || 0;
+          existing.revenue += yearlySaleRevenue(c);
         }
       });
 
@@ -106,7 +110,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
       const idList = Array.from(new Set([...salesAgentIds, agent.id])).join(',');
       const { data } = await supabase
         .from('customers')
-        .select('id, name, registration_plate, final_amount, created_at, status, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id')
+        .select('id, name, registration_plate, final_amount, baw_paylater, baw_paylater_yearly_amount, created_at, status, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id')
         .eq('is_deleted', false)
         .ilike('status', 'active')
         .or(`sale_credit_admin_user_id.in.(${idList}),payment_confirmed_by.in.(${idList}),quote_sent_by.in.(${idList}),assigned_to.in.(${idList})`)
@@ -262,6 +266,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
                       <div className="min-w-0">
                         <p className="font-medium truncate flex items-center gap-2">
                           {deal.name}
+                          {deal.baw_paylater && <Badge variant="outline" className="border-primary text-primary">BAW PayLater · yearly</Badge>}
                           {deal.sale_credit_admin_user_id && (
                             <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
                               Credit overridden
@@ -276,7 +281,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
                             {deal.registration_plate}
                           </Badge>
                         )}
-                        <span className="font-semibold text-emerald-600">£{(deal.final_amount || 0).toLocaleString()}</span>
+                        <span className="font-semibold text-emerald-600">£{yearlySaleRevenue(deal).toLocaleString()}</span>
                         {isManagement && (
                           <Button
                             variant="ghost"

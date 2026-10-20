@@ -230,6 +230,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     </div>
                     <div className="text-right flex-shrink-0">
                       <div className="font-bold text-lg text-emerald-600 tabular-nums leading-none">£{agent.revenue.toLocaleString()}</div>
+                      {(agent.payLaterRevenue || 0) > 0 && <Badge variant="outline" className="mt-1 border-primary text-primary" title="Collected yearly payments only; future years are excluded from revenue and percentage commission.">BAW PayLater · £{agent.payLaterRevenue?.toLocaleString('en-GB')} collected</Badge>}
                       <div className="text-[11px] text-muted-foreground tabular-nums mt-0.5">of £{tgt.toLocaleString()}</div>
                     </div>
                     {canEditTargets && (

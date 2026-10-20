@@ -48,6 +48,8 @@ import { AgentProjectionsPanel } from './analytics/AgentProjectionsPanel';
 import { MonthlyGoalBarShape } from './analytics/MonthlyGoalBarShape';
 import { monthlyChartTarget } from '@/lib/monthlyRevenueGoal';
 
+import { yearlySaleRevenue, collectedAnniversaryRevenue } from '@/lib/bawPayLater';
+
 interface Customer {
   id: string;
   name: string;
@@ -56,6 +58,8 @@ interface Customer {
   signup_date: string;
   status: string;
   final_amount: number | null;
+  baw_paylater?: boolean | null;
+  baw_paylater_yearly_amount?: number | null;
   warranty_reference_number: string | null;
   purchase_source: string | null;
   is_manual_entry: boolean | null;
@@ -250,7 +254,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const [comparisonPeriod, setComparisonPeriod] = useState<'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, payment_collected_by, updated_at, gclid, msclkid, ttclid, utm_source, acquisition_source, payment_type';
+  const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, baw_paylater, baw_paylater_yearly_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, payment_collected_by, updated_at, gclid, msclkid, ttclid, utm_source, acquisition_source, payment_type';
 
   // Refetch data whenever the component mounts or becomes visible
   useEffect(() => {
@@ -317,7 +321,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       }
 
       // Also filter out specific test names not caught by DB query
-      const realCustomers = customersData.filter(c => !isTestOrder(c.name, c.email));
+      const realCustomers = customersData.filter(c => !isTestOrder(c.name, c.email)).map(c => ({ ...c, final_amount: yearlySaleRevenue(c) }));
       console.log('Real customers (matching Customer Dashboard):', realCustomers.length);
       
       setCustomers(realCustomers);
@@ -354,24 +358,25 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
       // BAW PayLater yearly payments already collected — added to revenue in the month collected.
       // Non-blocking: a failure here must not blank analytics.
-      const { data: payLaterPaid, error: payLaterError } = await supabase
+      const { data: payLaterPaid, error: payLaterError } = await fetchAllRows(() => supabase
         .from('baw_paylater_schedules')
-        .select('paid_amount, amount, paid_at, year_number, status')
+        .select('customer_id, paid_amount, amount, paid_at, year_number, status')
         .eq('status', 'paid')
         .gt('year_number', 1)
-        .limit(2000);
+        .order('paid_at').order('id'));
 
       if (payLaterError) {
         console.error('Error fetching BAW PayLater collections for analytics:', payLaterError);
         setPayLaterCollectedByMonth({});
       } else {
         const byMonth: Record<string, number> = {};
+        const eligibleIds = new Set(realCustomers.filter(c => !isRevenueLost(c.status)).map(c => c.id));
         (payLaterPaid || []).forEach((row: any) => {
-          if (!row.paid_at) return;
+          if (!row.paid_at || !eligibleIds.has(row.customer_id)) return;
           const paid = new Date(row.paid_at);
           if (Number.isNaN(paid.getTime())) return;
           const key = `${paid.getFullYear()}-${String(paid.getMonth() + 1).padStart(2, '0')}`;
-          byMonth[key] = (byMonth[key] || 0) + (Number(row.paid_amount ?? row.amount) || 0);
+          byMonth[key] = (byMonth[key] || 0) + collectedAnniversaryRevenue(row);
         });
         setPayLaterCollectedByMonth(byMonth);
       }
@@ -1583,6 +1588,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                         <p className="mb-2 font-bold">{label}</p>
                         <p>Avg Order Value: £{point.aov.toLocaleString('en-GB')}</p>
                         <p>Revenue: £{Math.round(point.revenue).toLocaleString('en-GB')}</p>
+                        {(payLaterCollectedByMonth[point.monthKey] || 0) > 0 && <p className="font-semibold text-primary">BAW PayLater anniversaries collected: £{payLaterCollectedByMonth[point.monthKey].toLocaleString('en-GB')}</p>}
                         <p>Warranties Sold: {point.salesCount.toLocaleString('en-GB')}</p>
                         {point.chartTarget > 0 && (
                           <>

@@ -4,6 +4,9 @@ import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCre
 import { startOfMonth, endOfMonth } from 'date-fns';
 import type { AgentScore } from './useScoreboardData';
 
+import { yearlySaleRevenue } from '@/lib/bawPayLater';
+import { fetchPayLaterAnniversaries } from '@/lib/payLaterRevenueData';
+
 /**
  * Fetch agent scores for a specific month. Mirrors useScoreboardData logic
  * but scoped to one arbitrary month — used by the month-by-month comparison view.
@@ -39,14 +42,14 @@ export const useAgentScoresForMonth = (month: Date) => {
         const salesIdList = Array.from(new Set([...salesAgentIds, ...agentIds])).join(',');
         const attributionFilter = `sale_credit_admin_user_id.in.(${salesIdList}),payment_confirmed_by.in.(${salesIdList}),quote_sent_by.in.(${salesIdList}),assigned_to.in.(${salesIdList})`;
 
-        const [{ data: customers }, { data: cancelledCustomers }, { data: leads }, { data: approvedClaims }, { data: dialEvents }, { data: cleanRows }] = await Promise.all([
+        const [{ data: customers }, { data: cancelledCustomers }, { data: leads }, { data: approvedClaims }, { data: dialEvents }, { data: cleanRows }, anniversaries] = await Promise.all([
           supabase.from('customers')
-            .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount')
+            .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount, baw_paylater, baw_paylater_yearly_amount')
             .eq('is_deleted', false).ilike('status', 'active')
             .or(attributionFilter)
             .gte('signup_date', start.toISOString()).lte('signup_date', end.toISOString()),
           supabase.from('customers')
-            .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount')
+            .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount, baw_paylater, baw_paylater_yearly_amount')
             .eq('is_deleted', false)
             .or('status.ilike.cancelled,status.ilike.refunded')
             .or(attributionFilter)
@@ -72,6 +75,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             _start: start.toISOString(),
             _end: end.toISOString(),
           }),
+          fetchPayLaterAnniversaries(start, end),
         ]);
         const attributionOf = (c: any) => resolveCredit(c);
 
@@ -104,8 +108,10 @@ export const useAgentScoresForMonth = (month: Date) => {
 
           const salesCount = userCustomers.length + userClaims.length;
           const claimsRevenue = userClaims.reduce((s, c) => s + (c.deal_value || 0), 0);
-          const grossRevenue = userCustomers.reduce((s, c) => s + (c.final_amount || 0), 0) + claimsRevenue;
-          const cancelledRevenue = userCancelled.reduce((s, c) => s + (c.final_amount || 0), 0);
+          const anniversaryRevenue = anniversaries.filter(row => attributionOf(row.customers) === u.id).reduce((sum, row) => sum + row.revenue, 0);
+          const payLaterRevenue = userCustomers.filter(c => c.baw_paylater).reduce((sum, c) => sum + yearlySaleRevenue(c), 0) + anniversaryRevenue;
+          const grossRevenue = userCustomers.reduce((s, c) => s + yearlySaleRevenue(c), 0) + claimsRevenue + anniversaryRevenue;
+          const cancelledRevenue = userCancelled.reduce((s, c) => s + yearlySaleRevenue(c), 0);
           // Net revenue reflects refunds/cancellations against the agent's revenue.
           const revenue = grossRevenue - cancelledRevenue;
           const leadsAssigned = cleanLeadsMap.get(u.id) ?? 0;
@@ -119,6 +125,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             isActive: (u as any).is_active !== false,
             salesCount,
             revenue,
+            payLaterRevenue,
             leadsAssigned,
             leadsConverted,
             conversionRate: leadsAssigned > 0 ? (leadsConverted / leadsAssigned) * 100 : 0,
@@ -130,7 +137,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             revenueTarget: null,
             manualLeadsCount: null,
             cancelledCount: userCancelled.length,
-            cancelledRevenue: userCancelled.reduce((s, c) => s + (c.final_amount || 0), 0),
+            cancelledRevenue: userCancelled.reduce((s, c) => s + yearlySaleRevenue(c), 0),
             callsCount: callsMap.get(u.id) || 0,
             connectedCalls: connectedMap.get(u.id) || 0,
             manualActualAttempts: null,

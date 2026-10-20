@@ -5,6 +5,9 @@ import { withBackgroundPriority } from '@/lib/requestQueue';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
+import { yearlySaleRevenue } from '@/lib/bawPayLater';
+import { fetchPayLaterAnniversaries } from '@/lib/payLaterRevenueData';
+
 export type TimePeriod = 'today' | 'week' | '14days' | 'month' | 'all' | 'custom';
 
 export interface AgentScore {
@@ -15,6 +18,7 @@ export interface AgentScore {
   isActive: boolean;
   salesCount: number;
   revenue: number;
+  payLaterRevenue?: number;
   leadsAssigned: number;
   leadsConverted: number;
   conversionRate: number;
@@ -144,7 +148,7 @@ export const useScoreboardData = (): ScoreboardData => {
       const attributionFilter = `sale_credit_admin_user_id.in.(${salesIdList}),payment_confirmed_by.in.(${salesIdList}),quote_sent_by.in.(${salesIdList}),assigned_to.in.(${salesIdList})`;
       let customerQuery = supabase
         .from('customers')
-        .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount, original_amount, discount_amount, discount_code, signup_date, created_at, status')
+        .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount, baw_paylater, baw_paylater_yearly_amount, original_amount, discount_amount, discount_code, signup_date, created_at, status')
         .eq('is_deleted', false)
         .ilike('status', 'active')
         .or(attributionFilter);
@@ -157,6 +161,7 @@ export const useScoreboardData = (): ScoreboardData => {
 
       const { data: customers } = await withBackgroundPriority(() => Promise.resolve(customerQuery));
       const attributionOf = (c: any) => resolveCredit(c);
+      const anniversaries = await withBackgroundPriority(() => fetchPayLaterAnniversaries(start, end));
 
 
 
@@ -187,7 +192,7 @@ export const useScoreboardData = (): ScoreboardData => {
       // with the Revenue/Sales figures shown on the same row.
       let cancelledQuery = supabase
         .from('customers')
-        .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount, signup_date')
+        .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount, baw_paylater, baw_paylater_yearly_amount, signup_date')
         .eq('is_deleted', false)
         .or('status.ilike.cancelled,status.ilike.refunded')
         .or(attributionFilter);
@@ -320,9 +325,11 @@ export const useScoreboardData = (): ScoreboardData => {
         // Include approved commission claims in sales count & revenue
         const salesCount = userCustomers.length + userClaims.length;
         const claimsRevenue = userClaims.reduce((sum, c) => sum + (c.deal_value || 0), 0);
-        const grossRevenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0) + claimsRevenue;
+        const anniversaryRevenue = anniversaries.filter(row => attributionOf(row.customers) === u.id).reduce((sum, row) => sum + row.revenue, 0);
+        const payLaterRevenue = userCustomers.filter(c => c.baw_paylater).reduce((sum, c) => sum + yearlySaleRevenue(c), 0) + anniversaryRevenue;
+        const grossRevenue = userCustomers.reduce((sum, c) => sum + yearlySaleRevenue(c), 0) + claimsRevenue + anniversaryRevenue;
         const cancelledCount = userCancelled.length;
-        const cancelledRevenue = userCancelled.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+        const cancelledRevenue = userCancelled.reduce((sum, c) => sum + yearlySaleRevenue(c), 0);
         // Net revenue reflects refunds/cancellations against the agent's revenue.
         const revenue = grossRevenue - cancelledRevenue;
 
@@ -377,6 +384,7 @@ export const useScoreboardData = (): ScoreboardData => {
           isActive: (u as any).is_active !== false,
           salesCount,
           revenue,
+          payLaterRevenue,
           leadsAssigned,
           leadsConverted,
           conversionRate,
