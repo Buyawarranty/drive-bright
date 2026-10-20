@@ -8056,6 +8056,7 @@ export type Database = {
       }
       growth_agent_threads: {
         Row: {
+          archived_at: string | null
           created_at: string
           id: string
           title: string
@@ -8063,6 +8064,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           created_at?: string
           id?: string
           title?: string
@@ -8070,6 +8072,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           created_at?: string
           id?: string
           title?: string
