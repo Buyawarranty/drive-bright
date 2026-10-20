@@ -27,9 +27,13 @@ const OPEN: LockoutStatus = { locked: false, failedCount: 0, retryAfterSeconds: 
  */
 export const checkLoginLockout = async (email: string): Promise<LockoutStatus> => {
   try {
-    const { data, error } = await (supabase.rpc as CallableFunction)('check_login_lockout', {
+    const rpc = supabase.rpc as unknown as (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => Promise<{ data: { locked?: boolean; failed_count?: number; retry_after_seconds?: number } | null; error: unknown }>;
+    const { data, error } = await rpc('check_login_lockout', {
       p_email: email.trim().toLowerCase(),
-    }) as { data: { locked?: boolean; failed_count?: number; retry_after_seconds?: number } | null; error: unknown };
+    });
     if (error || !data) return OPEN;
     return {
       locked: !!data.locked,
