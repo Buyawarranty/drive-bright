@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Price updates: confirmed percentage increase/decrease saves the adjusted test draft in one action; live activation remains separate.
 - [x] SEO conversations: on-demand daily review creates a dated conversation and prepares a question for Send; archive/readable history/restore and confirmed permanent deletion added using existing ownership RLS. Six tests and isolated browser actions pass; build OK, unpublished. No daily scan/job or live AI request started.
 - [ ] SEO conversation live verification: external Supabase has no managed staff session; real archive/restore/delete readback and daily AI answer remain unverified. Migration added only archived_at; pre-existing security findings unchanged.
 - [x] PayLater claims-made tag/filter in Customer Management for admin/super_admin/Accounts only, respecting impersonation; service-only protected-role lookup, linked-policy matching, batch-loaded historical matches, refresh/focus/60-second updates. Twelve role tests pass, build OK; unsigned endpoint 401, direct anon/authenticated RPC denied. Payments and claims unchanged; unpublished.
