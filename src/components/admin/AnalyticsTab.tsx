@@ -2224,6 +2224,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             <p className="text-xs text-muted-foreground">
               From {paidOrders.length} paid orders
             </p>
+            {paidOrders.some(c => c.baw_paylater) && (
+              <Badge variant="outline" className="mt-2 border-primary text-primary">
+                BAW PayLater · £{paidOrders.filter(c => c.baw_paylater).reduce((sum, c) => sum + yearlySaleRevenue(c), 0).toLocaleString('en-GB')} yearly payments
+              </Badge>
+            )}
           </CardContent>
         </Card>
 

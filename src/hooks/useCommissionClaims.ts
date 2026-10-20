@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { yearlySaleRevenue } from '@/lib/bawPayLater';
 
 export interface CommissionClaim {
   id: string;
@@ -68,6 +69,12 @@ export function useCommissionClaims() {
     try {
       // Always use the authenticated user's admin ID to satisfy RLS
       const agentId = currentAdminId || data.agent_id;
+      // Read the saved sale, rather than trusting a cumulative lead payment amount.
+      const { data: customer, error: customerError } = await supabase.from('customers')
+        .select('final_amount, baw_paylater, baw_paylater_yearly_amount')
+        .eq('id', data.customer_id).single();
+      if (customerError) throw customerError;
+      const dealValue = customer.baw_paylater ? yearlySaleRevenue(customer) : (data.deal_value || 0);
 
       const { error } = await supabase
         .from('commission_claims')
@@ -78,7 +85,7 @@ export function useCommissionClaims() {
           claim_reason: data.claim_reason,
           claim_notes: data.claim_notes,
           evidence_type: data.evidence_type || null,
-          deal_value: data.deal_value || 0,
+          deal_value: dealValue,
         });
 
       if (error) throw error;
