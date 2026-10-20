@@ -13,7 +13,9 @@ import {
 } from './loginLockout';
 
 describe('login lockout', () => {
-  beforeEach(() => rpcMock.mockReset());
+  // mockClear, not mockReset: each test sets its own implementation, and
+  // mockReset breaks rejection handling in vitest v4.
+  beforeEach(() => rpcMock.mockClear());
 
   it('locks after 5 failed attempts within a 15-minute window', () => {
     expect(LOCKOUT_MAX_FAILED_ATTEMPTS).toBe(5);
