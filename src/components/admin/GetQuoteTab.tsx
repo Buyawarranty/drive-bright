@@ -7717,6 +7717,7 @@ Questions? Call 0330 229 5040`;
 
           {/* Email Preview Dialog */}
           <Dialog open={showEmailDialog} onOpenChange={(open) => {
+            if (!open) setCopyEmailEdit(null);
             setShowEmailDialog(open);
             if (!open) {
               // Closing the preview dialog should NOT wipe the whole quote —
