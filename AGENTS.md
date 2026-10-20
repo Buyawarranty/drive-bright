@@ -1,5 +1,5 @@
 # Project architecture rules
-- Warranty imagery supports page overrides. Verify both published domains; external hosting/dev may return HTML. Repaired homepage images use the published Lovable origin. Mobile caps go on wrappers because CSS forces `img { max-width: 100% !important }`.
+- Asset pointers stay CLI-generated; portableAssetsPlugin resolves all imported pointer URLs to the published Lovable origin for external hosting. Keep overrides; mobile image caps belong on wrappers (forced max-width).
 - Abandoned Cart lists and every export use the shared fail-closed eligibility loader and an active-staff-checked history RPC returning only excluded cart IDs, so restricted claims data stays server-side and cancelled/refunded customers cannot re-enter exports.
 - SEO Audit and the legacy semrush-seo URL share Agentic Assistant chat, storage and permissions; recommendations combine a versioned audit with RLS-readable weekly evidence, never depend on Semrush or imply a live scan, and never execute website edits.
 - Weekly SEO reviews use database-queued, idempotent server-side published-site reads and private access-checked review records; only super admins decide proposals, and decisions never execute edits or publication. The selected SEO account receives a dedicated review grant without expanding assistant permissions.
