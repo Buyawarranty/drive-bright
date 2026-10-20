@@ -47,7 +47,7 @@ describe('login lockout', () => {
   });
 
   it('fails open when the check throws', async () => {
-    rpcMock.mockRejectedValue(new Error('network'));
+    rpcMock.mockImplementation(() => Promise.reject(new Error('network')));
     const status = await checkLoginLockout('a@b.co.uk');
     expect(status.locked).toBe(false);
   });
