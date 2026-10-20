@@ -14,6 +14,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+import { yearlySaleRevenue } from '@/lib/bawPayLater';
+
 interface DealsSectionProps {
   deals: DealRecord[];
   onAddDeal: (
@@ -38,6 +40,8 @@ interface AssignedCustomer {
   plan_type: string;
   signup_date: string;
   final_amount: number | null;
+  baw_paylater: boolean | null;
+  baw_paylater_yearly_amount: number | null;
   status: string;
 }
 
@@ -107,7 +111,7 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth, vie
 
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, registration_plate, vehicle_make, vehicle_model, plan_type, signup_date, final_amount, status, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to')
+        .select('id, name, registration_plate, vehicle_make, vehicle_model, plan_type, signup_date, final_amount, baw_paylater, baw_paylater_yearly_amount, status, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to')
         .eq('is_deleted', false)
         .ilike('status', 'active')
         .or(attributionFilter)
@@ -189,7 +193,7 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth, vie
 
       const { data: customers, error } = await supabase
         .from('customers')
-        .select('id, name, registration_plate, vehicle_make, vehicle_model, plan_type, signup_date, final_amount, status')
+        .select('id, name, registration_plate, vehicle_make, vehicle_model, plan_type, signup_date, final_amount, baw_paylater, baw_paylater_yearly_amount, status')
         .ilike('registration_plate', `%${normalizedSearch}%`)
         .eq('is_deleted', false)
         .limit(5);
@@ -381,6 +385,7 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth, vie
                         <Badge variant="outline" className="text-[10px] capitalize px-1.5 py-0">
                           {customer.plan_type}
                         </Badge>
+                        {customer.baw_paylater && <Badge variant="outline" className="border-primary text-primary">BAW PayLater · £{yearlySaleRevenue(customer).toLocaleString('en-GB')} yearly credit</Badge>}
                         {logged && (
                           <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-[10px] px-1.5 py-0 gap-0.5">
                             <Check className="h-2.5 w-2.5" />

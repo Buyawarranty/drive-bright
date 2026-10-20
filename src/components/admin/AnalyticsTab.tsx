@@ -48,6 +48,8 @@ import { AgentProjectionsPanel } from './analytics/AgentProjectionsPanel';
 import { MonthlyGoalBarShape } from './analytics/MonthlyGoalBarShape';
 import { monthlyChartTarget } from '@/lib/monthlyRevenueGoal';
 
+import { yearlySaleRevenue, collectedAnniversaryRevenue } from '@/lib/bawPayLater';
+
 interface Customer {
   id: string;
   name: string;
@@ -56,6 +58,8 @@ interface Customer {
   signup_date: string;
   status: string;
   final_amount: number | null;
+  baw_paylater?: boolean | null;
+  baw_paylater_yearly_amount?: number | null;
   warranty_reference_number: string | null;
   purchase_source: string | null;
   is_manual_entry: boolean | null;
@@ -229,6 +233,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   // BAW PayLater yearly payments actually collected, keyed by the month they were collected.
   // Monthly revenue counts money in the bank, so later-year collections land in their own month.
   const [payLaterCollectedByMonth, setPayLaterCollectedByMonth] = useState<Record<string, number>>({});
+  const [payLaterCollections, setPayLaterCollections] = useState<{ customer_id: string; paid_at: string; revenue: number }[]>([]);
   const [monthlyRevenueTargets, setMonthlyRevenueTargets] = useState<Record<string, number>>({});
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [goalAmount, setGoalAmount] = useState('');
@@ -250,7 +255,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const [comparisonPeriod, setComparisonPeriod] = useState<'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, payment_collected_by, updated_at, gclid, msclkid, ttclid, utm_source, acquisition_source, payment_type';
+  const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, baw_paylater, baw_paylater_yearly_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, payment_collected_by, updated_at, gclid, msclkid, ttclid, utm_source, acquisition_source, payment_type';
 
   // Refetch data whenever the component mounts or becomes visible
   useEffect(() => {
@@ -317,7 +322,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       }
 
       // Also filter out specific test names not caught by DB query
-      const realCustomers = customersData.filter(c => !isTestOrder(c.name, c.email));
+      const realCustomers = customersData.filter(c => !isTestOrder(c.name, c.email)).map(c => ({ ...c, final_amount: yearlySaleRevenue(c) }));
       console.log('Real customers (matching Customer Dashboard):', realCustomers.length);
       
       setCustomers(realCustomers);
@@ -354,26 +359,30 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
       // BAW PayLater yearly payments already collected — added to revenue in the month collected.
       // Non-blocking: a failure here must not blank analytics.
-      const { data: payLaterPaid, error: payLaterError } = await supabase
+      const { data: payLaterPaid, error: payLaterError } = await fetchAllRows(() => supabase
         .from('baw_paylater_schedules')
-        .select('paid_amount, amount, paid_at, year_number, status')
+        .select('customer_id, paid_amount, amount, paid_at, year_number, status')
         .eq('status', 'paid')
         .gt('year_number', 1)
-        .limit(2000);
+        .order('paid_at').order('id'));
 
       if (payLaterError) {
         console.error('Error fetching BAW PayLater collections for analytics:', payLaterError);
         setPayLaterCollectedByMonth({});
+        setPayLaterCollections([]);
       } else {
         const byMonth: Record<string, number> = {};
+        const eligibleIds = new Set(realCustomers.filter(c => !isRevenueLost(c.status)).map(c => c.id));
         (payLaterPaid || []).forEach((row: any) => {
-          if (!row.paid_at) return;
+          if (!row.paid_at || !eligibleIds.has(row.customer_id)) return;
           const paid = new Date(row.paid_at);
           if (Number.isNaN(paid.getTime())) return;
           const key = `${paid.getFullYear()}-${String(paid.getMonth() + 1).padStart(2, '0')}`;
-          byMonth[key] = (byMonth[key] || 0) + (Number(row.paid_amount ?? row.amount) || 0);
+          byMonth[key] = (byMonth[key] || 0) + collectedAnniversaryRevenue(row);
         });
         setPayLaterCollectedByMonth(byMonth);
+        setPayLaterCollections((payLaterPaid || []).filter(row => row.paid_at && eligibleIds.has(row.customer_id))
+          .map(row => ({ customer_id: row.customer_id, paid_at: String(row.paid_at), revenue: collectedAnniversaryRevenue(row) })));
       }
 
       const { data: targetData, error: targetError } = await supabase
@@ -686,9 +695,17 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const activeCustomers = filteredCustomers.filter(c => c.status === 'Active').length;
   const cancelledRefundedCount = filteredCustomers.filter(c => isRevenueLost(c.status)).length;
   // Revenue only counts non-cancelled/refunded customers
-  const totalRevenue = activeRevenueCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+  const periodCollections = payLaterCollections.filter(row => {
+    const paid = new Date(row.paid_at);
+    const customer = customers.find(c => c.id === row.customer_id);
+    return customer && (sourceFilter === 'all' || getCustomerSource(customer) === sourceFilter) &&
+      (!effectiveDateRange?.from || paid >= effectiveDateRange.from) &&
+      (!effectiveDateRange?.to || paid <= effectiveDateRange.to);
+  });
+  const anniversaryRevenue = periodCollections.reduce((sum, row) => sum + row.revenue, 0);
+  const totalRevenue = activeRevenueCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0) + anniversaryRevenue;
   const paidOrders = activeRevenueCustomers.filter(c => c.final_amount && Number(c.final_amount) > 0);
-  const overallAOV = paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0;
+  const overallAOV = paidOrders.length > 0 ? Math.round((totalRevenue - anniversaryRevenue) / paidOrders.length) : 0;
 
   // Calculate AOV by source — based on activeRevenueCustomers so it stays
   // in sync with the top KPI cards (same date filter, same source filter,
@@ -715,33 +732,38 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     const salesTiktok = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'tiktok');
     const salesOrganic = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'organic');
 
-    const calcStats = (custs: Customer[]) => {
-      const revenue = custs.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+    const calcStats = (custs: Customer[], matches: (c: Customer) => boolean = () => true) => {
+      const saleRevenue = custs.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+      const collected = periodCollections.reduce((sum, row) => {
+        const customer = customers.find(c => c.id === row.customer_id);
+        return sum + (customer && matches(customer) ? row.revenue : 0);
+      }, 0);
+      const revenue = saleRevenue + collected;
       return {
         count: custs.length,
         revenue,
-        aov: custs.length > 0 ? Math.round(revenue / custs.length) : 0
+        aov: custs.length > 0 ? Math.round(saleRevenue / custs.length) : 0
       };
     };
 
     return {
       allSources: calcStats(paid),
-      website: calcStats(websiteCustomers),
-      staffPurchase: calcStats(staffPurchaseCustomers),
-      salesTeam: calcStats(salesTeamCustomers),
-      google: calcStats(googleCustomers),
-      facebook: calcStats(facebookCustomers),
-      bing: calcStats(bingCustomers),
-      tiktok: calcStats(tiktokCustomers),
-      pureWebsite: calcStats(pureWebsiteCustomers),
-      salesGoogle: calcStats(salesGoogle),
-      salesFacebook: calcStats(salesFacebook),
-      salesBing: calcStats(salesBing),
-      salesTiktok: calcStats(salesTiktok),
-      salesOrganic: calcStats(salesOrganic),
+      website: calcStats(websiteCustomers, c => getCustomerSource(c) === 'website'),
+      staffPurchase: calcStats(staffPurchaseCustomers, c => getCustomerSource(c) === 'staff_purchase'),
+      salesTeam: calcStats(salesTeamCustomers, c => getCustomerSource(c) === 'sales_team'),
+      google: calcStats(googleCustomers, c => getCustomerSource(c) === 'website' && getWebsiteChannel(c) === 'google'),
+      facebook: calcStats(facebookCustomers, c => getCustomerSource(c) === 'website' && getWebsiteChannel(c) === 'facebook'),
+      bing: calcStats(bingCustomers, c => getCustomerSource(c) === 'website' && getWebsiteChannel(c) === 'bing'),
+      tiktok: calcStats(tiktokCustomers, c => getCustomerSource(c) === 'website' && getWebsiteChannel(c) === 'tiktok'),
+      pureWebsite: calcStats(pureWebsiteCustomers, c => getCustomerSource(c) === 'website' && getWebsiteChannel(c) === 'pure'),
+      salesGoogle: calcStats(salesGoogle, c => getCustomerSource(c) === 'sales_team' && getSalesTeamLeadSource(c) === 'google'),
+      salesFacebook: calcStats(salesFacebook, c => getCustomerSource(c) === 'sales_team' && getSalesTeamLeadSource(c) === 'facebook'),
+      salesBing: calcStats(salesBing, c => getCustomerSource(c) === 'sales_team' && getSalesTeamLeadSource(c) === 'bing'),
+      salesTiktok: calcStats(salesTiktok, c => getCustomerSource(c) === 'sales_team' && getSalesTeamLeadSource(c) === 'tiktok'),
+      salesOrganic: calcStats(salesOrganic, c => getCustomerSource(c) === 'sales_team' && getSalesTeamLeadSource(c) === 'organic'),
     };
 
-  }, [activeRevenueCustomers]);
+  }, [activeRevenueCustomers, customers, payLaterCollections, effectiveDateRange, sourceFilter]);
 
   // Price metrics by source: lowest, highest, average — respects both date AND source filter
   const priceMetrics = useMemo(() => {
@@ -1583,6 +1605,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                         <p className="mb-2 font-bold">{label}</p>
                         <p>Avg Order Value: £{point.aov.toLocaleString('en-GB')}</p>
                         <p>Revenue: £{Math.round(point.revenue).toLocaleString('en-GB')}</p>
+                        {(payLaterCollectedByMonth[point.monthKey] || 0) > 0 && <p className="font-semibold text-primary">BAW PayLater anniversaries collected: £{payLaterCollectedByMonth[point.monthKey].toLocaleString('en-GB')}</p>}
                         <p>Warranties Sold: {point.salesCount.toLocaleString('en-GB')}</p>
                         {point.chartTarget > 0 && (
                           <>
@@ -2218,6 +2241,12 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             <p className="text-xs text-muted-foreground">
               From {paidOrders.length} paid orders
             </p>
+            {anniversaryRevenue > 0 && <p className="mt-1 text-xs font-semibold text-primary">Includes £{anniversaryRevenue.toLocaleString('en-GB')} BAW PayLater anniversaries collected</p>}
+            {paidOrders.some(c => c.baw_paylater) && (
+              <Badge variant="outline" className="mt-2 border-primary text-primary">
+                BAW PayLater · £{paidOrders.filter(c => c.baw_paylater).reduce((sum, c) => sum + yearlySaleRevenue(c), 0).toLocaleString('en-GB')} yearly payments
+              </Badge>
+            )}
           </CardContent>
         </Card>
 
