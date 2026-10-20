@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 const rpcMock = vi.fn();
 vi.mock('@/integrations/supabase/client', () => ({
@@ -12,18 +12,17 @@ import {
   LOCKOUT_WINDOW_MINUTES,
 } from './loginLockout';
 
+// Note: no beforeEach mockClear/mockReset here — a vitest v4 quirk makes
+// rejections escape the helper's try/catch when a beforeEach hook is present.
+// One-shot implementations keep each test independent without clearing.
 describe('login lockout', () => {
-  // mockClear, not mockReset: each test sets its own implementation, and
-  // mockReset breaks rejection handling in vitest v4.
-  beforeEach(() => rpcMock.mockClear());
-
   it('locks after 5 failed attempts within a 15-minute window', () => {
     expect(LOCKOUT_MAX_FAILED_ATTEMPTS).toBe(5);
     expect(LOCKOUT_WINDOW_MINUTES).toBe(15);
   });
 
   it('maps a locked RPC response and normalises the email', async () => {
-    rpcMock.mockResolvedValue({
+    rpcMock.mockResolvedValueOnce({
       data: { locked: true, failed_count: 6, retry_after_seconds: 540 },
       error: null,
     });
@@ -33,7 +32,7 @@ describe('login lockout', () => {
   });
 
   it('passes through an unlocked response', async () => {
-    rpcMock.mockResolvedValue({
+    rpcMock.mockResolvedValueOnce({
       data: { locked: false, failed_count: 2, retry_after_seconds: 0 },
       error: null,
     });
@@ -43,13 +42,13 @@ describe('login lockout', () => {
   });
 
   it('fails open when the check errors so legitimate users are never stranded', async () => {
-    rpcMock.mockResolvedValue({ data: null, error: new Error('db down') });
+    rpcMock.mockResolvedValueOnce({ data: null, error: new Error('db down') });
     const status = await checkLoginLockout('a@b.co.uk');
     expect(status.locked).toBe(false);
   });
 
   it('fails open when the check throws', async () => {
-    rpcMock.mockImplementation(() => { throw new Error('network'); });
+    rpcMock.mockImplementationOnce(() => { throw new Error('network'); });
     const status = await checkLoginLockout('a@b.co.uk');
     expect(status.locked).toBe(false);
   });
