@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Add automatic PayLater claims-made tag/filter in Customer Management, restricted to admin/super_admin/Accounts; verify rules and available flows without changing payments or claims.
 - [x] Shared gateway password control added to User permissions; active admins/super admins only, service-only hashes and versioned receipts, 5/15-minute gateway throttle. Eleven tests pass, build OK; real existing password unlocks both login pages and unsigned settings returns 401. Personal sign-in unchanged; frontend unpublished.
 - [ ] Gateway password rotation signed-in verification: external Supabase has no managed staff session; saving/readback as admin and rotation invalidation remain unverified. Existing unrelated security findings remain.
 - [x] BAW PayLater: shared yearly-only sale amounts; paid anniversaries credited by collection date to sale owner without extra deal counts; analytics and agent/timesheet PayLater labels; commission claims read saved yearly value. Nine tests pass (£502 not £1,004, no double division, unpaid/first-year excluded); preview build OK. Unpublished.
