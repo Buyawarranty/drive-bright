@@ -19,6 +19,34 @@ export const BAW_PAYLATER_UPLIFT = 1.10;
 
 export const BAW_PAYLATER_LABEL = 'BAW PayLater';
 
+/** Customer amounts are already yearly; prefer the explicit collected-year value. */
+export function yearlySaleRevenue(sale: {
+  final_amount?: number | null;
+  baw_paylater?: boolean | null;
+  baw_paylater_yearly_amount?: number | null;
+}): number {
+  const amount = sale.baw_paylater && sale.baw_paylater_yearly_amount != null
+    ? sale.baw_paylater_yearly_amount
+    : sale.final_amount;
+  return Number(amount) || 0;
+}
+
+export interface PayLaterCollection {
+  customer_id: string;
+  year_number: number;
+  status: string;
+  paid_at: string | null;
+  paid_amount: number | null;
+  amount: number;
+}
+
+/** Year one is already in the sale; only paid anniversaries are extra revenue. */
+export function collectedAnniversaryRevenue(row: PayLaterCollection): number {
+  if (row.year_number <= 1 || row.status !== 'paid' || !row.paid_at ||
+      Number.isNaN(new Date(row.paid_at).getTime())) return 0;
+  return Math.max(0, Number(row.paid_amount ?? row.amount) || 0);
+}
+
 export const BAW_PAYLATER_NOTE =
   'BAW PayLater collects one year at a time on the policy anniversary. Only the first year is taken now — the remaining years sit in Payments pending for accounts to collect.';
 
