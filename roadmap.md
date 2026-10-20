@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Fix all asset manifest URLs for external GitHub ZIP deployments, remove homepage one-off workarounds, guard future generated assets and verify production bundle URLs.
 - [ ] Add branded Stripe refund-fee invoices in admin: editable drafts, explicit email send, payment status; no automatic refunds or subscription cancellation; enforce existing no-fee cooling-off and claim rules.
 - [x] Reporting: management/accounts option, editable email/Word templates, percentage-of-sales invoices, payment ledger and opt-in daily/weekly/monthly schedule. Seven rule tests pass; build OK; signed-out denied; deployed off-state returns processed:0, zero enabled accounts/jobs/invoices. No emails sent, frontend unpublished.
 - [ ] Reporting real-account verification and delivery setup: external Supabase has no managed signed-in test session; recipient email, invoice parties and charge percentage must be supplied before enabling. No live send or payment write tested.
