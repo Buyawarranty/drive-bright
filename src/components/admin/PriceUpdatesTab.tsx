@@ -874,6 +874,45 @@ export default function PriceUpdatesTab() {
           toast.error(e instanceof Error ? e.message : 'Could not save the test discount');
         } finally { setBusy(false); }
       }} />
+      <section aria-labelledby="create-plan-heading" className="rounded-lg border-2 border-primary bg-card p-4 space-y-4">
+        <div>
+          <h2 id="create-plan-heading" className="text-lg font-bold">Create a new pricing plan</h2>
+          <p className="text-sm text-muted-foreground">
+            A new plan starts as an exact copy of the live plan ({liveVersion?.label || 'built-in code pricing'}), including its vehicle figures. Customers and agents keep the live prices until you push the new plan live.
+          </p>
+        </div>
+        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+          {[
+            ['Name and create', 'Type a name below and press Create new pricing plan.'],
+            ['Change the prices', 'Use View or edit price grid, or the percentage increase/decrease.'],
+            ['Check vehicle figures', 'Use View or edit vehicle figures for age, mileage, powertrain and vehicle type.'],
+            ['Push live', 'Check the plan name in the box below, then press Push live and confirm.'],
+          ].map(([title, text], i) => (
+            <li key={title} className="rounded-md border border-border bg-muted/40 p-3">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold mb-2">{i + 1}</span>
+              <p className="font-semibold">{title}</p>
+              <p className="text-muted-foreground">{text}</p>
+            </li>
+          ))}
+        </ol>
+        <div className="flex flex-wrap items-end gap-2">
+          <div className="space-y-1">
+            <label htmlFor="new-plan-name" className="text-sm font-semibold">New plan name</label>
+            <input
+              id="new-plan-name"
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm min-w-[280px]"
+              placeholder={`e.g. Winter pricing ${new Date().getFullYear()}`}
+              value={newPlanName}
+              disabled={busy}
+              onChange={e => setNewPlanName(e.target.value)}
+            />
+          </div>
+          <Button onClick={() => handleCreateDraft(newPlanName)} disabled={busy}>
+            Create new pricing plan
+          </Button>
+        </div>
+      </section>
+
       {/* Always-visible go-live controls so Push live / Revert are never buried in a tab */}
       <div className="rounded-lg border-2 border-primary/30 bg-muted/40 p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
