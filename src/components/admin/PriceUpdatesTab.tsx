@@ -430,15 +430,26 @@ export default function PriceUpdatesTab() {
    * builder. Without these the published grid has no vehicle dimension and every
    * car quotes exactly the same price, so they MUST travel with every publish.
    */
+  /**
+   * Which vehicle figures travel with a save / push. A draft created only for a
+   * website-discount or percentage change has no vehicle figures of its own, so
+   * fall back: builder → saved builder figures → this draft → live plan → code.
+   */
+  function resolvePushModel(): { model: any; source: string } | null {
+    const ok = (m: any) => m && Array.isArray(m.bands) && m.bands.length > 0;
+    if (ok(liveEditorModel)) return { model: liveEditorModel, source: 'the vehicle figures editor' };
+    try {
+      const saved = JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || 'null');
+      if (ok(saved)) return { model: saved, source: 'your saved vehicle figures' };
+    } catch { /* ignore */ }
+    const own = drafts.find(d => d.id === selectedId)?.vehicle_factor_model;
+    if (ok(own)) return { model: own, source: 'this plan' };
+    if (ok(liveVersion?.vehicle_factor_model)) return { model: liveVersion!.vehicle_factor_model, source: 'the current live plan' };
+    return { model: codeAgeBandModel, source: 'the built-in standard figures' };
+  }
+
   function currentVehicleFactorModel(): VehicleFactorModel | null {
-    let m: any = liveEditorModel;
-    if (!m || !Array.isArray(m.bands) || !m.bands.length) {
-      try {
-        m = JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || '{}');
-      } catch {
-        m = null;
-      }
-    }
+    const m: any = resolvePushModel()?.model;
     if (!m || !Array.isArray(m.bands) || !m.bands.length) return null;
     return {
       bands: m.bands.map((b: any) => ({ key: String(b.key), oneYear: b.oneYear ?? null })),
@@ -742,7 +753,7 @@ export default function PriceUpdatesTab() {
 
     if (
       !window.confirm(
-        'Push this pricing live?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ' +
+        `Push the pricing plan “${label || 'Untitled draft'}” live?\n\nVehicle figures included: ${pushModel?.bands?.length ?? 0} age bands, ${pushModel?.mileageBands?.length ?? 0} mileage bands, ${pushModel?.powertrains?.length ?? 0} powertrain factors, ${pushModel?.vehicleTypes?.length ?? 0} vehicle type factors.\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ` +
           effectiveDiscountPct(discountPct) +
           '%, rounded to the nearest pound.' +
           (filled.length
@@ -882,18 +893,38 @@ export default function PriceUpdatesTab() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          {selectedId ? (
-            <span>
-              Editing draft: <strong>{label || 'Untitled draft'}</strong> — “Push live” publishes this
-              draft to customers and agents.
-            </span>
-          ) : (
-            <span>
-              “Push live” will publish your saved vehicle risk figures, or select a test draft below
-              to publish that draft instead.
-            </span>
-          )}
+        <div className="rounded-md border border-border bg-background p-3 space-y-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1">
+              <label htmlFor="pricing-plan-select" className="text-sm font-semibold">Change pricing plan</label>
+              <select
+                id="pricing-plan-select"
+                className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-[280px]"
+                value={selectedId ?? ''}
+                disabled={busy}
+                onChange={e => { const v = drafts.find(d => d.id === e.target.value); if (v) loadIntoEditor(v); }}
+              >
+                {!selectedId && <option value="">No test draft selected</option>}
+                {drafts.map(d => <option key={d.id} value={d.id}>{d.label || 'Untitled draft'}</option>)}
+              </select>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => openTab('builder')}>View or edit vehicle figures</Button>
+            <Button size="sm" variant="outline" onClick={() => openTab('editor')}>View or edit price grid</Button>
+          </div>
+          <p className="text-sm">
+            <strong>Push live will publish:</strong> {selectedId ? <>“{label || 'Untitled draft'}”</> : 'your saved vehicle risk figures as a new plan'}.
+            Pick a different plan above to push that one instead, or create a new test draft.
+          </p>
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p className="font-semibold text-foreground">Vehicle figures that go live with this plan{pushModelSource ? ` (taken from ${pushModelSource})` : ''}:</p>
+            <ul className="list-disc pl-5">
+              <li>Age bands: {pushModel?.bands?.length ?? 0}</li>
+              <li>Mileage bands: {pushModel?.mileageBands?.length ?? 0}</li>
+              <li>Powertrain factors: {pushModel?.powertrains?.length ?? 0}</li>
+              <li>Vehicle type factors: {pushModel?.vehicleTypes?.length ?? 0}</li>
+            </ul>
+            <p>Use “View or edit vehicle figures” to change any of these before pushing live.</p>
+          </div>
         </div>
       </div>
 
@@ -947,7 +978,7 @@ export default function PriceUpdatesTab() {
 
 
 
-      <Tabs defaultValue={tabOrder[0] || 'compare'} className="w-full">
+      <Tabs id="price-update-tabs" value={activeTab ?? (tabOrder[0] || 'compare')} onValueChange={setActiveTab} className="w-full scroll-mt-4">
 
         <div className="flex items-center justify-end gap-2 mb-2">
           <Button
