@@ -15832,7 +15832,7 @@ export type Database = {
           used_6mo: number
         }[]
       }
-      get_cyber_security_status: { Args: never; Returns: Json }
+      get_cyber_security_status: { Args: { p_user_id: string }; Returns: Json }
       get_direct_sales_analysis: { Args: { _from?: string }; Returns: Json }
       get_direct_sales_substeps: { Args: { _from?: string }; Returns: Json }
       get_document_version_for_date: {
