@@ -45,6 +45,15 @@ const getCtx = (): AudioContext | null => {
   return audioCtx;
 };
 
+export const REMINDER_BEEP_COUNT = 5;
+let activeBeeps: OscillatorNode[] = [];
+
+/** Stop any reminder beeps still sounding. */
+export const silenceReminderAlarm = () => {
+  activeBeeps.forEach((o) => { try { o.stop(); } catch { /* already stopped */ } });
+  activeBeeps = [];
+};
+
 export const playReminderChime = () => {
   if (!consumeAlertSound()) return;
   // Respect the shared "mute all alerts" preference.
@@ -57,22 +66,23 @@ export const playReminderChime = () => {
   try {
     const ctx = getCtx();
     if (!ctx) return;
-    // Two-tone chime — attention-grabbing but short.
+    // Five beeps, roughly one per second, then stop. Silence stops them early.
+    silenceReminderAlarm();
     const now = ctx.currentTime;
-    const play = (freq: number, start: number, dur = 0.22) => {
+    for (let i = 0; i < REMINDER_BEEP_COUNT; i++) {
+      const start = now + i * 1;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.0001, now + start);
-      gain.gain.exponentialRampToValueAtTime(0.35, now + start + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
+      osc.frequency.value = 1046;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.4, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.35);
       osc.connect(gain).connect(ctx.destination);
-      osc.start(now + start);
-      osc.stop(now + start + dur + 0.02);
-    };
-    play(880, 0);
-    play(1320, 0.18);
+      osc.start(start);
+      osc.stop(start + 0.4);
+      activeBeeps.push(osc);
+    }
   } catch {
     // ignore
   }
