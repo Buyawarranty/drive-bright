@@ -882,19 +882,27 @@ export default function PriceUpdatesTab() {
           </p>
         </div>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
-          {[
-            ['Name and create', 'Type a name below and press Create new pricing plan.'],
-            ['Change the prices', 'Use View or edit price grid, or the percentage increase/decrease.'],
-            ['Check vehicle figures', 'Use View or edit vehicle figures for age, mileage, powertrain and vehicle type.'],
-            ['Push live', 'Check the plan name in the box below, then press Push live and confirm.'],
-          ].map(([title, text], i) => (
-            <li key={title} className="rounded-md border border-border bg-muted/40 p-3">
+          {([
+            ['Name and create', 'Type a name below and press Create new pricing plan. It copies everything from live.', null, null],
+            ['Set the prices', 'Base prices for each term, excess and claim limit. Type prices in, or apply a percentage increase or decrease.', 'editor', 'Open price grid'],
+            ['Set vehicle variables', 'Age bands, mileage bands, powertrain (petrol, diesel, hybrid, electric), vehicle type, model risk, labour rate and claim-limit factors.', 'builder', 'Open vehicle variables'],
+            ['Check exclusions', 'Vehicles we never quote (e.g. supercars, M/AMG/RS). This list applies to every plan automatically.', 'tools', 'Open exclusions'],
+            ['Push live', 'Check the plan name and vehicle figures in the box below, then press Push live and confirm.', null, null],
+          ] as const).map(([title, text, tab, cta], i) => (
+            <li key={title} className="rounded-md border border-border bg-muted/40 p-3 flex flex-col">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold mb-2">{i + 1}</span>
               <p className="font-semibold">{title}</p>
-              <p className="text-muted-foreground">{text}</p>
+              <p className="text-muted-foreground flex-1">{text}</p>
+              {tab && (
+                <Button size="sm" variant="outline" className="mt-2" disabled={!selectedId && tab !== 'tools'} onClick={() => openTab(tab)}>
+                  {cta}
+                </Button>
+              )}
             </li>
           ))}
         </ol>
+        {!selectedId && <p className="text-xs text-muted-foreground">Create or choose a plan first to unlock steps 2 and 3.</p>}
+        {selectedId && <p className="text-sm"><strong>Now setting up:</strong> “{label || 'Untitled draft'}” — work through steps 2 to 5. Remember to save in each section.</p>}
         <div className="flex flex-wrap items-end gap-2">
           <div className="space-y-1">
             <label htmlFor="new-plan-name" className="text-sm font-semibold">New plan name</label>
