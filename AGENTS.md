@@ -1,4 +1,5 @@
 # Project architecture rules
+- Cyber security is read-only and admin/super-admin-only; a service-only summary RPC checks protected roles and returns counts, while a JWT-checked endpoint inspects only fixed published URLs, so no secrets or customer records enter reports.
 - Keep CLI asset pointers; portableAssetsPlugin resolves external-host URLs; mobile caps sit on wrappers.
 - Abandoned Cart lists and exports use the shared fail-closed eligibility loader and active-staff-checked history RPC returning only excluded cart IDs, keeping restricted claims data server-side and barring cancelled/refunded customers.
 - SEO Audit/semrush-seo share chat and permissions; dated audit + RLS evidence, no Semrush/live-scan claims. Shared guides separate approval from edits/publication; thread archived_at preserves private readable history.

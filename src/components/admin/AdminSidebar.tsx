@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { canAccessSeoAudit } from '@/lib/tabAccess';
+import { canViewCyberSecurity } from '../../../supabase/functions/_shared/cyber-security-rules';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -432,6 +433,12 @@ export const defaultTabs: Tab[] = [
     description: 'Manage admin user access and permissions'
   },
   {
+    id: 'cyber-security',
+    label: 'Cyber security',
+    icon: Shield,
+    description: 'Protection checks, security warnings and settings'
+  },
+  {
     id: 'staff-system-reports',
     label: 'Staff System Reports',
     icon: Gauge,
@@ -798,6 +805,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     ]);
     const priceUpdatesAllowed = !!userRole && PRICE_UPDATES_ROLES.has(userRole);
     let base = priceUpdatesAllowed ? withPerms : withPerms.filter(t => t.id !== 'price-updates');
+    if (!canViewCyberSecurity(userRole)) base = base.filter(t => t.id !== 'cyber-security');
     base = base.filter(t => t.id !== 'reporting');
     if (priceUpdatesAllowed) {
       const reporting = defaultTabs.find(t => t.id === 'reporting');

@@ -1,0 +1,2 @@
+export const canViewCyberSecurity = (role: string | null | undefined) => role === 'admin' || role === 'super_admin';
+export const protectionState = (issues: number): 'checked' | 'attention' => issues === 0 ? 'checked' : 'attention';

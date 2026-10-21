@@ -1,5 +1,7 @@
 import GrowthAgentTab from '@/components/admin/growth/GrowthAgentTab';
 import { GatewayRenewalBanner } from '@/components/admin/GatewayRenewalBanner';
+import { canViewCyberSecurity } from '../../supabase/functions/_shared/cyber-security-rules';
+const CyberSecurityTab = lazy(() => import('@/components/admin/CyberSecurityTab'));
 import LeadCountTab from '@/components/admin/LeadCountTab';
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
@@ -235,6 +237,7 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   const tab = canonicalTabId(rawTab);
   const permKey = `tab_${tab}`;
   if (tab === 'account') return true;
+  if (tab === 'cyber-security') return canViewCyberSecurity(role);
   if (tab === 'unsubscribe') return true;
   if (tab === 'reporting') return ['admin','super_admin','sales_manager','accounts','accounts_manager','accounts_payroll'].includes(role || '');
   if (tab === 'seo-audit' || tab === 'semrush-seo') return canAccessSeoAudit(role, permissions);
@@ -1076,6 +1079,9 @@ const AdminDashboard = () => {
 
       case 'security':
         return <ClickFraudTab />;
+      case 'cyber-security':
+        if (!canViewCyberSecurity(effectiveUserRole)) return <AccessDenied label="Cyber security" />;
+        return <Suspense fallback={<TabFallback />}><CyberSecurityTab /></Suspense>;
       case 'user-permissions':
         return <UserPermissionsTab />;
       case 'staff-system-reports': {
