@@ -5,6 +5,9 @@ verify_jwt = false
 [functions.login-gateway]
 verify_jwt = false
 
+[functions.staff-password]
+verify_jwt = false
+
 
 
 [functions.create-billing-portal]

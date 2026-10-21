@@ -116,5 +116,10 @@ export async function requireAdmin(req: Request, options: RequireAdminOptions = 
     };
   }
 
+  const { data: renewal, error: renewalError } = await supabase.rpc('staff_password_status', { p_user_id: userData.user.id });
+  if (renewalError || renewal?.must_change) {
+    return { ok: false as const, response: new Response(JSON.stringify({ error: renewalError ? 'Unable to check password renewal' : 'STAFF_PASSWORD_RENEWAL_REQUIRED', message: 'Please change your personal password in Account settings to continue.' }), { status: renewalError ? 503 : 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
+  }
+
   return { ok: true as const, user: userData.user, adminUser, supabase };
 }
