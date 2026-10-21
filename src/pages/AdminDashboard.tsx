@@ -1,4 +1,6 @@
 import GrowthAgentTab from '@/components/admin/growth/GrowthAgentTab';
+import { StaffPasswordGate } from '@/components/admin/StaffPasswordGate';
+import { GatewayRenewalBanner } from '@/components/admin/GatewayRenewalBanner';
 import LeadCountTab from '@/components/admin/LeadCountTab';
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
@@ -1292,7 +1294,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <ViewAsProvider realRole={userRole} realPermissions={userPermissions} realAdminUserId={adminUserId}>
+    <StaffPasswordGate><ViewAsProvider realRole={userRole} realPermissions={userPermissions} realAdminUserId={adminUserId}>
       <AdminDashboardInner
         activeTab={activeTab}
         handleTabChange={handleTabChange}
@@ -1312,7 +1314,7 @@ const AdminDashboard = () => {
 
         navigate={navigate}
       />
-    </ViewAsProvider>
+    </ViewAsProvider></StaffPasswordGate>
   );
 };
 
@@ -1438,6 +1440,7 @@ const AdminDashboardInner: React.FC<{
       {/* Banner rail: the sidebar is fixed directly below the 44px top bar, so every top banner
           is inset by the sidebar width on desktop — nothing is ever cut off. */}
       <div className={sidebarCollapsed ? 'lg:pl-14' : 'lg:pl-64'}>
+      {!isImpersonating && <GatewayRenewalBanner role={userRole} onOpen={() => { handleTabChange('user-permissions'); window.setTimeout(() => document.getElementById('gateway-password')?.scrollIntoView({ block: 'start' }), 300); }} />}
       {/* Live chat opening-hours bar — every member of staff, claims included */}
       <LiveChatHoursBanner />
 

@@ -22,20 +22,20 @@ const AccountSettings = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters long');
+    if (newPassword.length < 12) {
+      toast.error('Password must be at least 12 characters long');
       return;
     }
 
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
+      const { data, error } = await supabase.functions.invoke('staff-password', {
+        body: { action: 'change', currentPassword, password: newPassword }
       });
 
-      if (error) {
-        toast.error(error.message);
+      if (error || data?.error) {
+        toast.error(data?.error || 'Unable to change password. Check your current password.');
       } else {
         toast.success('Password updated successfully');
         
@@ -111,11 +111,12 @@ const AccountSettings = () => {
         <CardHeader>
           <CardTitle>Change Password</CardTitle>
           <CardDescription>
-            Update your account password
+            Renew your personal password every three months. The shared gateway password is separate.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handlePasswordChange} className="space-y-4">
+            <div><Label htmlFor="current-password">Current personal password</Label><Input id="current-password" type="password" autoComplete="current-password" required value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} /></div>
             <div>
               <Label htmlFor="new-password">New Password</Label>
               <Input
