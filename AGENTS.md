@@ -1,5 +1,5 @@
 # Project architecture rules
-- Asset pointers stay CLI-generated; portableAssetsPlugin resolves imported pointer URLs to the published Lovable origin for external hosting; mobile image caps belong on wrappers.
+- Keep CLI asset pointers; portableAssetsPlugin resolves external-host URLs; mobile caps sit on wrappers.
 - Abandoned Cart lists and exports use the shared fail-closed eligibility loader and active-staff-checked history RPC returning only excluded cart IDs, keeping restricted claims data server-side and barring cancelled/refunded customers.
 - SEO Audit/semrush-seo share chat and permissions; dated audit + RLS evidence, no Semrush/live-scan claims. Shared guides separate approval from edits/publication; thread archived_at preserves private readable history.
 - Weekly SEO reviews use database-queued, idempotent server-side published-site reads and private access-checked review records; only super admins decide proposals, and decisions never execute edits or publication. The selected SEO account receives a dedicated review grant without expanding assistant permissions.
@@ -21,7 +21,8 @@
 - Date of birth is collected on Bumper's own page, not in our Step 4; Step 4 hands straight to Bumper after validation so payment pricing and provider logic stay shared.
 - The CRM Agentic Assistant is read-only; super admins get every part, other staff only the parts granted via tab_growth-* permissions (checked server-side + RLS); it suggests actions but must never get tools that change data or send messages, so nothing happens without a person acting.
 - Lead count tab: visibility = admin/super_admin or tab_lead-count grant, never sales roles; data via get_lead_count_report RPC (checks server-side) using locked daily snapshots.
-- Lead quality: access-checked read-only RPC, private matching; live outcomes never rewrite snapshots.
+- Lead quality: private read-only RPC; outcomes never rewrite snapshots.
 - Reporting: immutable invoices, locked payments, service-only email claims; hourly job only when enabled, independent of staff commissions.
 - Login: fail-open check_login_lockout (5/15min); server-hashed gateways/versioned receipts rotate only for active admins/super admins.
 - PayLater claim flags use a service-only protected-role lookup through authenticated edge access, returning customer IDs only; match linked policies first and batch-load matches before pagination to retain older records without exposing claim details.
+- Handover backups stay atomic; indexed normalized ownership lookups and bounded per-RPC timeouts prevent large transfers timing out.

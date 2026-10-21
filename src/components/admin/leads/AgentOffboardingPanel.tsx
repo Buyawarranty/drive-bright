@@ -490,6 +490,11 @@ export const AgentOffboardingPanel: React.FC = () => {
               {counts?.paidLeads ? <> {counts.paidLeads} paid / converted lead{counts.paidLeads === 1 ? '' : 's'} will keep their status.</> : null}
               {alsoDeactivate && <> The departing agent's login will also be deactivated (reactivated automatically on restore).</>}
             </AlertDialogDescription>
+            {working && (
+              <p role="status" className="text-sm text-muted-foreground">
+                Saving the full backup and handing over leads. Large handovers can take up to three minutes; please keep this window open.
+              </p>
+            )}
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={working}>Cancel</AlertDialogCancel>
