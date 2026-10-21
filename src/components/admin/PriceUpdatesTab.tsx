@@ -708,6 +708,14 @@ export default function PriceUpdatesTab() {
     []
   );
   const effectiveLiveModel = liveEditorModel ?? savedAgeBandModel ?? codeAgeBandModel;
+  const resolvedPush = resolvePushModel();
+  const pushModel: any = resolvedPush?.model ?? null;
+  const pushModelSource = resolvedPush?.source ?? '';
+  const [activeTab, setActiveTab] = useState<string | null>(null);
+  function openTab(tab: string) {
+    setActiveTab(tab);
+    setTimeout(() => document.getElementById('price-update-tabs')?.scrollIntoView({ behavior: 'smooth' }), 50);
+  }
 
   async function handlePublish() {
     if (!selectedId) {
