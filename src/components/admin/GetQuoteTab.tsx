@@ -245,6 +245,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [step, setStep] = useState(1);
   // Agent's edits to the copy/paste quote email (null = use the generated text).
   const [copyEmailEdit, setCopyEmailEdit] = useState<string | null>(null);
+  const [emailEditDraft, setEmailEditDraft] = useState<string | null>(null);
   // Invoice builder (available to every sales agent from Step 2)
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
   const [regNumber, setRegNumber] = useState('');
@@ -8111,18 +8112,39 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               <Copy className="w-3.5 h-3.5 mr-1.5" />Copy plain text
                             </Button>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] text-muted-foreground">You can edit this email before copying or opening it.</span>
-                            {bodyEdited && (
-                              <Button type="button" variant="ghost" size="sm" className="h-6 text-[11px]" onClick={() => setCopyEmailEdit(null)}>
-                                Reset to original
-                              </Button>
-                            )}
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[11px] text-muted-foreground">
+                              {emailEditDraft !== null ? 'Editing — press Save email when done.' : bodyEdited ? 'Your edited email is saved and will be used below.' : 'Press Edit email to change the wording.'}
+                            </span>
+                            <div className="flex gap-2">
+                              {emailEditDraft === null ? (
+                                <>
+                                  {bodyEdited && (
+                                    <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setCopyEmailEdit(null)}>
+                                      Reset to original
+                                    </Button>
+                                  )}
+                                  <Button type="button" variant="outline" size="sm" className="h-7 text-xs" onClick={() => setEmailEditDraft(body)}>
+                                    <Pencil className="w-3.5 h-3.5 mr-1" />Edit email
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setEmailEditDraft(null)}>
+                                    Cancel
+                                  </Button>
+                                  <Button type="button" size="sm" className="h-7 text-xs" onClick={() => { setCopyEmailEdit(emailEditDraft); setEmailEditDraft(null); toast({ title: 'Email saved' }); }}>
+                                    Save email
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </div>
                           <Textarea
-                            value={body}
-                            onChange={(e) => setCopyEmailEdit(e.target.value)}
-                            className="h-48 text-xs font-mono resize-y"
+                            value={emailEditDraft ?? body}
+                            readOnly={emailEditDraft === null}
+                            onChange={(e) => setEmailEditDraft(e.target.value)}
+                            className={`h-48 text-xs font-mono resize-y ${emailEditDraft === null ? 'bg-muted/40' : 'ring-2 ring-primary'}`}
                           />
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <Button type="button" variant="default" size="sm" disabled={!customerEmail} onClick={() => openWith(gmailHref, 'Gmail')}>
