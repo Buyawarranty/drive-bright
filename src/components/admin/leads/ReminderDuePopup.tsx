@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Clock, AlertTriangle, Check, BellOff, CalendarClock, ExternalLink, Copy } from 'lucide-react';
+import { X, Clock, VolumeX, AlertTriangle, Check, BellOff, CalendarClock, ExternalLink, Copy } from 'lucide-react';
 import { format, differenceInMinutes, addMinutes } from 'date-fns';
 import { useDueReminders, DueReminder } from '@/hooks/useDueReminders';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { silenceReminderAlarm } from '@/lib/reminderAlerts';
 
 
 interface ReminderDuePopupProps {
@@ -169,6 +170,14 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
           animation: borderPulse 2.2s ease-in-out infinite;
         }
       `}</style>
+      <button
+        type="button"
+        onClick={() => { silenceReminderAlarm(); toast.success('Reminder sound silenced'); }}
+        className="self-end inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-foreground shadow-sm hover:bg-muted"
+        aria-label="Silence reminder sound"
+      >
+        <VolumeX className="h-3.5 w-3.5" /> Silence
+      </button>
       {visibleReminders.slice(0, 4).map((reminder) => {
         const overdueMin = getOverdueMinutes(reminder.reminder_time);
         const isOverdue = overdueMin > 2;
