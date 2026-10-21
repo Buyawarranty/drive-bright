@@ -101,6 +101,7 @@ import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
 import { isNorthernIrelandPlate } from '@/lib/niPlate';
 import { useSavedPricingModel } from './pricing/useSavedPricingModel';
 import { invokeWithFreshSession } from '@/lib/invokeWithFreshSession';
+import { normalizeSavedEmailEdit } from '@/lib/quoteEmailEditPersistence';
 import { markHeavyTabBusy } from '@/lib/heavyTabBusy';
 
 
@@ -808,6 +809,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.mileage === 'string') setMileage(d.mileage);
       if (typeof d.sliderMileage === 'number') setSliderMileage(d.sliderMileage);
       if (d.vehicleData) setVehicleData(d.vehicleData);
+      // Restore the agent's saved email wording edit (persists across reloads).
+      if (normalizeSavedEmailEdit(d.copyEmailEdit)) setCopyEmailEdit(normalizeSavedEmailEdit(d.copyEmailEdit));
       if (typeof d.customerEmail === 'string') setCustomerEmail(d.customerEmail);
       if (typeof d.customerFirstName === 'string') setCustomerFirstName(d.customerFirstName);
       if (typeof d.customerLastName === 'string') setCustomerLastName(d.customerLastName);
@@ -869,7 +872,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         selectedAddOns, additionalNotes, freeExtendedCover, includePayInFullDiscount,
         customerPostcode, customerStreet, customerTown, customerBuildingNumber,
         customerCounty, skipAddressDetails, customMonthlyPrice, customFullPrice,
-        quotedPriceOverride, ageOverrideEnabled,
+        quotedPriceOverride, ageOverrideEnabled, copyEmailEdit,
         warrantyStartDate: warrantyStartDate?.toISOString(),
       }));
     } catch { /* quota — ignore */ }
@@ -880,7 +883,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     selectedAddOns, additionalNotes, freeExtendedCover, includePayInFullDiscount,
     customerPostcode, customerStreet, customerTown, customerBuildingNumber,
     customerCounty, skipAddressDetails, customMonthlyPrice, customFullPrice,
-    quotedPriceOverride, ageOverrideEnabled, warrantyStartDate,
+    quotedPriceOverride, ageOverrideEnabled, copyEmailEdit, warrantyStartDate,
   ]);
 
 
@@ -1277,6 +1280,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setFreeExtendedCover(savedQuote.freeExtendedCover || 'none');
     setAdditionalNotes(savedQuote.additionalNotes || '');
     
+    // Bring back the agent's saved email wording for this quote (if any).
+    setCopyEmailEdit(normalizeSavedEmailEdit(savedQuote.copyEmailEdit));
+    setEmailEditDraft(null);
+
     // Set step based on available data
     if (savedQuote.vehicleData) {
       setStep(2);
@@ -2858,6 +2865,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setQuoteSent(false);
     setSelfCopySent(false);
     setLastSendPayload(null);
+    // A brand-new quote must not inherit the previous customer's email wording.
+    setCopyEmailEdit(null);
+    setEmailEditDraft(null);
   };
 
   // Send a copy of the just-sent customer quote to the logged-in agent's own
@@ -4479,6 +4489,9 @@ Questions? Call 0330 229 5040`;
     setExternalPaymentStep('details');
     setCompletionStatus(null);
     setWarrantyStartDate(new Date());
+    // A fresh quote must not inherit the previous customer's email wording.
+    setCopyEmailEdit(null);
+    setEmailEditDraft(null);
   };
 
 
@@ -7424,6 +7437,7 @@ Questions? Call 0330 229 5040`;
                         currentPrice,
                         freeExtendedCover,
                         additionalNotes,
+                        copyEmailEdit: copyEmailEdit || undefined,
                         savedAt: new Date().toISOString()
                       };
                       const savedQuotes = JSON.parse(localStorage.getItem('admin_saved_quotes') || '[]');
@@ -7726,7 +7740,9 @@ Questions? Call 0330 229 5040`;
 
           {/* Email Preview Dialog */}
           <Dialog open={showEmailDialog} onOpenChange={(open) => {
-            if (!open) setCopyEmailEdit(null);
+            // Closing the preview dialog no longer wipes the agent's saved
+            // email wording — the edit persists across dialog opens, reloads
+            // and quote reopens.
             setShowEmailDialog(open);
             if (!open) {
               // Closing the preview dialog should NOT wipe the whole quote —
