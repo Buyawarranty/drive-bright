@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { verifyPassword, PASSWORD_NOT_VERIFIED_MESSAGE } from '../_shared/verify-password.ts';
+import { requireAdmin } from '../_shared/admin-auth.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +25,8 @@ serve(async (req) => {
   }
 
   try {
+    const access = await requireAdmin(req, { allowedRoles: ['admin', 'super_admin'] });
+    if (!access.ok) return access.response;
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -98,6 +101,8 @@ serve(async (req) => {
       password: newPassword,
     });
     if (updateErr) throw updateErr;
+    const { error: renewalError } = await admin.rpc('staff_password_record_change', { p_user_id: authUserId });
+    if (renewalError) throw new Error('Password saved but renewal date could not be updated');
 
     // Only share credentials that actually sign in.
     const verified = await verifyPassword(email, newPassword);
@@ -118,7 +123,7 @@ serve(async (req) => {
     const loginUrl = (typeof providedLoginUrl === 'string' && providedLoginUrl.startsWith('http'))
       ? providedLoginUrl
       : (isAdminTier ? 'https://buyawarranty.co.uk/auth' : 'https://buyawarranty.co.uk/sales-login');
-    const gatewayCode = 'SmashSales2026!!';
+    const gatewayCode = 'Contact your manager for the current gateway password';
     const displayName = name || 'Team Member';
 
     const html = `<!DOCTYPE html>

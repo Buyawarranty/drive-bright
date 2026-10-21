@@ -23,6 +23,6 @@
 - Lead count tab: visibility = admin/super_admin or tab_lead-count grant, never sales roles; data via get_lead_count_report RPC (checks server-side) using locked daily snapshots.
 - Lead quality: private read-only RPC; outcomes never rewrite snapshots.
 - Reporting: immutable invoices, locked payments, service-only email claims; hourly job only when enabled, independent of staff commissions.
-- Login: fail-open check_login_lockout (5/15min); server-hashed gateways/versioned receipts rotate only for active admins/super admins.
+- Login: fail-open check_login_lockout (5/15min); service-only staff renewal records enforce expiry through a PostgREST pre-request hook and shared edge authentication; self-renewal verifies the current password. Gateway changes remain active-admin-only with versioned receipts and password-free active-staff notices.
 - PayLater claim flags use a service-only protected-role lookup through authenticated edge access, returning customer IDs only; match linked policies first and batch-load matches before pagination to retain older records without exposing claim details.
 - Handover backups stay atomic; indexed normalized ownership lookups and bounded per-RPC timeouts prevent large transfers timing out.

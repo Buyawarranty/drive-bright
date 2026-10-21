@@ -1249,7 +1249,7 @@ export const UserPermissionsTab = () => {
 
   /** The single source of truth for what gets copied AND emailed. */
   const buildLoginBlock = (user: AdminUser, password: string) =>
-    `Step 1 — Gateway\nLink: ${loginUrlForRole(user.role)}\nPassword: SmashSales2026!!\n\nStep 2 — ${user.first_name || ''} ${user.last_name || ''}'s login\nUsername: ${user.email}\nPassword: ${password}`;
+    `Step 1 — Gateway\nLink: ${loginUrlForRole(user.role)}\nGateway password: Contact your manager for the current password\n\nStep 2 — ${user.first_name || ''} ${user.last_name || ''}'s login\nUsername: ${user.email}\nPassword: ${password}`;
 
   const handleSetPassword = async () => {
     if (!passwordUser || !newPassword) {
@@ -1325,7 +1325,7 @@ export const UserPermissionsTab = () => {
     }
     // Copy credentials so they can be pasted on the gateway, then open the login page.
     const gatewayUrl = loginUrlForRole(passwordUser.role);
-    const block = `Gateway: SmashSales2026!!\nLogin URL: ${gatewayUrl}\nEmail: ${passwordUser.email}\nPassword: ${newPassword}`;
+    const block = buildLoginBlock(passwordUser, newPassword);
     navigator.clipboard.writeText(block).catch(() => {});
     toast.success('Credentials copied — paste on the gateway / login page', { duration: 4000 });
     window.open(gatewayUrl, '_blank', 'noopener');
@@ -1615,7 +1615,15 @@ export const UserPermissionsTab = () => {
 
   return (
     <div className="space-y-6">
-      <GatewayPasswordSettings />
+      <nav aria-label="User permissions shortcuts" className="flex flex-wrap gap-2 border-b border-border pb-4">
+        {[
+          { id: 'gateway-password', label: 'Gateway password', icon: Key },
+          { id: 'staff-login-links', label: 'Login links', icon: LogIn },
+          { id: 'staff-users', label: 'Staff and passwords', icon: Users },
+          { id: 'staff-access-requests', label: 'Access requests', icon: Shield },
+        ].map(link => <Button key={link.id} variant="outline" size="sm" onClick={() => document.getElementById(link.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}><link.icon className="h-4 w-4 mr-2" />{link.label}</Button>)}
+      </nav>
+      <div id="gateway-password" className="scroll-mt-16"><GatewayPasswordSettings /></div>
       <ClaimsDataAccessManager />
       {loadError && (
         <Card className="border-amber-200 bg-amber-50/70">
@@ -1635,7 +1643,7 @@ export const UserPermissionsTab = () => {
       )}
 
       {/* Staff Login Guidance */}
-      <Card className="border-blue-200 bg-blue-50/60">
+      <Card id="staff-login-links" className="border-blue-200 bg-blue-50/60 scroll-mt-16">
         <CardContent className="py-4">
           <div className="flex items-start gap-3">
             <div className="p-2 rounded-full bg-blue-100 shrink-0">
@@ -1706,9 +1714,9 @@ export const UserPermissionsTab = () => {
 
       
       {/* Access Requests Panel */}
-      <AccessRequestsPanel />
+      <div id="staff-access-requests" className="scroll-mt-16"><AccessRequestsPanel /></div>
 
-      <div className="flex justify-between items-center">
+      <div id="staff-users" className="flex justify-between items-center scroll-mt-16">
         <div>
           <h2 className="text-2xl font-bold text-foreground">User Permissions</h2>
           <p className="text-muted-foreground">Manage admin dashboard access and permissions</p>
@@ -1978,11 +1986,7 @@ export const UserPermissionsTab = () => {
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs text-muted-foreground shrink-0">Password</span>
                     <div className="flex items-center gap-1">
-                      <code className="font-mono text-xs">SmashSales2026!!</code>
-                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 shrink-0"
-                        onClick={() => copyToClipboard('SmashSales2026!!', 'gw')}>
-                        {copiedField === 'gw' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
-                      </Button>
+                      <span className="text-xs text-muted-foreground">Contact your manager for the current password</span>
                     </div>
                   </div>
                 </div>

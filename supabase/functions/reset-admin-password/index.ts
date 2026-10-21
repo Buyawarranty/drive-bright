@@ -114,6 +114,8 @@ serve(async (req) => {
     }
 
     logStep("Password updated in auth system");
+    const { error: renewalError } = await supabaseClient.rpc('staff_password_record_change', { p_user_id: authUserId });
+    if (renewalError) throw new Error('Password saved but renewal date could not be updated');
 
     // Never email a password Auth has explicitly rejected. A check that simply
     // could not complete (rate limit / transient error) is not a rejection.
@@ -132,7 +134,7 @@ serve(async (req) => {
     const dashboardUrl = isAdminTier
       ? 'https://buyawarranty.co.uk/auth/'
       : 'https://buyawarranty.co.uk/sales-login';
-    const gatewayCode = 'SmashSales2026!!';
+    const gatewayCode = 'Contact your manager for the current gateway password';
     const gatewayLine = isAdminTier
       ? ''
       : `<div style="margin-bottom: 10px;"><strong>Gateway code:</strong> <span style="color: #1e40af; font-weight: bold;">${gatewayCode}</span></div>`;

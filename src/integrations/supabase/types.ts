@@ -13456,6 +13456,30 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_password_renewals: {
+        Row: {
+          changed_at: string
+          created_at: string
+          forced_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          created_at?: string
+          forced_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          created_at?: string
+          forced_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       staff_system_reports: {
         Row: {
           admin_email: string | null
@@ -15676,6 +15700,7 @@ export type Database = {
         Args: { p_agent_id: string; p_override?: boolean }
         Returns: Json
       }
+      enforce_staff_password_renewal: { Args: never; Returns: undefined }
       evaluate_agent_lead_freeze: {
         Args: never
         Returns: {
@@ -16733,6 +16758,11 @@ export type Database = {
         Args: { admin_uuid: string; customer_uuid: string }
         Returns: undefined
       }
+      staff_password_record_change: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      staff_password_status: { Args: { p_user_id: string }; Returns: Json }
       sweep_open_round_robin: { Args: never; Returns: Json }
       sync_leads_to_marketing_audience: { Args: never; Returns: Json }
       undo_bulk_reassignment: {

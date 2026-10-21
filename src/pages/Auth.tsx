@@ -143,6 +143,8 @@ const Auth = () => {
           });
 
           // Check user role and navigate - fetch ALL roles for the user.
+          const renewal = await supabase.functions.invoke('staff-password', { body: { action: 'status' } });
+          if (renewal.data?.must_change) { navigate('/staff-password-renewal/', { replace: true }); return; }
           // Timeout + try/catch so a stalled read can never strand the user.
           let roleData: { role: string }[] | null = null;
           let error: any = null;
@@ -313,7 +315,6 @@ const Auth = () => {
       }
 
       console.log("Sign in successful:", data.user?.email);
-      console.log("Session:", data.session);
       logLoginAttempt({
         email,
         event_type: 'login_success',

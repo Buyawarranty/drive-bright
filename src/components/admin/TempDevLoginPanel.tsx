@@ -90,7 +90,7 @@ export const TempDevLoginPanel: React.FC<Props> = ({ allTabIds }) => {
 
   const copyBlock = async () => {
     const loginUrl = tempLoginUrlForRole(role);
-    const block = `Temporary dashboard login\n\nStep 1 — Gateway / firewall\nURL: ${loginUrl}\nPassword: SmashSales2026!!\n\nStep 2 — Supabase Auth login\nUsername: ${email.trim().toLowerCase()}\nPassword: ${password.trim()}\n\nExpires in: ${days} day(s)`;
+    const block = `Temporary dashboard login\n\nStep 1 — Gateway / firewall\nURL: ${loginUrl}\nGateway password: Contact your manager for the current password\n\nStep 2 — Supabase Auth login\nUsername: ${email.trim().toLowerCase()}\nPassword: ${password.trim()}\n\nExpires in: ${days} day(s)`;
     await navigator.clipboard.writeText(block).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);

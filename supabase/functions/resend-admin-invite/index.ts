@@ -116,6 +116,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Never email a temporary password we have not proven works on the login server.
+    const { error: renewalError } = await supabaseClient.rpc('staff_password_record_change', { p_user_id: authUser.id });
+    if (renewalError) throw new Error('Password saved but renewal date could not be updated');
     const passwordVerified = await verifyPassword(email, tempPassword);
     console.log('Password verification:', passwordVerified);
     if (!passwordVerified) {
@@ -126,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Create invitation link
-    const invitationLink = `https://pricing.buyawarranty.co.uk/admin-dashboard`;
+    const invitationLink = ['admin', 'super_admin'].includes(adminUser.role) ? 'https://buyawarranty.co.uk/auth' : 'https://buyawarranty.co.uk/sales-login';
 
     // Send invitation email
     const emailResult = await resend.emails.send({
@@ -147,7 +149,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background-color: #fff8e6; border: 1px solid #f0c674; padding: 16px; border-radius: 8px; margin: 20px 0;">
               <h3 style="color: #333; margin-top: 0;">Step 1 — Gate Password (required first)</h3>
               <p style="color: #555; margin: 6px 0;">Before the normal login screen, the admin area is protected by a gate password. When you visit the dashboard link below you'll first see a "Protected Area" screen — enter this password:</p>
-              <p style="color: #333; margin: 6px 0;"><strong>Gate Password:</strong> <code style="background-color: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0e0e0;">SmashSales2026!!</code></p>
+              <p style="color: #333; margin: 6px 0;"><strong>Gate password:</strong> Contact your manager for the current gateway password.</p>
               <p style="color: #777; margin: 6px 0; font-size: 13px;">You only need to enter this once per browser session. After unlocking, you'll see the normal login form for your email and password (below).</p>
             </div>
 
@@ -189,7 +191,7 @@ const handler = async (req: Request): Promise<Response> => {
         Step 1 — Gate Password (required first):
         Before the normal login screen, the admin area is protected by a gate password.
         When you visit the dashboard link, enter this on the "Protected Area" screen:
-        Gate Password: SmashSales2026!!
+        Gate password: Contact your manager for the current gateway password.
         (You only need to enter this once per browser session.)
 
         Step 2 — Login Credentials:
