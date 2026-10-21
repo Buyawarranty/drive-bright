@@ -1347,7 +1347,7 @@ export default function PriceUpdatesTab() {
                 </div>
               </div>
 
-              <PercentagePriceSave key={selectedId} matrix={matrix} busy={busy || !drafts.some(d => d.id === selectedId)} onSave={handleSave} />
+              <PercentagePriceSave key={selectedId} matrix={matrix} busy={busy || !drafts.some(d => d.id === selectedId)} onSave={handleSave} onPublish={handlePublish} />
 
 
               <div className="space-y-1">

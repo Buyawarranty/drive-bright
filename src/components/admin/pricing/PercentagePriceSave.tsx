@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { ArrowDown, ArrowUp, Save } from 'lucide-react';
+import { ArrowDown, ArrowUp, Rocket, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { adjustPriceMatrix } from '@/lib/pricing/percentageAdjustment';
 import type { PricingMatrixShape } from '@/lib/pricingMatrix';
 
-export default function PercentagePriceSave({ matrix, busy, onSave }: { matrix: PricingMatrixShape; busy: boolean; onSave: (matrix: PricingMatrixShape) => Promise<boolean> }) {
+export default function PercentagePriceSave({ matrix, busy, onSave, onPublish }: { matrix: PricingMatrixShape; busy: boolean; onSave: (matrix: PricingMatrixShape) => Promise<boolean>; onPublish: () => Promise<void> }) {
   const [direction, setDirection] = useState<'increase' | 'decrease'>('increase');
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
@@ -22,7 +22,7 @@ export default function PercentagePriceSave({ matrix, busy, onSave }: { matrix: 
   }
   return <section className="border-y border-border py-4 space-y-3">
     <h3 className="font-semibold">Save a percentage price change</h3>
-    <p className="text-sm text-muted-foreground">Adjust every price in the selected test draft, across all three terms. Saving keeps live prices unchanged; use the separate Push live action after checking the draft.</p>
+    <p className="text-sm text-muted-foreground">Save percentage change prepares your test draft without changing live prices. After saving and checking it, Push prices live activates the entire price grid shown below—not just this percentage change. It is the same action as the other Push live buttons, with the same confirmation.</p>
     <div className="flex flex-wrap items-end gap-3">
       <div className="flex gap-1" role="group" aria-label="Price change direction">
         <Button variant={direction === 'increase' ? 'secondary' : 'outline'} disabled={busy} aria-pressed={direction === 'increase'} onClick={() => setDirection('increase')}><ArrowUp className="mr-1 h-4 w-4" />Increase</Button>
@@ -30,7 +30,9 @@ export default function PercentagePriceSave({ matrix, busy, onSave }: { matrix: 
       </div>
       <div className="space-y-1"><Label htmlFor="price-change-percentage">Percentage (%)</Label><Input id="price-change-percentage" type="number" min="0" max={direction === 'increase' ? 200 : 99.99} step="0.01" className="w-32" disabled={busy} value={amount} onChange={e => { setAmount(e.target.value); setError(''); }} /></div>
       <Button disabled={busy || !amount || Number(amount) <= 0} onClick={save}><Save className="mr-1 h-4 w-4" />{busy ? 'Saving…' : 'Save percentage change (test only)'}</Button>
+      <Button variant="outline" disabled={busy || Boolean(amount)} onClick={onPublish}><Rocket className="mr-1 h-4 w-4" />Push prices live</Button>
     </div>
+    {amount && <p className="text-sm text-muted-foreground">Save the percentage change first, or clear the percentage to push the current grid live.</p>}
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
   </section>;
 }
