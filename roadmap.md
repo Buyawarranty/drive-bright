@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Diagnose and correct the 1,440-lead safe handover timeout while preserving backups, history and existing allocation rules; verify without executing the customer handover.
 - [x] Price updates: confirmed percentage increase/decrease saves adjusted test draft in one action; live activation separate. Four tests and isolated control verification pass; build OK, unpublished.
 - [ ] Price adjustment signed-in persistence verification: external Supabase has no managed staff session; real save/readback unverified. No live prices changed.
 - [x] SEO conversations: on-demand daily review creates a dated conversation and prepares a question for Send; archive/readable history/restore and confirmed permanent deletion added using existing ownership RLS. Six tests and isolated browser actions pass; build OK, unpublished. No daily scan/job or live AI request started.
