@@ -881,7 +881,7 @@ export default function PriceUpdatesTab() {
             A new plan starts as an exact copy of the live plan ({liveVersion?.label || 'built-in code pricing'}), including its vehicle figures. Customers and agents keep the live prices until you push the new plan live.
           </p>
         </div>
-        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-sm">
           {([
             ['Name and create', 'Type a name below and press Create new pricing plan. It copies everything from live.', null, null],
             ['Set the prices', 'Base prices for each term, excess and claim limit. Type prices in, or apply a percentage increase or decrease.', 'editor', 'Open price grid'],
