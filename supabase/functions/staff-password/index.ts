@@ -29,7 +29,7 @@ Deno.serve(async req => {
       const anon = createClient(url, Deno.env.get('SUPABASE_ANON_KEY') ?? '', { auth: { persistSession: false } });
       const verified = await anon.auth.signInWithPassword({ email: user.email ?? '', password: parsed.data.currentPassword });
       if (verified.error || verified.data.user?.id !== user.id) return json({ error: 'Current password is incorrect' }, 400);
-      await anon.auth.signOut();
+      await anon.auth.signOut({ scope: 'local' });
       const { error: updateError } = await service.auth.admin.updateUserById(user.id, { password: parsed.data.password });
       if (updateError) return json({ error: updateError.message }, 400);
       const { error: recordError } = await service.rpc('staff_password_record_change', { p_user_id: user.id });
