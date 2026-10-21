@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
+import { requireAdmin } from '../_shared/admin-auth.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,6 +23,8 @@ serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
+    const access = await requireAdmin(req, { allowedRoles: ['super_admin'] });
+    if (!access.ok) return access.response;
     const body = await req.json().catch(() => ({}));
     const email = String(body.email || '').trim().toLowerCase();
     const password = String(body.password || '');
@@ -75,7 +78,8 @@ serve(async (req: Request) => {
       const { error: updErr } = await supabase.auth.admin.updateUserById(userId, { password, email_confirm: true });
       if (updErr) return json({ error: updErr.message }, 400);
     } else {
-      userId = newUser!.user!.id;
+      if (!newUser?.user) throw new Error('Unable to create staff login');
+      userId = newUser.user.id;
       created = true;
     }
 
@@ -94,6 +98,8 @@ serve(async (req: Request) => {
     }, { onConflict: 'user_id' });
     if (adminErr) return json({ error: adminErr.message }, 400);
 
+    const { error: renewalError } = await supabase.rpc('staff_password_record_change', { p_user_id: userId });
+    if (renewalError) throw new Error('Password saved but renewal date could not be updated');
     await supabase.from('user_roles').upsert({ user_id: userId, role }, { onConflict: 'user_id,role' });
 
     // Prove the password works before it is shared.

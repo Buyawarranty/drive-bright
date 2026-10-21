@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { verifyPassword, PASSWORD_NOT_VERIFIED_MESSAGE } from "../_shared/verify-password.ts";
+import { requireAdmin } from '../_shared/admin-auth.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,6 +31,8 @@ serve(async (req: Request) => {
   }
 
   try {
+    const access = await requireAdmin(req, { allowedRoles: ['admin', 'super_admin'] });
+    if (!access.ok) return access.response;
     const { email, firstName, lastName, password, role, permissions }: InviteUserRequest = await req.json();
 
     // Generate invitation token and password (use provided password or generate one)
@@ -192,6 +195,9 @@ serve(async (req: Request) => {
       });
     }
 
+    const { error: renewalError } = await supabase.rpc('staff_password_record_change', { p_user_id: userId });
+    if (renewalError) throw new Error('Password saved but renewal date could not be updated');
+
     // Add user role with upsert
     const { error: roleError } = await supabase
       .from('user_roles')
@@ -244,7 +250,7 @@ serve(async (req: Request) => {
           <div style="background-color: #fff8e6; border: 1px solid #f0c674; padding: 16px; margin: 20px 0; border-radius: 8px;">
             <h3 style="margin-top: 0;">Step 1 — Gate Password (required first)</h3>
             <p style="margin: 6px 0;">Before the normal login screen, the admin area is protected by a gate password. When you visit the link below you'll first see a "Protected Area" screen — enter this password:</p>
-            <p style="margin: 6px 0;"><strong>Gate Password:</strong> <code style="background-color: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0e0e0;">SmashSales2026!!</code></p>
+            <p style="margin: 6px 0;"><strong>Gate password:</strong> Contact your manager for the current gateway password.</p>
             <p style="margin: 6px 0; font-size: 13px; color: #666;">You only need to enter this once per browser session. After unlocking, you'll see the normal login form for your email and password (below).</p>
           </div>
 

@@ -93,6 +93,9 @@ serve(async (req) => {
       if (updateErr) throw new Error(`Could not update password: ${updateErr.message}`);
     }
 
+    const { error: renewalError } = await admin.rpc('staff_password_record_change', { p_user_id: targetAuthId });
+    if (renewalError) throw new Error('Password saved but renewal date could not be updated');
+
     await admin
       .from("admin_users")
       .update({ user_id: targetAuthId, email: normalizedEmail })
