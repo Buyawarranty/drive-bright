@@ -935,7 +935,7 @@ export default function PriceUpdatesTab() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={handleCreateDraft} disabled={busy} variant="outline" size="sm">
+            <Button onClick={() => handleCreateDraft()} disabled={busy} variant="outline" size="sm">
               New test draft
             </Button>
             <Button variant="outline" size="sm" onClick={handleRevert} disabled={busy || !liveVersion}>
@@ -1394,7 +1394,7 @@ export default function PriceUpdatesTab() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={handleCreateDraft} disabled={busy}>
+            <Button onClick={() => handleCreateDraft()} disabled={busy}>
               New test draft
             </Button>
             {drafts.map(d => (
