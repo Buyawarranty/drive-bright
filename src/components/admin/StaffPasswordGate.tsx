@@ -13,6 +13,8 @@ export function StaffPasswordGate({ children }: { children: React.ReactNode }) {
   const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
   const check = useCallback(async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) { setState('ready'); return; }
     const { data, error } = await supabase.functions.invoke('staff-password', { body: { action: 'status' } });
     setState(error || data?.error ? 'error' : data?.must_change ? 'expired' : 'ready');
   }, []);

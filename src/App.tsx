@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useEffect } from "react";
+import { StaffPasswordGate } from '@/components/admin/StaffPasswordGate';
 import { supabase } from "@/integrations/supabase/client";
 import { refreshManagerPriceBypass } from "@/lib/testPromoBypass";
 
@@ -304,16 +305,17 @@ const App = () => {
                     
                     <Route path="/auth/" element={<Auth />} />
                     <Route path="/sales-login/" element={<SalesLogin />} />
-                    <Route path="/admin/" element={<AdminShellErrorBoundary><AdminDashboard /></AdminShellErrorBoundary>} />
+                    <Route path="/admin/" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminDashboard /></StaffPasswordGate></AdminShellErrorBoundary>} />
+                    <Route path="/staff-password-renewal/" element={<StaffPasswordGate><Navigate to="/admin-dashboard/" replace /></StaffPasswordGate>} />
                     {/* ScrollToTop rewrites every path to a trailing slash, so the
                         sandbox needs both forms or "Take the chat" lands on a blank page. */}
                     <Route path="/ai-sandbox" element={<AiSandbox />} />
                     <Route path="/ai-sandbox/" element={<AiSandbox />} />
                     <Route path="/ai-sandbox/:threadId" element={<AiSandbox />} />
                     <Route path="/ai-sandbox/:threadId/" element={<AiSandbox />} />
-                    <Route path="/admin-dashboard/" element={<AdminShellErrorBoundary><AdminDashboard /></AdminShellErrorBoundary>} />
-                    <Route path="/admin/claims/:id" element={<AdminShellErrorBoundary><AdminClaimDetail /></AdminShellErrorBoundary>} />
-                    <Route path="/admin/claims/:id/" element={<AdminShellErrorBoundary><AdminClaimDetail /></AdminShellErrorBoundary>} />
+                    <Route path="/admin-dashboard/" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminDashboard /></StaffPasswordGate></AdminShellErrorBoundary>} />
+                    <Route path="/admin/claims/:id" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminClaimDetail /></StaffPasswordGate></AdminShellErrorBoundary>} />
+                    <Route path="/admin/claims/:id/" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminClaimDetail /></StaffPasswordGate></AdminShellErrorBoundary>} />
                     <Route path="/customer-dashboard/" element={<CustomerDashboard />} />
                     <Route path="/forgot-password/" element={<ForgotPassword />} />
                     <Route path="/reset-password/" element={<PasswordReset />} />

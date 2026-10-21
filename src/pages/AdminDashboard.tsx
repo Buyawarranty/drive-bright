@@ -1,5 +1,4 @@
 import GrowthAgentTab from '@/components/admin/growth/GrowthAgentTab';
-import { StaffPasswordGate } from '@/components/admin/StaffPasswordGate';
 import { GatewayRenewalBanner } from '@/components/admin/GatewayRenewalBanner';
 import LeadCountTab from '@/components/admin/LeadCountTab';
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
@@ -1294,7 +1293,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <StaffPasswordGate><ViewAsProvider realRole={userRole} realPermissions={userPermissions} realAdminUserId={adminUserId}>
+    <ViewAsProvider realRole={userRole} realPermissions={userPermissions} realAdminUserId={adminUserId}>
       <AdminDashboardInner
         activeTab={activeTab}
         handleTabChange={handleTabChange}
@@ -1314,7 +1313,7 @@ const AdminDashboard = () => {
 
         navigate={navigate}
       />
-    </ViewAsProvider></StaffPasswordGate>
+    </ViewAsProvider>
   );
 };
 
