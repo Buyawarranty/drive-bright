@@ -791,7 +791,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     if (prePopulatedLead) return; // Lead selection takes precedence
     try {
       const raw = sessionStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
+      if (!raw) {
+        // No work in progress: reopen the most recently saved quote so the
+        // agent picks up straight where they left off.
+        try {
+          const saved = JSON.parse(localStorage.getItem('admin_saved_quotes') || '[]');
+          if (Array.isArray(saved) && saved[0]) loadSavedQuote(saved[0]);
+        } catch { /* ignore corrupt saved list */ }
+        return;
+      }
       const d = JSON.parse(raw);
       if (!d || typeof d !== 'object') return;
       if (typeof d.step === 'number') setStep(d.step);
