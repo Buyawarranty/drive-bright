@@ -101,6 +101,7 @@ import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
 import { isNorthernIrelandPlate } from '@/lib/niPlate';
 import { useSavedPricingModel } from './pricing/useSavedPricingModel';
 import { invokeWithFreshSession } from '@/lib/invokeWithFreshSession';
+import { normalizeSavedEmailEdit } from '@/lib/quoteEmailEditPersistence';
 import { markHeavyTabBusy } from '@/lib/heavyTabBusy';
 
 
@@ -809,7 +810,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.sliderMileage === 'number') setSliderMileage(d.sliderMileage);
       if (d.vehicleData) setVehicleData(d.vehicleData);
       // Restore the agent's saved email wording edit (persists across reloads).
-      if (typeof d.copyEmailEdit === 'string' && d.copyEmailEdit) setCopyEmailEdit(d.copyEmailEdit);
+      if (normalizeSavedEmailEdit(d.copyEmailEdit)) setCopyEmailEdit(normalizeSavedEmailEdit(d.copyEmailEdit));
       if (typeof d.customerEmail === 'string') setCustomerEmail(d.customerEmail);
       if (typeof d.customerFirstName === 'string') setCustomerFirstName(d.customerFirstName);
       if (typeof d.customerLastName === 'string') setCustomerLastName(d.customerLastName);
@@ -1280,7 +1281,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setAdditionalNotes(savedQuote.additionalNotes || '');
     
     // Bring back the agent's saved email wording for this quote (if any).
-    setCopyEmailEdit(typeof savedQuote.copyEmailEdit === 'string' && savedQuote.copyEmailEdit ? savedQuote.copyEmailEdit : null);
+    setCopyEmailEdit(normalizeSavedEmailEdit(savedQuote.copyEmailEdit));
     setEmailEditDraft(null);
 
     // Set step based on available data
