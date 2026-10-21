@@ -16,7 +16,7 @@ import { ConfirmationStep } from './bulk-reassign/ConfirmationStep';
 import { ModeSelector, ReassignMode } from './bulk-reassign/ModeSelector';
 import { LeadPickerList } from './bulk-reassign/LeadPickerList';
 import { Checkbox } from '@/components/ui/checkbox';
-import { splitByNoteLock, NOTE_LOCK_EXPLAINER } from '@/lib/leadNoteLock';
+import { splitByNoteLock, fetchNoteLockedLeadIds, NOTE_LOCK_EXPLAINER } from '@/lib/leadNoteLock';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DateRangeSelector } from './bulk-reassign/DateRangeSelector';
@@ -194,6 +194,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
    * agent. Calls and status changes alone never block a move.
    */
   const [authoriseNoted, setAuthoriseNoted] = useState(false);
+  const [noteLockedCount, setNoteLockedCount] = useState<number | null>(null);
 
 
   useEffect(() => {
@@ -403,6 +404,24 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         setPerAgentCounts(perAgent);
         setLeadCount(totalLeads);
         setCustomerCount(0);
+      }
+      // Count how many of the active leads carry an agent note, so the manager
+      // sees up front how many will stay behind unless authorised.
+      if (mode !== 'cherry_pick') {
+        let locked = 0;
+        for (const aid of sourceIds) {
+          if (isUnassignedBucket(aid)) continue;
+          let q = supabase.from('sales_leads').select('id').eq('assigned_to', aid);
+          q = applyActiveWorkloadFilter(q, workstream);
+          if (dateFrom) q = q.gte('created_at', new Date(dateFrom).toISOString());
+          if (dateTo) { const d = new Date(dateTo); d.setHours(23,59,59,999); q = q.lte('created_at', d.toISOString()); }
+          const { data } = await q.limit(5000);
+          const ids = (data || []).map((r: any) => r.id as string);
+          locked += (await fetchNoteLockedLeadIds(ids)).size;
+        }
+        setNoteLockedCount(locked);
+      } else {
+        setNoteLockedCount(null);
       }
       setStep('confirm');
     } catch (err) {
@@ -970,6 +989,13 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               <span className="text-xs text-amber-700 dark:text-amber-400">
                 <span className="font-semibold block">Include leads that have an agent note (needs authorisation)</span>
                 {NOTE_LOCK_EXPLAINER} Leave this unticked and noted leads stay with their current agent.
+                {noteLockedCount !== null && noteLockedCount > 0 && (
+                  <span className="block mt-1 font-semibold">
+                    {authoriseNoted
+                      ? `All ${noteLockedCount.toLocaleString()} noted leads will be moved too.`
+                      : `${noteLockedCount.toLocaleString()} of these leads have an agent note and will stay behind unless you tick this box.`}
+                  </span>
+                )}
               </span>
             </label>
           </div>

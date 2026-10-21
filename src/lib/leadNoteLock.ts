@@ -28,6 +28,11 @@ const AUTO_NOTE_PATTERNS: RegExp[] = [
   /^\s*Reassigned (to|from) /i,
   /^\s*Ownership /i,
   /^\s*Arrival timestamp/i,
+  // Bracket-stamped status changes, e.g. "[03 Jul 2026, 17:29 — Ash] Status changed to …"
+  /^\s*\[[^\]]*\]\s*Status changed/i,
+  // Bare no-answer shorthand ("na", "a na", "CRK // NA", "No answer.") — a call
+  // attempt log, not a conversation, so it never locks a lead.
+  /^\s*(?:[A-Za-z]{2,4}\s*\/\/\s*)?(?:a\s+)?(?:na|n\/a|no\s*answer|nans)\s*[.!]?\s*$/i,
 ];
 
 /** True when the note text was written by the system, not by an agent. */
