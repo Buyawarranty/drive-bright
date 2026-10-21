@@ -238,6 +238,7 @@ export default function PriceUpdatesTab() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [label, setLabel] = useState('');
   const [notes, setNotes] = useState('');
+  const [newPlanName, setNewPlanName] = useState('');
   const [discountPct, setDiscountPct] = useState(readWebsiteDiscountDraft);
   useEffect(() => {
     const sync = () => setDiscountPct(readWebsiteDiscountDraft());
@@ -361,17 +362,23 @@ export default function PriceUpdatesTab() {
   }
 
 
-  async function handleCreateDraft() {
+  async function handleCreateDraft(name?: string) {
     setBusy(true);
     try {
       const v = await createVersion(
-        `Test pricing ${new Date().toLocaleDateString('en-GB')}`,
+        name?.trim() || `Test pricing ${new Date().toLocaleDateString('en-GB')}`,
         roundMatrixWhole(liveVersion ? liveVersion.admin_matrix : buildCodeAdminMatrix()),
         readWebsiteDiscountDraft(),
         ''
       );
+      // Start from the live plan's vehicle figures so the new plan is complete.
+      if (liveVersion?.vehicle_factor_model) {
+        await saveVersion(v.id, { vehicle_factor_model: liveVersion.vehicle_factor_model });
+        v.vehicle_factor_model = liveVersion.vehicle_factor_model;
+      }
       loadIntoEditor(v);
-      toast.success('Test draft created — edit freely, nothing is live yet');
+      setNewPlanName('');
+      toast.success(`New pricing plan “${v.label}” created — a copy of live. Nothing is live yet.`);
     } catch (e: any) {
       toast.error(e?.message || 'Could not create draft');
     } finally {
