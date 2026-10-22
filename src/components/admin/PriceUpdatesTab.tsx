@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight, Layers, Percent } from 'lucide-react';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight, Layers, Percent, Copy } from 'lucide-react';
 import Aug26PricingPanel from '@/components/admin/pricing/Aug26PricingPanel';
 import LiveVsAug26Panel from '@/components/admin/pricing/LiveVsAug26Panel';
 import AugHybridVsLivePanel from '@/components/admin/pricing/AugHybridVsLivePanel';
@@ -309,6 +309,10 @@ export default function PriceUpdatesTab() {
   >(null);
   const [pushGapPct, setPushGapPct] = useState<number>(10);
 
+  /** "Save as a new plan" dialog. */
+  const [saveAsOpen, setSaveAsOpen] = useState(false);
+  const [saveAsName, setSaveAsName] = useState('');
+
   /** History: ask to make a saved/archived version the live pricing again. */
   async function handleRestoreVersion(v: PricingVersion) {
     const { invalid } = normalizeMatrixForPublish(
@@ -418,6 +422,35 @@ export default function PriceUpdatesTab() {
     setSelectedId(v.id);
     setPendingNewPlan(false);
     return v.id;
+  }
+
+  /** Save the current editor contents as a brand-new plan with a new name, then switch to it. */
+  async function handleSaveAsNewPlan() {
+    const name = saveAsName.trim();
+    if (!name) {
+      toast.error('Type a name for the new plan');
+      return;
+    }
+    setBusy(true);
+    try {
+      const v = await createVersion(
+        name,
+        roundMatrixWhole(matrix),
+        discountPct,
+        notes,
+        currentClaimLimitFactors(),
+        currentLabourRateFactors(),
+        withRiskBands(currentVehicleFactorModel())
+      );
+      setSaveAsOpen(false);
+      setSaveAsName('');
+      loadIntoEditor(v);
+      toast.success(`Saved as new plan “${name}” — still a test, nothing is live`);
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not save as a new plan');
+    } finally {
+      setBusy(false);
+    }
   }
 
   /**
@@ -971,6 +1004,27 @@ export default function PriceUpdatesTab() {
             Create new pricing plan
           </Button>
         </div>
+        {drafts.length > 0 && (
+          <div className="flex flex-wrap items-end gap-2 border-t border-border pt-3">
+            <div className="space-y-1">
+              <label htmlFor="update-existing-plan" className="text-sm font-semibold">Or update an existing plan</label>
+              <select
+                id="update-existing-plan"
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm min-w-[280px]"
+                value=""
+                disabled={busy}
+                onChange={e => {
+                  const v = drafts.find(d => d.id === e.target.value);
+                  if (v) loadIntoEditor(v);
+                }}
+              >
+                <option value="">Choose a saved plan to update…</option>
+                {drafts.map(d => <option key={d.id} value={d.id}>{d.label || 'Untitled draft'}</option>)}
+              </select>
+            </div>
+            <p className="text-xs text-muted-foreground pb-2">Loads that plan into the editor so you can change it and push it live.</p>
+          </div>
+        )}
       </section>
 
       {/* Always-visible go-live controls so Push live is never buried in a tab */}
@@ -1108,6 +1162,38 @@ export default function PriceUpdatesTab() {
             <Button type="button" size="sm" variant="ghost" onClick={resetTabOrder}>
               Reset order
             </Button>
+          )}
+        </div>
+
+        {/* Always-on banner: which plan every section below is editing, with its actions. */}
+        <div className="mb-3 rounded-lg border-2 border-primary/40 bg-background p-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <span className="text-sm font-semibold">You're editing:</span>
+            {selectedId || pendingNewPlan ? (
+              <>
+                <span className="text-sm font-bold truncate max-w-[320px]">“{label || 'Untitled plan'}”</span>
+                {pendingNewPlan ? (
+                  <Badge className="bg-amber-500 hover:bg-amber-500">Not saved yet</Badge>
+                ) : (
+                  <Badge variant="secondary">Test draft — not live</Badge>
+                )}
+              </>
+            ) : (
+              <span className="text-sm text-muted-foreground">no plan selected — create a new plan above or pick one to update</span>
+            )}
+          </div>
+          {(selectedId || pendingNewPlan) && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => handleSave()} disabled={busy}>
+                <Save className="h-4 w-4 mr-1" /> Save changes
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => { setSaveAsName(`${label || 'Untitled plan'} copy`); setSaveAsOpen(true); }} disabled={busy}>
+                <Copy className="h-4 w-4 mr-1" /> Save as a new plan
+              </Button>
+              <Button size="sm" onClick={handlePublish} disabled={busy}>
+                <Rocket className="h-4 w-4 mr-1" /> Push live
+              </Button>
+            </div>
           )}
         </div>
 
@@ -1814,6 +1900,34 @@ export default function PriceUpdatesTab() {
 
         </TabsContent>
       </Tabs>
+
+      <Dialog open={saveAsOpen} onOpenChange={setSaveAsOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save as a new plan</DialogTitle>
+            <DialogDescription>
+              Saves everything currently in the editor as a brand-new test plan, then switches you to it.
+              The plan you were editing stays as it was. Nothing goes live.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1">
+            <Label htmlFor="save-as-plan-name">New plan name</Label>
+            <Input
+              id="save-as-plan-name"
+              value={saveAsName}
+              onChange={e => setSaveAsName(e.target.value)}
+              placeholder={`e.g. Winter pricing ${new Date().getFullYear()}`}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveAsOpen(false)} disabled={busy}>Cancel</Button>
+            <Button onClick={handleSaveAsNewPlan} disabled={busy || !saveAsName.trim()}>
+              <Copy className="h-4 w-4 mr-1" /> Save as new plan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <PushLiveConfirmDialog
         open={pushConfirm !== null}
