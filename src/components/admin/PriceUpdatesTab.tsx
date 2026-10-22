@@ -970,39 +970,64 @@ export default function PriceUpdatesTab() {
           toast.error(e instanceof Error ? e.message : 'Could not save the test discount');
         } finally { setBusy(false); }
       }} />
-      <section aria-labelledby="create-plan-heading" className="rounded-lg border-2 border-primary bg-card p-4 space-y-4">
-        <div>
-          <h2 id="create-plan-heading" className="text-lg font-bold">Create a new pricing plan</h2>
-          <p className="text-sm text-muted-foreground">
-            A new plan starts as an exact copy of the live plan ({liveVersion?.label || 'built-in code pricing'}), including its vehicle figures. Customers and agents keep the live prices until you push the new plan live.
-          </p>
+      {/* One calm control bar: what is live, what you are editing, and the actions. */}
+      <section aria-labelledby="plan-bar-heading" className="rounded-lg border bg-card p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <h2 id="plan-bar-heading" className="text-base font-semibold">Pricing plans</h2>
+            {liveVersion ? (
+              <Badge className="bg-emerald-600">Live: {liveVersion.label}</Badge>
+            ) : (
+              <Badge variant="secondary">Live: built-in code pricing</Badge>
+            )}
+            <PriceSurfaceBadge surface="quotes" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleRevert} disabled={busy || !liveVersion}>
+              <RotateCcw className="h-4 w-4 mr-1" /> Push code base pricing (7/2026) live
+            </Button>
+            <Button size="sm" onClick={handlePublish} disabled={busy}>
+              <Rocket className="h-4 w-4 mr-1" /> Push live
+            </Button>
+          </div>
         </div>
-        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-sm">
-          {([
-            ['Name and create', 'Type a name below and press Create new pricing plan. It loads a copy of live into the editor — nothing is saved until you press Save in a section.', null, null],
-            ['Set the prices', 'Base prices for each term, excess and claim limit. Type prices in, or apply a percentage increase or decrease.', 'editor', 'Open price grid'],
-            ['Set vehicle variables', 'Age bands, mileage bands, powertrain (petrol, diesel, hybrid, electric), vehicle type, model risk, labour rate and claim-limit factors.', 'builder', 'Open vehicle variables'],
-            ['Check exclusions', 'Vehicles we never quote (e.g. supercars, M/AMG/RS). This list applies to every plan automatically.', 'tools', 'Open exclusions'],
-            ['Push live', 'Check the plan name and vehicle figures in the box below, then press Push live and confirm.', null, null],
-          ] as const).map(([title, text, tab, cta], i) => (
-            <li key={title} className="rounded-md border border-border bg-muted/40 p-3 flex flex-col">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold mb-2">{i + 1}</span>
-              <p className="font-semibold">{title}</p>
-              <p className="text-muted-foreground flex-1">{text}</p>
-              {tab && (
-                <Button size="sm" variant="outline" className="mt-2" disabled={!selectedId && !pendingNewPlan && tab !== 'tools'} onClick={() => openTab(tab)}>
-                  {cta}
-                </Button>
-              )}
-            </li>
-          ))}
-        </ol>
-        {!selectedId && !pendingNewPlan && <p className="text-xs text-muted-foreground">Create or choose a plan first to unlock steps 2 and 3.</p>}
-        {selectedId && <p className="text-sm"><strong>Now setting up:</strong> “{label || 'Untitled draft'}” — work through steps 2 to 5. Remember to save in each section.</p>}
-        {pendingNewPlan && <p className="text-sm"><strong>Now setting up:</strong> “{label || 'Untitled plan'}” — <span className="text-amber-700 font-medium">not saved yet</span>. Work through steps 2 to 5; the plan is only stored when you press Save in a section or Push live.</p>}
-        <div className="flex flex-wrap items-end gap-2">
+        <p className="text-sm text-muted-foreground">
+          Build and test prices without touching live pricing. The customer journey (Step 3/4) is always
+          the Quotes &amp; Orders price minus {discountPct}%, rounded to the nearest pound. Nothing changes
+          for customers or agents until you press <strong>Push live</strong>.
+        </p>
+
+        <div className="flex flex-wrap items-end gap-3 border-t border-border pt-3">
           <div className="space-y-1">
-            <label htmlFor="new-plan-name" className="text-sm font-semibold">New plan name</label>
+            <label htmlFor="pricing-plan-select" className="text-sm font-semibold">You're editing</label>
+            <select
+              id="pricing-plan-select"
+              className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-[280px]"
+              value={selectedId ?? ''}
+              disabled={busy}
+              onChange={e => { const v = drafts.find(d => d.id === e.target.value); if (v) loadIntoEditor(v); }}
+            >
+              {!selectedId && <option value="">{pendingNewPlan ? `New plan: ${label || 'untitled'} (not saved yet)` : 'No plan selected'}</option>}
+              {drafts.map(d => <option key={d.id} value={d.id}>{d.label || 'Untitled draft'}</option>)}
+            </select>
+          </div>
+          {pendingNewPlan && <Badge className="bg-amber-500 hover:bg-amber-500 mb-1">Not saved yet</Badge>}
+          {selectedId && <Badge variant="secondary" className="mb-1">Test draft — not live</Badge>}
+          {(selectedId || pendingNewPlan) && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => handleSave()} disabled={busy}>
+                <Save className="h-4 w-4 mr-1" /> Save changes
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => { setSaveAsName(`${label || 'Untitled plan'} copy`); setSaveAsOpen(true); }} disabled={busy}>
+                <Copy className="h-4 w-4 mr-1" /> Save as a new plan
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="space-y-1">
+            <label htmlFor="new-plan-name" className="text-sm font-semibold">Start a new plan</label>
             <input
               id="new-plan-name"
               className="h-9 rounded-md border border-input bg-background px-3 text-sm min-w-[280px]"
@@ -1012,90 +1037,21 @@ export default function PriceUpdatesTab() {
               onChange={e => setNewPlanName(e.target.value)}
             />
           </div>
-          <Button onClick={() => handleCreateDraft(newPlanName)} disabled={busy}>
+          <Button variant="outline" onClick={() => handleCreateDraft(newPlanName)} disabled={busy}>
             Create new pricing plan
           </Button>
-        </div>
-        {drafts.length > 0 && (
-          <div className="flex flex-wrap items-end gap-2 border-t border-border pt-3">
-            <div className="space-y-1">
-              <label htmlFor="update-existing-plan" className="text-sm font-semibold">Or update an existing plan</label>
-              <select
-                id="update-existing-plan"
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm min-w-[280px]"
-                value=""
-                disabled={busy}
-                onChange={e => {
-                  const v = drafts.find(d => d.id === e.target.value);
-                  if (v) loadIntoEditor(v);
-                }}
-              >
-                <option value="">Choose a saved plan to update…</option>
-                {drafts.map(d => <option key={d.id} value={d.id}>{d.label || 'Untitled draft'}</option>)}
-              </select>
-            </div>
-            <p className="text-xs text-muted-foreground pb-2">Loads that plan into the editor so you can change it and push it live.</p>
-          </div>
-        )}
-      </section>
-
-      {/* Always-visible go-live controls so Push live is never buried in a tab */}
-      <div className="rounded-lg border-2 border-primary/30 bg-muted/40 p-4 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <FlaskConical className="h-5 w-5" />
-              <span className="text-base font-semibold">Price updates</span>
-              {liveVersion ? (
-                <Badge className="bg-emerald-600">Live: {liveVersion.label}</Badge>
-              ) : (
-                <Badge variant="secondary">Live: built-in code pricing</Badge>
-              )}
-              <PriceSurfaceBadge surface="quotes" />
-            </div>
-            <p className="text-sm text-muted-foreground max-w-3xl">
-              Build and test a new Quotes &amp; Orders price structure without touching live pricing.
-              The customer journey price (Step 3/4) is always this structure minus {discountPct}%,
-              rounded to the nearest whole pound. Nothing changes for customers or agents until you
-              press <strong>Push live</strong>.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={() => handleCreateDraft()} disabled={busy} variant="outline" size="sm">
-              New test draft
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleRevert} disabled={busy || !liveVersion}>
-              <RotateCcw className="h-4 w-4 mr-1" /> Push code base pricing (7/2026) live
-            </Button>
-            <Button size="sm" onClick={handlePublish} disabled={busy}>
-              <Rocket className="h-4 w-4 mr-1" /> Push live
-            </Button>
-          </div>
-        </div>
-
-        <div className="rounded-md border border-border bg-background p-3 space-y-3">
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="space-y-1">
-              <label htmlFor="pricing-plan-select" className="text-sm font-semibold">Change pricing plan</label>
-              <select
-                id="pricing-plan-select"
-                className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-[280px]"
-                value={selectedId ?? ''}
-                disabled={busy}
-                onChange={e => { const v = drafts.find(d => d.id === e.target.value); if (v) loadIntoEditor(v); }}
-              >
-                {!selectedId && <option value="">{pendingNewPlan ? `New plan: ${label || 'untitled'} (not saved yet)` : 'No test draft selected'}</option>}
-                {drafts.map(d => <option key={d.id} value={d.id}>{d.label || 'Untitled draft'}</option>)}
-              </select>
-            </div>
-            <Button size="sm" variant="outline" onClick={() => openTab('builder')}>View or edit vehicle figures</Button>
-            <Button size="sm" variant="outline" onClick={() => openTab('editor')}>View or edit price grid</Button>
-          </div>
-          <p className="text-sm">
-            <strong>Push live will publish:</strong> {selectedId || pendingNewPlan ? <>“{label || 'Untitled draft'}”{pendingNewPlan && ' (will be saved first)'}</> : 'your saved vehicle risk figures as a new plan'}.
-            Pick a different plan above to push that one instead, or create a new test draft.
+          <p className="text-xs text-muted-foreground pb-2">
+            Copies the live plan into the editor — nothing is saved until you press Save or Push live.
           </p>
-          <div className="text-xs text-muted-foreground space-y-1">
+        </div>
+
+        <details className="rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+          <summary className="cursor-pointer font-medium">What goes live with this plan?</summary>
+          <div className="pt-2 text-xs text-muted-foreground space-y-1">
+            <p>
+              <strong className="text-foreground">Push live will publish:</strong>{' '}
+              {selectedId || pendingNewPlan ? <>“{label || 'Untitled draft'}”{pendingNewPlan && ' (will be saved first)'}</> : 'your saved vehicle risk figures as a new plan'}.
+            </p>
             <p className="font-semibold text-foreground">Vehicle figures that go live with this plan{pushModelSource ? ` (taken from ${pushModelSource})` : ''}:</p>
             <ul className="list-disc pl-5">
               <li>Age bands: {pushModel?.bands?.length ?? 0}</li>
@@ -1103,35 +1059,33 @@ export default function PriceUpdatesTab() {
               <li>Powertrain factors: {pushModel?.powertrains?.length ?? 0}</li>
               <li>Vehicle type factors: {pushModel?.vehicleTypes?.length ?? 0}</li>
             </ul>
-            <p>Use “View or edit vehicle figures” to change any of these before pushing live.</p>
+            <p>Edit these under <strong>Edit prices → Vehicle variables</strong> before pushing live.</p>
           </div>
-        </div>
-      </div>
+        </details>
 
-      {/* Clears up the "why are there two places to enter prices?" confusion */}
-      <Alert className="border-sky-300 bg-sky-50 dark:bg-sky-950/30">
-        <Info className="h-4 w-4" />
-        <AlertDescription className="text-sm space-y-2">
-          <p className="font-semibold text-base">Why there are two places to enter prices</p>
-          <p>
-            <strong>1. Vehicle risk pricing model</strong> (tab “Vehicle risk pricing model”) — a
-            calculator. You set base prices per age band, term multipliers, mileage, labour and
-            claim-limit factors, then press <strong>Build test draft from this model</strong>. It
-            does not go live on its own; it only writes those numbers into the price grid.
-          </p>
-          <p>
-            <strong>2. Price grid</strong> (tab “Price grid (this one goes live)”) — the actual
-            table of Quotes &amp; Orders prices. <strong>This is the one that works</strong>: only
-            what is in this grid when you press <strong>Push live</strong> is used by agents and
-            customers. You can type straight into it and skip the builder entirely.
-          </p>
-          <p>
-            Every publish sets the customer journey (Step 3 / Step 4) to the grid price
-            <strong> minus {effectiveDiscountPct(discountPct)}%</strong>, rounded to the nearest
-            pound — 10% is the default and is applied automatically if no other figure is set.
-          </p>
-        </AlertDescription>
-      </Alert>
+        <details className="rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+          <summary className="cursor-pointer font-medium">Why are there two places to enter prices?</summary>
+          <div className="pt-2 text-sm space-y-2 text-muted-foreground">
+            <p>
+              <strong className="text-foreground">1. Vehicle variables</strong> (Edit prices → Vehicle
+              variables) — a calculator. You set base prices per age band, term multipliers, mileage,
+              labour and claim-limit factors, then press <strong className="text-foreground">Build test draft from this model</strong>.
+              It does not go live on its own; it only writes those numbers into the price grid.
+            </p>
+            <p>
+              <strong className="text-foreground">2. Price grid</strong> (Edit prices → Price grid) — the
+              actual table of Quotes &amp; Orders prices. <strong className="text-foreground">This is the one that works</strong>:
+              only what is in this grid when you press <strong className="text-foreground">Push live</strong> is used by agents
+              and customers. You can type straight into it and skip the calculator entirely.
+            </p>
+            <p>
+              Every publish sets the customer journey (Step 3 / Step 4) to the grid price
+              <strong className="text-foreground"> minus {effectiveDiscountPct(discountPct)}%</strong>, rounded to the nearest
+              pound — 10% is the default and is applied automatically if no other figure is set.
+            </p>
+          </div>
+        </details>
+      </section>
 
       <div id="claim-limit-auth" className="scroll-mt-4">
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
