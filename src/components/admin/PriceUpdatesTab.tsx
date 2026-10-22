@@ -1826,7 +1826,8 @@ export default function PriceUpdatesTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
 
