@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight, Layers, Percent } from 'lucide-react';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight, Layers, Percent, Copy } from 'lucide-react';
 import Aug26PricingPanel from '@/components/admin/pricing/Aug26PricingPanel';
 import LiveVsAug26Panel from '@/components/admin/pricing/LiveVsAug26Panel';
 import AugHybridVsLivePanel from '@/components/admin/pricing/AugHybridVsLivePanel';
@@ -308,6 +308,10 @@ export default function PriceUpdatesTab() {
     { mode: 'publish' | 'restore' | 'codebase'; version?: PricingVersion; filledCount?: number } | null
   >(null);
   const [pushGapPct, setPushGapPct] = useState<number>(10);
+
+  /** "Save as a new plan" dialog. */
+  const [saveAsOpen, setSaveAsOpen] = useState(false);
+  const [saveAsName, setSaveAsName] = useState('');
 
   /** History: ask to make a saved/archived version the live pricing again. */
   async function handleRestoreVersion(v: PricingVersion) {
