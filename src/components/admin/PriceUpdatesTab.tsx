@@ -1901,6 +1901,34 @@ export default function PriceUpdatesTab() {
         </TabsContent>
       </Tabs>
 
+      <Dialog open={saveAsOpen} onOpenChange={setSaveAsOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save as a new plan</DialogTitle>
+            <DialogDescription>
+              Saves everything currently in the editor as a brand-new test plan, then switches you to it.
+              The plan you were editing stays as it was. Nothing goes live.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1">
+            <Label htmlFor="save-as-plan-name">New plan name</Label>
+            <Input
+              id="save-as-plan-name"
+              value={saveAsName}
+              onChange={e => setSaveAsName(e.target.value)}
+              placeholder={`e.g. Winter pricing ${new Date().getFullYear()}`}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveAsOpen(false)} disabled={busy}>Cancel</Button>
+            <Button onClick={handleSaveAsNewPlan} disabled={busy || !saveAsName.trim()}>
+              <Copy className="h-4 w-4 mr-1" /> Save as new plan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <PushLiveConfirmDialog
         open={pushConfirm !== null}
         planLabel={
