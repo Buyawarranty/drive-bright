@@ -313,6 +313,8 @@ const App = () => {
                     <Route path="/ai-sandbox/" element={<AiSandbox />} />
                     <Route path="/ai-sandbox/:threadId" element={<AiSandbox />} />
                     <Route path="/ai-sandbox/:threadId/" element={<AiSandbox />} />
+                    <Route path="/__step3-sandbox-render" element={<React.Suspense fallback={null}><Step3SandboxRender /></React.Suspense>} />
+
                     <Route path="/admin-dashboard/" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminDashboard /></StaffPasswordGate></AdminShellErrorBoundary>} />
                     <Route path="/admin/claims/:id" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminClaimDetail /></StaffPasswordGate></AdminShellErrorBoundary>} />
                     <Route path="/admin/claims/:id/" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminClaimDetail /></StaffPasswordGate></AdminShellErrorBoundary>} />
