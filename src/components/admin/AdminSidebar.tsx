@@ -420,6 +420,12 @@ export const defaultTabs: Tab[] = [
     description: 'Test new Quotes & Orders pricing, then push it live (management only)'
   },
   {
+    id: 'step3-sandbox',
+    label: 'Step 3 Sandbox',
+    icon: FlaskConical,
+    description: 'Try the new step 3 PayLater design and push prices live (super admin only)'
+  },
+  {
     id: 'sms-tracking',
     label: 'ClickSend SMS',
     icon: MessageSquare,
@@ -805,6 +811,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     ]);
     const priceUpdatesAllowed = !!userRole && PRICE_UPDATES_ROLES.has(userRole);
     let base = priceUpdatesAllowed ? withPerms : withPerms.filter(t => t.id !== 'price-updates');
+    // Step 3 Sandbox is hard-restricted to super admin only, regardless of any
+    // per-user tab permission grant (the tab itself also re-checks server-side).
+    if (userRole !== 'super_admin') base = base.filter(t => t.id !== 'step3-sandbox');
     if (!canViewCyberSecurity(userRole)) base = base.filter(t => t.id !== 'cyber-security');
     base = base.filter(t => t.id !== 'reporting');
     if (priceUpdatesAllowed) {
