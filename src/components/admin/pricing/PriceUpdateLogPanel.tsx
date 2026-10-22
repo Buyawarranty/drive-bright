@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { History, RotateCcw, Check, StickyNote, Loader2, BarChart3, Trophy, Radio } from 'lucide-react';
+import { History, Rocket, Check, StickyNote, Loader2, BarChart3, Trophy, Radio } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,8 +14,8 @@ import type { PricingVersion } from '@/hooks/usePricingVersions';
  * PRICE UPDATE LOG
  * -------------------------------------------------------------------------
  * A plain, chronological record of every price model that has been saved or
- * pushed live, newest first, with a one-click "Revert price" back to any of
- * them. Reverting republishes that stored version exactly as it was — it never
+ * pushed live, newest first, with a one-click "Push live" on any of
+ * them. Pushing live republishes that stored version exactly as it was — it never
  * re-values historic sales.
  */
 
@@ -123,12 +123,12 @@ const money = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
 export default function PriceUpdateLogPanel({
   versions,
   busy,
-  onRevert,
+  onPushLive,
   onSaveNote,
 }: {
   versions: PricingVersion[];
   busy?: boolean;
-  onRevert: (v: PricingVersion) => void;
+  onPushLive: (v: PricingVersion) => void;
   /** Save the performance note against this price model. */
   onSaveNote?: (id: string, notes: string) => Promise<void>;
 }) {
@@ -234,7 +234,7 @@ export default function PriceUpdateLogPanel({
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           Every price model saved or pushed live, newest first. Press{' '}
-          <strong>Revert price</strong> on any row to make those exact Quotes &amp; Orders prices
+          <strong>Push live</strong> on any row to make those exact Quotes &amp; Orders prices
           live again — the website price follows at its published gap. Sales already taken keep the
           price they were sold at.
         </p>
@@ -275,7 +275,7 @@ export default function PriceUpdateLogPanel({
               <p className="mt-2 text-sm font-medium text-foreground">
                 {bestIsLive
                   ? 'Recommended: keep this model live — it converts better than every other model tried.'
-                  : `Recommended: press “Revert price” on the ${bestVersion.label} row below to make these prices live again.`}
+                  : `Recommended: press “Push live” on the ${bestVersion.label} row below to make these prices live again.`}
               </p>
             </div>
           );
@@ -313,7 +313,7 @@ export default function PriceUpdateLogPanel({
                     <>
                       <span>Best converting — but NOT live now</span>
                       <span className="font-medium opacity-90">
-                        Press “Revert price” to make these prices live again
+                        Press “Push live” to make these prices live again
                       </span>
                     </>
                   )}
@@ -391,10 +391,10 @@ export default function PriceUpdateLogPanel({
                       size="sm"
                       variant="outline"
                       disabled={busy}
-                      onClick={() => onRevert(v)}
+                      onClick={() => onPushLive(v)}
                     >
-                      <RotateCcw className="mr-1 h-4 w-4" />
-                      Revert price
+                      <Rocket className="mr-1 h-4 w-4" />
+                      Push live
                     </Button>
                   )}
                 </div>
