@@ -809,7 +809,7 @@ export default function PriceUpdatesTab() {
 
   /** Runs after the "Are you sure?" dialog — publishes the draft with the chosen web gap. */
   async function confirmPublish() {
-    if (!selectedId) return;
+    if (!selectedId && !pendingNewPlan) return;
     const { matrix: safeMatrix, invalid } = normalizeMatrixForPublish(
       matrix,
       liveVersion?.admin_matrix || codeMatrix
@@ -821,13 +821,15 @@ export default function PriceUpdatesTab() {
     }
     setBusy(true);
     try {
+      const id = await ensureDraftPersisted();
+      if (!id) throw new Error('No draft to publish');
       const factors = currentClaimLimitFactors();
       const labourFactors = currentLabourRateFactors();
       const publishDiscountPct = effectiveDiscountPct(pushGapPct);
       setDiscountPct(publishDiscountPct);
       saveWebsiteDiscountDraft(publishDiscountPct);
       setMatrix(safeMatrix);
-      await saveVersion(selectedId, {
+      await saveVersion(id, {
         label,
         notes,
         admin_matrix: safeMatrix,
