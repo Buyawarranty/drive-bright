@@ -28,6 +28,7 @@ import { PageViewLogger } from "@/components/PageViewLogger";
 import { SeasonalOfferBanner } from "@/components/SeasonalOfferBanner";
 import StickyNavigation from "@/components/StickyNavigation";
 import { AdminShellErrorBoundary } from "@/components/admin/AdminShellErrorBoundary";
+import __SandboxMethodsRender from "@/pages/__SandboxMethodsRender";
 
 
 
@@ -315,6 +316,7 @@ const App = () => {
                     <Route path="/ai-sandbox/" element={<AiSandbox />} />
                     <Route path="/ai-sandbox/:threadId" element={<AiSandbox />} />
                     <Route path="/ai-sandbox/:threadId/" element={<AiSandbox />} />
+                    <Route path="/__sandbox-methods" element={<__SandboxMethodsRender />} />
 
                     <Route path="/admin-dashboard/" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminDashboard /></StaffPasswordGate></AdminShellErrorBoundary>} />
                     <Route path="/admin/claims/:id" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminClaimDetail /></StaffPasswordGate></AdminShellErrorBoundary>} />
