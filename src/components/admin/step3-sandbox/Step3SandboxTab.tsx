@@ -75,6 +75,13 @@ export default function Step3SandboxTab() {
     [versions, selectedVersionId, liveVersion],
   );
   const gapPct = liveVersion?.step3_discount_pct ?? CODE_WEB_DISCOUNT_PCT;
+  const effectiveGapPct = gapTweak ?? gapPct;
+  const tweaked = !tweaksAreLive(tweaks) || gapTweak != null;
+
+  const resetTweaks = () => {
+    setTweaks({ ...DEFAULT_SANDBOX_TWEAKS });
+    setGapTweak(null);
+  };
 
   async function loadVehicle() {
     if (!reg.trim()) {
@@ -235,6 +242,74 @@ export default function Step3SandboxTab() {
               Clear
             </Button>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Price tweak settings — sandbox only, never saved or pushed */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4" />
+            Tweak prices
+            {tweaked && (
+              <span className="text-xs font-bold uppercase tracking-wide text-primary">
+                tweaks on
+              </span>
+            )}
+          </CardTitle>
+          <CardDescription>
+            Experiment with the figures below and watch every price on this page update. These
+            settings are sandbox-only — they are never saved, never pushed live, and the Push live
+            button below always pushes the plan's real prices.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-end gap-4">
+          <div className="space-y-1">
+            <Label className="text-xs">Adjust all prices (%)</Label>
+            <Input
+              type="number"
+              min={-50}
+              max={50}
+              step={1}
+              value={tweaks.priceAdjustPct}
+              onChange={e => setTweaks(t => ({ ...t, priceAdjustPct: Number(e.target.value) || 0 }))}
+              className="w-32"
+            />
+            <p className="text-xs text-muted-foreground">e.g. 5 = 5% dearer, −10 = 10% cheaper</p>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">PayLater yearly uplift (%)</Label>
+            <Input
+              type="number"
+              min={0}
+              max={50}
+              step={1}
+              value={tweaks.payLaterUpliftPct}
+              onChange={e => setTweaks(t => ({ ...t, payLaterUpliftPct: Number(e.target.value) || 0 }))}
+              className="w-32"
+            />
+            <p className="text-xs text-muted-foreground">Live rule: 10%</p>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Quotes & Orders gap (%)</Label>
+            <Input
+              type="number"
+              min={0}
+              max={50}
+              step={1}
+              value={effectiveGapPct}
+              onChange={e => {
+                const v = Number(e.target.value);
+                setGapTweak(Number.isFinite(v) ? v : null);
+              }}
+              className="w-32"
+            />
+            <p className="text-xs text-muted-foreground">Live gap: {gapPct}%</p>
+          </div>
+          <Button variant="outline" onClick={resetTweaks} disabled={!tweaked}>
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Back to live prices
+          </Button>
         </CardContent>
       </Card>
 
