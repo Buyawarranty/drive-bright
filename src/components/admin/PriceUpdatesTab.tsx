@@ -782,23 +782,29 @@ export default function PriceUpdatesTab() {
       return;
     }
 
-    if (
-      !window.confirm(
-        `Push the pricing plan “${label || 'Untitled draft'}” live?\n\nVehicle figures included: ${pushModel?.bands?.length ?? 0} age bands, ${pushModel?.mileageBands?.length ?? 0} mileage bands, ${pushModel?.powertrains?.length ?? 0} powertrain factors, ${pushModel?.vehicleTypes?.length ?? 0} vehicle type factors.\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ` +
-          effectiveDiscountPct(discountPct) +
-          '%, rounded to the nearest pound.' +
-          (filled.length
-            ? `\n\n${filled.length} blank cell(s) will be filled from the current live prices so no page loses a price.`
-            : '')
-      )
-    )
+    setPushGapPct(effectiveDiscountPct(discountPct));
+    setPushConfirm({ mode: 'publish', filledCount: filled.length });
+  }
+
+  /** Runs after the "Are you sure?" dialog — publishes the draft with the chosen web gap. */
+  async function confirmPublish() {
+    if (!selectedId) return;
+    const { matrix: safeMatrix, invalid } = normalizeMatrixForPublish(
+      matrix,
+      liveVersion?.admin_matrix || codeMatrix
+    );
+    if (invalid.length) {
+      toast.error(`Cannot push live — ${invalid.length} price cell(s) are missing or zero.`);
+      setPushConfirm(null);
       return;
+    }
     setBusy(true);
     try {
       const factors = currentClaimLimitFactors();
       const labourFactors = currentLabourRateFactors();
-      const publishDiscountPct = effectiveDiscountPct(discountPct);
+      const publishDiscountPct = effectiveDiscountPct(pushGapPct);
       setDiscountPct(publishDiscountPct);
+      saveWebsiteDiscountDraft(publishDiscountPct);
       setMatrix(safeMatrix);
       await saveVersion(selectedId, {
         label,
@@ -818,6 +824,7 @@ export default function PriceUpdatesTab() {
         labour_rate_factors: labourFactors,
         vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
+      setPushConfirm(null);
       toast.success('Pricing published live — reload any open quote pages');
 
     } catch (e: any) {
