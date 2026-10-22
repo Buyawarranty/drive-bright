@@ -1474,7 +1474,7 @@ export default function PriceUpdatesTab() {
             {loading && <span className="text-sm text-muted-foreground">Loading…</span>}
           </div>
 
-          {!selectedId ? (
+          {!selectedId && !pendingNewPlan ? (
             <p className="text-sm text-muted-foreground">
               Create a test draft to start. It is pre-filled with the prices currently in use, so
               you only change what you need.
@@ -1492,7 +1492,7 @@ export default function PriceUpdatesTab() {
                 </div>
               </div>
 
-              <PercentagePriceSave key={selectedId} matrix={matrix} busy={busy || !drafts.some(d => d.id === selectedId)} onSave={handleSave} onPublish={handlePublish} />
+              <PercentagePriceSave key={selectedId ?? 'new-plan'} matrix={matrix} busy={busy || (!pendingNewPlan && !drafts.some(d => d.id === selectedId))} onSave={handleSave} onPublish={handlePublish} />
 
 
               <div className="space-y-1">
