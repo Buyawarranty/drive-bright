@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useDataExport } from '@/hooks/useDataExport';
 import { AgentNoSourceExportDialog } from './AgentNoSourceExportDialog';
+import { canUseFullStaffExport } from '@/lib/staffExportAccess';
 
 interface LeadsFullExportMenuProps {
   userRole?: string | null;
@@ -29,16 +30,6 @@ interface LeadsFullExportMenuProps {
   onSimpleExport?: (format: 'csv' | 'xlsx') => void;
   selectedCount?: number;
 }
-
-const MANAGER_EXPORT_ROLES = [
-  'super_admin',
-  'admin',
-  'sales_manager',
-  'performance_manager',
-  'accounts_manager',
-  'accounts',
-  'lead_gen',
-];
 
 const buildFullRows = (list: any[], agentNames: Record<string, string> = {}) => {
   const keySet = new Set<string>();
@@ -70,17 +61,12 @@ const buildFullRows = (list: any[], agentNames: Record<string, string> = {}) => 
  */
 export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRole, visibleLeads, allowed, onSimpleExport, selectedCount = 0 }) => {
   const { exportToCSV, exportToExcel } = useDataExport();
-  const [email, setEmail] = useState('');
   const [rangeOpen, setRangeOpen] = useState(false);
   const [rangeFrom, setRangeFrom] = useState('');
   const [rangeTo, setRangeTo] = useState('');
   const [agentNames, setAgentNames] = useState<Record<string, string>>({});
   const [agentExportOpen, setAgentExportOpen] = useState(false);
   const [agentExportFormat, setAgentExportFormat] = useState<'csv' | 'xlsx'>('csv');
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setEmail((data.user?.email || '').toLowerCase()));
-  }, []);
 
   // Lookup so every exported row can show the assigned agent by name, not UUID.
   useEffect(() => {
@@ -98,7 +84,7 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
   }, []);
 
   const canExportFull =
-    allowed === true || MANAGER_EXPORT_ROLES.includes(userRole || '') || email.startsWith('accounts@');
+    canUseFullStaffExport(userRole) && allowed !== false;
 
   const quickRangeOptions = useMemo(() => {
     const now = new Date();

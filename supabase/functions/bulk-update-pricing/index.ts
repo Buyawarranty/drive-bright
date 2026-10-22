@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
+import { requireAdmin } from "../_shared/admin-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,12 +38,12 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Authorize before parsing any price data or obtaining write access.
+    const access = await requireAdmin(req, { allowedRoles: ['admin', 'super_admin'] });
+    if (!access.ok) return access.response;
     logStep("Starting bulk pricing update");
 
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabaseClient = access.supabase;
 
     const { pricingData }: UpdateRequest = await req.json();
     logStep("Received pricing data", { count: pricingData.length });
