@@ -29,6 +29,8 @@ import { SeasonalOfferBanner } from "@/components/SeasonalOfferBanner";
 import StickyNavigation from "@/components/StickyNavigation";
 import { AdminShellErrorBoundary } from "@/components/admin/AdminShellErrorBoundary";
 
+
+
 // Component to conditionally render banner only on homepage
 const ConditionalSeasonalBanner = () => {
   const location = useLocation();
@@ -313,6 +315,7 @@ const App = () => {
                     <Route path="/ai-sandbox/" element={<AiSandbox />} />
                     <Route path="/ai-sandbox/:threadId" element={<AiSandbox />} />
                     <Route path="/ai-sandbox/:threadId/" element={<AiSandbox />} />
+
                     <Route path="/admin-dashboard/" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminDashboard /></StaffPasswordGate></AdminShellErrorBoundary>} />
                     <Route path="/admin/claims/:id" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminClaimDetail /></StaffPasswordGate></AdminShellErrorBoundary>} />
                     <Route path="/admin/claims/:id/" element={<AdminShellErrorBoundary><StaffPasswordGate><AdminClaimDetail /></StaffPasswordGate></AdminShellErrorBoundary>} />
