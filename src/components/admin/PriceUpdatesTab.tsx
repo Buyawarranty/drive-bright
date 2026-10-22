@@ -793,8 +793,16 @@ export default function PriceUpdatesTab() {
   const pushModel: any = resolvedPush?.model ?? null;
   const pushModelSource = resolvedPush?.source ?? '';
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  /** Which comparison is showing inside the "Compare prices" section. */
+  const [compareTab, setCompareTab] = useState<string>('any-compare');
   function openTab(tab: string) {
-    setActiveTab(tab);
+    // The old standalone comparison tabs now live inside "Compare prices".
+    if (COMPARE_TABS.some(t => t.value === tab)) {
+      setActiveTab('compare');
+      setCompareTab(tab);
+    } else {
+      setActiveTab(tab);
+    }
     setTimeout(() => document.getElementById('price-update-tabs')?.scrollIntoView({ behavior: 'smooth' }), 50);
   }
 
