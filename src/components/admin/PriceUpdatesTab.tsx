@@ -1390,7 +1390,44 @@ export default function PriceUpdatesTab() {
         </TabsContent>
 
 
-        <TabsContent value="editor" className="space-y-6 mt-4">
+        <TabsContent value="editor" className="space-y-4 mt-4">
+          <Tabs defaultValue="price-grid" className="w-full">
+            <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/40 p-1">
+              <TabsTrigger value="price-grid" className="text-sm">
+                <FlaskConical className="h-4 w-4 mr-2" /> Price grid (this one goes live)
+              </TabsTrigger>
+              <TabsTrigger value="vehicle-variables" className="text-sm">
+                <Layers className="h-4 w-4 mr-2" /> Vehicle variables
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="vehicle-variables" className="space-y-4 mt-4">
+              <SectionPushLiveBar
+                sectionLabel="Vehicle risk pricing model"
+                liveLabel={liveVersion?.label ?? null}
+                liveWebDiscountPct={discountPct}
+                busy={busy}
+                onPush={handlePushModelLive}
+                candidates={[
+                  {
+                    key: 'builder',
+                    label: 'Vehicle risk model figures',
+                    description: 'Publishes the bands and factors currently in the builder below.',
+                    getModel: () => effectiveLiveModel,
+                  },
+                ]}
+              />
+              <p className="text-sm text-muted-foreground">
+                <strong>The vehicle risk pricing model on its own.</strong> Edit the bands and factors here, then press{' '}
+                <strong>“Save &amp; push this model live”</strong> to send it to customers.
+              </p>
+              <AgeBandPricingPreview
+                onBuildDraft={handleBuildDraftFromModel}
+                onModelChange={setLiveEditorModel}
+              />
+            </TabsContent>
+
+            <TabsContent value="price-grid" className="space-y-4 mt-4">
           <SectionPushLiveBar
             sectionLabel="Price grid (this one goes live)"
             liveLabel={liveVersion?.label ?? null}
@@ -1409,9 +1446,9 @@ export default function PriceUpdatesTab() {
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <FlaskConical className="h-5 w-5" />
-                Price updates
+              <CardTitle className="flex items-center gap-2 text-base">
+                <FlaskConical className="h-4 w-4" />
+                Price grid
               </CardTitle>
               <CardDescription>
                 <strong>This grid is the live source of truth.</strong> Whatever is in these cells
@@ -1429,18 +1466,12 @@ export default function PriceUpdatesTab() {
               ) : (
                 <Badge variant="secondary">Live: built-in code pricing</Badge>
               )}
-              <Button variant="outline" size="sm" onClick={handleRevert} disabled={busy || !liveVersion}>
-                <RotateCcw className="h-4 w-4 mr-1" /> Push code base pricing (7/2026) live
-              </Button>
             </div>
 
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={() => handleCreateDraft()} disabled={busy}>
-              New test draft
-            </Button>
             {drafts.map(d => (
               <div key={d.id} className="flex items-center gap-1">
                 <Button
@@ -1460,7 +1491,7 @@ export default function PriceUpdatesTab() {
 
           {!selectedId && !pendingNewPlan ? (
             <p className="text-sm text-muted-foreground">
-              Create a test draft to start. It is pre-filled with the prices currently in use, so
+              Create a plan above to start. It is pre-filled with the prices currently in use, so
               you only change what you need.
             </p>
           ) : (
