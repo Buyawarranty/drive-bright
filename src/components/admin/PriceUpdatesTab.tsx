@@ -949,7 +949,7 @@ export default function PriceUpdatesTab() {
         </div>
       </section>
 
-      {/* Always-visible go-live controls so Push live / Revert are never buried in a tab */}
+      {/* Always-visible go-live controls so Push live is never buried in a tab */}
       <div className="rounded-lg border-2 border-primary/30 bg-muted/40 p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1">
