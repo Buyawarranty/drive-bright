@@ -302,19 +302,6 @@ export default function Step3SandboxTab() {
             <p className="text-xs text-muted-foreground">e.g. 5 = 5% dearer, −10 = 10% cheaper</p>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">PayLater yearly uplift (%)</Label>
-            <Input
-              type="number"
-              min={0}
-              max={50}
-              step={1}
-              value={tweaks.payLaterUpliftPct}
-              onChange={e => setTweaks(t => ({ ...t, payLaterUpliftPct: Number(e.target.value) || 0 }))}
-              className="w-32"
-            />
-            <p className="text-xs text-muted-foreground">Live rule: 10%</p>
-          </div>
-          <div className="space-y-1">
             <Label className="text-xs">Quotes & Orders gap (%)</Label>
             <Input
               type="number"
@@ -334,6 +321,191 @@ export default function Step3SandboxTab() {
             <RotateCcw className="h-4 w-4 mr-2" />
             Back to live prices
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Payment options — which ways to pay appear, and their variables */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Wallet className="h-4 w-4" />
+            Payment options
+            {!paymentSettingsAreLive(paymentSettings) && (
+              <span className="text-xs font-bold uppercase tracking-wide text-primary">
+                experimenting
+              </span>
+            )}
+          </CardTitle>
+          <CardDescription>
+            Choose which ways to pay appear on the sandbox tiles and set their variables. Klarna
+            and Zopa are design experiments only — there is no integration, no credit check and no
+            payment behind them, and nothing here is ever pushed live.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {/* BAW PayLater */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+              <Checkbox
+                checked={paymentSettings.payLater.enabled}
+                onCheckedChange={v =>
+                  setPaymentSettings(s => ({
+                    ...s,
+                    payLater: { ...s.payLater, enabled: v === true },
+                  }))
+                }
+              />
+              BAW PayLater (yearly collection)
+            </label>
+            {paymentSettings.payLater.enabled && (
+              <div className="flex flex-wrap items-end gap-4 pl-6">
+                <div className="space-y-1">
+                  <Label className="text-xs">Yearly uplift (%)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={50}
+                    step={1}
+                    value={paymentSettings.payLater.upliftPct}
+                    onChange={e =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        payLater: { ...s.payLater, upliftPct: Number(e.target.value) || 0 },
+                      }))
+                    }
+                    className="w-28"
+                  />
+                  <p className="text-xs text-muted-foreground">Live rule: 10%</p>
+                </div>
+                <label className="flex items-center gap-2 text-sm cursor-pointer pb-1">
+                  <Checkbox
+                    checked={paymentSettings.payLater.offerOn24}
+                    onCheckedChange={v =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        payLater: { ...s.payLater, offerOn24: v === true },
+                      }))
+                    }
+                  />
+                  Offer on 2-year cover
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer pb-1">
+                  <Checkbox
+                    checked={paymentSettings.payLater.offerOn36}
+                    onCheckedChange={v =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        payLater: { ...s.payLater, offerOn36: v === true },
+                      }))
+                    }
+                  />
+                  Offer on 3-year cover
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* Klarna */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+              <Checkbox
+                checked={paymentSettings.klarna.enabled}
+                onCheckedChange={v =>
+                  setPaymentSettings(s => ({
+                    ...s,
+                    klarna: { ...s.klarna, enabled: v === true },
+                  }))
+                }
+              />
+              Klarna — pay in instalments
+              <span className="text-[10px] font-bold uppercase tracking-wide text-primary">
+                experiment
+              </span>
+            </label>
+            {paymentSettings.klarna.enabled && (
+              <div className="flex flex-wrap items-end gap-4 pl-6">
+                <div className="space-y-1">
+                  <Label className="text-xs">Number of payments</Label>
+                  <Select
+                    value={String(paymentSettings.klarna.instalments)}
+                    onValueChange={v =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        klarna: { ...s.klarna, instalments: Number(v) },
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[2, 3, 4].map(n => (
+                        <SelectItem key={n} value={String(n)}>Pay in {n}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Interest-free, one every 30 days</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Zopa */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+              <Checkbox
+                checked={paymentSettings.zopa.enabled}
+                onCheckedChange={v =>
+                  setPaymentSettings(s => ({
+                    ...s,
+                    zopa: { ...s.zopa, enabled: v === true },
+                  }))
+                }
+              />
+              Zopa — monthly loan
+              <span className="text-[10px] font-bold uppercase tracking-wide text-primary">
+                experiment
+              </span>
+            </label>
+            {paymentSettings.zopa.enabled && (
+              <div className="flex flex-wrap items-end gap-4 pl-6">
+                <div className="space-y-1">
+                  <Label className="text-xs">Representative APR (%)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={60}
+                    step={0.1}
+                    value={paymentSettings.zopa.aprPct}
+                    onChange={e =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        zopa: { ...s.zopa, aprPct: Number(e.target.value) || 0 },
+                      }))
+                    }
+                    className="w-28"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Loan length</Label>
+                  <Select
+                    value={String(paymentSettings.zopa.termMonths)}
+                    onValueChange={v =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        zopa: { ...s.zopa, termMonths: Number(v) },
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[12, 18, 24, 36, 48].map(m => (
+                        <SelectItem key={m} value={String(m)}>{m} months</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
