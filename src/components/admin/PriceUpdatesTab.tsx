@@ -536,10 +536,13 @@ export default function PriceUpdatesTab() {
 
 
   async function handleSave(adjustedMatrix?: PricingMatrixShape): Promise<boolean> {
-    if (!selectedId || !drafts.some(d => d.id === selectedId)) return false;
+    if (!selectedId && !pendingNewPlan) return false;
+    const wasPending = pendingNewPlan;
     setBusy(true);
     try {
-      await saveVersion(selectedId, {
+      const id = await ensureDraftPersisted();
+      if (!id) return false;
+      await saveVersion(id, {
         label,
         notes,
         admin_matrix: roundMatrixWhole(adjustedMatrix ?? matrix),
@@ -549,7 +552,7 @@ export default function PriceUpdatesTab() {
         vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
       if (adjustedMatrix) setMatrix(adjustedMatrix);
-      toast.success('Draft saved (test only — not live)');
+      toast.success(wasPending ? 'Plan saved — still a test, nothing is live' : 'Draft saved (test only — not live)');
       return true;
     } catch (e: any) {
       toast.error(e?.message || 'Could not save draft');
@@ -759,7 +762,7 @@ export default function PriceUpdatesTab() {
   }
 
   async function handlePublish() {
-    if (!selectedId) {
+    if (!selectedId && !pendingNewPlan) {
       try {
         const savedModel = localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY);
         if (!savedModel) {
