@@ -57,6 +57,7 @@ import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 import CodebaseVsCurrentPanel from '@/components/admin/pricing/CodebaseVsCurrentPanel';
 import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthToggle';
 import PriceUpdateLogPanel from '@/components/admin/pricing/PriceUpdateLogPanel';
+import PushLiveConfirmDialog from '@/components/admin/pricing/PushLiveConfirmDialog';
 import PriceVersionPerformancePanel from '@/components/admin/pricing/PriceVersionPerformancePanel';
 import ExcludedVehiclesPanel from '@/components/admin/pricing/ExcludedVehiclesPanel';
 import FullyExcludedListCard from '@/components/admin/pricing/FullyExcludedListCard';
@@ -298,6 +299,12 @@ export default function PriceUpdatesTab() {
 
   /** History: version opened in the quick-summary dialog. */
   const [previewVersion, setPreviewVersion] = useState<PricingVersion | null>(null);
+
+  /** Push-live confirmation: which action is being confirmed, and the web gap chosen in the dialog. */
+  const [pushConfirm, setPushConfirm] = useState<
+    { mode: 'publish' | 'restore' | 'codebase'; version?: PricingVersion; filledCount?: number } | null
+  >(null);
+  const [pushGapPct, setPushGapPct] = useState<number>(10);
 
   /** History: make a saved/archived version the live pricing again. */
   async function handleRestoreVersion(v: PricingVersion) {
