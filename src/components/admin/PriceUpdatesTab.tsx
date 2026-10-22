@@ -1285,18 +1285,6 @@ export default function PriceUpdatesTab() {
 
 
 
-        <TabsContent value="original" className="space-y-4 mt-4">
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Original codebase pricing.</strong> The base pricing matrix that ships in the code
-              (7/2026), compared cell by cell with whatever is live right now. Read-only — nothing here
-              changes a price.
-            </AlertDescription>
-          </Alert>
-          <CodebaseVsCurrentPanel liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
-        </TabsContent>
-
         <TabsContent value="previews" className="space-y-4 mt-4">
           <SectionPushLiveBar
             sectionLabel="Previews"
