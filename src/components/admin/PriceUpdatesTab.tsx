@@ -1112,17 +1112,17 @@ export default function PriceUpdatesTab() {
 
 
 
-      <Tabs id="price-update-tabs" value={activeTab ?? (tabOrder[0] || 'compare')} onValueChange={setActiveTab} className="w-full scroll-mt-4">
+      <Tabs id="price-update-tabs" value={activeTab ?? (tabOrder[0] || 'editor')} onValueChange={setActiveTab} className="w-full scroll-mt-4">
 
         <div className="flex items-center justify-end gap-2 mb-2">
           <Button
             type="button"
             size="sm"
-            variant={reorderMode ? 'default' : 'outline'}
+            variant={reorderMode ? 'default' : 'ghost'}
             onClick={() => setReorderMode(v => !v)}
           >
             <ArrowLeftRight className="h-4 w-4 mr-1" />
-            {reorderMode ? 'Done reordering' : 'Reorder tabs'}
+            {reorderMode ? 'Done reordering' : 'Reorder sections'}
           </Button>
           {reorderMode && (
             <Button type="button" size="sm" variant="ghost" onClick={resetTabOrder}>
@@ -1131,39 +1131,7 @@ export default function PriceUpdatesTab() {
           )}
         </div>
 
-        {/* Always-on banner: which plan every section below is editing, with its actions. */}
-        <div className="mb-3 rounded-lg border-2 border-primary/40 bg-background p-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2 min-w-0">
-            <span className="text-sm font-semibold">You're editing:</span>
-            {selectedId || pendingNewPlan ? (
-              <>
-                <span className="text-sm font-bold truncate max-w-[320px]">“{label || 'Untitled plan'}”</span>
-                {pendingNewPlan ? (
-                  <Badge className="bg-amber-500 hover:bg-amber-500">Not saved yet</Badge>
-                ) : (
-                  <Badge variant="secondary">Test draft — not live</Badge>
-                )}
-              </>
-            ) : (
-              <span className="text-sm text-muted-foreground">no plan selected — create a new plan above or pick one to update</span>
-            )}
-          </div>
-          {(selectedId || pendingNewPlan) && (
-            <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" variant="outline" onClick={() => handleSave()} disabled={busy}>
-                <Save className="h-4 w-4 mr-1" /> Save changes
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => { setSaveAsName(`${label || 'Untitled plan'} copy`); setSaveAsOpen(true); }} disabled={busy}>
-                <Copy className="h-4 w-4 mr-1" /> Save as a new plan
-              </Button>
-              <Button size="sm" onClick={handlePublish} disabled={busy}>
-                <Rocket className="h-4 w-4 mr-1" /> Push live
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-min h-auto gap-2 bg-muted/60 p-2">
+        <TabsList className="flex w-full flex-wrap h-auto gap-1 bg-transparent p-0 border-b border-border rounded-none">
           {tabOrder.map((value, i) => {
             const tab = TOP_TABS.find(t => t.value === value);
             if (!tab) return null;
@@ -1185,9 +1153,8 @@ export default function PriceUpdatesTab() {
                 )}
                 <TabsTrigger
                   value={value}
-                  className="flex-1 py-3 text-base font-semibold rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground"
+                  className="py-2 px-4 text-sm font-medium rounded-t-md rounded-b-none border border-b-0 border-transparent text-muted-foreground hover:text-foreground data-[state=active]:border-border data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none"
                 >
-
                   <Icon className="h-4 w-4 mr-2" />
                   {tab.label}
                 </TabsTrigger>
@@ -1210,28 +1177,70 @@ export default function PriceUpdatesTab() {
         </TabsList>
 
 
-        <TabsContent value="any-compare" className="space-y-6 mt-4">
-          <AnyModelComparePanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
-        </TabsContent>
-
-        <TabsContent value="hybrid" className="space-y-6 mt-4">
-          <AugHybridVsLivePanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
-        </TabsContent>
-
-        <TabsContent value="codebase-live" className="space-y-6 mt-4">
-          <CodebaseVsLivePanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
-        </TabsContent>
-
-        <TabsContent value="codebase-hybrid" className="space-y-6 mt-4">
-          <CodebaseVsHybridPanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
-        </TabsContent>
-
-        <TabsContent value="compare" className="space-y-6 mt-4">
-          <LiveVsAug26Panel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
-          <AgeBandPricingPreview
-            onBuildDraft={handleBuildDraftFromModel}
-            onModelChange={setLiveEditorModel}
-          />
+        <TabsContent value="compare" className="space-y-4 mt-4">
+          <p className="text-sm text-muted-foreground">
+            Read-only comparisons of live pricing against earlier and test models. Nothing here changes a price unless you press a Push live button.
+          </p>
+          <Tabs value={compareTab} onValueChange={setCompareTab} className="w-full">
+            <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/40 p-1">
+              {COMPARE_TABS.map(t => (
+                <TabsTrigger key={t.value} value={t.value} className="text-sm">
+                  {t.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <TabsContent value="any-compare" className="mt-4">
+              <AnyModelComparePanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
+            </TabsContent>
+            <TabsContent value="hybrid" className="mt-4">
+              <AugHybridVsLivePanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
+            </TabsContent>
+            <TabsContent value="codebase-live" className="mt-4">
+              <CodebaseVsLivePanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
+            </TabsContent>
+            <TabsContent value="codebase-hybrid" className="mt-4">
+              <CodebaseVsHybridPanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
+            </TabsContent>
+            <TabsContent value="live-aug26" className="space-y-6 mt-4">
+              <LiveVsAug26Panel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
+              <AgeBandPricingPreview
+                onBuildDraft={handleBuildDraftFromModel}
+                onModelChange={setLiveEditorModel}
+              />
+            </TabsContent>
+            <TabsContent value="aug26" className="space-y-4 mt-4">
+              <SectionPushLiveBar
+                sectionLabel="Aug 2026 pricing"
+                liveLabel={liveVersion?.label ?? null}
+                liveWebDiscountPct={discountPct}
+                busy={busy}
+                onPush={handlePushModelLive}
+                candidates={[
+                  {
+                    key: 'aug26',
+                    label: 'Aug 2026 builder figures',
+                    description: 'Publishes the saved Aug 2026 figures.',
+                    getModel: () => effectiveLiveModel,
+                  },
+                ]}
+              />
+              <p className="text-sm text-muted-foreground">
+                <strong>Aug 2026 pricing.</strong> Saved as a draft, with every earlier version kept in the history. Check it in the Step 2 configuration replica underneath, then use “Copy to new draft” and publish from Edit prices when you want it live.
+              </p>
+              <Aug26PricingPanel />
+              <PriceTestStep2
+                title="Step 2 configuration — Aug 2026 pricing"
+                subtitle="Same controls the agents see on Quotes & Orders, priced with the Aug 2026 settings."
+                badgeText="Aug26"
+              />
+            </TabsContent>
+            <TabsContent value="original" className="space-y-4 mt-4">
+              <p className="text-sm text-muted-foreground">
+                <strong>Original code base pricing.</strong> The base pricing matrix that ships in the code (7/2026), compared cell by cell with whatever is live right now. Read-only — nothing here changes a price.
+              </p>
+              <CodebaseVsCurrentPanel liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="builder" className="space-y-6 mt-4">
