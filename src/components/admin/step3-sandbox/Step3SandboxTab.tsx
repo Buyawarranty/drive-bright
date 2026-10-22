@@ -12,14 +12,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Loader2, Lock, Search, Rocket } from 'lucide-react';
+import { Loader2, Lock, Search, Rocket, SlidersHorizontal, RotateCcw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
 import { usePricingVersions } from '@/hooks/usePricingVersions';
 import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import { readAppliedPromos, setPromoSuppressed } from '@/lib/promoStorage';
 import { CODE_WEB_DISCOUNT_PCT } from '@/lib/pricing/pricingVersionConfig';
-import type { SandboxOptions } from '@/lib/pricing/sandboxStep3Pricing';
+import {
+  DEFAULT_SANDBOX_TWEAKS,
+  tweaksAreLive,
+  type SandboxOptions,
+  type SandboxTweaks,
+} from '@/lib/pricing/sandboxStep3Pricing';
 import type { WebsiteQuoteVehicle } from '@/lib/pricing/websiteQuotePrice';
 import SandboxStep3Pricing, { type SandboxSelection } from './SandboxStep3Pricing';
 import SandboxStep4Preview from './SandboxStep4Preview';
@@ -47,6 +52,8 @@ export default function Step3SandboxTab() {
     voluntaryExcess: 100,
     labourRate: 50,
   });
+  const [tweaks, setTweaks] = useState<SandboxTweaks>({ ...DEFAULT_SANDBOX_TWEAKS });
+  const [gapTweak, setGapTweak] = useState<number | null>(null);
   const [selection, setSelection] = useState<SandboxSelection | null>(null);
   const [selectedVersionId, setSelectedVersionId] = useState<string>('');
   const [alsoUpdateQuotesOrders, setAlsoUpdateQuotesOrders] = useState(false);
@@ -68,6 +75,13 @@ export default function Step3SandboxTab() {
     [versions, selectedVersionId, liveVersion],
   );
   const gapPct = liveVersion?.step3_discount_pct ?? CODE_WEB_DISCOUNT_PCT;
+  const effectiveGapPct = gapTweak ?? gapPct;
+  const tweaked = !tweaksAreLive(tweaks) || gapTweak != null;
+
+  const resetTweaks = () => {
+    setTweaks({ ...DEFAULT_SANDBOX_TWEAKS });
+    setGapTweak(null);
+  };
 
   async function loadVehicle() {
     if (!reg.trim()) {
@@ -231,6 +245,74 @@ export default function Step3SandboxTab() {
         </CardContent>
       </Card>
 
+      {/* Price tweak settings — sandbox only, never saved or pushed */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4" />
+            Tweak prices
+            {tweaked && (
+              <span className="text-xs font-bold uppercase tracking-wide text-primary">
+                tweaks on
+              </span>
+            )}
+          </CardTitle>
+          <CardDescription>
+            Experiment with the figures below and watch every price on this page update. These
+            settings are sandbox-only — they are never saved, never pushed live, and the Push live
+            button below always pushes the plan's real prices.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-end gap-4">
+          <div className="space-y-1">
+            <Label className="text-xs">Adjust all prices (%)</Label>
+            <Input
+              type="number"
+              min={-50}
+              max={50}
+              step={1}
+              value={tweaks.priceAdjustPct}
+              onChange={e => setTweaks(t => ({ ...t, priceAdjustPct: Number(e.target.value) || 0 }))}
+              className="w-32"
+            />
+            <p className="text-xs text-muted-foreground">e.g. 5 = 5% dearer, −10 = 10% cheaper</p>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">PayLater yearly uplift (%)</Label>
+            <Input
+              type="number"
+              min={0}
+              max={50}
+              step={1}
+              value={tweaks.payLaterUpliftPct}
+              onChange={e => setTweaks(t => ({ ...t, payLaterUpliftPct: Number(e.target.value) || 0 }))}
+              className="w-32"
+            />
+            <p className="text-xs text-muted-foreground">Live rule: 10%</p>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Quotes & Orders gap (%)</Label>
+            <Input
+              type="number"
+              min={0}
+              max={50}
+              step={1}
+              value={effectiveGapPct}
+              onChange={e => {
+                const v = Number(e.target.value);
+                setGapTweak(Number.isFinite(v) ? v : null);
+              }}
+              className="w-32"
+            />
+            <p className="text-xs text-muted-foreground">Live gap: {gapPct}%</p>
+          </div>
+          <Button variant="outline" onClick={resetTweaks} disabled={!tweaked}>
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Back to live prices
+          </Button>
+        </CardContent>
+      </Card>
+
       {vehicle && selectedVersion && (
         <DraftPricingScope
           matrix={selectedVersion.admin_matrix}
@@ -250,8 +332,14 @@ export default function Step3SandboxTab() {
                 options={options}
                 onOptionsChange={setOptions}
                 onSelect={setSelection}
+                tweaks={tweaks}
               />
-              <QuotesOrdersReviewPanel vehicle={vehicle} options={options} gapPct={gapPct} />
+              <QuotesOrdersReviewPanel
+                vehicle={vehicle}
+                options={options}
+                gapPct={effectiveGapPct}
+                tweaks={tweaks}
+              />
             </>
           )}
         </DraftPricingScope>

@@ -12,9 +12,11 @@ import {
 import { Check, Clock, Repeat } from 'lucide-react';
 import {
   sandboxAllTerms,
+  tweaksAreLive,
   type SandboxOptions,
   type SandboxTermPrice,
   type SandboxTerm,
+  type SandboxTweaks,
 } from '@/lib/pricing/sandboxStep3Pricing';
 import type { WebsiteQuoteVehicle } from '@/lib/pricing/websiteQuotePrice';
 import { BAW_PAYLATER_LABEL } from '@/lib/bawPayLater';
@@ -46,6 +48,8 @@ interface SandboxStep3PricingProps {
   options: SandboxOptions;
   onOptionsChange: (options: SandboxOptions) => void;
   onSelect: (selection: SandboxSelection) => void;
+  /** Sandbox-only price tweaks — change the preview, never the live prices. */
+  tweaks?: SandboxTweaks;
 }
 
 /**
@@ -64,14 +68,16 @@ export default function SandboxStep3Pricing({
   options,
   onOptionsChange,
   onSelect,
+  tweaks,
 }: SandboxStep3PricingProps) {
   const [selectedTerm, setSelectedTerm] = useState<SandboxTerm | null>(null);
   const { claimLimit, voluntaryExcess, labourRate } = options;
 
   const terms = useMemo(
-    () => sandboxAllTerms(vehicle, options),
-    [vehicle, options],
+    () => sandboxAllTerms(vehicle, options, tweaks),
+    [vehicle, options, tweaks],
   );
+  const tweaked = !tweaksAreLive(tweaks);
 
   const handleSelect = (t: SandboxTermPrice) => {
     setSelectedTerm(t.term);
@@ -217,6 +223,11 @@ export default function SandboxStep3Pricing({
       <p className="text-xs text-muted-foreground">
         Sandbox preview — prices come from the same engine as the live step 3, so step 4 shows
         identical figures. Nothing here reaches customers.
+        {tweaked && (
+          <span className="block mt-1 font-semibold text-foreground">
+            Price tweaks are on — these are experimental figures, not the live prices.
+          </span>
+        )}
       </p>
     </div>
   );
