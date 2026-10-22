@@ -237,6 +237,8 @@ export default function PriceUpdatesTab() {
   // Figures currently typed in the Price updates editor, so the Step 2 replica follows them live.
   const [liveEditorModel, setLiveEditorModel] = useState<any>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** True when "Create new pricing plan" has loaded a local copy of live that is NOT saved to the database yet. */
+  const [pendingNewPlan, setPendingNewPlan] = useState(false);
   const [label, setLabel] = useState('');
   const [notes, setNotes] = useState('');
   const [newPlanName, setNewPlanName] = useState('');
@@ -281,12 +283,13 @@ export default function PriceUpdatesTab() {
 
   // Pick the first draft once loaded.
   useEffect(() => {
-    if (selectedId || drafts.length === 0) return;
+    if (selectedId || pendingNewPlan || drafts.length === 0) return;
     loadIntoEditor(drafts[0]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drafts.length]);
 
   function loadIntoEditor(v: PricingVersion) {
+    setPendingNewPlan(false);
     setSelectedId(v.id);
     setLabel(v.label);
     setNotes(v.notes ?? '');
@@ -378,28 +381,43 @@ export default function PriceUpdatesTab() {
   }
 
 
-  async function handleCreateDraft(name?: string) {
-    setBusy(true);
-    try {
-      const v = await createVersion(
-        name?.trim() || `Test pricing ${new Date().toLocaleDateString('en-GB')}`,
-        roundMatrixWhole(liveVersion ? liveVersion.admin_matrix : buildCodeAdminMatrix()),
-        readWebsiteDiscountDraft(),
-        ''
-      );
-      // Start from the live plan's vehicle figures so the new plan is complete.
-      if (liveVersion?.vehicle_factor_model) {
-        await saveVersion(v.id, { vehicle_factor_model: liveVersion.vehicle_factor_model });
-        v.vehicle_factor_model = liveVersion.vehicle_factor_model;
-      }
-      loadIntoEditor(v);
-      setNewPlanName('');
-      toast.success(`New pricing plan “${v.label}” created — a copy of live. Nothing is live yet.`);
-    } catch (e: any) {
-      toast.error(e?.message || 'Could not create draft');
-    } finally {
-      setBusy(false);
-    }
+  /**
+   * Start a new plan LOCALLY — nothing is written to the database here. The
+   * editor loads a copy of the live plan, and the plan is only saved when you
+   * press Save in a section or Push live. This keeps the plan list free of
+   * untouched copies.
+   */
+  function handleCreateDraft(name?: string) {
+    const planName = name?.trim() || `Test pricing ${new Date().toLocaleDateString('en-GB')}`;
+    setSelectedId(null);
+    setPendingNewPlan(true);
+    setLabel(planName);
+    setNotes('');
+    setDiscountPct(readWebsiteDiscountDraft());
+    setMatrix(roundMatrixWhole(liveVersion ? liveVersion.admin_matrix : buildCodeAdminMatrix()));
+    setNewPlanName('');
+    toast.success(`New plan “${planName}” started — a copy of live. Nothing is saved yet; press Save in a section when you're ready.`);
+  }
+
+  /**
+   * Saves the local new plan to the database the first time it is saved or
+   * published. Returns the draft id, or null when there is nothing to work on.
+   */
+  async function ensureDraftPersisted(): Promise<string | null> {
+    if (selectedId && drafts.some(d => d.id === selectedId)) return selectedId;
+    if (!pendingNewPlan) return null;
+    const v = await createVersion(
+      label.trim() || `Test pricing ${new Date().toLocaleDateString('en-GB')}`,
+      roundMatrixWhole(matrix),
+      discountPct,
+      notes,
+      currentClaimLimitFactors(),
+      currentLabourRateFactors(),
+      liveVersion?.vehicle_factor_model ?? null
+    );
+    setSelectedId(v.id);
+    setPendingNewPlan(false);
+    return v.id;
   }
 
   /**
@@ -518,10 +536,13 @@ export default function PriceUpdatesTab() {
 
 
   async function handleSave(adjustedMatrix?: PricingMatrixShape): Promise<boolean> {
-    if (!selectedId || !drafts.some(d => d.id === selectedId)) return false;
+    if (!selectedId && !pendingNewPlan) return false;
+    const wasPending = pendingNewPlan;
     setBusy(true);
     try {
-      await saveVersion(selectedId, {
+      const id = await ensureDraftPersisted();
+      if (!id) return false;
+      await saveVersion(id, {
         label,
         notes,
         admin_matrix: roundMatrixWhole(adjustedMatrix ?? matrix),
@@ -531,7 +552,7 @@ export default function PriceUpdatesTab() {
         vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
       if (adjustedMatrix) setMatrix(adjustedMatrix);
-      toast.success('Draft saved (test only — not live)');
+      toast.success(wasPending ? 'Plan saved — still a test, nothing is live' : 'Draft saved (test only — not live)');
       return true;
     } catch (e: any) {
       toast.error(e?.message || 'Could not save draft');
@@ -741,7 +762,7 @@ export default function PriceUpdatesTab() {
   }
 
   async function handlePublish() {
-    if (!selectedId) {
+    if (!selectedId && !pendingNewPlan) {
       try {
         const savedModel = localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY);
         if (!savedModel) {
@@ -788,7 +809,7 @@ export default function PriceUpdatesTab() {
 
   /** Runs after the "Are you sure?" dialog — publishes the draft with the chosen web gap. */
   async function confirmPublish() {
-    if (!selectedId) return;
+    if (!selectedId && !pendingNewPlan) return;
     const { matrix: safeMatrix, invalid } = normalizeMatrixForPublish(
       matrix,
       liveVersion?.admin_matrix || codeMatrix
@@ -800,13 +821,15 @@ export default function PriceUpdatesTab() {
     }
     setBusy(true);
     try {
+      const id = await ensureDraftPersisted();
+      if (!id) throw new Error('No draft to publish');
       const factors = currentClaimLimitFactors();
       const labourFactors = currentLabourRateFactors();
       const publishDiscountPct = effectiveDiscountPct(pushGapPct);
       setDiscountPct(publishDiscountPct);
       saveWebsiteDiscountDraft(publishDiscountPct);
       setMatrix(safeMatrix);
-      await saveVersion(selectedId, {
+      await saveVersion(id, {
         label,
         notes,
         admin_matrix: safeMatrix,
@@ -815,7 +838,7 @@ export default function PriceUpdatesTab() {
         labour_rate_factors: labourFactors,
         vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
-      await publishVersion(selectedId);
+      await publishVersion(id);
       applyLivePricingVersion({
         status: 'live',
         admin_matrix: safeMatrix,
@@ -911,7 +934,7 @@ export default function PriceUpdatesTab() {
         </div>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-sm">
           {([
-            ['Name and create', 'Type a name below and press Create new pricing plan. It copies everything from live.', null, null],
+            ['Name and create', 'Type a name below and press Create new pricing plan. It loads a copy of live into the editor — nothing is saved until you press Save in a section.', null, null],
             ['Set the prices', 'Base prices for each term, excess and claim limit. Type prices in, or apply a percentage increase or decrease.', 'editor', 'Open price grid'],
             ['Set vehicle variables', 'Age bands, mileage bands, powertrain (petrol, diesel, hybrid, electric), vehicle type, model risk, labour rate and claim-limit factors.', 'builder', 'Open vehicle variables'],
             ['Check exclusions', 'Vehicles we never quote (e.g. supercars, M/AMG/RS). This list applies to every plan automatically.', 'tools', 'Open exclusions'],
@@ -922,15 +945,16 @@ export default function PriceUpdatesTab() {
               <p className="font-semibold">{title}</p>
               <p className="text-muted-foreground flex-1">{text}</p>
               {tab && (
-                <Button size="sm" variant="outline" className="mt-2" disabled={!selectedId && tab !== 'tools'} onClick={() => openTab(tab)}>
+                <Button size="sm" variant="outline" className="mt-2" disabled={!selectedId && !pendingNewPlan && tab !== 'tools'} onClick={() => openTab(tab)}>
                   {cta}
                 </Button>
               )}
             </li>
           ))}
         </ol>
-        {!selectedId && <p className="text-xs text-muted-foreground">Create or choose a plan first to unlock steps 2 and 3.</p>}
+        {!selectedId && !pendingNewPlan && <p className="text-xs text-muted-foreground">Create or choose a plan first to unlock steps 2 and 3.</p>}
         {selectedId && <p className="text-sm"><strong>Now setting up:</strong> “{label || 'Untitled draft'}” — work through steps 2 to 5. Remember to save in each section.</p>}
+        {pendingNewPlan && <p className="text-sm"><strong>Now setting up:</strong> “{label || 'Untitled plan'}” — <span className="text-amber-700 font-medium">not saved yet</span>. Work through steps 2 to 5; the plan is only stored when you press Save in a section or Push live.</p>}
         <div className="flex flex-wrap items-end gap-2">
           <div className="space-y-1">
             <label htmlFor="new-plan-name" className="text-sm font-semibold">New plan name</label>
@@ -994,7 +1018,7 @@ export default function PriceUpdatesTab() {
                 disabled={busy}
                 onChange={e => { const v = drafts.find(d => d.id === e.target.value); if (v) loadIntoEditor(v); }}
               >
-                {!selectedId && <option value="">No test draft selected</option>}
+                {!selectedId && <option value="">{pendingNewPlan ? `New plan: ${label || 'untitled'} (not saved yet)` : 'No test draft selected'}</option>}
                 {drafts.map(d => <option key={d.id} value={d.id}>{d.label || 'Untitled draft'}</option>)}
               </select>
             </div>
@@ -1002,7 +1026,7 @@ export default function PriceUpdatesTab() {
             <Button size="sm" variant="outline" onClick={() => openTab('editor')}>View or edit price grid</Button>
           </div>
           <p className="text-sm">
-            <strong>Push live will publish:</strong> {selectedId ? <>“{label || 'Untitled draft'}”</> : 'your saved vehicle risk figures as a new plan'}.
+            <strong>Push live will publish:</strong> {selectedId || pendingNewPlan ? <>“{label || 'Untitled draft'}”{pendingNewPlan && ' (will be saved first)'}</> : 'your saved vehicle risk figures as a new plan'}.
             Pick a different plan above to push that one instead, or create a new test draft.
           </p>
           <div className="text-xs text-muted-foreground space-y-1">
@@ -1450,7 +1474,7 @@ export default function PriceUpdatesTab() {
             {loading && <span className="text-sm text-muted-foreground">Loading…</span>}
           </div>
 
-          {!selectedId ? (
+          {!selectedId && !pendingNewPlan ? (
             <p className="text-sm text-muted-foreground">
               Create a test draft to start. It is pre-filled with the prices currently in use, so
               you only change what you need.
@@ -1468,7 +1492,7 @@ export default function PriceUpdatesTab() {
                 </div>
               </div>
 
-              <PercentagePriceSave key={selectedId} matrix={matrix} busy={busy || !drafts.some(d => d.id === selectedId)} onSave={handleSave} onPublish={handlePublish} />
+              <PercentagePriceSave key={selectedId ?? 'new-plan'} matrix={matrix} busy={busy || (!pendingNewPlan && !drafts.some(d => d.id === selectedId))} onSave={handleSave} onPublish={handlePublish} />
 
 
               <div className="space-y-1">
