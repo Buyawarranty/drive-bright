@@ -934,7 +934,7 @@ export default function PriceUpdatesTab() {
         </div>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-sm">
           {([
-            ['Name and create', 'Type a name below and press Create new pricing plan. It copies everything from live.', null, null],
+            ['Name and create', 'Type a name below and press Create new pricing plan. It loads a copy of live into the editor — nothing is saved until you press Save in a section.', null, null],
             ['Set the prices', 'Base prices for each term, excess and claim limit. Type prices in, or apply a percentage increase or decrease.', 'editor', 'Open price grid'],
             ['Set vehicle variables', 'Age bands, mileage bands, powertrain (petrol, diesel, hybrid, electric), vehicle type, model risk, labour rate and claim-limit factors.', 'builder', 'Open vehicle variables'],
             ['Check exclusions', 'Vehicles we never quote (e.g. supercars, M/AMG/RS). This list applies to every plan automatically.', 'tools', 'Open exclusions'],
