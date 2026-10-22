@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Check, Clock, Repeat } from 'lucide-react';
+import { Check, Clock, FlaskConical, Repeat, Wallet } from 'lucide-react';
 import {
   sandboxAllTerms,
   tweaksAreLive,
@@ -18,8 +18,13 @@ import {
   type SandboxTerm,
   type SandboxTweaks,
 } from '@/lib/pricing/sandboxStep3Pricing';
+import {
+  computePaymentMethods,
+  paymentSettingsAreLive,
+  type SandboxPaymentQuote,
+  type SandboxPaymentSettings,
+} from '@/lib/pricing/sandboxPaymentMethods';
 import type { WebsiteQuoteVehicle } from '@/lib/pricing/websiteQuotePrice';
-import { BAW_PAYLATER_LABEL } from '@/lib/bawPayLater';
 
 const CLAIM_LIMITS = [1000, 2000, 3000];
 const EXCESSES = [0, 50, 100, 150, 250, 500];
@@ -29,6 +34,21 @@ const TERM_TITLES: Record<SandboxTerm, string> = {
   '12months': '1-Year Cover',
   '24months': '2-Year Cover',
   '36months': '3-Year Cover',
+};
+
+const METHOD_ICONS: Record<string, typeof Clock> = {
+  instalments12: Clock,
+  bawPayLater: Repeat,
+  klarna: Wallet,
+  zopa: Wallet,
+  payInFull: Check,
+};
+
+const UNIT_LABEL: Record<SandboxPaymentQuote['unit'], string> = {
+  mo: '/mo',
+  yr: '/yr',
+  once: '',
+  payment: ' each',
 };
 
 export interface SandboxSelection {
@@ -50,15 +70,17 @@ interface SandboxStep3PricingProps {
   onSelect: (selection: SandboxSelection) => void;
   /** Sandbox-only price tweaks — change the preview, never the live prices. */
   tweaks?: SandboxTweaks;
+  /** Which ways to pay are shown, and their variables. */
+  paymentSettings?: SandboxPaymentSettings;
 }
 
 /**
  * NEW STEP 3 DESIGN (sandbox only — never rendered on the live website).
  *
  * Each term tile leads with ONE clear price: the 12-instalment monthly figure,
- * framed as the money-saving choice. For 2/3-year cover, BAW PayLater appears
- * as a secondary "or £X a year" line so customers see both ways to pay without
- * two equally-sized prices competing.
+ * framed as the money-saving choice. Every other enabled way to pay (BAW
+ * PayLater, Klarna, Zopa, pay in full) appears as a secondary block so
+ * customers see the choices without two equally-sized prices competing.
  *
  * All figures come from the shared pricing engine, so they match the real
  * Step 3 and Step 4 exactly.
@@ -69,6 +91,7 @@ export default function SandboxStep3Pricing({
   onOptionsChange,
   onSelect,
   tweaks,
+  paymentSettings,
 }: SandboxStep3PricingProps) {
   const [selectedTerm, setSelectedTerm] = useState<SandboxTerm | null>(null);
   const { claimLimit, voluntaryExcess, labourRate } = options;
@@ -77,7 +100,7 @@ export default function SandboxStep3Pricing({
     () => sandboxAllTerms(vehicle, options, tweaks),
     [vehicle, options, tweaks],
   );
-  const tweaked = !tweaksAreLive(tweaks);
+  const tweaked = !tweaksAreLive(tweaks) || !paymentSettingsAreLive(paymentSettings);
 
   const handleSelect = (t: SandboxTermPrice) => {
     setSelectedTerm(t.term);
@@ -146,6 +169,10 @@ export default function SandboxStep3Pricing({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {terms.map(t => {
           const isSelected = selectedTerm === t.term;
+          const methods = paymentSettings ? computePaymentMethods(t, paymentSettings) : null;
+          const lead = methods?.find(m => m.id === 'instalments12');
+          const secondary = methods?.filter(m => m.id !== 'instalments12' && m.id !== 'payInFull') ?? [];
+          const payInFull = methods?.find(m => m.id === 'payInFull');
           return (
             <Card
               key={t.term}
@@ -164,46 +191,55 @@ export default function SandboxStep3Pricing({
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      12 monthly payments
+                      {lead?.label ?? '12 monthly payments'}
                     </span>
                   </div>
                   <p className="text-3xl font-bold mt-1">
-                    £{t.monthly}
+                    £{(lead?.amount ?? t.monthly).toLocaleString()}
                     <span className="text-base font-normal text-muted-foreground">/mo</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
                     £{t.total.toLocaleString()} total ·{' '}
                     <span className="font-semibold text-foreground">
-                      pay over 12 months and save
+                      {lead?.note ?? 'pay over 12 months and save'}
                     </span>
                   </p>
                 </div>
 
-                {/* Secondary: BAW PayLater yearly (2/3-year cover only) */}
-                {t.payLaterYearly != null && (
-                  <div className="rounded-md border border-dashed p-3 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Repeat className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {BAW_PAYLATER_LABEL}
-                      </span>
+                {/* Secondary ways to pay — PayLater, Klarna, Zopa… */}
+                {secondary.map(q => {
+                  const Icon = METHOD_ICONS[q.id] ?? Wallet;
+                  return (
+                    <div key={q.id} className="rounded-md border border-dashed p-3 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          {q.label}
+                        </span>
+                        {q.experimental && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-primary">
+                            <FlaskConical className="h-3 w-3" />
+                            experiment
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xl font-bold">
+                        £{q.amount.toLocaleString()}
+                        <span className="text-sm font-normal text-muted-foreground">
+                          {UNIT_LABEL[q.unit]}
+                        </span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">{q.note}</p>
                     </div>
-                    <p className="text-xl font-bold">
-                      £{t.payLaterYearly.toLocaleString()}
-                      <span className="text-sm font-normal text-muted-foreground">/yr</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Collected once a year · £{t.payLaterTermTotal?.toLocaleString()} over {t.years} years
-                      {t.payLaterExtra != null && t.payLaterExtra > 0 && (
-                        <> · £{t.payLaterExtra.toLocaleString()} more than monthly</>
-                      )}
-                    </p>
-                  </div>
-                )}
+                  );
+                })}
 
                 {/* Pay in full */}
                 <p className="text-xs text-muted-foreground">
-                  Or pay in full today: <span className="font-semibold text-foreground">£{t.payInFull.toLocaleString()}</span>
+                  Or pay in full today:{' '}
+                  <span className="font-semibold text-foreground">
+                    £{(payInFull?.amount ?? t.payInFull).toLocaleString()}
+                  </span>
                   {t.payInFullSaving > 0 && <> (save £{t.payInFullSaving.toLocaleString()})</>}
                 </p>
 
@@ -225,7 +261,7 @@ export default function SandboxStep3Pricing({
         identical figures. Nothing here reaches customers.
         {tweaked && (
           <span className="block mt-1 font-semibold text-foreground">
-            Price tweaks are on — these are experimental figures, not the live prices.
+            Price tweaks or experimental payment options are on — these are not the live prices.
           </span>
         )}
       </p>
