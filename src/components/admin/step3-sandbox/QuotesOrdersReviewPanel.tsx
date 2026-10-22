@@ -22,15 +22,15 @@ interface QuotesOrdersReviewPanelProps {
  * Quotes & Orders (always the website price + the gap). Lets you review both
  * surfaces at once before anything is pushed live.
  */
-export default function QuotesOrdersReviewPanel({ vehicle, options, gapPct }: QuotesOrdersReviewPanelProps) {
+export default function QuotesOrdersReviewPanel({ vehicle, options, gapPct, tweaks }: QuotesOrdersReviewPanelProps) {
   const rows = useMemo(() => {
-    return sandboxAllTerms(vehicle, options).map(t => ({
+    return sandboxAllTerms(vehicle, options, tweaks).map(t => ({
       term: t.term,
       years: t.years,
       webTotal: t.total,
       qoTotal: quotesOrdersTotal(t.total, gapPct),
     }));
-  }, [vehicle, options, gapPct]);
+  }, [vehicle, options, gapPct, tweaks]);
 
   const TERM_LABELS: Record<string, string> = {
     '12months': '1-Year Cover',

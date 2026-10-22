@@ -68,14 +68,16 @@ export default function SandboxStep3Pricing({
   options,
   onOptionsChange,
   onSelect,
+  tweaks,
 }: SandboxStep3PricingProps) {
   const [selectedTerm, setSelectedTerm] = useState<SandboxTerm | null>(null);
   const { claimLimit, voluntaryExcess, labourRate } = options;
 
   const terms = useMemo(
-    () => sandboxAllTerms(vehicle, options),
-    [vehicle, options],
+    () => sandboxAllTerms(vehicle, options, tweaks),
+    [vehicle, options, tweaks],
   );
+  const tweaked = !tweaksAreLive(tweaks);
 
   const handleSelect = (t: SandboxTermPrice) => {
     setSelectedTerm(t.term);
