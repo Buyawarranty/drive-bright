@@ -296,6 +296,7 @@ const App = () => {
                     <Route path="/" element={<Index />} />
                     <Route path="/home" element={<Navigate to="/" replace />} />
                     <Route path="/home/" element={<Navigate to="/" replace />} />
+                    <Route path="/__sandbox-tweaks" element={<__SandboxTweaksRender />} />
 
                     <Route path="/faq/" element={<FAQ />} />
                     <Route path="/thank-you/" element={<ThankYou />} />
