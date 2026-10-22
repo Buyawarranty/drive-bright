@@ -1254,17 +1254,17 @@ export default function PriceUpdatesTab() {
           <FullyExcludedListCard />
           <Tabs defaultValue="riskbands" className="w-full">
 
-            <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
-              <TabsTrigger value="riskbands" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
+            <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/40 p-1">
+              <TabsTrigger value="riskbands" className="text-sm">
                 <Layers className="h-4 w-4 mr-2" /> Risk bands &amp; vehicle types
               </TabsTrigger>
-              <TabsTrigger value="excluded" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
+              <TabsTrigger value="excluded" className="text-sm">
                 <Ban className="h-4 w-4 mr-2" /> Excluded vehicles
               </TabsTrigger>
-              <TabsTrigger value="longplans" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
+              <TabsTrigger value="longplans" className="text-sm">
                 <Percent className="h-4 w-4 mr-2" /> Longer plans (24 &amp; 36)
               </TabsTrigger>
-              <TabsTrigger value="engine" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
+              <TabsTrigger value="engine" className="text-sm">
                 <FlaskConical className="h-4 w-4 mr-2" /> Pricing engine (draft)
               </TabsTrigger>
             </TabsList>
