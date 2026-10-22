@@ -9,10 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Check, Clock, CalendarRepeat } from 'lucide-react';
 import {
   sandboxAllTerms,
+  type SandboxOptions,
   type SandboxTermPrice,
   type SandboxTerm,
 } from '@/lib/pricing/sandboxStep3Pricing';
@@ -43,6 +43,8 @@ export interface SandboxSelection {
 
 interface SandboxStep3PricingProps {
   vehicle: WebsiteQuoteVehicle;
+  options: SandboxOptions;
+  onOptionsChange: (options: SandboxOptions) => void;
   onSelect: (selection: SandboxSelection) => void;
 }
 
@@ -57,15 +59,18 @@ interface SandboxStep3PricingProps {
  * All figures come from the shared pricing engine, so they match the real
  * Step 3 and Step 4 exactly.
  */
-export default function SandboxStep3Pricing({ vehicle, onSelect }: SandboxStep3PricingProps) {
-  const [claimLimit, setClaimLimit] = useState(2000);
-  const [voluntaryExcess, setVoluntaryExcess] = useState(100);
-  const [labourRate, setLabourRate] = useState(50);
+export default function SandboxStep3Pricing({
+  vehicle,
+  options,
+  onOptionsChange,
+  onSelect,
+}: SandboxStep3PricingProps) {
   const [selectedTerm, setSelectedTerm] = useState<SandboxTerm | null>(null);
+  const { claimLimit, voluntaryExcess, labourRate } = options;
 
   const terms = useMemo(
-    () => sandboxAllTerms(vehicle, { claimLimit, voluntaryExcess, labourRate }),
-    [vehicle, claimLimit, voluntaryExcess, labourRate],
+    () => sandboxAllTerms(vehicle, options),
+    [vehicle, options],
   );
 
   const handleSelect = (t: SandboxTermPrice) => {
@@ -89,7 +94,10 @@ export default function SandboxStep3Pricing({ vehicle, onSelect }: SandboxStep3P
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-1">
           <Label className="text-xs">Claim limit</Label>
-          <Select value={String(claimLimit)} onValueChange={v => setClaimLimit(Number(v))}>
+          <Select
+            value={String(claimLimit)}
+            onValueChange={v => onOptionsChange({ ...options, claimLimit: Number(v) })}
+          >
             <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
             <SelectContent>
               {CLAIM_LIMITS.map(l => (
@@ -100,7 +108,10 @@ export default function SandboxStep3Pricing({ vehicle, onSelect }: SandboxStep3P
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Voluntary excess</Label>
-          <Select value={String(voluntaryExcess)} onValueChange={v => setVoluntaryExcess(Number(v))}>
+          <Select
+            value={String(voluntaryExcess)}
+            onValueChange={v => onOptionsChange({ ...options, voluntaryExcess: Number(v) })}
+          >
             <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
             <SelectContent>
               {EXCESSES.map(e => (
@@ -111,7 +122,10 @@ export default function SandboxStep3Pricing({ vehicle, onSelect }: SandboxStep3P
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Labour rate</Label>
-          <Select value={String(labourRate)} onValueChange={v => setLabourRate(Number(v))}>
+          <Select
+            value={String(labourRate)}
+            onValueChange={v => onOptionsChange({ ...options, labourRate: Number(v) })}
+          >
             <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
             <SelectContent>
               {LABOUR_RATES.map(r => (
