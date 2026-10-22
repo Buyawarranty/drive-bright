@@ -57,6 +57,7 @@ import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 import CodebaseVsCurrentPanel from '@/components/admin/pricing/CodebaseVsCurrentPanel';
 import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthToggle';
 import PriceUpdateLogPanel from '@/components/admin/pricing/PriceUpdateLogPanel';
+import PushLiveConfirmDialog from '@/components/admin/pricing/PushLiveConfirmDialog';
 import PriceVersionPerformancePanel from '@/components/admin/pricing/PriceVersionPerformancePanel';
 import ExcludedVehiclesPanel from '@/components/admin/pricing/ExcludedVehiclesPanel';
 import FullyExcludedListCard from '@/components/admin/pricing/FullyExcludedListCard';
@@ -299,29 +300,43 @@ export default function PriceUpdatesTab() {
   /** History: version opened in the quick-summary dialog. */
   const [previewVersion, setPreviewVersion] = useState<PricingVersion | null>(null);
 
-  /** History: make a saved/archived version the live pricing again. */
+  /** Push-live confirmation: which action is being confirmed, and the web gap chosen in the dialog. */
+  const [pushConfirm, setPushConfirm] = useState<
+    { mode: 'publish' | 'restore' | 'codebase'; version?: PricingVersion; filledCount?: number } | null
+  >(null);
+  const [pushGapPct, setPushGapPct] = useState<number>(10);
+
+  /** History: ask to make a saved/archived version the live pricing again. */
   async function handleRestoreVersion(v: PricingVersion) {
-    const { matrix: safeMatrix, invalid } = normalizeMatrixForPublish(
+    const { invalid } = normalizeMatrixForPublish(
       cloneMatrix(v.admin_matrix),
       liveVersion?.admin_matrix || codeMatrix
     );
     if (invalid.length) {
       toast.error(
-        `Cannot restore — ${invalid.length} price cell(s) are missing or zero: ${invalid
+        `Cannot push live — ${invalid.length} price cell(s) are missing or zero: ${invalid
           .slice(0, 3)
           .join('; ')}${invalid.length > 3 ? '…' : ''}`
       );
       return;
     }
-    const pct = effectiveDiscountPct(Number(v.step3_discount_pct));
-    if (
-      !window.confirm(
-        `Restore "${v.label}" as the live pricing?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ${pct}%.`
-      )
-    )
-      return;
+    setPushGapPct(effectiveDiscountPct(Number(v.step3_discount_pct)));
+    setPushConfirm({ mode: 'restore', version: v });
+  }
+
+  /** Runs after the "Are you sure?" dialog — republishes the stored version with the chosen web gap. */
+  async function confirmRestore() {
+    const v = pushConfirm?.mode === 'restore' ? pushConfirm.version : null;
+    if (!v) return;
+    const { matrix: safeMatrix } = normalizeMatrixForPublish(
+      cloneMatrix(v.admin_matrix),
+      liveVersion?.admin_matrix || codeMatrix
+    );
+    const pct = effectiveDiscountPct(pushGapPct);
     setBusy(true);
     try {
+      saveWebsiteDiscountDraft(pct);
+      await saveVersion(v.id, { step3_discount_pct: pct });
       await publishVersion(v.id);
       applyLivePricingVersion({
         status: 'live',
@@ -333,9 +348,10 @@ export default function PriceUpdatesTab() {
       });
       loadIntoEditor({ ...v, admin_matrix: safeMatrix, step3_discount_pct: pct } as PricingVersion);
       setPreviewVersion(null);
-      toast.success(`"${v.label}" restored live — reload any open quote pages`);
+      setPushConfirm(null);
+      toast.success(`"${v.label}" pushed live — reload any open quote pages`);
     } catch (e: any) {
-      toast.error(e?.message || 'Could not restore this version');
+      toast.error(e?.message || 'Could not push this version live');
     } finally {
       setBusy(false);
     }
@@ -766,23 +782,29 @@ export default function PriceUpdatesTab() {
       return;
     }
 
-    if (
-      !window.confirm(
-        `Push the pricing plan “${label || 'Untitled draft'}” live?\n\nVehicle figures included: ${pushModel?.bands?.length ?? 0} age bands, ${pushModel?.mileageBands?.length ?? 0} mileage bands, ${pushModel?.powertrains?.length ?? 0} powertrain factors, ${pushModel?.vehicleTypes?.length ?? 0} vehicle type factors.\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ` +
-          effectiveDiscountPct(discountPct) +
-          '%, rounded to the nearest pound.' +
-          (filled.length
-            ? `\n\n${filled.length} blank cell(s) will be filled from the current live prices so no page loses a price.`
-            : '')
-      )
-    )
+    setPushGapPct(effectiveDiscountPct(discountPct));
+    setPushConfirm({ mode: 'publish', filledCount: filled.length });
+  }
+
+  /** Runs after the "Are you sure?" dialog — publishes the draft with the chosen web gap. */
+  async function confirmPublish() {
+    if (!selectedId) return;
+    const { matrix: safeMatrix, invalid } = normalizeMatrixForPublish(
+      matrix,
+      liveVersion?.admin_matrix || codeMatrix
+    );
+    if (invalid.length) {
+      toast.error(`Cannot push live — ${invalid.length} price cell(s) are missing or zero.`);
+      setPushConfirm(null);
       return;
+    }
     setBusy(true);
     try {
       const factors = currentClaimLimitFactors();
       const labourFactors = currentLabourRateFactors();
-      const publishDiscountPct = effectiveDiscountPct(discountPct);
+      const publishDiscountPct = effectiveDiscountPct(pushGapPct);
       setDiscountPct(publishDiscountPct);
+      saveWebsiteDiscountDraft(publishDiscountPct);
       setMatrix(safeMatrix);
       await saveVersion(selectedId, {
         label,
@@ -802,6 +824,7 @@ export default function PriceUpdatesTab() {
         labour_rate_factors: labourFactors,
         vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
+      setPushConfirm(null);
       toast.success('Pricing published live — reload any open quote pages');
 
     } catch (e: any) {
@@ -813,14 +836,19 @@ export default function PriceUpdatesTab() {
 
 
 
-  async function handleRevert() {
-    if (!window.confirm('Revert all pricing back to the built-in code prices?')) return;
+  function handleRevert() {
+    setPushConfirm({ mode: 'codebase' });
+  }
+
+  /** Runs after the "Are you sure?" dialog — puts the built-in 7/2026 code pricing back live. */
+  async function confirmCodebase() {
     setBusy(true);
     try {
       await revertToCode();
-      toast.success('Reverted to the built-in code pricing');
+      setPushConfirm(null);
+      toast.success('Code base pricing (7/2026) is live again');
     } catch (e: any) {
-      toast.error(e?.message || 'Could not revert');
+      toast.error(e?.message || 'Could not push code base pricing live');
     } finally {
       setBusy(false);
     }
@@ -921,7 +949,7 @@ export default function PriceUpdatesTab() {
         </div>
       </section>
 
-      {/* Always-visible go-live controls so Push live / Revert are never buried in a tab */}
+      {/* Always-visible go-live controls so Push live is never buried in a tab */}
       <div className="rounded-lg border-2 border-primary/30 bg-muted/40 p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1">
@@ -947,7 +975,7 @@ export default function PriceUpdatesTab() {
               New test draft
             </Button>
             <Button variant="outline" size="sm" onClick={handleRevert} disabled={busy || !liveVersion}>
-              <RotateCcw className="h-4 w-4 mr-1" /> Revert to code base pricing 7/2026
+              <RotateCcw className="h-4 w-4 mr-1" /> Push code base pricing (7/2026) live
             </Button>
             <Button size="sm" onClick={handlePublish} disabled={busy}>
               <Rocket className="h-4 w-4 mr-1" /> Push live
@@ -1027,7 +1055,7 @@ export default function PriceUpdatesTab() {
         <PriceUpdateLogPanel
           versions={versions}
           busy={busy}
-          onRevert={handleRestoreVersion}
+          onPushLive={handleRestoreVersion}
           onSaveNote={async (id, notes) => { await saveVersion(id, { notes }); }}
         />
 
@@ -1394,7 +1422,7 @@ export default function PriceUpdatesTab() {
                 <Badge variant="secondary">Live: built-in code pricing</Badge>
               )}
               <Button variant="outline" size="sm" onClick={handleRevert} disabled={busy || !liveVersion}>
-                <RotateCcw className="h-4 w-4 mr-1" /> Revert to code base pricing 7/2026
+                <RotateCcw className="h-4 w-4 mr-1" /> Push code base pricing (7/2026) live
               </Button>
             </div>
 
@@ -1753,7 +1781,7 @@ export default function PriceUpdatesTab() {
             </Button>
             {previewVersion?.status !== 'live' && (
               <Button size="sm" disabled={busy} onClick={() => handleRestoreVersion(previewVersion!)}>
-                <RotateCcw className="h-4 w-4 mr-1" /> Restore this pricing live
+                <Rocket className="h-4 w-4 mr-1" /> Push this pricing live
               </Button>
             )}
           </DialogFooter>
@@ -1762,6 +1790,29 @@ export default function PriceUpdatesTab() {
 
         </TabsContent>
       </Tabs>
+
+      <PushLiveConfirmDialog
+        open={pushConfirm !== null}
+        planLabel={
+          pushConfirm?.mode === 'restore'
+            ? pushConfirm.version?.label || 'Untitled plan'
+            : pushConfirm?.mode === 'codebase'
+              ? 'Code base pricing (7/2026)'
+              : label || 'Untitled draft'
+        }
+        gapPct={pushConfirm?.mode === 'codebase' ? null : pushGapPct}
+        onGapPctChange={setPushGapPct}
+        filledCount={pushConfirm?.filledCount ?? 0}
+        busy={busy}
+        onConfirm={
+          pushConfirm?.mode === 'restore'
+            ? confirmRestore
+            : pushConfirm?.mode === 'codebase'
+              ? confirmCodebase
+              : confirmPublish
+        }
+        onCancel={() => setPushConfirm(null)}
+      />
     </div>
 
   );
