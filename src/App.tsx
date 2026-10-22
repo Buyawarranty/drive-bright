@@ -99,7 +99,6 @@ const ConditionalFooter = () => {
 
 // Lazy load pages
 const FAQ = lazy(() => import("./pages/FAQ"));
-const __SandboxTweaksRender = lazy(() => import("./pages/__SandboxTweaksRender"));
 const LiveQuotePage = lazy(() => import("./pages/LiveQuotePage"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const PaymentReceived = lazy(() => import("./pages/PaymentReceived"));
@@ -297,7 +296,6 @@ const App = () => {
                     <Route path="/" element={<Index />} />
                     <Route path="/home" element={<Navigate to="/" replace />} />
                     <Route path="/home/" element={<Navigate to="/" replace />} />
-                    <Route path="/__sandbox-tweaks" element={<__SandboxTweaksRender />} />
 
                     <Route path="/faq/" element={<FAQ />} />
                     <Route path="/thank-you/" element={<ThankYou />} />
