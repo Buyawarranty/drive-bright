@@ -34,6 +34,7 @@ export type WebsiteQuoteVehicle = {
   make?: string | null;
   model?: string | null;
   fuelType?: string | null;
+  transmission?: string | null;
   vehicleType?: string | null;
   year?: string | number | null;
   yearOfManufacture?: string | number | null;

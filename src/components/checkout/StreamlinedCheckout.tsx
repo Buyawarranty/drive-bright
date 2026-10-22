@@ -109,6 +109,12 @@ export interface StreamlinedCheckoutProps {
    * by the Payment Assist test checkout only; everything else is identical.
    */
   monthlyProvider?: 'bumper' | 'payment_assist';
+  /**
+   * Super-admin step 3 sandbox only: renders the real checkout with the real
+   * prices but every payment path is blocked — no order, email or customer
+   * record can ever be created. Never set this on the live journey.
+   */
+  previewOnly?: boolean;
 }
 
 const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({ 
@@ -121,6 +127,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   onNext,
   onUpdateVehicle,
   monthlyProvider = 'bumper',
+  previewOnly = false,
 }) => {
   const isPaymentAssist = monthlyProvider === 'payment_assist';
   const monthlyProviderLabel = isPaymentAssist ? 'Payment Assist' : 'Bumper';
@@ -1907,6 +1914,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const processPayment = async (paymentOverride?: 'monthly' | 'full') => {
+    // Sandbox preview: block BEFORE any logging, validation or provider call so
+    // a preview can never create a payment, order, email or customer record.
+    if (previewOnly) {
+      toast.info('Preview only — payments are disabled in the step 3 sandbox.');
+      return;
+    }
     const effectivePayment = paymentOverride || selectedPayment || selectedPaymentRef.current;
     console.log('💳 processPayment called:', { paymentOverride, selectedPayment, refValue: selectedPaymentRef.current, effectivePayment });
     logCheckoutStep('pay_clicked', { paymentMethod: effectivePayment === 'monthly' ? 'bumper' : 'stripe' });

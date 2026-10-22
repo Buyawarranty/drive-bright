@@ -1,0 +1,303 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { toast } from 'sonner';
+import { Loader2, Lock, Search, Rocket } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
+import { usePricingVersions } from '@/hooks/usePricingVersions';
+import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
+import { readAppliedPromos, setPromoSuppressed } from '@/lib/promoStorage';
+import { CODE_WEB_DISCOUNT_PCT } from '@/lib/pricing/pricingVersionConfig';
+import type { SandboxOptions } from '@/lib/pricing/sandboxStep3Pricing';
+import type { WebsiteQuoteVehicle } from '@/lib/pricing/websiteQuotePrice';
+import SandboxStep3Pricing, { type SandboxSelection } from './SandboxStep3Pricing';
+import SandboxStep4Preview from './SandboxStep4Preview';
+import QuotesOrdersReviewPanel from './QuotesOrdersReviewPanel';
+
+/**
+ * STEP 3 SANDBOX — super admin only (server-verified).
+ *
+ * A safe copy of the website step 3 → step 4 journey for trying the new
+ * PayLater-based tile design against any pricing plan draft. Pushing live goes
+ * through the SAME pricing-version machinery as Price Updates, so both pages
+ * always agree; the "Also update Quotes & Orders" tick decides whether the
+ * Q&O grid is re-based on the sandbox plan.
+ */
+export default function Step3SandboxTab() {
+  const { isSuperAdmin, loading: gateLoading } = useIsSuperAdmin();
+  const { versions, loading: versionsLoading, createVersion, publishVersion } = usePricingVersions();
+
+  const [reg, setReg] = useState('');
+  const [mileage, setMileage] = useState('60000');
+  const [looking, setLooking] = useState(false);
+  const [vehicle, setVehicle] = useState<WebsiteQuoteVehicle | null>(null);
+  const [options, setOptions] = useState<SandboxOptions>({
+    claimLimit: 2000,
+    voluntaryExcess: 100,
+    labourRate: 50,
+  });
+  const [selection, setSelection] = useState<SandboxSelection | null>(null);
+  const [selectedVersionId, setSelectedVersionId] = useState<string>('');
+  const [alsoUpdateQuotesOrders, setAlsoUpdateQuotesOrders] = useState(false);
+  const [pushing, setPushing] = useState(false);
+  const [storedPromos] = useState(() => readAppliedPromos().map(c => c.code));
+
+  // Ignore any promo codes saved in this browser so the sandbox shows true prices.
+  useEffect(() => {
+    setPromoSuppressed(true);
+    return () => setPromoSuppressed(false);
+  }, []);
+
+  const liveVersion = useMemo(
+    () => versions.find(v => v.status === 'live') || null,
+    [versions],
+  );
+  const selectedVersion = useMemo(
+    () => versions.find(v => v.id === selectedVersionId) || liveVersion,
+    [versions, selectedVersionId, liveVersion],
+  );
+  const gapPct = liveVersion?.step3_discount_pct ?? CODE_WEB_DISCOUNT_PCT;
+
+  async function loadVehicle() {
+    if (!reg.trim()) {
+      toast.error('Enter a registration to preview the sandbox');
+      return;
+    }
+    setLooking(true);
+    setSelection(null);
+    try {
+      const { data } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registration: reg.trim() },
+      });
+      setVehicle({
+        regNumber: reg.trim().toUpperCase(),
+        mileage: String(Math.max(0, Number(mileage) || 0)),
+        make: data?.make,
+        model: data?.model,
+        fuelType: data?.fuelType,
+        transmission: data?.transmission,
+        year: data?.yearOfManufacture || data?.year,
+        vehicleType: data?.vehicleType,
+      });
+      if (!data?.make) toast.warning('No DVLA match — previewing with registration and mileage only');
+    } catch {
+      setVehicle({ regNumber: reg.trim().toUpperCase(), mileage: String(Number(mileage) || 0) });
+      toast.warning('Lookup failed — previewing with registration and mileage only');
+    } finally {
+      setLooking(false);
+    }
+  }
+
+  async function handlePushLive() {
+    if (!selectedVersion) return;
+    const planLabel = selectedVersion.label;
+    const target = alsoUpdateQuotesOrders
+      ? 'the website AND Quotes & Orders (which stays 10% above the website price)'
+      : 'the website ONLY — Quotes & Orders keeps its current grid, so any grid edits in this plan will NOT be applied';
+    const ok = window.confirm(
+      `Push pricing plan "${planLabel}" live?\n\nThis updates ${target}.\n\nThe new step 3 design itself goes live the next time the website is published — this button pushes the PRICES.`,
+    );
+    if (!ok) return;
+
+    setPushing(true);
+    try {
+      if (alsoUpdateQuotesOrders || !liveVersion) {
+        // Publish the selected plan as-is: Q&O grid = plan grid, web = grid − gap.
+        await publishVersion(selectedVersion.id);
+      } else {
+        // Website only: publish a copy that keeps the CURRENT live Q&O grid but
+        // carries the plan's vehicle factors, floors and web discount. The
+        // original draft is left untouched.
+        const copy = await createVersion(
+          `${planLabel} — website only`,
+          liveVersion.admin_matrix,
+          selectedVersion.step3_discount_pct,
+          `Website-only push of "${planLabel}" from the step 3 sandbox; Quotes & Orders grid preserved from "${liveVersion.label}".`,
+          selectedVersion.claim_limit_factors ?? null,
+          selectedVersion.labour_rate_factors ?? null,
+          selectedVersion.vehicle_factor_model ?? null,
+          {
+            reference_vehicle: selectedVersion.reference_vehicle ?? null,
+            reference_factors: selectedVersion.reference_factors ?? null,
+            price_floors: selectedVersion.price_floors ?? null,
+            price_caps: selectedVersion.price_caps ?? null,
+            rounding_rule: selectedVersion.rounding_rule ?? null,
+          },
+        );
+        await publishVersion(copy.id);
+      }
+      toast.success(`"${planLabel}" is now live — reload any open quote pages`);
+    } catch (e: any) {
+      toast.error(e?.message || 'Push live failed');
+    } finally {
+      setPushing(false);
+    }
+  }
+
+  if (gateLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isSuperAdmin) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center space-y-3">
+          <Lock className="h-8 w-8 mx-auto text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Super admins only</h2>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            The step 3 sandbox is a pricing test area. Only super admins can open it.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Step 3 sandbox</CardTitle>
+          <CardDescription>
+            Try the new step 3 design — 12 instalments and BAW PayLater side by side — against any
+            pricing plan, then follow through to a payment-safe step 4. Nothing here reaches
+            customers until you push live.
+            {storedPromos.length > 0 && (
+              <span className="block mt-2 font-semibold text-foreground">
+                Promo code{storedPromos.length > 1 ? 's' : ''} {storedPromos.join(', ')} saved in this
+                browser {storedPromos.length > 1 ? 'are' : 'is'} ignored here, so you see true grid prices.
+              </span>
+            )}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-end gap-3">
+          <div className="space-y-1">
+            <Label className="text-xs">Pricing plan to test</Label>
+            <Select
+              value={selectedVersion?.id || ''}
+              onValueChange={setSelectedVersionId}
+              disabled={versionsLoading}
+            >
+              <SelectTrigger className="w-64"><SelectValue placeholder="Loading plans…" /></SelectTrigger>
+              <SelectContent>
+                {versions.map(v => (
+                  <SelectItem key={v.id} value={v.id}>
+                    {v.label} {v.status === 'live' ? '(live)' : v.status === 'draft' ? '(draft)' : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Registration</Label>
+            <Input
+              value={reg}
+              onChange={e => setReg(e.target.value.toUpperCase())}
+              placeholder="AB12 CDE"
+              className="w-40 uppercase font-semibold"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Mileage</Label>
+            <Input
+              value={mileage}
+              onChange={e => setMileage(e.target.value.replace(/[^0-9]/g, ''))}
+              className="w-32"
+            />
+          </div>
+          <Button onClick={loadVehicle} disabled={looking}>
+            {looking ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
+            Load sandbox
+          </Button>
+          {vehicle && (
+            <Button variant="outline" onClick={() => { setVehicle(null); setSelection(null); }}>
+              Clear
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {vehicle && selectedVersion && (
+        <DraftPricingScope
+          matrix={selectedVersion.admin_matrix}
+          discountPct={selectedVersion.step3_discount_pct}
+          active={selectedVersion.status !== 'live'}
+        >
+          {selection ? (
+            <SandboxStep4Preview
+              vehicle={vehicle}
+              selection={selection}
+              onBack={() => setSelection(null)}
+            />
+          ) : (
+            <>
+              <SandboxStep3Pricing
+                vehicle={vehicle}
+                options={options}
+                onOptionsChange={setOptions}
+                onSelect={setSelection}
+              />
+              <QuotesOrdersReviewPanel vehicle={vehicle} options={options} gapPct={gapPct} />
+            </>
+          )}
+        </DraftPricingScope>
+      )}
+
+      {/* Push live */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Rocket className="h-4 w-4" />
+            Push live
+          </CardTitle>
+          <CardDescription>
+            Pushes the PRICES of the selected plan through the same machinery as Price Updates.
+            The new step 3 design goes live separately, the next time the website is published.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm">
+            Plan to push: <span className="font-semibold">{selectedVersion?.label ?? '—'}</span>
+            {selectedVersion?.status === 'live' && (
+              <span className="text-muted-foreground"> (already live — pushing again changes nothing)</span>
+            )}
+          </p>
+          <label className="flex items-start gap-2 text-sm cursor-pointer">
+            <Checkbox
+              checked={alsoUpdateQuotesOrders}
+              onCheckedChange={v => setAlsoUpdateQuotesOrders(v === true)}
+            />
+            <span>
+              Also update Quotes & Orders
+              <span className="block text-xs text-muted-foreground">
+                Re-bases the Quotes & Orders grid on this plan (always {gapPct}% above the website
+                price). Unticked, only the website prices move and the Q&O grid stays as it is.
+              </span>
+            </span>
+          </label>
+          <Button
+            onClick={handlePushLive}
+            disabled={pushing || !selectedVersion || selectedVersion.status === 'live'}
+          >
+            {pushing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Push “{selectedVersion?.label ?? '—'}” live
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

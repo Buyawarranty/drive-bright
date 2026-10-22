@@ -74,6 +74,7 @@ const GlobalAutoDistributeBar = lazy(() => import('@/components/admin/leads/Glob
 
 const ManagerOverviewTab = lazy(() => import('@/components/admin/ManagerOverviewTab'));
 const PriceUpdatesTab = lazy(() => import('@/components/admin/PriceUpdatesTab'));
+const Step3SandboxTab = lazy(() => import('@/components/admin/step3-sandbox/Step3SandboxTab'));
 const SmsTrackingTab = lazy(() => import('@/components/admin/SmsTrackingTab'));
 
 
@@ -1142,6 +1143,8 @@ const AdminDashboard = () => {
         return <GrowthAgentTab />;
       case 'price-updates':
         return <PriceUpdatesTab />;
+      case 'step3-sandbox':
+        return <Step3SandboxTab />;
       case 'sms-tracking':
         return <SmsTrackingTab />;
 
