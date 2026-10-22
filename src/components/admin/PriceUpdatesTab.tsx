@@ -1165,6 +1165,38 @@ export default function PriceUpdatesTab() {
           )}
         </div>
 
+        {/* Always-on banner: which plan every section below is editing, with its actions. */}
+        <div className="mb-3 rounded-lg border-2 border-primary/40 bg-background p-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <span className="text-sm font-semibold">You're editing:</span>
+            {selectedId || pendingNewPlan ? (
+              <>
+                <span className="text-sm font-bold truncate max-w-[320px]">“{label || 'Untitled plan'}”</span>
+                {pendingNewPlan ? (
+                  <Badge className="bg-amber-500 hover:bg-amber-500">Not saved yet</Badge>
+                ) : (
+                  <Badge variant="secondary">Test draft — not live</Badge>
+                )}
+              </>
+            ) : (
+              <span className="text-sm text-muted-foreground">no plan selected — create a new plan above or pick one to update</span>
+            )}
+          </div>
+          {(selectedId || pendingNewPlan) && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => handleSave()} disabled={busy}>
+                <Save className="h-4 w-4 mr-1" /> Save changes
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => { setSaveAsName(`${label || 'Untitled plan'} copy`); setSaveAsOpen(true); }} disabled={busy}>
+                <Copy className="h-4 w-4 mr-1" /> Save as a new plan
+              </Button>
+              <Button size="sm" onClick={handlePublish} disabled={busy}>
+                <Rocket className="h-4 w-4 mr-1" /> Push live
+              </Button>
+            </div>
+          )}
+        </div>
+
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-min h-auto gap-2 bg-muted/60 p-2">
           {tabOrder.map((value, i) => {
             const tab = TOP_TABS.find(t => t.value === value);
