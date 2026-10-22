@@ -836,14 +836,19 @@ export default function PriceUpdatesTab() {
 
 
 
-  async function handleRevert() {
-    if (!window.confirm('Revert all pricing back to the built-in code prices?')) return;
+  function handleRevert() {
+    setPushConfirm({ mode: 'codebase' });
+  }
+
+  /** Runs after the "Are you sure?" dialog — puts the built-in 7/2026 code pricing back live. */
+  async function confirmCodebase() {
     setBusy(true);
     try {
       await revertToCode();
-      toast.success('Reverted to the built-in code pricing');
+      setPushConfirm(null);
+      toast.success('Code base pricing (7/2026) is live again');
     } catch (e: any) {
-      toast.error(e?.message || 'Could not revert');
+      toast.error(e?.message || 'Could not push code base pricing live');
     } finally {
       setBusy(false);
     }
