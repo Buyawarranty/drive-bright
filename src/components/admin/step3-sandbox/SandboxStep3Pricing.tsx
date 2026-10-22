@@ -177,7 +177,7 @@ export default function SandboxStep3Pricing({
                 {t.payLaterYearly != null && (
                   <div className="rounded-md border border-dashed p-3 space-y-1">
                     <div className="flex items-center gap-2">
-                      <CalendarRepeat className="h-4 w-4 text-muted-foreground" />
+                      <Repeat className="h-4 w-4 text-muted-foreground" />
                       <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         {BAW_PAYLATER_LABEL}
                       </span>
