@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarIcon, Loader2, Phone, PhoneMissed, PhoneCall, Download, ChevronDown, ChevronRight, Info, Timer, Clock, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -89,7 +90,8 @@ const agentName = (a: AgentRow) => {
 };
 
 export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictToAgentIds, selfView }) => {
-  const [period, setPeriod] = useState<PeriodKey>('this_month');
+  const [period, setPeriod] = useState<PeriodKey>('today');
+  const [agentSearch, setAgentSearch] = useState('');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const activeRange = useMemo<DateRange | undefined>(() => {
     if (period === 'custom') return customRange;
@@ -185,10 +187,15 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
 
   const filteredAgents = useMemo(() => {
     const allowed = restrictToAgentIds ? new Set(restrictToAgentIds) : null;
+    const q = agentSearch.trim().toLowerCase();
     return (agents || []).filter(a => {
       if (allowed && !allowed.has(a.id)) return false;
       const archived = a.is_active === false;
       if (showArchived ? !archived : archived) return false;
+      if (q) {
+        const hay = `${agentName(a)} ${a.email || ''} ${(a as any).sip_extension || (a as any).extension || ''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
       const team = teamByAgent[a.id];
       const teamName = team?.name?.toLowerCase() || '';
       if (teamFilter === 'all') return true;
@@ -196,7 +203,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
       if (teamFilter === 'unassigned') return !team;
       return teamName === teamFilter || teamName.includes(teamFilter);
     });
-  }, [agents, teamByAgent, teamFilter, restrictToAgentIds, showArchived]);
+  }, [agents, teamByAgent, teamFilter, restrictToAgentIds, showArchived, agentSearch]);
 
 
   const eventsByAgent = useMemo(() => {
@@ -337,12 +344,20 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
             customRange={customRange}
             availableScopes={['signup']}
             showLabel={false}
-            hideQuickLinks
             onChange={({ period: p, customRange: r }) => {
               setPeriod(p);
               setCustomRange(r);
             }}
           />
+          {!selfView && (
+            <Input
+              value={agentSearch}
+              onChange={e => setAgentSearch(e.target.value)}
+              placeholder="Search agent, email or ext…"
+              className="h-9 w-[220px]"
+              aria-label="Search agents"
+            />
+          )}
           {!restrictToAgentIds && (
           <Select value={teamFilter} onValueChange={setTeamFilter}>
             <SelectTrigger className="h-9 w-[160px]"><SelectValue /></SelectTrigger>
