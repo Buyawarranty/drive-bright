@@ -79,6 +79,7 @@ export function sandboxTermPrice(
   vehicle: WebsiteQuoteVehicle | null | undefined,
   term: SandboxTerm,
   opts: SandboxOptions,
+  tweaks?: SandboxTweaks,
 ): SandboxTermPrice {
   const web = calculateWebsiteQuotePrice(vehicle, {
     paymentPeriod: term,
@@ -88,24 +89,47 @@ export function sandboxTermPrice(
   });
   const years = yearsFor(term);
   const payLaterEligible = years > 1;
+
+  // Sandbox tweaks: adjust the monthly figure, then rebuild every derived
+  // amount (12-payment total, pay-in-full, PayLater) from it so all figures
+  // stay internally consistent. Floors are NOT re-applied — this is an
+  // experiment, not a sellable price.
+  const adjustPct = Math.min(Math.max(Number(tweaks?.priceAdjustPct) || 0, -50), 50);
+  const monthly = adjustPct === 0
+    ? web.monthly
+    : Math.max(1, Math.ceil(web.monthly * (1 + adjustPct / 100)));
+  const total = monthly * 12;
+  const payInFullSaving = Math.floor((total * 10) / 100);
+  const payInFull = total - payInFullSaving;
+
+  const upliftPct = tweaks?.payLaterUpliftPct == null
+    ? 10
+    : Math.min(Math.max(Number(tweaks.payLaterUpliftPct) || 0, 0), 50);
+  const yearly = payLaterEligible
+    ? (upliftPct === 10
+        ? payLaterYearlyAmount(total, years)
+        : Math.round((total / years) * (1 + upliftPct / 100)))
+    : null;
+
   return {
     term,
     years,
-    monthly: web.monthly,
-    total: web.total,
-    payInFull: web.payInFull,
-    payInFullSaving: web.saving,
-    payLaterYearly: payLaterEligible ? payLaterYearlyAmount(web.total, years) : null,
-    payLaterTermTotal: payLaterEligible ? payLaterTermTotal(web.total, years) : null,
-    payLaterExtra: payLaterEligible ? payLaterExtraVsTerm(web.total, years) : null,
+    monthly,
+    total,
+    payInFull,
+    payInFullSaving,
+    payLaterYearly: yearly,
+    payLaterTermTotal: yearly != null ? yearly * years : null,
+    payLaterExtra: yearly != null ? Math.max(0, yearly * years - total) : null,
   };
 }
 
 export function sandboxAllTerms(
   vehicle: WebsiteQuoteVehicle | null | undefined,
   opts: SandboxOptions,
+  tweaks?: SandboxTweaks,
 ): SandboxTermPrice[] {
-  return SANDBOX_TERMS.map(term => sandboxTermPrice(vehicle, term, opts));
+  return SANDBOX_TERMS.map(term => sandboxTermPrice(vehicle, term, opts, tweaks));
 }
 
 /**
