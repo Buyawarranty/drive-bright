@@ -25,6 +25,11 @@ import {
   type SandboxOptions,
   type SandboxTweaks,
 } from '@/lib/pricing/sandboxStep3Pricing';
+import {
+  DEFAULT_PAYMENT_SETTINGS,
+  paymentSettingsAreLive,
+  type SandboxPaymentSettings,
+} from '@/lib/pricing/sandboxPaymentMethods';
 import type { WebsiteQuoteVehicle } from '@/lib/pricing/websiteQuotePrice';
 import SandboxStep3Pricing, { type SandboxSelection } from './SandboxStep3Pricing';
 import SandboxStep4Preview from './SandboxStep4Preview';
@@ -53,6 +58,12 @@ export default function Step3SandboxTab() {
     labourRate: 50,
   });
   const [tweaks, setTweaks] = useState<SandboxTweaks>({ ...DEFAULT_SANDBOX_TWEAKS });
+  const [paymentSettings, setPaymentSettings] = useState<SandboxPaymentSettings>({
+    ...DEFAULT_PAYMENT_SETTINGS,
+    payLater: { ...DEFAULT_PAYMENT_SETTINGS.payLater },
+    klarna: { ...DEFAULT_PAYMENT_SETTINGS.klarna },
+    zopa: { ...DEFAULT_PAYMENT_SETTINGS.zopa },
+  });
   const [gapTweak, setGapTweak] = useState<number | null>(null);
   const [selection, setSelection] = useState<SandboxSelection | null>(null);
   const [selectedVersionId, setSelectedVersionId] = useState<string>('');
