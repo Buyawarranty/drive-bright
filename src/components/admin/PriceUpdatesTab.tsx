@@ -1294,12 +1294,12 @@ export default function PriceUpdatesTab() {
             candidates={[]}
           />
           <Tabs defaultValue="quotes-preview" className="w-full">
-            <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
-              <TabsTrigger value="quotes-preview" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
-                <Rocket className="h-4 w-4 mr-2" /> Quotes &amp; Orders Preview
+            <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/40 p-1">
+              <TabsTrigger value="quotes-preview" className="text-sm">
+                <Rocket className="h-4 w-4 mr-2" /> Quotes &amp; Orders preview
               </TabsTrigger>
-              <TabsTrigger value="step3-preview" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
-                <Globe className="h-4 w-4 mr-2" /> Website Step 3 Preview
+              <TabsTrigger value="step3-preview" className="text-sm">
+                <Globe className="h-4 w-4 mr-2" /> Website Step 3 preview
               </TabsTrigger>
             </TabsList>
             <TabsContent value="step3-preview" className="mt-4">
