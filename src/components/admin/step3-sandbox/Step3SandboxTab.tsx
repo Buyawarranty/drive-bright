@@ -87,10 +87,23 @@ export default function Step3SandboxTab() {
   );
   const gapPct = liveVersion?.step3_discount_pct ?? CODE_WEB_DISCOUNT_PCT;
   const effectiveGapPct = gapTweak ?? gapPct;
-  const tweaked = !tweaksAreLive(tweaks) || gapTweak != null;
+  // The PayLater uplift lives in the payment-options card; merge it into the
+  // tweaks so the pricing helpers see one consistent set of figures.
+  const effectiveTweaks: SandboxTweaks = useMemo(
+    () => ({ ...tweaks, payLaterUpliftPct: paymentSettings.payLater.upliftPct }),
+    [tweaks, paymentSettings.payLater.upliftPct],
+  );
+  const tweaked =
+    !tweaksAreLive(effectiveTweaks) || gapTweak != null || !paymentSettingsAreLive(paymentSettings);
 
   const resetTweaks = () => {
     setTweaks({ ...DEFAULT_SANDBOX_TWEAKS });
+    setPaymentSettings({
+      ...DEFAULT_PAYMENT_SETTINGS,
+      payLater: { ...DEFAULT_PAYMENT_SETTINGS.payLater },
+      klarna: { ...DEFAULT_PAYMENT_SETTINGS.klarna },
+      zopa: { ...DEFAULT_PAYMENT_SETTINGS.zopa },
+    });
     setGapTweak(null);
   };
 
