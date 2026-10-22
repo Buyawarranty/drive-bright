@@ -424,6 +424,35 @@ export default function PriceUpdatesTab() {
     return v.id;
   }
 
+  /** Save the current editor contents as a brand-new plan with a new name, then switch to it. */
+  async function handleSaveAsNewPlan() {
+    const name = saveAsName.trim();
+    if (!name) {
+      toast.error('Type a name for the new plan');
+      return;
+    }
+    setBusy(true);
+    try {
+      const v = await createVersion(
+        name,
+        roundMatrixWhole(matrix),
+        discountPct,
+        notes,
+        currentClaimLimitFactors(),
+        currentLabourRateFactors(),
+        withRiskBands(currentVehicleFactorModel())
+      );
+      setSaveAsOpen(false);
+      setSaveAsName('');
+      loadIntoEditor(v);
+      toast.success(`Saved as new plan “${name}” — still a test, nothing is live`);
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not save as a new plan');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   /**
    * Claim limit factors currently being edited (live editor figures first, then
    * the last saved age-band model). These MUST travel with every save/publish or
