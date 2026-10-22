@@ -1018,7 +1018,7 @@ export default function PriceUpdatesTab() {
                 disabled={busy}
                 onChange={e => { const v = drafts.find(d => d.id === e.target.value); if (v) loadIntoEditor(v); }}
               >
-                {!selectedId && <option value="">No test draft selected</option>}
+                {!selectedId && <option value="">{pendingNewPlan ? `New plan: ${label || 'untitled'} (not saved yet)` : 'No test draft selected'}</option>}
                 {drafts.map(d => <option key={d.id} value={d.id}>{d.label || 'Untitled draft'}</option>)}
               </select>
             </div>
@@ -1026,7 +1026,7 @@ export default function PriceUpdatesTab() {
             <Button size="sm" variant="outline" onClick={() => openTab('editor')}>View or edit price grid</Button>
           </div>
           <p className="text-sm">
-            <strong>Push live will publish:</strong> {selectedId ? <>“{label || 'Untitled draft'}”</> : 'your saved vehicle risk figures as a new plan'}.
+            <strong>Push live will publish:</strong> {selectedId || pendingNewPlan ? <>“{label || 'Untitled draft'}”{pendingNewPlan && ' (will be saved first)'}</> : 'your saved vehicle risk figures as a new plan'}.
             Pick a different plan above to push that one instead, or create a new test draft.
           </p>
           <div className="text-xs text-muted-foreground space-y-1">
