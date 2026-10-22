@@ -945,15 +945,16 @@ export default function PriceUpdatesTab() {
               <p className="font-semibold">{title}</p>
               <p className="text-muted-foreground flex-1">{text}</p>
               {tab && (
-                <Button size="sm" variant="outline" className="mt-2" disabled={!selectedId && tab !== 'tools'} onClick={() => openTab(tab)}>
+                <Button size="sm" variant="outline" className="mt-2" disabled={!selectedId && !pendingNewPlan && tab !== 'tools'} onClick={() => openTab(tab)}>
                   {cta}
                 </Button>
               )}
             </li>
           ))}
         </ol>
-        {!selectedId && <p className="text-xs text-muted-foreground">Create or choose a plan first to unlock steps 2 and 3.</p>}
+        {!selectedId && !pendingNewPlan && <p className="text-xs text-muted-foreground">Create or choose a plan first to unlock steps 2 and 3.</p>}
         {selectedId && <p className="text-sm"><strong>Now setting up:</strong> “{label || 'Untitled draft'}” — work through steps 2 to 5. Remember to save in each section.</p>}
+        {pendingNewPlan && <p className="text-sm"><strong>Now setting up:</strong> “{label || 'Untitled plan'}” — <span className="text-amber-700 font-medium">not saved yet</span>. Work through steps 2 to 5; the plan is only stored when you press Save in a section or Push live.</p>}
         <div className="flex flex-wrap items-end gap-2">
           <div className="space-y-1">
             <label htmlFor="new-plan-name" className="text-sm font-semibold">New plan name</label>
