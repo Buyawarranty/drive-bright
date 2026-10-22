@@ -99,19 +99,23 @@ const PERIOD_LABELS: Record<string, string> = {
   '36months': '3 years',
 };
 
-/** Top-level tabs — managers can reorder these left/right and the order sticks. */
+/** Top-level sections — managers can reorder these left/right and the order sticks. */
 const TOP_TABS = [
-  { value: 'any-compare', label: 'Compare any two models', icon: GitCompare },
-  { value: 'hybrid', label: 'Live Vs Test Hybrid Aug', icon: FlaskConical },
-  { value: 'codebase-live', label: 'Code base vs Live', icon: GitCompare },
-  { value: 'codebase-hybrid', label: 'Code base vs Test Hybrid Aug', icon: FlaskConical },
-  { value: 'compare', label: 'Live vs Aug 2026', icon: GitCompare },
-  { value: 'aug26', label: 'Aug 2026 pricing', icon: CalendarClock },
-  { value: 'builder', label: 'Vehicle risk pricing model', icon: CalendarClock },
-  { value: 'editor', label: 'Price grid (this one goes live)', icon: FlaskConical },
-  { value: 'original', label: 'Original codebase pricing vs Live', icon: GitCompare },
+  { value: 'editor', label: 'Edit prices', icon: FlaskConical },
   { value: 'previews', label: 'Previews', icon: Rocket },
-  { value: 'tools', label: 'Excluded vehicles & tools', icon: Ban },
+  { value: 'compare', label: 'Compare prices', icon: GitCompare },
+  { value: 'tools', label: 'Settings & tools', icon: Ban },
+] as const;
+
+/** Sub-tabs inside "Compare prices" (the old comparison tabs, unchanged). */
+const COMPARE_TABS = [
+  { value: 'any-compare', label: 'Compare any two models' },
+  { value: 'hybrid', label: 'Live vs Test Hybrid Aug' },
+  { value: 'codebase-live', label: 'Code base vs Live' },
+  { value: 'codebase-hybrid', label: 'Code base vs Test Hybrid Aug' },
+  { value: 'live-aug26', label: 'Live vs Aug 2026' },
+  { value: 'aug26', label: 'Aug 2026 pricing' },
+  { value: 'original', label: 'Original code base vs Live' },
 ] as const;
 
 
