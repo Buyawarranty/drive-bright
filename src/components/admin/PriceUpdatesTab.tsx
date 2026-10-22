@@ -237,6 +237,8 @@ export default function PriceUpdatesTab() {
   // Figures currently typed in the Price updates editor, so the Step 2 replica follows them live.
   const [liveEditorModel, setLiveEditorModel] = useState<any>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** True when "Create new pricing plan" has loaded a local copy of live that is NOT saved to the database yet. */
+  const [pendingNewPlan, setPendingNewPlan] = useState(false);
   const [label, setLabel] = useState('');
   const [notes, setNotes] = useState('');
   const [newPlanName, setNewPlanName] = useState('');
@@ -281,12 +283,13 @@ export default function PriceUpdatesTab() {
 
   // Pick the first draft once loaded.
   useEffect(() => {
-    if (selectedId || drafts.length === 0) return;
+    if (selectedId || pendingNewPlan || drafts.length === 0) return;
     loadIntoEditor(drafts[0]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drafts.length]);
 
   function loadIntoEditor(v: PricingVersion) {
+    setPendingNewPlan(false);
     setSelectedId(v.id);
     setLabel(v.label);
     setNotes(v.notes ?? '');
