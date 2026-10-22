@@ -306,29 +306,37 @@ export default function PriceUpdatesTab() {
   >(null);
   const [pushGapPct, setPushGapPct] = useState<number>(10);
 
-  /** History: make a saved/archived version the live pricing again. */
+  /** History: ask to make a saved/archived version the live pricing again. */
   async function handleRestoreVersion(v: PricingVersion) {
-    const { matrix: safeMatrix, invalid } = normalizeMatrixForPublish(
+    const { invalid } = normalizeMatrixForPublish(
       cloneMatrix(v.admin_matrix),
       liveVersion?.admin_matrix || codeMatrix
     );
     if (invalid.length) {
       toast.error(
-        `Cannot restore — ${invalid.length} price cell(s) are missing or zero: ${invalid
+        `Cannot push live — ${invalid.length} price cell(s) are missing or zero: ${invalid
           .slice(0, 3)
           .join('; ')}${invalid.length > 3 ? '…' : ''}`
       );
       return;
     }
-    const pct = effectiveDiscountPct(Number(v.step3_discount_pct));
-    if (
-      !window.confirm(
-        `Restore "${v.label}" as the live pricing?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ${pct}%.`
-      )
-    )
-      return;
+    setPushGapPct(effectiveDiscountPct(Number(v.step3_discount_pct)));
+    setPushConfirm({ mode: 'restore', version: v });
+  }
+
+  /** Runs after the "Are you sure?" dialog — republishes the stored version with the chosen web gap. */
+  async function confirmRestore() {
+    const v = pushConfirm?.mode === 'restore' ? pushConfirm.version : null;
+    if (!v) return;
+    const { matrix: safeMatrix } = normalizeMatrixForPublish(
+      cloneMatrix(v.admin_matrix),
+      liveVersion?.admin_matrix || codeMatrix
+    );
+    const pct = effectiveDiscountPct(pushGapPct);
     setBusy(true);
     try {
+      saveWebsiteDiscountDraft(pct);
+      await saveVersion(v.id, { step3_discount_pct: pct });
       await publishVersion(v.id);
       applyLivePricingVersion({
         status: 'live',
@@ -340,9 +348,10 @@ export default function PriceUpdatesTab() {
       });
       loadIntoEditor({ ...v, admin_matrix: safeMatrix, step3_discount_pct: pct } as PricingVersion);
       setPreviewVersion(null);
-      toast.success(`"${v.label}" restored live — reload any open quote pages`);
+      setPushConfirm(null);
+      toast.success(`"${v.label}" pushed live — reload any open quote pages`);
     } catch (e: any) {
-      toast.error(e?.message || 'Could not restore this version');
+      toast.error(e?.message || 'Could not push this version live');
     } finally {
       setBusy(false);
     }
