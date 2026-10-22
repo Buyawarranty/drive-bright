@@ -838,7 +838,7 @@ export default function PriceUpdatesTab() {
         labour_rate_factors: labourFactors,
         vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
-      await publishVersion(selectedId);
+      await publishVersion(id);
       applyLivePricingVersion({
         status: 'live',
         admin_matrix: safeMatrix,
