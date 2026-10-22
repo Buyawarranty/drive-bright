@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
 import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
 import { canViewPayLaterClaims, hasPayLaterClaim } from '@/lib/payLaterClaims';
+import { canUseStaffExport, canUseFullStaffExport, staffExportRows } from '@/lib/staffExportAccess';
 
 import { ReferencePriceCell } from '@/components/admin/customers/ReferencePriceCell';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
@@ -548,7 +549,7 @@ export const CustomersTab = ({
 }: CustomersTabProps) => {
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV: exportDataToCSV, exportToExcel } = useDataExport();
-  const canExport = canExportTab('customers');
+  const exportPermission = canExportTab('customers');
   const canDelete = hasGranularPermission('customers', 'delete');
   
   const [searchParams, setSearchParams] = useSearchParams();
@@ -729,6 +730,7 @@ export const CustomersTab = ({
   const normalizedRole = isImpersonating && viewAsAgent
     ? viewAsAgent.role?.trim().toLowerCase() || ''
     : currentAdminUser?.role?.trim().toLowerCase() || '';
+  const canExport = exportPermission && canUseStaffExport(normalizedRole);
   const effectiveAdminId = isImpersonating && viewAsAgent
     ? viewAsAgent.id
     : currentAdminUser?.id;
@@ -3476,8 +3478,7 @@ export const CustomersTab = ({
   };
 
   const getExportData = useCallback(() => {
-    const role = currentAdminUser?.role || '';
-    const emailLower = (currentAdminUser?.email || '').toLowerCase();
+    const role = normalizedRole;
     const canViewFinancials = role === 'super_admin' || role === 'admin';
     // Management + accounts + lead gen get every field held against the customer,
     // so nothing from the customer profile is missing in the CSV/Excel export.
@@ -3490,7 +3491,7 @@ export const CustomersTab = ({
         'accounts_manager',
         'accounts',
         'lead_gen',
-      ].includes(role) || emailLower.startsWith('accounts@');
+      ].includes(role);
 
     // Union of every key present on any customer row (plus joined policy fields),
     // so agents' rows with sparse data still line up column-for-column.
@@ -3529,7 +3530,7 @@ export const CustomersTab = ({
       return v;
     };
 
-    return filteredCustomers.map((customer: any) => {
+    return staffExportRows(filteredCustomers, role, customer => customer.signup_date).map((customer: any) => {
       const row: Record<string, any> = {
         'Name': customer.name,
         'Email': customer.email,
@@ -3562,10 +3563,14 @@ export const CustomersTab = ({
       }
       return row;
     });
-  }, [filteredCustomers, currentAdminUser?.role, currentAdminUser?.email]);
+  }, [filteredCustomers, normalizedRole]);
 
 
   const handleExport = (format: 'csv' | 'xlsx') => {
+    if (!canUseStaffExport(normalizedRole) || (!canExport && !canExportFullCustomers)) {
+      toast.error('You do not have permission to export customers');
+      return;
+    }
     const exportData = getExportData();
     if (format === 'csv') {
       exportDataToCSV(exportData, { filename: 'customers', format: 'csv' });
@@ -3576,19 +3581,7 @@ export const CustomersTab = ({
 
   // Full export: every column from the customers row, for management + accounts + lead_gen.
   // Used for deep analysis / data handovers; not available to standard sales agents.
-  const managerExportRoles = [
-    'super_admin',
-    'admin',
-    'sales_manager',
-    'performance_manager',
-    'accounts_manager',
-    'accounts',
-    'lead_gen',
-  ];
-  const adminEmailLower = (currentAdminUser?.email || '').toLowerCase();
-  const canExportFullCustomers =
-    managerExportRoles.includes(currentAdminUser?.role || '') ||
-    adminEmailLower.startsWith('accounts@');
+  const canExportFullCustomers = canUseFullStaffExport(normalizedRole);
 
 
   const buildFullCsvRows = (list: any[]) => {

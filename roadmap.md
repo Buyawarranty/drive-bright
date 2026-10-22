@@ -3,3 +3,8 @@
 - [x] Tighten unsafe call/audit writes after checking existing writers.
 - [x] Review staff dashboard restrictions and report prioritised recommendations.
 - [x] Verify database permissions and run focused regression checks; do not publish.
+- [x] Review admin two-step sign-in without locking existing staff out: no enrolled factors or challenge flow; mandatory enforcement deferred pending a tested enrolment/recovery rollout.
+- [x] Tighten confirmed staff export and restricted-area access gaps while preserving existing role allowances.
+- [x] Run focused regression checks and report remaining blockers; do not publish.
+- [ ] Verify signed-in administrator and staff flows: blocked by external unmanaged authentication.
+- [ ] Enforce export prevention beyond the app controls: requires defining narrower readable staff datasets; already-readable records can still be copied and existing operational reads must be preserved.
