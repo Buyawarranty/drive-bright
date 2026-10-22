@@ -11,8 +11,10 @@ import type { WebsiteQuoteVehicle } from '@/lib/pricing/websiteQuotePrice';
 interface QuotesOrdersReviewPanelProps {
   vehicle: WebsiteQuoteVehicle;
   options: SandboxOptions;
-  /** The live web gap in percent (10 today). */
+  /** The web gap in percent (10 live; the sandbox gap tweak can override it). */
   gapPct: number;
+  /** Sandbox-only price tweaks — change the preview, never the live prices. */
+  tweaks?: SandboxTweaks;
 }
 
 /**

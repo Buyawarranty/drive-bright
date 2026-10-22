@@ -48,6 +48,8 @@ interface SandboxStep3PricingProps {
   options: SandboxOptions;
   onOptionsChange: (options: SandboxOptions) => void;
   onSelect: (selection: SandboxSelection) => void;
+  /** Sandbox-only price tweaks — change the preview, never the live prices. */
+  tweaks?: SandboxTweaks;
 }
 
 /**
