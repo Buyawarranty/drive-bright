@@ -13,11 +13,7 @@ import {
   calculateWebsiteQuotePrice,
   type WebsiteQuoteVehicle,
 } from '@/lib/pricing/websiteQuotePrice';
-import {
-  payLaterYearlyAmount,
-  payLaterTermTotal,
-  payLaterExtraVsTerm,
-} from '@/lib/bawPayLater';
+import { payLaterYearlyAmount } from '@/lib/bawPayLater';
 import type { PaymentPeriod } from '@/lib/pricingMatrix';
 
 export type SandboxTerm = Extract<PaymentPeriod, '12months' | '24months' | '36months'>;
