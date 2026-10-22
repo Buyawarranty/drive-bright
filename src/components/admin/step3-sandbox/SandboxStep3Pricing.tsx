@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Check, Clock, CalendarRepeat } from 'lucide-react';
+import { Check, Clock, Repeat } from 'lucide-react';
 import {
   sandboxAllTerms,
   type SandboxOptions,
