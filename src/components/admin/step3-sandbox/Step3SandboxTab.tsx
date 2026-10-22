@@ -332,8 +332,14 @@ export default function Step3SandboxTab() {
                 options={options}
                 onOptionsChange={setOptions}
                 onSelect={setSelection}
+                tweaks={tweaks}
               />
-              <QuotesOrdersReviewPanel vehicle={vehicle} options={options} gapPct={gapPct} />
+              <QuotesOrdersReviewPanel
+                vehicle={vehicle}
+                options={options}
+                gapPct={effectiveGapPct}
+                tweaks={tweaks}
+              />
             </>
           )}
         </DraftPricingScope>
