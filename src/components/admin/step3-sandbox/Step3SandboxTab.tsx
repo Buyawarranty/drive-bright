@@ -12,14 +12,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Loader2, Lock, Search, Rocket } from 'lucide-react';
+import { Loader2, Lock, Search, Rocket, SlidersHorizontal, RotateCcw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
 import { usePricingVersions } from '@/hooks/usePricingVersions';
 import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import { readAppliedPromos, setPromoSuppressed } from '@/lib/promoStorage';
 import { CODE_WEB_DISCOUNT_PCT } from '@/lib/pricing/pricingVersionConfig';
-import type { SandboxOptions } from '@/lib/pricing/sandboxStep3Pricing';
+import {
+  DEFAULT_SANDBOX_TWEAKS,
+  tweaksAreLive,
+  type SandboxOptions,
+  type SandboxTweaks,
+} from '@/lib/pricing/sandboxStep3Pricing';
 import type { WebsiteQuoteVehicle } from '@/lib/pricing/websiteQuotePrice';
 import SandboxStep3Pricing, { type SandboxSelection } from './SandboxStep3Pricing';
 import SandboxStep4Preview from './SandboxStep4Preview';
@@ -47,6 +52,8 @@ export default function Step3SandboxTab() {
     voluntaryExcess: 100,
     labourRate: 50,
   });
+  const [tweaks, setTweaks] = useState<SandboxTweaks>({ ...DEFAULT_SANDBOX_TWEAKS });
+  const [gapTweak, setGapTweak] = useState<number | null>(null);
   const [selection, setSelection] = useState<SandboxSelection | null>(null);
   const [selectedVersionId, setSelectedVersionId] = useState<string>('');
   const [alsoUpdateQuotesOrders, setAlsoUpdateQuotesOrders] = useState(false);
