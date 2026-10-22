@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Loader2, Lock, Search, Rocket, SlidersHorizontal, RotateCcw } from 'lucide-react';
+import { Loader2, Lock, Search, Rocket, SlidersHorizontal, RotateCcw, Wallet } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
 import { usePricingVersions } from '@/hooks/usePricingVersions';
@@ -25,6 +25,11 @@ import {
   type SandboxOptions,
   type SandboxTweaks,
 } from '@/lib/pricing/sandboxStep3Pricing';
+import {
+  DEFAULT_PAYMENT_SETTINGS,
+  paymentSettingsAreLive,
+  type SandboxPaymentSettings,
+} from '@/lib/pricing/sandboxPaymentMethods';
 import type { WebsiteQuoteVehicle } from '@/lib/pricing/websiteQuotePrice';
 import SandboxStep3Pricing, { type SandboxSelection } from './SandboxStep3Pricing';
 import SandboxStep4Preview from './SandboxStep4Preview';
@@ -53,6 +58,12 @@ export default function Step3SandboxTab() {
     labourRate: 50,
   });
   const [tweaks, setTweaks] = useState<SandboxTweaks>({ ...DEFAULT_SANDBOX_TWEAKS });
+  const [paymentSettings, setPaymentSettings] = useState<SandboxPaymentSettings>({
+    ...DEFAULT_PAYMENT_SETTINGS,
+    payLater: { ...DEFAULT_PAYMENT_SETTINGS.payLater },
+    klarna: { ...DEFAULT_PAYMENT_SETTINGS.klarna },
+    zopa: { ...DEFAULT_PAYMENT_SETTINGS.zopa },
+  });
   const [gapTweak, setGapTweak] = useState<number | null>(null);
   const [selection, setSelection] = useState<SandboxSelection | null>(null);
   const [selectedVersionId, setSelectedVersionId] = useState<string>('');
@@ -76,10 +87,23 @@ export default function Step3SandboxTab() {
   );
   const gapPct = liveVersion?.step3_discount_pct ?? CODE_WEB_DISCOUNT_PCT;
   const effectiveGapPct = gapTweak ?? gapPct;
-  const tweaked = !tweaksAreLive(tweaks) || gapTweak != null;
+  // The PayLater uplift lives in the payment-options card; merge it into the
+  // tweaks so the pricing helpers see one consistent set of figures.
+  const effectiveTweaks: SandboxTweaks = useMemo(
+    () => ({ ...tweaks, payLaterUpliftPct: paymentSettings.payLater.upliftPct }),
+    [tweaks, paymentSettings.payLater.upliftPct],
+  );
+  const tweaked =
+    !tweaksAreLive(effectiveTweaks) || gapTweak != null || !paymentSettingsAreLive(paymentSettings);
 
   const resetTweaks = () => {
     setTweaks({ ...DEFAULT_SANDBOX_TWEAKS });
+    setPaymentSettings({
+      ...DEFAULT_PAYMENT_SETTINGS,
+      payLater: { ...DEFAULT_PAYMENT_SETTINGS.payLater },
+      klarna: { ...DEFAULT_PAYMENT_SETTINGS.klarna },
+      zopa: { ...DEFAULT_PAYMENT_SETTINGS.zopa },
+    });
     setGapTweak(null);
   };
 
@@ -278,19 +302,6 @@ export default function Step3SandboxTab() {
             <p className="text-xs text-muted-foreground">e.g. 5 = 5% dearer, −10 = 10% cheaper</p>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">PayLater yearly uplift (%)</Label>
-            <Input
-              type="number"
-              min={0}
-              max={50}
-              step={1}
-              value={tweaks.payLaterUpliftPct}
-              onChange={e => setTweaks(t => ({ ...t, payLaterUpliftPct: Number(e.target.value) || 0 }))}
-              className="w-32"
-            />
-            <p className="text-xs text-muted-foreground">Live rule: 10%</p>
-          </div>
-          <div className="space-y-1">
             <Label className="text-xs">Quotes & Orders gap (%)</Label>
             <Input
               type="number"
@@ -313,6 +324,191 @@ export default function Step3SandboxTab() {
         </CardContent>
       </Card>
 
+      {/* Payment options — which ways to pay appear, and their variables */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Wallet className="h-4 w-4" />
+            Payment options
+            {!paymentSettingsAreLive(paymentSettings) && (
+              <span className="text-xs font-bold uppercase tracking-wide text-primary">
+                experimenting
+              </span>
+            )}
+          </CardTitle>
+          <CardDescription>
+            Choose which ways to pay appear on the sandbox tiles and set their variables. Klarna
+            and Zopa are design experiments only — there is no integration, no credit check and no
+            payment behind them, and nothing here is ever pushed live.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {/* BAW PayLater */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+              <Checkbox
+                checked={paymentSettings.payLater.enabled}
+                onCheckedChange={v =>
+                  setPaymentSettings(s => ({
+                    ...s,
+                    payLater: { ...s.payLater, enabled: v === true },
+                  }))
+                }
+              />
+              BAW PayLater (yearly collection)
+            </label>
+            {paymentSettings.payLater.enabled && (
+              <div className="flex flex-wrap items-end gap-4 pl-6">
+                <div className="space-y-1">
+                  <Label className="text-xs">Yearly uplift (%)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={50}
+                    step={1}
+                    value={paymentSettings.payLater.upliftPct}
+                    onChange={e =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        payLater: { ...s.payLater, upliftPct: Number(e.target.value) || 0 },
+                      }))
+                    }
+                    className="w-28"
+                  />
+                  <p className="text-xs text-muted-foreground">Live rule: 10%</p>
+                </div>
+                <label className="flex items-center gap-2 text-sm cursor-pointer pb-1">
+                  <Checkbox
+                    checked={paymentSettings.payLater.offerOn24}
+                    onCheckedChange={v =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        payLater: { ...s.payLater, offerOn24: v === true },
+                      }))
+                    }
+                  />
+                  Offer on 2-year cover
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer pb-1">
+                  <Checkbox
+                    checked={paymentSettings.payLater.offerOn36}
+                    onCheckedChange={v =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        payLater: { ...s.payLater, offerOn36: v === true },
+                      }))
+                    }
+                  />
+                  Offer on 3-year cover
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* Klarna */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+              <Checkbox
+                checked={paymentSettings.klarna.enabled}
+                onCheckedChange={v =>
+                  setPaymentSettings(s => ({
+                    ...s,
+                    klarna: { ...s.klarna, enabled: v === true },
+                  }))
+                }
+              />
+              Klarna — pay in instalments
+              <span className="text-[10px] font-bold uppercase tracking-wide text-primary">
+                experiment
+              </span>
+            </label>
+            {paymentSettings.klarna.enabled && (
+              <div className="flex flex-wrap items-end gap-4 pl-6">
+                <div className="space-y-1">
+                  <Label className="text-xs">Number of payments</Label>
+                  <Select
+                    value={String(paymentSettings.klarna.instalments)}
+                    onValueChange={v =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        klarna: { ...s.klarna, instalments: Number(v) },
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[2, 3, 4].map(n => (
+                        <SelectItem key={n} value={String(n)}>Pay in {n}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Interest-free, one every 30 days</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Zopa */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+              <Checkbox
+                checked={paymentSettings.zopa.enabled}
+                onCheckedChange={v =>
+                  setPaymentSettings(s => ({
+                    ...s,
+                    zopa: { ...s.zopa, enabled: v === true },
+                  }))
+                }
+              />
+              Zopa — monthly loan
+              <span className="text-[10px] font-bold uppercase tracking-wide text-primary">
+                experiment
+              </span>
+            </label>
+            {paymentSettings.zopa.enabled && (
+              <div className="flex flex-wrap items-end gap-4 pl-6">
+                <div className="space-y-1">
+                  <Label className="text-xs">Representative APR (%)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={60}
+                    step={0.1}
+                    value={paymentSettings.zopa.aprPct}
+                    onChange={e =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        zopa: { ...s.zopa, aprPct: Number(e.target.value) || 0 },
+                      }))
+                    }
+                    className="w-28"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Loan length</Label>
+                  <Select
+                    value={String(paymentSettings.zopa.termMonths)}
+                    onValueChange={v =>
+                      setPaymentSettings(s => ({
+                        ...s,
+                        zopa: { ...s.zopa, termMonths: Number(v) },
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[12, 18, 24, 36, 48].map(m => (
+                        <SelectItem key={m} value={String(m)}>{m} months</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {vehicle && selectedVersion && (
         <DraftPricingScope
           matrix={selectedVersion.admin_matrix}
@@ -332,13 +528,14 @@ export default function Step3SandboxTab() {
                 options={options}
                 onOptionsChange={setOptions}
                 onSelect={setSelection}
-                tweaks={tweaks}
+                tweaks={effectiveTweaks}
+                paymentSettings={paymentSettings}
               />
               <QuotesOrdersReviewPanel
                 vehicle={vehicle}
                 options={options}
                 gapPct={effectiveGapPct}
-                tweaks={tweaks}
+                tweaks={effectiveTweaks}
               />
             </>
           )}
