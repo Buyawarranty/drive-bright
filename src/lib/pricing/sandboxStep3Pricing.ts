@@ -30,6 +30,29 @@ export interface SandboxOptions {
   labourRate: number;
 }
 
+/**
+ * Sandbox-only price tweaks. Never persisted, never pushed live — they only
+ * change what the sandbox preview shows so management can experiment.
+ */
+export interface SandboxTweaks {
+  /** Percentage adjustment applied to every term price (e.g. 5 = +5%, -10 = −10%). */
+  priceAdjustPct: number;
+  /** BAW PayLater yearly-collection uplift in percent (live rule: 10). */
+  payLaterUpliftPct: number;
+}
+
+export const DEFAULT_SANDBOX_TWEAKS: SandboxTweaks = {
+  priceAdjustPct: 0,
+  payLaterUpliftPct: 10,
+};
+
+/** True when the tweaks match the live rules exactly (nothing being tested). */
+export function tweaksAreLive(tweaks: SandboxTweaks | null | undefined): boolean {
+  if (!tweaks) return true;
+  return (Number(tweaks.priceAdjustPct) || 0) === 0 &&
+    (Number(tweaks.payLaterUpliftPct) ?? 10) === 10;
+}
+
 export interface SandboxTermPrice {
   term: SandboxTerm;
   years: number;
