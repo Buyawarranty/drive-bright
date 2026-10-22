@@ -29,7 +29,7 @@ import { SeasonalOfferBanner } from "@/components/SeasonalOfferBanner";
 import StickyNavigation from "@/components/StickyNavigation";
 import { AdminShellErrorBoundary } from "@/components/admin/AdminShellErrorBoundary";
 
-const Step3SandboxRender = lazy(() => import('@/components/admin/step3-sandbox/Step3SandboxTab'));
+const Step3SandboxRender = lazy(() => import('@/pages/__SandboxRender'));
 
 
 // Component to conditionally render banner only on homepage
