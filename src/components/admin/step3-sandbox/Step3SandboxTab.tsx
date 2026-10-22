@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Loader2, Lock, Search, Rocket, SlidersHorizontal, RotateCcw } from 'lucide-react';
+import { Loader2, Lock, Search, Rocket, SlidersHorizontal, RotateCcw, Wallet } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
 import { usePricingVersions } from '@/hooks/usePricingVersions';
@@ -528,13 +528,14 @@ export default function Step3SandboxTab() {
                 options={options}
                 onOptionsChange={setOptions}
                 onSelect={setSelection}
-                tweaks={tweaks}
+                tweaks={effectiveTweaks}
+                paymentSettings={paymentSettings}
               />
               <QuotesOrdersReviewPanel
                 vehicle={vehicle}
                 options={options}
                 gapPct={effectiveGapPct}
-                tweaks={tweaks}
+                tweaks={effectiveTweaks}
               />
             </>
           )}
