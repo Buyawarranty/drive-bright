@@ -975,7 +975,7 @@ export default function PriceUpdatesTab() {
               New test draft
             </Button>
             <Button variant="outline" size="sm" onClick={handleRevert} disabled={busy || !liveVersion}>
-              <RotateCcw className="h-4 w-4 mr-1" /> Revert to code base pricing 7/2026
+              <RotateCcw className="h-4 w-4 mr-1" /> Push code base pricing (7/2026) live
             </Button>
             <Button size="sm" onClick={handlePublish} disabled={busy}>
               <Rocket className="h-4 w-4 mr-1" /> Push live
@@ -1055,7 +1055,7 @@ export default function PriceUpdatesTab() {
         <PriceUpdateLogPanel
           versions={versions}
           busy={busy}
-          onRevert={handleRestoreVersion}
+          onPushLive={handleRestoreVersion}
           onSaveNote={async (id, notes) => { await saveVersion(id, { notes }); }}
         />
 
@@ -1422,7 +1422,7 @@ export default function PriceUpdatesTab() {
                 <Badge variant="secondary">Live: built-in code pricing</Badge>
               )}
               <Button variant="outline" size="sm" onClick={handleRevert} disabled={busy || !liveVersion}>
-                <RotateCcw className="h-4 w-4 mr-1" /> Revert to code base pricing 7/2026
+                <RotateCcw className="h-4 w-4 mr-1" /> Push code base pricing (7/2026) live
               </Button>
             </div>
 
@@ -1781,7 +1781,7 @@ export default function PriceUpdatesTab() {
             </Button>
             {previewVersion?.status !== 'live' && (
               <Button size="sm" disabled={busy} onClick={() => handleRestoreVersion(previewVersion!)}>
-                <RotateCcw className="h-4 w-4 mr-1" /> Restore this pricing live
+                <Rocket className="h-4 w-4 mr-1" /> Push this pricing live
               </Button>
             )}
           </DialogFooter>
@@ -1790,6 +1790,29 @@ export default function PriceUpdatesTab() {
 
         </TabsContent>
       </Tabs>
+
+      <PushLiveConfirmDialog
+        open={pushConfirm !== null}
+        planLabel={
+          pushConfirm?.mode === 'restore'
+            ? pushConfirm.version?.label || 'Untitled plan'
+            : pushConfirm?.mode === 'codebase'
+              ? 'Code base pricing (7/2026)'
+              : label || 'Untitled draft'
+        }
+        gapPct={pushConfirm?.mode === 'codebase' ? null : pushGapPct}
+        onGapPctChange={setPushGapPct}
+        filledCount={pushConfirm?.filledCount ?? 0}
+        busy={busy}
+        onConfirm={
+          pushConfirm?.mode === 'restore'
+            ? confirmRestore
+            : pushConfirm?.mode === 'codebase'
+              ? confirmCodebase
+              : confirmPublish
+        }
+        onCancel={() => setPushConfirm(null)}
+      />
     </div>
 
   );
