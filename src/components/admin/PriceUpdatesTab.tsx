@@ -381,28 +381,43 @@ export default function PriceUpdatesTab() {
   }
 
 
-  async function handleCreateDraft(name?: string) {
-    setBusy(true);
-    try {
-      const v = await createVersion(
-        name?.trim() || `Test pricing ${new Date().toLocaleDateString('en-GB')}`,
-        roundMatrixWhole(liveVersion ? liveVersion.admin_matrix : buildCodeAdminMatrix()),
-        readWebsiteDiscountDraft(),
-        ''
-      );
-      // Start from the live plan's vehicle figures so the new plan is complete.
-      if (liveVersion?.vehicle_factor_model) {
-        await saveVersion(v.id, { vehicle_factor_model: liveVersion.vehicle_factor_model });
-        v.vehicle_factor_model = liveVersion.vehicle_factor_model;
-      }
-      loadIntoEditor(v);
-      setNewPlanName('');
-      toast.success(`New pricing plan “${v.label}” created — a copy of live. Nothing is live yet.`);
-    } catch (e: any) {
-      toast.error(e?.message || 'Could not create draft');
-    } finally {
-      setBusy(false);
-    }
+  /**
+   * Start a new plan LOCALLY — nothing is written to the database here. The
+   * editor loads a copy of the live plan, and the plan is only saved when you
+   * press Save in a section or Push live. This keeps the plan list free of
+   * untouched copies.
+   */
+  function handleCreateDraft(name?: string) {
+    const planName = name?.trim() || `Test pricing ${new Date().toLocaleDateString('en-GB')}`;
+    setSelectedId(null);
+    setPendingNewPlan(true);
+    setLabel(planName);
+    setNotes('');
+    setDiscountPct(readWebsiteDiscountDraft());
+    setMatrix(roundMatrixWhole(liveVersion ? liveVersion.admin_matrix : buildCodeAdminMatrix()));
+    setNewPlanName('');
+    toast.success(`New plan “${planName}” started — a copy of live. Nothing is saved yet; press Save in a section when you're ready.`);
+  }
+
+  /**
+   * Saves the local new plan to the database the first time it is saved or
+   * published. Returns the draft id, or null when there is nothing to work on.
+   */
+  async function ensureDraftPersisted(): Promise<string | null> {
+    if (selectedId && drafts.some(d => d.id === selectedId)) return selectedId;
+    if (!pendingNewPlan) return null;
+    const v = await createVersion(
+      label.trim() || `Test pricing ${new Date().toLocaleDateString('en-GB')}`,
+      roundMatrixWhole(matrix),
+      discountPct,
+      notes,
+      currentClaimLimitFactors(),
+      currentLabourRateFactors(),
+      liveVersion?.vehicle_factor_model ?? null
+    );
+    setSelectedId(v.id);
+    setPendingNewPlan(false);
+    return v.id;
   }
 
   /**
