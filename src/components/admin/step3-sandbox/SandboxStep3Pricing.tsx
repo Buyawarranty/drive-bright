@@ -12,9 +12,11 @@ import {
 import { Check, Clock, Repeat } from 'lucide-react';
 import {
   sandboxAllTerms,
+  tweaksAreLive,
   type SandboxOptions,
   type SandboxTermPrice,
   type SandboxTerm,
+  type SandboxTweaks,
 } from '@/lib/pricing/sandboxStep3Pricing';
 import type { WebsiteQuoteVehicle } from '@/lib/pricing/websiteQuotePrice';
 import { BAW_PAYLATER_LABEL } from '@/lib/bawPayLater';
