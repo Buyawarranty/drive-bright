@@ -1004,6 +1004,27 @@ export default function PriceUpdatesTab() {
             Create new pricing plan
           </Button>
         </div>
+        {drafts.length > 0 && (
+          <div className="flex flex-wrap items-end gap-2 border-t border-border pt-3">
+            <div className="space-y-1">
+              <label htmlFor="update-existing-plan" className="text-sm font-semibold">Or update an existing plan</label>
+              <select
+                id="update-existing-plan"
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm min-w-[280px]"
+                value=""
+                disabled={busy}
+                onChange={e => {
+                  const v = drafts.find(d => d.id === e.target.value);
+                  if (v) loadIntoEditor(v);
+                }}
+              >
+                <option value="">Choose a saved plan to update…</option>
+                {drafts.map(d => <option key={d.id} value={d.id}>{d.label || 'Untitled draft'}</option>)}
+              </select>
+            </div>
+            <p className="text-xs text-muted-foreground pb-2">Loads that plan into the editor so you can change it and push it live.</p>
+          </div>
+        )}
       </section>
 
       {/* Always-visible go-live controls so Push live is never buried in a tab */}
