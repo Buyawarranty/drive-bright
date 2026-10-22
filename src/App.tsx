@@ -99,6 +99,7 @@ const ConditionalFooter = () => {
 
 // Lazy load pages
 const FAQ = lazy(() => import("./pages/FAQ"));
+const __SandboxTweaksRender = lazy(() => import("./pages/__SandboxTweaksRender"));
 const LiveQuotePage = lazy(() => import("./pages/LiveQuotePage"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const PaymentReceived = lazy(() => import("./pages/PaymentReceived"));
