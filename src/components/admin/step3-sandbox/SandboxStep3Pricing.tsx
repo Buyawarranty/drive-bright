@@ -223,6 +223,11 @@ export default function SandboxStep3Pricing({
       <p className="text-xs text-muted-foreground">
         Sandbox preview — prices come from the same engine as the live step 3, so step 4 shows
         identical figures. Nothing here reaches customers.
+        {tweaked && (
+          <span className="block mt-1 font-semibold text-foreground">
+            Price tweaks are on — these are experimental figures, not the live prices.
+          </span>
+        )}
       </p>
     </div>
   );
