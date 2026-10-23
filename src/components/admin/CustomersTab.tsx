@@ -7409,8 +7409,8 @@ Please log in and change your password after first login.`;
                    </TableCell>
                    <TableCell>
                     <div className="flex flex-col gap-1">
-                     <Badge 
-                       variant={customer.status === 'Active' ? 'default' : 'destructive'}
+                      <Badge
+                       variant={customer.status === 'Active' ? 'default' : customer.status?.toLowerCase() === 'expired' ? 'secondary' : 'destructive'}
                        className={cn(
                          customer.status?.toLowerCase() === 'refunded' && 'bg-amber-500 hover:bg-amber-600 text-white',
                          customer.status?.toLowerCase() === 'cancelled' && 'bg-red-500 hover:bg-red-600 text-white'
