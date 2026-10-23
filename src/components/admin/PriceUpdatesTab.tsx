@@ -1502,6 +1502,14 @@ export default function PriceUpdatesTab() {
                 >
                   {d.label}
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Archive this plan — kept in the price update log"
+                  onClick={() => handleArchive(d.id, true)}
+                >
+                  <Archive className="h-4 w-4 text-muted-foreground" />
+                </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(d.id)}>
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
@@ -1786,6 +1794,19 @@ export default function PriceUpdatesTab() {
                 <Button variant="outline" size="sm" onClick={() => setPreviewVersion(v)}>
                   Open
                 </Button>
+                {v.status !== 'live' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleArchive(v.id, v.status !== 'archived')}
+                  >
+                    {v.status === 'archived' ? (
+                      <><ArchiveRestore className="h-4 w-4 mr-1" /> Unarchive</>
+                    ) : (
+                      <><Archive className="h-4 w-4 mr-1" /> Archive</>
+                    )}
+                  </Button>
+                )}
               </div>
             </div>
           ))}
