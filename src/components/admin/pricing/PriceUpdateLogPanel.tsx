@@ -331,9 +331,7 @@ export default function PriceUpdateLogPanel({
           // display sort is chosen.
           const baseIdx = baseRows.findIndex(r => r.id === v.id);
           const move = pctVsPrevious(v, baseIdx >= 0 ? baseRows[baseIdx + 1] : undefined);
-          const stats = statsById[v.id]
-            ? { ...statsById[v.id], startKey: '', endKey: '' }
-            : null;
+          const stats = statsById[v.id] ?? null;
           const isBest = bestId === v.id;
           const bestVersion = bestId ? rows.find(row => row.id === bestId) : null;
           const bestStats = bestId ? statsById[bestId] : null;
@@ -384,6 +382,8 @@ export default function PriceUpdateLogPanel({
                       <Badge className="gap-1">
                         <Check className="h-3 w-3" /> Live now
                       </Badge>
+                    ) : v.status === 'archived' ? (
+                      <Badge variant="secondary">Archived</Badge>
                     ) : (
                       <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground">
                         Not live now
