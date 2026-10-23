@@ -1715,6 +1715,34 @@ export default function PriceUpdatesTab() {
           )}
         </CardContent>
       </Card>
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold">2 · Vehicle variables</h3>
+            <SectionPushLiveBar
+              sectionLabel="Vehicle risk pricing model"
+              liveLabel={liveVersion?.label ?? null}
+              liveWebDiscountPct={discountPct}
+              busy={busy}
+              onPush={handlePushModelLive}
+              candidates={[
+                {
+                  key: 'builder',
+                  label: 'Vehicle risk model figures',
+                  description: 'Publishes the bands and factors currently in the builder below.',
+                  getModel: () => effectiveLiveModel,
+                },
+              ]}
+            />
+            <p className="text-sm text-muted-foreground">
+              <strong>The vehicle risk pricing model on its own.</strong> Edit the bands and factors here, then press{' '}
+              <strong>“Save &amp; push this model live”</strong> to send it to customers.
+            </p>
+            <AgeBandPricingPreview
+              onBuildDraft={handleBuildDraftFromModel}
+              onModelChange={setLiveEditorModel}
+            />
+          </section>
 
       <Card>
         <CardHeader>
@@ -1847,8 +1875,6 @@ export default function PriceUpdatesTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-            </TabsContent>
-          </Tabs>
         </TabsContent>
       </Tabs>
 
