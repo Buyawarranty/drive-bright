@@ -6,10 +6,10 @@ describe('staff export safeguards', () => {
     expect(canUseStaffExport('sales')).toBe(false);
     expect(staffExportRows([{ date: '2026-10-22' }], 'sales', row => row.date)).toEqual([]);
   });
-  it('limits sales leads to the last two months', () => {
-    const rows = [{ date: '2026-08-21' }, { date: '2026-08-22' }, { date: '2026-10-22' }, { date: '2026-10-23' }, { date: '' }];
-    expect(staffExportRows(rows, 'sales_lead', row => row.date, new Date('2026-10-22T17:00:00Z'))).toEqual([rows[1], rows[2]]);
+  it('blocks sales leads from all exports', () => {
+    expect(canUseStaffExport('sales_lead')).toBe(false);
     expect(canUseFullStaffExport('sales_lead')).toBe(false);
+    expect(staffExportRows([{ date: '2026-10-22' }], 'sales_lead', row => row.date)).toEqual([]);
   });
   it('clamps two-month subtraction at month end', () => {
     expect(staffExportCutoff(new Date('2026-04-30T12:00:00Z')).toISOString()).toBe('2026-02-28T00:00:00.000Z');
