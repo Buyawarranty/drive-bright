@@ -1,4 +1,5 @@
 # Security hardening
+- [x] Correct auth callback lock contention and bound staff access checks without removing renewal enforcement.
 - [x] Restrict payment-click record reads to active staff without changing public checkout logging.
 - [x] Tighten unsafe call/audit writes after checking existing writers.
 - [x] Review staff dashboard restrictions and report prioritised recommendations.

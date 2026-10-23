@@ -31,7 +31,7 @@ const SalesLogin = () => {
         const { data: { session } } = await withTimeout(supabase.auth.getSession(), 10000, 'Session check');
 
         if (session?.user) {
-          const renewal = await supabase.functions.invoke('staff-password', { body: { action: 'status' } });
+          const renewal = await withTimeout(supabase.functions.invoke('staff-password', { body: { action: 'status' }, headers: { Authorization: `Bearer ${session.access_token}` } }), 15000, 'Staff access check');
           if (renewal.data?.must_change) { navigate('/staff-password-renewal/', { replace: true }); return; }
           // Check if user has sales or admin role
           const { data: roles } = await withTimeout(
@@ -96,7 +96,7 @@ const SalesLogin = () => {
         throw new Error('Login failed. Please try again.');
       }
 
-      const renewal = await supabase.functions.invoke('staff-password', { body: { action: 'status' } });
+      const renewal = await withTimeout(supabase.functions.invoke('staff-password', { body: { action: 'status' }, headers: { Authorization: `Bearer ${authData.session?.access_token ?? ''}` } }), 15000, 'Staff access check');
       if (renewal.error || renewal.data?.error) throw new Error('Unable to check staff password renewal. Please try again.');
       if (renewal.data?.must_change) { navigate('/staff-password-renewal/', { replace: true }); return; }
 
