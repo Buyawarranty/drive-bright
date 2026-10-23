@@ -6,8 +6,16 @@ import { Label } from '@/components/ui/label';
 import { KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 
-const bounded = <T,>(promise: PromiseLike<T>, ms: number): Promise<T | 'timeout'> =>
-  Promise.race([Promise.resolve(promise), new Promise<'timeout'>(resolve => setTimeout(() => resolve('timeout'), ms))]);
+const bounded = async <T,>(promise: PromiseLike<T>, ms: number): Promise<T | 'timeout'> => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([Promise.resolve(promise), new Promise<'timeout'>(resolve => {
+      timer = setTimeout(() => resolve('timeout'), ms);
+    })]);
+  } finally {
+    clearTimeout(timer);
+  }
+};
 
 export function StaffPasswordGate({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<'loading' | 'ready' | 'expired' | 'error'>('loading');
@@ -21,19 +29,19 @@ export function StaffPasswordGate({ children }: { children: React.ReactNode }) {
     checking.current = true;
     try {
       const sessionResult = await bounded(supabase.auth.getSession(), 8000);
-      if (sessionResult === 'timeout') { setState(prev => prev === 'loading' ? 'error' : prev); return; }
+      if (sessionResult === 'timeout') { setState('error'); return; }
       const session = sessionResult.data.session;
       if (!session) { setState('ready'); return; }
       const result = await bounded(supabase.functions.invoke('staff-password', {
         body: { action: 'status' },
         headers: { Authorization: `Bearer ${session.access_token}` },
       }), 15000);
-      if (result === 'timeout') { setState(prev => prev === 'loading' ? 'error' : prev); return; }
+      if (result === 'timeout') { setState('error'); return; }
       const { data, error } = result;
-      if (error || data?.error) { setState(prev => prev === 'ready' ? prev : 'error'); return; }
+      if (error || data?.error) { setState('error'); return; }
       setState(data?.must_change ? 'expired' : 'ready');
     } catch {
-      setState(prev => prev === 'ready' ? prev : 'error');
+      setState('error');
     } finally {
       checking.current = false;
     }
