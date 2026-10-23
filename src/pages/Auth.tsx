@@ -131,10 +131,12 @@ const Auth = () => {
   useEffect(() => {
     // Set up auth state listener to handle navigation on successful sign in
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth page: Auth state changed:', event, session?.user?.email);
         
         if (event === 'SIGNED_IN' && session) {
+          // Never await Supabase while its auth-state callback holds the lock.
+          setTimeout(() => { void (async () => {
           console.log('Auth page: User signed in, checking role and navigating');
 
           toast({
@@ -143,7 +145,7 @@ const Auth = () => {
           });
 
           // Check user role and navigate - fetch ALL roles for the user.
-          const renewal = await supabase.functions.invoke('staff-password', { body: { action: 'status' } });
+          const renewal = await withTimeout(supabase.functions.invoke('staff-password', { body: { action: 'status' }, headers: { Authorization: `Bearer ${session.access_token}` } }), 15000, 'Staff access check');
           if (renewal.data?.must_change) { navigate('/staff-password-renewal/', { replace: true }); return; }
           // Timeout + try/catch so a stalled read can never strand the user.
           let roleData: { role: string }[] | null = null;
@@ -231,6 +233,7 @@ const Auth = () => {
             console.log("Auth page: Customer detected, redirecting to customer dashboard");
             navigate('/customer-dashboard', { replace: true });
           }
+          })().catch(() => navigate('/admin-dashboard/', { replace: true })); }, 0);
         } else if (event === 'SIGNED_OUT') {
           // User signed out, stay on auth page
           console.log('Auth page: User signed out');

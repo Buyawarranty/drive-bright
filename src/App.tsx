@@ -252,7 +252,8 @@ const App = () => {
     // Resolve whether the current session may use manager-only test price floors
     refreshManagerPriceBypass();
     const { data: authSub } = supabase.auth.onAuthStateChange(() => {
-      refreshManagerPriceBypass();
+      // Release the auth lock before starting any further Supabase calls.
+      setTimeout(() => { void refreshManagerPriceBypass(); }, 0);
     });
     const cleanupAuth = () => authSub?.subscription?.unsubscribe();
 
