@@ -270,6 +270,21 @@ export default function PriceUpdateLogPanel({
           The green model converted best while live. Price changes are shown separately and do not
           decide the winner. A model needs at least 2 days and 3 sales to be ranked.
         </p>
+        <label className="flex items-center gap-2 pt-1 text-sm text-muted-foreground">
+          Sort
+          <select
+            value={sort}
+            onChange={e => setSort(e.target.value as typeof sort)}
+            className="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+          >
+            <option value="newest">Newest first</option>
+            <option value="best">Highest converting first</option>
+            <option value="worst">Lowest converting first</option>
+            <option value="shortest">Shortest test first</option>
+            <option value="longest">Longest test first</option>
+            <option value="revenue">Most revenue first</option>
+          </select>
+        </label>
       </CardHeader>
       <CardContent className="space-y-2">
         {rows.length === 0 && (
@@ -309,11 +324,16 @@ export default function PriceUpdateLogPanel({
           );
         })()}
 
-        {rows.map((v, i) => {
+        {rows.map((v) => {
           const isLive = v.status === 'live';
           const sample = sampleGridPrice(v);
-          const move = pctVsPrevious(v, rows[i + 1]);
-          const stats = windowStats(v, rows[i - 1]);
+          // "Previous" always means the chronologically previous model, whatever
+          // display sort is chosen.
+          const baseIdx = baseRows.findIndex(r => r.id === v.id);
+          const move = pctVsPrevious(v, baseIdx >= 0 ? baseRows[baseIdx + 1] : undefined);
+          const stats = statsById[v.id]
+            ? { ...statsById[v.id], startKey: '', endKey: '' }
+            : null;
           const isBest = bestId === v.id;
           const bestVersion = bestId ? rows.find(row => row.id === bestId) : null;
           const bestStats = bestId ? statsById[bestId] : null;
