@@ -1622,6 +1622,8 @@ export const CustomersTab = ({
       filtered = filtered.filter(customer => {
         const status = (customer.status || '').toLowerCase();
         if (status === 'cancelled' || status === 'refunded') return false;
+        // Expired warranties live in the "Expired" status filter, not the default list
+        if (status === 'expired') return false;
         if (refundedCustomerIds.has(customer.id)) return false;
         return true;
       });
@@ -4973,7 +4975,7 @@ Buyawarranty.co.uk`,
             }
             if (filterByStatus !== 'all') {
               const statusLabels: Record<string, string> = {
-                active: 'Active', pending: 'Pending', cancelled: 'Cancelled',
+                active: 'Active', pending: 'Pending', cancelled: 'Cancelled', expired: 'Expired',
                 refunded: 'Refunded', cancelled_and_refunded: 'Cancelled & Refunded', claim_made: 'Claim Made',
               };
               chips.push({ key: 'status', label: 'Status', value: statusLabels[filterByStatus] || filterByStatus, onRemove: () => setFilterByStatus('all') });
@@ -5241,6 +5243,7 @@ Buyawarranty.co.uk`,
                     <SelectContent>
                       <SelectItem value="all">All Status</SelectItem>
                       <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="expired">Expired</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                       <SelectItem value="refunded">Refunded</SelectItem>
