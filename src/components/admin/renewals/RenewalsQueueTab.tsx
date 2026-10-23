@@ -1284,9 +1284,12 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                                     Claim made
                                   </Badge>
                                 ) : (
-                                  <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-primary/40 text-primary bg-primary/5" title="No claim on record">
-                                    No claim
-                                  </Badge>
+                                  // "No claim" reassurance tag is management-only — sales agents don't need it
+                                  ['admin', 'super_admin', 'sales_manager'].includes(userRole || '') && (
+                                    <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-primary/40 text-primary bg-primary/5" title="No claim on record">
+                                      No claim
+                                    </Badge>
+                                  )
                                 )}
                                 {unwind && (
                                   <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-destructive text-destructive bg-destructive/10" title="Policy was cancelled or refunded — not for renewal">
