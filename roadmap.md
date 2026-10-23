@@ -1,8 +1,7 @@
 # Roadmap
 
-## Expired warranties (current task)
-- [ ] DB: `expire_overdue_policies()` — mark policies past end date as expired, mark customers with no live policy as Expired; backfill + daily cron
-- [ ] Customer Management: "Expired" status filter + section; hide expired from default view
-- [ ] Mobile cards: expired badge tone
-- [ ] Verify renewals link (cron already covers 180 days past expiry; claims→approval, cancelled/refunded/complaints blocked)
-- [ ] Build check + memory note
+## Expired warranties — done 23 Oct 2026
+- [x] DB: `expire_overdue_policies()` + nightly cron + backfill (28 policies, 9 customers)
+- [x] Customer Management: "Expired" status filter; hidden from default view; grey badge
+- [x] Renewals queue includes expired policies in recently_expired / all_renewals segments
+- [x] Build OK; memory saved
