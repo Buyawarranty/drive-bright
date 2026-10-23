@@ -1426,44 +1426,29 @@ export default function PriceUpdatesTab() {
         </TabsContent>
 
 
-        <TabsContent value="editor" className="space-y-4 mt-4">
-          <Tabs defaultValue="price-grid" className="w-full">
-            <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/40 p-1">
-              <TabsTrigger value="price-grid" className="text-sm">
-                <FlaskConical className="h-4 w-4 mr-2" /> Price grid (this one goes live)
-              </TabsTrigger>
-              <TabsTrigger value="vehicle-variables" className="text-sm">
-                <Layers className="h-4 w-4 mr-2" /> Vehicle variables
-              </TabsTrigger>
-            </TabsList>
+        <TabsContent value="editor" className="space-y-6 mt-4">
+          {/* One editing page: the price grid and the vehicle variables sit in a
+              single scroll, so a whole plan is updated in one place with one
+              save — no more wondering which section belonged to which plan. */}
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 p-3">
+            <p className="text-sm">
+              <span className="font-semibold">Editing: {label || 'Untitled plan'}</span>
+              <span className="text-muted-foreground">
+                {' '}— everything on this page belongs to this plan. One save stores the price grid, the vehicle variables and the notes together.
+              </span>
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => handleSave()} disabled={busy || (!selectedId && !pendingNewPlan)}>
+                <Save className="h-4 w-4 mr-1" /> Save everything (test only)
+              </Button>
+              <Button size="sm" onClick={handlePublish} disabled={busy || (!selectedId && !pendingNewPlan)}>
+                <Rocket className="h-4 w-4 mr-1" /> Push live
+              </Button>
+            </div>
+          </div>
 
-            <TabsContent value="vehicle-variables" className="space-y-4 mt-4">
-              <SectionPushLiveBar
-                sectionLabel="Vehicle risk pricing model"
-                liveLabel={liveVersion?.label ?? null}
-                liveWebDiscountPct={discountPct}
-                busy={busy}
-                onPush={handlePushModelLive}
-                candidates={[
-                  {
-                    key: 'builder',
-                    label: 'Vehicle risk model figures',
-                    description: 'Publishes the bands and factors currently in the builder below.',
-                    getModel: () => effectiveLiveModel,
-                  },
-                ]}
-              />
-              <p className="text-sm text-muted-foreground">
-                <strong>The vehicle risk pricing model on its own.</strong> Edit the bands and factors here, then press{' '}
-                <strong>“Save &amp; push this model live”</strong> to send it to customers.
-              </p>
-              <AgeBandPricingPreview
-                onBuildDraft={handleBuildDraftFromModel}
-                onModelChange={setLiveEditorModel}
-              />
-            </TabsContent>
-
-            <TabsContent value="price-grid" className="space-y-4 mt-4">
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold">1 · Price grid (this one goes live)</h3>
           <SectionPushLiveBar
             sectionLabel="Price grid (this one goes live)"
             liveLabel={liveVersion?.label ?? null}
