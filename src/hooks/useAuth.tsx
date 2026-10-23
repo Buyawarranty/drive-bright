@@ -13,6 +13,11 @@ export const useAuth = () => {
 
   useEffect(() => {
     let mounted = true;
+    let loadingSafetyTimer: ReturnType<typeof setTimeout> | undefined;
+    const finishLoading = () => {
+      clearTimeout(loadingSafetyTimer);
+      if (mounted) setLoading(false);
+    };
     
     console.log("=== useAuth: Initializing ===");
     
@@ -77,14 +82,14 @@ export const useAuth = () => {
             setUserRole(null);
           }
           
-          setLoading(false);
+          finishLoading();
         }
       }
     );
 
     // Safety net: loading must never stay true indefinitely. If the initial
     // session resolution hasn't completed within ~8 seconds, release the UI.
-    const loadingSafetyTimer = setTimeout(() => {
+    loadingSafetyTimer = setTimeout(() => {
       if (mounted) {
         console.warn('useAuth: forcing loading=false after 8s safety timeout');
         setLoading(false);
@@ -108,12 +113,12 @@ export const useAuth = () => {
           }
           setSession(session);
           setUser(session?.user ?? null);
-          setLoading(false);
+          finishLoading();
         }
       } catch (error) {
         console.error('Error getting initial session:', error);
         if (mounted) {
-          setLoading(false);
+          finishLoading();
         }
       }
     };

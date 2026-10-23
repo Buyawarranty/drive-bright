@@ -1,4 +1,5 @@
 # Security hardening
+- [ ] Check slow page startup, remove unnecessary homepage downloads on staff routes, and verify public sign-in rendering without publishing.
 - [x] Correct auth callback lock contention and bound staff access checks without removing renewal enforcement.
 - [x] Restrict payment-click record reads to active staff without changing public checkout logging.
 - [x] Tighten unsafe call/audit writes after checking existing writers.

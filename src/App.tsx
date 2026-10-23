@@ -15,8 +15,9 @@ import { CartProvider } from "@/contexts/CartContext";
 import { redirectWwwToNonWww } from "@/utils/wwwRedirect";
 import { preloadCriticalRoutes } from "@/utils/preloadRoutes";
 
-// Eager load critical components
-import Index from "./pages/Index";
+// Load the homepage journey only when its route is opened; staff sign-in
+// must not download its forms, quote delivery and vehicle UI first.
+const Index = lazy(() => import("./pages/Index"));
 import WebsiteFooter from "@/components/WebsiteFooter";
 import ScrollToTop from "@/components/ScrollToTop";
 import GlobalSiteChat from "@/components/ai-sandbox/GlobalSiteChat";
