@@ -815,7 +815,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <div
                   role="group"
                   aria-label="Speak to our UK team"
-                  className="homepage-contact-strip mt-6 grid items-center border-t border-border pt-5"
+                  className="homepage-contact-strip grid items-center"
                 >
                   <a
                     href="tel:03309122402"
@@ -831,7 +831,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     type="button"
                     variant="outline"
                     onClick={() => setShowCallbackModal(true)}
-                    className="homepage-contact-callback h-14 w-full min-w-0 gap-2 whitespace-nowrap border-primary bg-primary/5 px-3 text-sm font-bold leading-5 text-primary hover:bg-primary/10 hover:text-primary"
+                    className="homepage-contact-callback w-full min-w-0 whitespace-nowrap border-primary bg-background font-bold leading-5 text-primary hover:bg-primary/10 hover:text-primary"
                   >
                     <span>Request a callback</span>
                     <ArrowRight aria-hidden="true" />
@@ -840,7 +840,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     type="button"
                     variant="outline"
                     onClick={() => setShowPriceBeat(true)}
-                    className="homepage-contact-price-beat h-14 w-full min-w-0 gap-2 whitespace-nowrap border-border px-3 text-sm font-semibold leading-5 text-foreground"
+                    className="homepage-contact-price-beat w-full min-w-0 whitespace-nowrap border-border bg-background font-semibold leading-5 text-foreground"
                   >
                     <Tag aria-hidden="true" />
                     <span>Beat My Quote</span>
