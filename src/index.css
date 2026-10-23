@@ -68,100 +68,102 @@
   --accent-foreground: 214 68% 29%;
   --border: 220 16% 89%;
   --ring: 22 100% 52%;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 16px 12px;
+  --contact-surface: 210 17% 98%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 8px;
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: hsl(var(--contact-surface));
 }
 
 .homepage-contact-phone {
   grid-column: 1 / -1;
+  min-height: 56px;
+  flex-wrap: wrap;
+  column-gap: 8px;
+  row-gap: 0;
 }
 
-@container (min-width: 490px) {
-  .homepage-contact-strip {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, 1fr);
-    column-gap: 12px;
-  }
-
-  .homepage-contact-callback,
-  .homepage-contact-price-beat {
-    padding-inline: 8px;
-    font-size: 13px;
-  }
-
-  .homepage-contact-phone {
-    grid-column: auto;
-    justify-content: flex-start;
-  }
-
-  .homepage-contact-callback,
-  .homepage-contact-price-beat {
-    position: relative;
-  }
-
-  .homepage-contact-callback::before,
-  .homepage-contact-price-beat::before {
-    content: '';
-    position: absolute;
-    left: -7px;
-    top: 4px;
-    bottom: 4px;
-    width: 1px;
-    background: hsl(var(--border));
-    pointer-events: none;
-  }
+.homepage-contact-phone > svg {
+  height: 24px;
+  width: 24px;
 }
 
-/* Compact mobile contact group; desktop keeps its existing three-column strip. */
-@media (max-width: 1023px) {
-  .homepage-contact-strip {
-    --contact-surface: 220 14% 97%;
-    margin-top: 16px;
-    padding-top: 12px;
-    gap: 8px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.homepage-contact-phone > span {
+  display: contents;
+}
 
-  .homepage-contact-phone {
-    min-height: 64px;
-    grid-column: 1 / -1;
-    flex-wrap: wrap;
-    column-gap: 10px;
-    row-gap: 0;
-    padding: 8px;
-    background: hsl(var(--contact-surface));
-  }
+.homepage-contact-hours {
+  flex-basis: 100%;
+  text-align: center;
+}
 
-  .homepage-contact-phone > svg {
-    height: 24px;
-    width: 24px;
-  }
+.homepage-contact-callback,
+.homepage-contact-price-beat {
+  height: 48px;
+  padding-inline: 6px;
+  gap: 4px;
+  font-size: 11px;
+}
 
-  .homepage-contact-phone > span {
-    display: contents;
-  }
-
-  .homepage-contact-hours {
-    flex-basis: 100%;
-    text-align: center;
-  }
-
+@container (min-width: 340px) {
   .homepage-contact-callback,
   .homepage-contact-price-beat {
-    height: 48px;
-    padding-inline: 8px;
-    gap: 6px;
     font-size: 12px;
-  }
-
-  .homepage-contact-callback::before,
-  .homepage-contact-price-beat::before {
-    display: none;
+    gap: 6px;
+    padding-inline: 8px;
   }
 }
 
-@container (max-width: 289px) {
-  .homepage-contact-strip {
-    grid-template-columns: minmax(0, 1fr);
+@media (min-width: 1024px) {
+  @container (min-width: 410px) {
+    .homepage-contact-strip {
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      column-gap: 10px;
+    }
+    .homepage-contact-phone {
+      grid-column: auto;
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      min-height: 48px;
+      gap: 6px;
+      border-right: 1px solid hsl(var(--border));
+      border-radius: 0;
+      padding-right: 8px;
+    }
+    .homepage-contact-phone > span {
+      display: flex;
+    }
+    .homepage-contact-phone > span > span:first-child {
+      font-size: 14px;
+    }
+    .homepage-contact-phone > svg {
+      height: 20px;
+      width: 20px;
+    }
+    .homepage-contact-hours {
+      flex-basis: auto;
+      text-align: left;
+      font-size: 10px;
+    }
+  }
+  @container (min-width: 500px) {
+    .homepage-contact-strip {
+      padding: 16px;
+      column-gap: 12px;
+    }
+    .homepage-contact-phone > span > span:first-child {
+      font-size: 16px;
+    }
+    .homepage-contact-hours {
+      font-size: 11px;
+    }
+    .homepage-contact-callback,
+    .homepage-contact-price-beat {
+      padding-inline: 12px;
+      font-size: 13px;
+    }
   }
 }
 
