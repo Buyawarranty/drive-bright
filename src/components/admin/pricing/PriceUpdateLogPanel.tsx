@@ -133,6 +133,7 @@ export default function PriceUpdateLogPanel({
   onSaveNote?: (id: string, notes: string) => Promise<void>;
 }) {
   const [showAll, setShowAll] = useState(false);
+  const [sort, setSort] = useState<'newest' | 'best' | 'worst' | 'shortest' | 'longest' | 'revenue'>('newest');
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
   const [openNotes, setOpenNotes] = useState<Record<string, boolean>>({});
@@ -181,21 +182,22 @@ export default function PriceUpdateLogPanel({
   };
 
 
-  const rows = useMemo(() => {
-    const sorted = [...versions].sort((a, b) => {
+  // Chronological order (newest first) defines each model's sales window —
+  // the display sort chosen below never changes that maths.
+  const baseRows = useMemo(() => {
+    return [...versions].sort((a, b) => {
       const ta = new Date(a.published_at || a.updated_at || a.created_at).getTime() || 0;
       const tb = new Date(b.published_at || b.updated_at || b.created_at).getTime() || 0;
       return tb - ta;
     });
-    return showAll ? sorted : sorted.slice(0, 8);
-  }, [versions, showAll]);
+  }, [versions]);
 
   // Sales-per-day for every row, so we can name the best performer and
   // compare every other row against it — not just against the previous one.
   const statsById = useMemo(() => {
-    const map: Record<string, { revenue: number; orders: number; aov: number; daysLive: number; salesPerDay: number }> = {};
-    rows.forEach((v, i) => {
-      const s = windowStats(v, rows[i - 1]);
+    const map: Record<string, { revenue: number; orders: number; aov: number; daysLive: number; salesPerDay: number; list: DayStat[] }> = {};
+    baseRows.forEach((v, i) => {
+      const s = windowStats(v, baseRows[i - 1]);
       if (!s) return;
       const daysLive = Math.max(1, s.list.length);
       map[v.id] = {
@@ -204,11 +206,37 @@ export default function PriceUpdateLogPanel({
         aov: s.aov,
         daysLive,
         salesPerDay: s.orders / daysLive,
+        list: s.list,
       };
     });
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, salesByDay]);
+  }, [baseRows, salesByDay]);
+
+  const rows = useMemo(() => {
+    const sorted = [...baseRows];
+    if (sort !== 'newest') {
+      sorted.sort((a, b) => {
+        const sa = statsById[a.id];
+        const sb = statsById[b.id];
+        switch (sort) {
+          case 'best':
+            return (sb?.salesPerDay ?? -1) - (sa?.salesPerDay ?? -1);
+          case 'worst':
+            return (sa?.salesPerDay ?? Number.MAX_SAFE_INTEGER) - (sb?.salesPerDay ?? Number.MAX_SAFE_INTEGER);
+          case 'shortest':
+            return (sa?.daysLive ?? Number.MAX_SAFE_INTEGER) - (sb?.daysLive ?? Number.MAX_SAFE_INTEGER);
+          case 'longest':
+            return (sb?.daysLive ?? -1) - (sa?.daysLive ?? -1);
+          case 'revenue':
+            return (sb?.revenue ?? -1) - (sa?.revenue ?? -1);
+          default:
+            return 0;
+        }
+      });
+    }
+    return showAll ? sorted : sorted.slice(0, 8);
+  }, [baseRows, sort, showAll, statsById]);
 
   /** The best-performing price model: highest sales per day, requiring at
    *  least 2 days live and 3 sales so one lucky afternoon can't win. */
@@ -242,6 +270,21 @@ export default function PriceUpdateLogPanel({
           The green model converted best while live. Price changes are shown separately and do not
           decide the winner. A model needs at least 2 days and 3 sales to be ranked.
         </p>
+        <label className="flex items-center gap-2 pt-1 text-sm text-muted-foreground">
+          Sort
+          <select
+            value={sort}
+            onChange={e => setSort(e.target.value as typeof sort)}
+            className="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+          >
+            <option value="newest">Newest first</option>
+            <option value="best">Highest converting first</option>
+            <option value="worst">Lowest converting first</option>
+            <option value="shortest">Shortest test first</option>
+            <option value="longest">Longest test first</option>
+            <option value="revenue">Most revenue first</option>
+          </select>
+        </label>
       </CardHeader>
       <CardContent className="space-y-2">
         {rows.length === 0 && (
@@ -281,11 +324,14 @@ export default function PriceUpdateLogPanel({
           );
         })()}
 
-        {rows.map((v, i) => {
+        {rows.map((v) => {
           const isLive = v.status === 'live';
           const sample = sampleGridPrice(v);
-          const move = pctVsPrevious(v, rows[i + 1]);
-          const stats = windowStats(v, rows[i - 1]);
+          // "Previous" always means the chronologically previous model, whatever
+          // display sort is chosen.
+          const baseIdx = baseRows.findIndex(r => r.id === v.id);
+          const move = pctVsPrevious(v, baseIdx >= 0 ? baseRows[baseIdx + 1] : undefined);
+          const stats = statsById[v.id] ?? null;
           const isBest = bestId === v.id;
           const bestVersion = bestId ? rows.find(row => row.id === bestId) : null;
           const bestStats = bestId ? statsById[bestId] : null;
@@ -336,6 +382,8 @@ export default function PriceUpdateLogPanel({
                       <Badge className="gap-1">
                         <Check className="h-3 w-3" /> Live now
                       </Badge>
+                    ) : v.status === 'archived' ? (
+                      <Badge variant="secondary">Archived</Badge>
                     ) : (
                       <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground">
                         Not live now

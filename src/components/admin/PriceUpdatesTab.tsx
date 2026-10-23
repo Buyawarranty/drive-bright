@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight, Layers, Percent, Copy } from 'lucide-react';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight, Layers, Percent, Copy, Archive, ArchiveRestore } from 'lucide-react';
 import Aug26PricingPanel from '@/components/admin/pricing/Aug26PricingPanel';
 import LiveVsAug26Panel from '@/components/admin/pricing/LiveVsAug26Panel';
 import AugHybridVsLivePanel from '@/components/admin/pricing/AugHybridVsLivePanel';
@@ -233,6 +233,7 @@ export default function PriceUpdatesTab() {
     publishVersion,
     revertToCode,
     deleteVersion,
+    archiveVersion,
   } = usePricingVersions();
 
   const liveVersion = versions.find(v => v.status === 'live') || null;
@@ -571,6 +572,41 @@ export default function PriceUpdatesTab() {
     return { ...(model ?? ({} as VehicleFactorModel)), riskBands: bands, websiteDiscountMode: 'single' } as VehicleFactorModel;
   }
 
+
+  /**
+   * Archive a plan without deleting it: it leaves the draft picker but stays in
+   * the price update log and History with its figures and sales record intact.
+   */
+  async function handleArchive(id: string, archive: boolean) {
+    const v = versions.find(x => x.id === id);
+    if (!v) return;
+    if (v.status === 'live') {
+      toast.error('The live plan cannot be archived — push another plan live first.');
+      return;
+    }
+    if (
+      !window.confirm(
+        archive
+          ? `Archive "${v.label}"?\n\nIt stays in the price update log and History with all its figures, but is no longer offered as a test draft.`
+          : `Bring "${v.label}" back as a test draft?`
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    try {
+      await archiveVersion(id, archive);
+      if (archive && selectedId === id) {
+        setSelectedId(null);
+        setPendingNewPlan(false);
+      }
+      toast.success(archive ? 'Plan archived — kept in the log' : 'Plan restored as a test draft');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not update the plan');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function handleSave(adjustedMatrix?: PricingMatrixShape): Promise<boolean> {
     if (!selectedId && !pendingNewPlan) return false;
@@ -1390,44 +1426,29 @@ export default function PriceUpdatesTab() {
         </TabsContent>
 
 
-        <TabsContent value="editor" className="space-y-4 mt-4">
-          <Tabs defaultValue="price-grid" className="w-full">
-            <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/40 p-1">
-              <TabsTrigger value="price-grid" className="text-sm">
-                <FlaskConical className="h-4 w-4 mr-2" /> Price grid (this one goes live)
-              </TabsTrigger>
-              <TabsTrigger value="vehicle-variables" className="text-sm">
-                <Layers className="h-4 w-4 mr-2" /> Vehicle variables
-              </TabsTrigger>
-            </TabsList>
+        <TabsContent value="editor" className="space-y-6 mt-4">
+          {/* One editing page: the price grid and the vehicle variables sit in a
+              single scroll, so a whole plan is updated in one place with one
+              save — no more wondering which section belonged to which plan. */}
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 p-3">
+            <p className="text-sm">
+              <span className="font-semibold">Editing: {label || 'Untitled plan'}</span>
+              <span className="text-muted-foreground">
+                {' '}— everything on this page belongs to this plan. One save stores the price grid, the vehicle variables and the notes together.
+              </span>
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => handleSave()} disabled={busy || (!selectedId && !pendingNewPlan)}>
+                <Save className="h-4 w-4 mr-1" /> Save everything (test only)
+              </Button>
+              <Button size="sm" onClick={handlePublish} disabled={busy || (!selectedId && !pendingNewPlan)}>
+                <Rocket className="h-4 w-4 mr-1" /> Push live
+              </Button>
+            </div>
+          </div>
 
-            <TabsContent value="vehicle-variables" className="space-y-4 mt-4">
-              <SectionPushLiveBar
-                sectionLabel="Vehicle risk pricing model"
-                liveLabel={liveVersion?.label ?? null}
-                liveWebDiscountPct={discountPct}
-                busy={busy}
-                onPush={handlePushModelLive}
-                candidates={[
-                  {
-                    key: 'builder',
-                    label: 'Vehicle risk model figures',
-                    description: 'Publishes the bands and factors currently in the builder below.',
-                    getModel: () => effectiveLiveModel,
-                  },
-                ]}
-              />
-              <p className="text-sm text-muted-foreground">
-                <strong>The vehicle risk pricing model on its own.</strong> Edit the bands and factors here, then press{' '}
-                <strong>“Save &amp; push this model live”</strong> to send it to customers.
-              </p>
-              <AgeBandPricingPreview
-                onBuildDraft={handleBuildDraftFromModel}
-                onModelChange={setLiveEditorModel}
-              />
-            </TabsContent>
-
-            <TabsContent value="price-grid" className="space-y-4 mt-4">
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold">1 · Price grid (this one goes live)</h3>
           <SectionPushLiveBar
             sectionLabel="Price grid (this one goes live)"
             liveLabel={liveVersion?.label ?? null}
@@ -1480,6 +1501,14 @@ export default function PriceUpdatesTab() {
                   onClick={() => loadIntoEditor(d)}
                 >
                   {d.label}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Archive this plan — kept in the price update log"
+                  onClick={() => handleArchive(d.id, true)}
+                >
+                  <Archive className="h-4 w-4 text-muted-foreground" />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(d.id)}>
                   <Trash2 className="h-4 w-4 text-destructive" />
@@ -1694,6 +1723,34 @@ export default function PriceUpdatesTab() {
           )}
         </CardContent>
       </Card>
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold">2 · Vehicle variables</h3>
+            <SectionPushLiveBar
+              sectionLabel="Vehicle risk pricing model"
+              liveLabel={liveVersion?.label ?? null}
+              liveWebDiscountPct={discountPct}
+              busy={busy}
+              onPush={handlePushModelLive}
+              candidates={[
+                {
+                  key: 'builder',
+                  label: 'Vehicle risk model figures',
+                  description: 'Publishes the bands and factors currently in the builder below.',
+                  getModel: () => effectiveLiveModel,
+                },
+              ]}
+            />
+            <p className="text-sm text-muted-foreground">
+              <strong>The vehicle risk pricing model on its own.</strong> Edit the bands and factors here, then press{' '}
+              <strong>“Save &amp; push this model live”</strong> to send it to customers.
+            </p>
+            <AgeBandPricingPreview
+              onBuildDraft={handleBuildDraftFromModel}
+              onModelChange={setLiveEditorModel}
+            />
+          </section>
 
       <Card>
         <CardHeader>
@@ -1737,6 +1794,19 @@ export default function PriceUpdatesTab() {
                 <Button variant="outline" size="sm" onClick={() => setPreviewVersion(v)}>
                   Open
                 </Button>
+                {v.status !== 'live' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleArchive(v.id, v.status !== 'archived')}
+                  >
+                    {v.status === 'archived' ? (
+                      <><ArchiveRestore className="h-4 w-4 mr-1" /> Unarchive</>
+                    ) : (
+                      <><Archive className="h-4 w-4 mr-1" /> Archive</>
+                    )}
+                  </Button>
+                )}
               </div>
             </div>
           ))}
@@ -1826,8 +1896,6 @@ export default function PriceUpdatesTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-            </TabsContent>
-          </Tabs>
         </TabsContent>
       </Tabs>
 

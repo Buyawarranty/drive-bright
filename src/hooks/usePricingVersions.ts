@@ -321,6 +321,24 @@ export function usePricingVersions() {
     [load]
   );
 
+  /**
+   * Archive (or un-archive) a price model. Archiving only flips the status —
+   * the row, its figures and its sales history stay in the database, so the
+   * price update log keeps a complete record of everything ever tried.
+   */
+  const archiveVersion = useCallback(
+    async (id: string, archived: boolean) => {
+      const { error } = await supabase
+        .from('pricing_matrix_versions')
+        .update({ status: archived ? 'archived' : 'draft' } as any)
+        .eq('id', id);
+      if (error) throw error;
+      await load();
+      notifyPricingVersionsChanged();
+    },
+    [load]
+  );
+
   return {
     versions,
     loading,
@@ -330,6 +348,7 @@ export function usePricingVersions() {
     publishVersion,
     revertToCode,
     deleteVersion,
+    archiveVersion,
   };
 }
 
