@@ -15715,6 +15715,7 @@ export type Database = {
           sales_in_window: number
         }[]
       }
+      expire_overdue_policies: { Args: never; Returns: number }
       expire_temp_admin_logins: { Args: never; Returns: number }
       find_lead_owner_by_contact: {
         Args: { _email?: string; _phone9?: string }

@@ -1,12 +1,7 @@
-# Security hardening
-- [x] Check slow page startup, remove unnecessary homepage downloads on staff routes, and verify public sign-in rendering without publishing.
-- [x] Correct auth callback lock contention and bound staff access checks without removing renewal enforcement.
-- [x] Restrict payment-click record reads to active staff without changing public checkout logging.
-- [x] Tighten unsafe call/audit writes after checking existing writers.
-- [x] Review staff dashboard restrictions and report prioritised recommendations.
-- [x] Verify database permissions and run focused regression checks; do not publish.
-- [x] Review admin two-step sign-in without locking existing staff out: no enrolled factors or challenge flow; mandatory enforcement deferred pending a tested enrolment/recovery rollout.
-- [x] Tighten confirmed staff export and restricted-area access gaps while preserving existing role allowances.
-- [x] Run focused regression checks and report remaining blockers; do not publish.
-- [ ] Verify signed-in administrator and staff flows: blocked by external unmanaged authentication.
-- [ ] Enforce export prevention beyond the app controls: requires defining narrower readable staff datasets; already-readable records can still be copied and existing operational reads must be preserved.
+# Roadmap
+
+## Expired warranties — done 23 Oct 2026
+- [x] DB: `expire_overdue_policies()` + nightly cron + backfill (28 policies, 9 customers)
+- [x] Customer Management: "Expired" status filter; hidden from default view; grey badge
+- [x] Renewals queue includes expired policies in recently_expired / all_renewals segments
+- [x] Build OK; memory saved
