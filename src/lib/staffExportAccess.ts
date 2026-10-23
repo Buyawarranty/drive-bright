@@ -1,6 +1,6 @@
 /** Presentation/export safeguards; table RLS remains the data access boundary. */
 export function canUseStaffExport(role: string | null | undefined): boolean {
-  return ['admin', 'super_admin', 'sales_manager', 'performance_manager', 'accounts', 'accounts_manager', 'lead_gen', 'sales_lead'].includes(role || '');
+  return ['admin', 'super_admin', 'sales_manager', 'performance_manager', 'accounts', 'accounts_manager', 'lead_gen'].includes(role || '');
 }
 
 export function canUseFullStaffExport(role: string | null | undefined): boolean {
