@@ -1555,7 +1555,12 @@ const AdminDashboardInner: React.FC<{
               onRetry={() => setTabRetryKey(value => value + 1)}
             >
               <Suspense fallback={<TabFallback />}>
-                {renderContent(displayRole, displayPermissions)}
+                {/* Render-time guard: a section the login is not allowed must never
+                    mount (and fire its data queries), even for the brief moment
+                    before the redirect effect above runs. */}
+                {isTabAllowedForRole(activeTab, displayRole, displayPermissions)
+                  ? renderContent(displayRole, displayPermissions)
+                  : <AccessDenied label="This section" />}
               </Suspense>
             </TabErrorBoundary>
           </main>
