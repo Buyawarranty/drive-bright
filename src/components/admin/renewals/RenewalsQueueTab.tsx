@@ -81,6 +81,11 @@ const OUTCOMES = [
 const RENEWED_OUTCOMES = new Set(['renewed', 'upgraded', 'renewed_upgraded']);
 
 const EXCLUDED_STATUSES = "('cancelled','refunded','expired','voided','deleted')";
+// Segments that look back at past expiry dates must include expired policies,
+// otherwise a warranty vanishes from Renewals the moment it expires.
+const EXPIRED_OK_SEGMENTS = new Set(['recently_expired', 'all_renewals']);
+const excludedStatusesFor = (segmentId: string) =>
+  EXPIRED_OK_SEGMENTS.has(segmentId) ? "('voided','deleted')" : EXCLUDED_STATUSES;
 const PAGE_SIZE = 500;
 const UNASSIGNED = '__unassigned__';
 
@@ -387,7 +392,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
       // never appear in the sales "Due to contact" list.
       let q: any = (supabase.from('customer_policies') as any)
         .select(baseSelect)
-        .not('status', 'in', "('expired','voided','deleted')")
+        .not('status', 'in', excludedStatusesFor(segment))
         .or('is_deleted.is.null,is_deleted.eq.false');
       q = applySegment(q, segment);
 
@@ -453,7 +458,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
         try {
           let q: any = (supabase.from('customer_policies') as any)
             .select('id', { count: 'exact', head: true })
-            .not('status', 'in', EXCLUDED_STATUSES)
+            .not('status', 'in', excludedStatusesFor(s.id))
             .eq('renewal_review_required', false)
             .or('is_deleted.is.null,is_deleted.eq.false');
           q = applySegment(q, s.id);
