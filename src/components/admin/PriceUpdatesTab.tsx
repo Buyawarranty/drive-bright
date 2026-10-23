@@ -987,21 +987,32 @@ export default function PriceUpdatesTab() {
 
   return (
     <div className="space-y-6 p-1">
-      <WebsiteDiscountPanel busy={busy} onSave={async pct => {
+      <WebsiteDiscountPanel
+        busy={busy}
+        plans={drafts}
+        selectedPlanId={pendingNewPlan ? 'new-plan' : drafts.some(d => d.id === selectedId) ? selectedId ?? '' : ''}
+        planName={label || 'Untitled draft'}
+        canSave={pendingNewPlan || drafts.some(d => d.id === selectedId)}
+        onSelectPlan={id => {
+          const plan = drafts.find(d => d.id === id);
+          if (plan) {
+            loadIntoEditor(plan);
+            setDiscountPct(normalizeWebsiteDiscount(plan.step3_discount_pct));
+            saveWebsiteDiscountDraft(plan.step3_discount_pct);
+          }
+        }}
+        onSave={async pct => {
+        if (!pendingNewPlan && !drafts.some(d => d.id === selectedId)) {
+          toast.error('Choose a test plan to update');
+          return;
+        }
         setBusy(true);
         try {
-          const v = await createVersion(
-            `Website direct-sales discount ${pct}% — ${new Date().toLocaleDateString('en-GB')}`,
-            roundMatrixWhole(liveVersion?.admin_matrix ?? codeMatrix),
-            pct,
-            'Website discount only. Quotes & Orders grid and existing minimums unchanged.',
-            liveVersion?.claim_limit_factors ?? null,
-            liveVersion?.labour_rate_factors ?? null,
-            { ...(liveVersion?.vehicle_factor_model ?? ({} as VehicleFactorModel)), websiteDiscountMode: 'single' },
-            liveVersion ?? undefined
-          );
-          loadIntoEditor(v);
-          toast.success('Website discount saved as a test draft — live prices unchanged');
+          saveWebsiteDiscountDraft(pct);
+          const id = await ensureDraftPersisted();
+          if (!id) return;
+          await saveVersion(id, { step3_discount_pct: pct });
+          toast.success(`Discount saved to “${label || 'Untitled draft'}” — live prices unchanged`);
         } catch (e: unknown) {
           toast.error(e instanceof Error ? e.message : 'Could not save the test discount');
         } finally { setBusy(false); }
