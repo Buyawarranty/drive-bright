@@ -26,6 +26,7 @@
 - Reporting: immutable invoices, locked payments, service-only email claims; hourly job only when enabled, independent of staff commissions.
 - Login: fail-open check_login_lockout (5/15min); service-only staff renewal records enforce expiry through a PostgREST pre-request hook and shared edge authentication; self-renewal verifies the current password. Gateway changes remain active-admin-only with versioned receipts and password-free active-staff notices.
 - Auth-state callbacks must defer Supabase work until after the auth lock is released; staff access checks are bounded and single-flight so a stalled request cannot leave the login screen spinning indefinitely.
+- Keep the homepage journey route lazy-loaded so staff sign-in does not download homepage-only forms and quote delivery; retain all route-level security gates.
 - PayLater claim flags use a service-only protected-role lookup through authenticated edge access, returning customer IDs only; match linked policies first and batch-load matches before pagination to retain older records without exposing claim details.
 - Handover backups stay atomic; indexed normalized ownership lookups and bounded per-RPC timeouts prevent large transfers timing out.
 - Payment-click reads require active staff; call-event writes require the caller's own active staff ID, and lead/allocation audit writes stay system-only so client accounts cannot forge history. Staff archiving must explicitly reject a missing management role.
