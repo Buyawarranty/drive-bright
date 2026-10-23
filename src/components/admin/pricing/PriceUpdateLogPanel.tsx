@@ -133,6 +133,7 @@ export default function PriceUpdateLogPanel({
   onSaveNote?: (id: string, notes: string) => Promise<void>;
 }) {
   const [showAll, setShowAll] = useState(false);
+  const [sort, setSort] = useState<'newest' | 'best' | 'worst' | 'shortest' | 'longest' | 'revenue'>('newest');
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
   const [openNotes, setOpenNotes] = useState<Record<string, boolean>>({});
@@ -181,21 +182,22 @@ export default function PriceUpdateLogPanel({
   };
 
 
-  const rows = useMemo(() => {
-    const sorted = [...versions].sort((a, b) => {
+  // Chronological order (newest first) defines each model's sales window —
+  // the display sort chosen below never changes that maths.
+  const baseRows = useMemo(() => {
+    return [...versions].sort((a, b) => {
       const ta = new Date(a.published_at || a.updated_at || a.created_at).getTime() || 0;
       const tb = new Date(b.published_at || b.updated_at || b.created_at).getTime() || 0;
       return tb - ta;
     });
-    return showAll ? sorted : sorted.slice(0, 8);
-  }, [versions, showAll]);
+  }, [versions]);
 
   // Sales-per-day for every row, so we can name the best performer and
   // compare every other row against it — not just against the previous one.
   const statsById = useMemo(() => {
-    const map: Record<string, { revenue: number; orders: number; aov: number; daysLive: number; salesPerDay: number }> = {};
-    rows.forEach((v, i) => {
-      const s = windowStats(v, rows[i - 1]);
+    const map: Record<string, { revenue: number; orders: number; aov: number; daysLive: number; salesPerDay: number; list: DayStat[] }> = {};
+    baseRows.forEach((v, i) => {
+      const s = windowStats(v, baseRows[i - 1]);
       if (!s) return;
       const daysLive = Math.max(1, s.list.length);
       map[v.id] = {
@@ -204,11 +206,37 @@ export default function PriceUpdateLogPanel({
         aov: s.aov,
         daysLive,
         salesPerDay: s.orders / daysLive,
+        list: s.list,
       };
     });
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, salesByDay]);
+  }, [baseRows, salesByDay]);
+
+  const rows = useMemo(() => {
+    const sorted = [...baseRows];
+    if (sort !== 'newest') {
+      sorted.sort((a, b) => {
+        const sa = statsById[a.id];
+        const sb = statsById[b.id];
+        switch (sort) {
+          case 'best':
+            return (sb?.salesPerDay ?? -1) - (sa?.salesPerDay ?? -1);
+          case 'worst':
+            return (sa?.salesPerDay ?? Number.MAX_SAFE_INTEGER) - (sb?.salesPerDay ?? Number.MAX_SAFE_INTEGER);
+          case 'shortest':
+            return (sa?.daysLive ?? Number.MAX_SAFE_INTEGER) - (sb?.daysLive ?? Number.MAX_SAFE_INTEGER);
+          case 'longest':
+            return (sb?.daysLive ?? -1) - (sa?.daysLive ?? -1);
+          case 'revenue':
+            return (sb?.revenue ?? -1) - (sa?.revenue ?? -1);
+          default:
+            return 0;
+        }
+      });
+    }
+    return showAll ? sorted : sorted.slice(0, 8);
+  }, [baseRows, sort, showAll, statsById]);
 
   /** The best-performing price model: highest sales per day, requiring at
    *  least 2 days live and 3 sales so one lucky afternoon can't win. */
