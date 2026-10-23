@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight, Layers, Percent, Copy } from 'lucide-react';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight, Layers, Percent, Copy, Archive, ArchiveRestore } from 'lucide-react';
 import Aug26PricingPanel from '@/components/admin/pricing/Aug26PricingPanel';
 import LiveVsAug26Panel from '@/components/admin/pricing/LiveVsAug26Panel';
 import AugHybridVsLivePanel from '@/components/admin/pricing/AugHybridVsLivePanel';
@@ -233,6 +233,7 @@ export default function PriceUpdatesTab() {
     publishVersion,
     revertToCode,
     deleteVersion,
+    archiveVersion,
   } = usePricingVersions();
 
   const liveVersion = versions.find(v => v.status === 'live') || null;
@@ -571,6 +572,41 @@ export default function PriceUpdatesTab() {
     return { ...(model ?? ({} as VehicleFactorModel)), riskBands: bands, websiteDiscountMode: 'single' } as VehicleFactorModel;
   }
 
+
+  /**
+   * Archive a plan without deleting it: it leaves the draft picker but stays in
+   * the price update log and History with its figures and sales record intact.
+   */
+  async function handleArchive(id: string, archive: boolean) {
+    const v = versions.find(x => x.id === id);
+    if (!v) return;
+    if (v.status === 'live') {
+      toast.error('The live plan cannot be archived — push another plan live first.');
+      return;
+    }
+    if (
+      !window.confirm(
+        archive
+          ? `Archive "${v.label}"?\n\nIt stays in the price update log and History with all its figures, but is no longer offered as a test draft.`
+          : `Bring "${v.label}" back as a test draft?`
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    try {
+      await archiveVersion(id, archive);
+      if (archive && selectedId === id) {
+        setSelectedId(null);
+        setPendingNewPlan(false);
+      }
+      toast.success(archive ? 'Plan archived — kept in the log' : 'Plan restored as a test draft');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not update the plan');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function handleSave(adjustedMatrix?: PricingMatrixShape): Promise<boolean> {
     if (!selectedId && !pendingNewPlan) return false;
