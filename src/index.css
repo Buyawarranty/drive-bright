@@ -111,7 +111,55 @@
   }
 }
 
-@container (max-width: 359px) {
+/* Compact mobile contact group; desktop keeps its existing three-column strip. */
+@media (max-width: 1023px) {
+  .homepage-contact-strip {
+    --contact-surface: 220 14% 97%;
+    margin-top: 16px;
+    padding-top: 12px;
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .homepage-contact-phone {
+    min-height: 64px;
+    grid-column: 1 / -1;
+    flex-wrap: wrap;
+    column-gap: 10px;
+    row-gap: 0;
+    padding: 8px;
+    background: hsl(var(--contact-surface));
+  }
+
+  .homepage-contact-phone > svg {
+    height: 24px;
+    width: 24px;
+  }
+
+  .homepage-contact-phone > span {
+    display: contents;
+  }
+
+  .homepage-contact-hours {
+    flex-basis: 100%;
+    text-align: center;
+  }
+
+  .homepage-contact-callback,
+  .homepage-contact-price-beat {
+    height: 48px;
+    padding-inline: 8px;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .homepage-contact-callback::before,
+  .homepage-contact-price-beat::before {
+    display: none;
+  }
+}
+
+@container (max-width: 289px) {
   .homepage-contact-strip {
     grid-template-columns: minmax(0, 1fr);
   }
