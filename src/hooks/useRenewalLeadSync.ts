@@ -18,6 +18,7 @@ export interface RenewalLeadSync {
   assignedAdminId: string | null;
   status: string | null;
   callCount: number;
+  manualCallAdjustment: number;
   lastActionAt: string | null;
   latestNote: { text: string; at: string } | null;
   /** When the lead landed in New Leads. */
@@ -58,6 +59,7 @@ export function useRenewalLeadSync(emails: string[]) {
           assignedAdminId: l.assigned_to ?? null,
           status: l.status ?? null,
           callCount: (l.call_count ?? 0) + (l.manual_call_adjustment ?? 0),
+          manualCallAdjustment: l.manual_call_adjustment ?? 0,
           lastActionAt: l.last_action_at || l.last_contacted_at || l.updated_at || null,
           latestNote: l.notes ? { text: String(l.notes), at: l.updated_at || '' } : null,
           createdAt: l.created_at ?? null,
