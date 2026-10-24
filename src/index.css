@@ -53,6 +53,38 @@
 }
 
 /* Custom car animation */
+.mobile-sticky-quote-bar {
+  background: hsl(var(--card));
+  padding: 14px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid hsl(var(--border));
+  box-shadow: var(--mobile-sticky-shadow);
+}
+.mobile-sticky-quote-heading {
+  margin: 0 0 12px;
+  padding: 0 4px;
+  color: hsl(var(--mobile-sticky-heading));
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+}
+.mobile-sticky-call {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--mobile-sticky-call));
+  color: hsl(var(--mobile-sticky-call));
+}
+.mobile-sticky-call:hover {
+  background: hsl(var(--mobile-sticky-call) / 0.08);
+  color: hsl(var(--mobile-sticky-call));
+}
+.mobile-sticky-quote {
+  background: hsl(var(--mobile-sticky-action));
+  color: hsl(var(--mobile-sticky-action-foreground));
+}
+.mobile-sticky-quote:hover {
+  background: hsl(var(--mobile-sticky-action) / 0.9);
+}
+
 .homepage-contact-shell {
   container-type: inline-size;
 }
@@ -328,6 +360,11 @@ html, body {
 
 @layer base {
   :root {
+    --mobile-sticky-heading: 25 85% 47%;
+    --mobile-sticky-call: 143 49% 34%;
+    --mobile-sticky-action: 27 100% 50%;
+    --mobile-sticky-action-foreground: 0 0% 100%;
+    --mobile-sticky-shadow: 0 -4px 16px hsl(0 0% 0% / 0.06);
     /* Neutral Color (backgrounds/containers) */
     --background: 0 0% 99%;
     --foreground: 0 0% 0%;
@@ -400,6 +437,8 @@ html, body {
   }
 
   .dark {
+    --mobile-sticky-heading: 25 95% 65%;
+    --mobile-sticky-call: 143 55% 65%;
     --lead-chart-1: 213 90% 65%;
     --lead-chart-2: 43 96% 58%;
     --lead-chart-3: 332 85% 68%;
