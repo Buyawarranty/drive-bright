@@ -246,7 +246,9 @@ const Careers: React.FC = () => {
             <div className="flex justify-center">
               <img
                 src={careersHeroImage.url}
-                alt="Miles the Buyawarranty panda with a car, SUV, van and motorbike"
+                alt="Vehicle warranty sales executive careers at Buyawarranty – Miles the panda with a You're Protected shield beside a car, van and SUV"
+                width={1536}
+                height={1024}
                 className="w-full max-w-md md:max-w-lg h-auto object-contain"
                 loading="eager"
               />

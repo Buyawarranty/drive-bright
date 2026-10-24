@@ -89,7 +89,7 @@ export const SalesManagerJob: React.FC = () => (
             </div>
           </div>
           <div className="flex justify-center">
-            <img src={careersHeroImage.url} alt="Miles the Buyawarranty panda with a car, SUV, van and motorbike" className="w-full max-w-md md:max-w-lg h-auto object-contain" loading="eager" />
+            <img src={careersHeroImage.url} alt="Remote telesales sales manager job in vehicle warranties – Miles the Buyawarranty panda leading a line-up of a car, van, SUV and motorbike" width={1920} height={640} className="w-full max-w-2xl h-auto object-contain" loading="eager" />
           </div>
         </div>
       </div>

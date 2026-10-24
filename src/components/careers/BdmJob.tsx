@@ -91,7 +91,7 @@ export const BdmJob: React.FC = () => (
             </div>
           </div>
           <div className="flex justify-center">
-            <img src={careersHeroImage.url} alt="Miles the Buyawarranty panda with a car, SUV, van and motorbike" className="w-full max-w-md md:max-w-lg h-auto object-contain" loading="eager" />
+            <img src={careersHeroImage.url} alt="Remote business development manager job selling vehicle warranties to UK car dealerships – Miles the Buyawarranty panda handing over car keys beside a van, car, SUV and motorbike" width={1448} height={1086} className="w-full max-w-md md:max-w-lg h-auto object-contain" loading="eager" />
           </div>
         </div>
       </div>
