@@ -24,7 +24,7 @@ import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import pandaThumbs from '@/assets/panda-thumbs-up.png';
-import careersHeroImage from '@/assets/careers-hero-panda-vehicles.png.asset.json';
+import careersHeroImage from '@/assets/vehicle-warranty-sales-executive-careers-buyawarranty.png.asset.json';
 import pandaVehicles from '@/assets/panda-savings-vehicles.png';
 import pandaThumbsNew from '@/assets/panda-thumbs-new.png.asset.json';
 

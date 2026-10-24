@@ -2,7 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ArrowRight, Home, PoundSterling, TrendingUp, Headphones, GraduationCap, Users, CheckCircle2, Briefcase, Laptop, Clock, Award, Phone } from 'lucide-react';
 import CareersApplyBlock from '@/components/careers/CareersApplyBlock';
-import careersHeroImage from '@/assets/careers-hero-panda-vehicles.png.asset.json';
+import careersHeroImage from '@/assets/business-development-manager-car-dealership-jobs-buyawarranty.png.asset.json';
 
 export const BDM_ROLE = 'Business Development Manager – Automotive Warranties';
 
