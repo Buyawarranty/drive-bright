@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Copy, Check, Mail, Loader2 } from 'lucide-react';
+import { Copy, Check, Mail, Loader2, MousePointerClick } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -170,8 +170,15 @@ export const CareersApplyBlock: React.FC<{ role?: string; experienceLabel?: stri
         onSubmit={onSubmit}
         className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 text-left"
       >
-        <p className="text-base font-bold text-[#111827]">Or apply in one click</p>
-        <p className="mt-1 text-sm text-[#6B7280]">
+        <div className="flex items-center gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F97316] text-white shadow-sm sm:h-12 sm:w-12">
+            <MousePointerClick className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden="true" />
+          </span>
+          <h2 className="text-2xl font-extrabold leading-tight tracking-tight text-[#111827] sm:text-3xl">
+            Apply in one click
+          </h2>
+        </div>
+        <p className="mt-2 text-base text-[#6B7280]">
           Upload your CV and we will send it straight to our hiring team.
         </p>
 
