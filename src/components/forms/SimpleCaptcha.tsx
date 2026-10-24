@@ -23,9 +23,10 @@ export interface SimpleCaptchaState {
   reset: () => void;
 }
 
+// Keep it very easy: low numbers only (1–3 plus 1–4), e.g. 1+2, 2+2, 2+3.
 const randomPair = () => ({
-  a: 2 + Math.floor(Math.random() * 8), // 2–9
-  b: 1 + Math.floor(Math.random() * 9), // 1–9
+  a: 1 + Math.floor(Math.random() * 3), // 1–3
+  b: 1 + Math.floor(Math.random() * 4), // 1–4
 });
 
 export function useSimpleCaptcha(): SimpleCaptchaState {
