@@ -28,6 +28,7 @@ interface AnyCustomer {
 interface CustomersMobileCardsProps {
   customers: AnyCustomer[];
   payLaterClaimIds?: ReadonlySet<string>;
+  getStripePaygOutstanding?: (customer: AnyCustomer) => number;
   className?: string;
   onOpen?: (customer: AnyCustomer) => void;
 }

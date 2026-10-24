@@ -5582,6 +5582,7 @@ Buyawarranty.co.uk`,
         className="md:hidden mt-2"
         customers={customersPagination.paginatedData}
         payLaterClaimIds={canSeePayLaterClaims ? payLaterClaimIds : undefined}
+        getStripePaygOutstanding={getStripePaygOutstanding}
         onOpen={openCustomerDialog}
       />
 
