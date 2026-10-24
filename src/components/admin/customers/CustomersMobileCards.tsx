@@ -56,6 +56,7 @@ export const CustomersMobileCards: React.FC<CustomersMobileCardsProps> = ({
   className,
   onOpen,
   payLaterClaimIds,
+  getStripePaygOutstanding,
 }) => {
   if (!customers || customers.length === 0) {
     return (
@@ -101,6 +102,18 @@ export const CustomersMobileCards: React.FC<CustomersMobileCardsProps> = ({
                   {payLaterClaimIds?.has(c.id) && (
                     <Badge variant="destructive" className="text-[11px]">PayLater · Claim made</Badge>
                   )}
+                  {(() => {
+                    const due = getStripePaygOutstanding?.(c) ?? 0;
+                    if (due <= 0) return null;
+                    return (
+                      <Badge
+                        className="bg-violet-600 text-white text-[10px] font-bold"
+                        title="Paid a deposit on Stripe — chase the remaining balance on Stripe"
+                      >
+                        Stripe PAYG · £{due.toFixed(0)} due
+                      </Badge>
+                    );
+                  })()}
                 </div>
               </div>
               {typeof price === 'number' && (
