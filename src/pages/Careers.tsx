@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
   ArrowRight,
@@ -162,8 +162,44 @@ const JOBS = [
   { id: 'sales-manager', label: 'Sales Manager' },
 ] as const;
 
+const JOB_ORDER_KEY = 'baw-careers-job-order';
+
+// Restore a visitor's saved drag-and-drop order; fall back to the default order.
+const loadJobOrder = (): Array<(typeof JOBS)[number]> => {
+  try {
+    const saved: string[] = JSON.parse(localStorage.getItem(JOB_ORDER_KEY) || '[]');
+    const known = JOBS.filter((j) => saved.includes(j.id)).sort(
+      (a, b) => saved.indexOf(a.id) - saved.indexOf(b.id),
+    );
+    const rest = JOBS.filter((j) => !saved.includes(j.id));
+    const ordered = [...known, ...rest];
+    return ordered.length === JOBS.length ? ordered : [...JOBS];
+  } catch {
+    return [...JOBS];
+  }
+};
+
 const Careers: React.FC = () => {
   const [params, setParams] = useSearchParams();
+  const [jobOrder, setJobOrder] = useState(loadJobOrder);
+  const dragJobId = useRef<string | null>(null);
+  const moveJob = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    setJobOrder((prev) => {
+      const from = prev.findIndex((j) => j.id === fromId);
+      const to = prev.findIndex((j) => j.id === toId);
+      if (from < 0 || to < 0) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      try {
+        localStorage.setItem(JOB_ORDER_KEY, JSON.stringify(next.map((j) => j.id)));
+      } catch {
+        // Ignore storage failures; ordering still applies for this visit.
+      }
+      return next;
+    });
+  };
   const raw = params.get('job');
   const job = raw === 'bdm' || raw === 'sales-manager' ? raw : 'sales';
   const selectJob = (id: string) => {
@@ -192,13 +228,22 @@ const Careers: React.FC = () => {
       <nav aria-label="Open jobs" className="sticky top-0 z-30 border-b border-[#E5E7EB] bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8">
           <span className="mr-1 shrink-0 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Open jobs</span>
-          {JOBS.map((j) => (
+          {jobOrder.map((j) => (
             <button
               key={j.id}
               type="button"
               onClick={() => selectJob(j.id)}
+              draggable
+              onDragStart={() => { dragJobId.current = j.id; }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => {
+                if (dragJobId.current) moveJob(dragJobId.current, j.id);
+                dragJobId.current = null;
+              }}
+              onDragEnd={() => { dragJobId.current = null; }}
+              title="Drag to reorder jobs"
               aria-pressed={job === j.id}
-              className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${job === j.id ? 'border-[#F97316] bg-[#F97316] text-white' : 'border-[#E5E7EB] bg-white text-[#111827] hover:border-[#F97316]'}`}
+              className={`shrink-0 cursor-move rounded-full border px-4 py-2 text-sm font-semibold transition ${job === j.id ? 'border-[#F97316] bg-[#F97316] text-white' : 'border-[#E5E7EB] bg-white text-[#111827] hover:border-[#F97316]'}`}
             >
               {j.label}
             </button>
