@@ -1,13 +1,14 @@
 /** One website discount, applied to the completed quote rather than its base. */
 export const DEFAULT_WEBSITE_DISCOUNT_PCT = 10;
 export const MAX_WEBSITE_DISCOUNT_PCT = 50;
+export const MIN_WEBSITE_DISCOUNT_PCT = -50;
 export const WEBSITE_DISCOUNT_CHANGED_EVENT = 'bw:website-discount-draft-changed';
 const DRAFT_KEY = 'bw:unified-website-discount';
 
 export function normalizeWebsiteDiscount(value: unknown): number {
   if (value === null || value === undefined || value === '') return DEFAULT_WEBSITE_DISCOUNT_PCT;
   const n = Number(value);
-  return Number.isFinite(n) ? Math.min(MAX_WEBSITE_DISCOUNT_PCT, Math.max(0, n)) : DEFAULT_WEBSITE_DISCOUNT_PCT;
+  return Number.isFinite(n) ? Math.min(MAX_WEBSITE_DISCOUNT_PCT, Math.max(MIN_WEBSITE_DISCOUNT_PCT, n)) : DEFAULT_WEBSITE_DISCOUNT_PCT;
 }
 
 export function readWebsiteDiscountDraft(): number {
