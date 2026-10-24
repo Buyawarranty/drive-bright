@@ -261,7 +261,7 @@ const Careers: React.FC = () => {
                 We're hiring
               </div>
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                Careers at Buyawarranty
+                Careers at Buya<span className="text-brand-orange">warranty</span>
               </h1>
               <p className="mt-4 text-lg font-semibold text-[#111827]">
                 Vehicle Warranty Sales Executive
