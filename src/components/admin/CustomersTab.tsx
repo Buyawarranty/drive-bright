@@ -612,7 +612,7 @@ export const CustomersTab = ({
   // ── Part payment plans (read-only summary used for row tags + filtering) ──────
   const [filterByPartPayment, setFilterByPartPayment] = useState<'all' | 'has' | 'outstanding' | 'completed'>('all');
   const [partPaymentPlans, setPartPaymentPlans] = useState<Map<string, {
-    total_due: number; status: string; next_due_date: string | null; paid: number;
+    total_due: number; status: string; next_due_date: string | null; paid: number; hasStripe: boolean;
   }>>(new Map());
 
   useEffect(() => {
@@ -624,20 +624,24 @@ export const CustomersTab = ({
           .select('customer_id, total_due, status, next_due_date'),
         supabase
           .from('customer_part_payments')
-          .select('customer_id, amount'),
+          .select('customer_id, amount, payment_method'),
       ]);
       if (cancelled) return;
       const paidById = new Map<string, number>();
+      const stripeById = new Set<string>();
       (payments ?? []).forEach((p: any) => {
         paidById.set(p.customer_id, (paidById.get(p.customer_id) ?? 0) + Number(p.amount || 0));
+        const method = String(p.payment_method || '').toLowerCase();
+        if (method.includes('stripe')) stripeById.add(p.customer_id);
       });
-      const map = new Map<string, { total_due: number; status: string; next_due_date: string | null; paid: number }>();
+      const map = new Map<string, { total_due: number; status: string; next_due_date: string | null; paid: number; hasStripe: boolean }>();
       (plans ?? []).forEach((p: any) => {
         map.set(p.customer_id, {
           total_due: Number(p.total_due || 0),
           status: p.status,
           next_due_date: p.next_due_date,
           paid: paidById.get(p.customer_id) ?? 0,
+          hasStripe: stripeById.has(p.customer_id),
         });
       });
       setPartPaymentPlans(map);
@@ -645,6 +649,21 @@ export const CustomersTab = ({
     loadPartPayments();
     return () => { cancelled = true; };
   }, []);
+
+  // Stripe PAYG = deposit taken on Stripe (balance outstanding) or a part-payment
+  // plan with Stripe payments still owing. Used for the row tag + highlight so staff
+  // know to chase the remaining balance.
+  const getStripePaygOutstanding = useCallback((customer: any): number => {
+    if (customer.deposit_taken && !customer.payment_collected_at) {
+      return Math.max(Number(customer.balance_due_amount || 0), 0);
+    }
+    const plan = partPaymentPlans.get(customer.id);
+    if (plan?.hasStripe) {
+      const outstanding = Math.max(plan.total_due - plan.paid, 0);
+      if (plan.status !== 'completed' && outstanding > 0) return outstanding;
+    }
+    return 0;
+  }, [partPaymentPlans]);
 
   const [notes, setNotes] = useState<AdminNote[]>([]);
   const [newNote, setNewNote] = useState('');
@@ -1459,7 +1478,7 @@ export const CustomersTab = ({
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [debouncedSearchTerm, customers, serverSearchResults, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating, filterPayLaterClaims, canSeePayLaterClaims, payLaterClaimIds, payLaterClaimCustomers]);
+  }, [debouncedSearchTerm, customers, serverSearchResults, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating, filterPayLaterClaims, canSeePayLaterClaims, payLaterClaimIds, payLaterClaimCustomers, getStripePaygOutstanding]);
 
 
   const fetchAvailableTags = async () => {
@@ -1727,8 +1746,9 @@ export const CustomersTab = ({
           const status = customer.status?.toLowerCase() || '';
           return status === 'cancelled' || status === 'refunded';
         } else if (filterBySource === 'payment_due') {
-          // Deposit taken on Stripe, balance still outstanding
-          return !!(customer as any).deposit_taken && !(customer as any).payment_collected_at;
+          // Stripe PAYG — deposit taken on Stripe or a Stripe part-payment plan
+          // with a balance still outstanding
+          return getStripePaygOutstanding(customer) > 0;
         }
 
         return true;
@@ -1899,7 +1919,7 @@ export const CustomersTab = ({
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, serverSearchResults, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, showPendingConfirmationOnly, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, filterByPartPayment, partPaymentPlans, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating, filterPayLaterClaims, canSeePayLaterClaims, payLaterClaimIds, payLaterClaimCustomers]);
+  }, [customers, serverSearchResults, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, showPendingConfirmationOnly, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, filterByPartPayment, partPaymentPlans, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating, filterPayLaterClaims, canSeePayLaterClaims, payLaterClaimIds, payLaterClaimCustomers, getStripePaygOutstanding]);
 
   const getCurrentUser = async () => {
     try {
@@ -5563,6 +5583,7 @@ Buyawarranty.co.uk`,
         className="md:hidden mt-2"
         customers={customersPagination.paginatedData}
         payLaterClaimIds={canSeePayLaterClaims ? payLaterClaimIds : undefined}
+        getStripePaygOutstanding={getStripePaygOutstanding}
         onOpen={openCustomerDialog}
       />
 
@@ -5660,7 +5681,7 @@ Buyawarranty.co.uk`,
               </TableRow>
             ) : (
               customersPagination.paginatedData.map((customer) => (
-                <TableRow key={customer.id} className={`${isDueToday(customer) ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''} ${postedCustomerIds.has(customer.id) ? 'bg-emerald-50/60 border-l-4 border-l-emerald-500' : ''}`}>
+                <TableRow key={customer.id} className={`${isDueToday(customer) ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''} ${postedCustomerIds.has(customer.id) ? 'bg-emerald-50/60 border-l-4 border-l-emerald-500' : ''} ${getStripePaygOutstanding(customer) > 0 ? 'bg-violet-50/70 border-l-4 border-l-violet-500' : ''}`}>
                   <TableCell>
                     <Checkbox
                       checked={selectedCustomers.has(customer.id)}
@@ -6911,21 +6932,26 @@ Please log in and change your password after first login.`;
                             if (!plan) return null;
                             const outstanding = Math.max(plan.total_due - plan.paid, 0);
                             const done = plan.status === 'completed' || outstanding <= 0;
+                            const stripe = plan.hasStripe;
                             return (
                               <Badge
                                 variant="outline"
                                 className={`h-5 px-1.5 text-[10px] font-semibold uppercase tracking-wide ${
                                   done
                                     ? 'border-emerald-500 text-emerald-700 bg-emerald-50'
-                                    : 'border-orange-500 text-orange-700 bg-orange-50'
+                                    : stripe
+                                      ? 'border-violet-600 text-violet-700 bg-violet-50'
+                                      : 'border-orange-500 text-orange-700 bg-orange-50'
                                 }`}
                                 title={
                                   done
                                     ? 'Part payment plan settled in full'
-                                    : `Part payment plan — £${outstanding.toFixed(2)} outstanding of £${plan.total_due.toFixed(2)}`
+                                    : `${stripe ? 'Stripe PAYG — chase the remaining balance on Stripe' : 'Part payment plan'} — £${outstanding.toFixed(2)} outstanding of £${plan.total_due.toFixed(2)}`
                                 }
                               >
-                                {done ? 'Part paid · settled' : `Part payment · £${outstanding.toFixed(0)} due`}
+                                {done
+                                  ? (stripe ? 'Stripe · settled' : 'Part paid · settled')
+                                  : (stripe ? `Stripe PAYG · £${outstanding.toFixed(0)} due` : `Part payment · £${outstanding.toFixed(0)} due`)}
                               </Badge>
                             );
                           })()}
@@ -6982,10 +7008,10 @@ Please log in and change your password after first login.`;
                           )}
                           {!!(customer as any).deposit_taken && !(customer as any).payment_collected_at && (
                             <Badge
-                              className="bg-amber-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold"
-                              title={`Deposit £${Number((customer as any).deposit_amount || 0)} taken on Stripe · balance £${Number((customer as any).balance_due_amount || 0)} outstanding`}
+                              className="bg-violet-600 text-white text-[10px] px-1.5 py-0 h-4 font-bold"
+                              title={`Deposit £${Number((customer as any).deposit_amount || 0)} taken on Stripe · balance £${Number((customer as any).balance_due_amount || 0)} outstanding — chase the rest on Stripe`}
                             >
-                              💰 PAYMENT DUE £{Number((customer as any).balance_due_amount || 0)}
+                              💰 STRIPE PAYG · £{Number((customer as any).balance_due_amount || 0)} DUE
                             </Badge>
                           )}
                           {(customer as any).deferred_status === 'pending_payment' && (() => {
