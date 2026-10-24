@@ -175,24 +175,24 @@ const StickyNavigation: React.FC = () => {
 
       {/* Global Mobile Sticky CTA Bar */}
       {showMobileStickyBar && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border shadow-[0_-4px_12px_rgba(0,0,0,0.08)] px-2.5 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))] lg:hidden animate-in slide-in-from-bottom-4 duration-300">
-          <div className="flex gap-2 items-stretch">
-            <a
-              href="tel:03302295040"
-              className="flex-[0_0_38%] bg-white border-2 border-[#16A34A] text-[#16A34A] font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2"
-              aria-label="Call us"
-            >
-              <Phone className="w-4 h-4" />
-              Call us
-            </a>
-            <button
+        <div className="mobile-sticky-quote-bar fixed bottom-0 left-0 right-0 z-40 lg:hidden" aria-label="Call or get a quote">
+          <p className="mobile-sticky-quote-heading">Avoid Unexpected Repair Bills</p>
+          <div className="grid grid-cols-2 gap-2.5 items-stretch">
+            <Button asChild variant="outline" className="mobile-sticky-call h-12 min-w-0 rounded-xl px-2 py-3 text-sm font-bold">
+              <a href="tel:03302295040" aria-label="Call Us Now">
+                <Phone aria-hidden="true" />
+                Call Us Now
+              </a>
+            </Button>
+            <Button
+              type="button"
               onClick={() => navigate('/?step=1')}
-              className="flex-1 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition-colors"
-              aria-label="Get my quote"
+              className="mobile-sticky-quote h-12 min-w-0 rounded-xl px-2 py-3 text-sm font-bold"
+              aria-label="Get My Quote"
             >
-              Get my quote
-              <ArrowRight className="w-4 h-4" />
-            </button>
+              Get My Quote
+              <ArrowRight aria-hidden="true" />
+            </Button>
           </div>
         </div>
       )}
