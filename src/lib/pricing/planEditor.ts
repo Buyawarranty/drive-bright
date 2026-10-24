@@ -1,7 +1,7 @@
 /** Hydrate display fields from defaults without borrowing another plan's figures. */
 export function hydratePlanModel<T extends Record<string, any>>(defaults: T, own?: Record<string, any> | null): T {
   if (!own) return JSON.parse(JSON.stringify(defaults));
-  const result = { ...defaults, ...own };
+  const result: Record<string, any> = { ...defaults, ...own };
   for (const field of Object.keys(defaults)) {
     if (!Array.isArray(defaults[field]) || !Array.isArray(own[field])) continue;
     result[field] = own[field].map((row: Record<string, any>, index: number) => {

@@ -580,7 +580,7 @@ export default function PriceUpdatesTab() {
    */
   function withRiskBands(model: VehicleFactorModel | null): VehicleFactorModel | null {
     const bands =
-      (model as any)?.riskBands ?? versions.find(v => v.id === selectedId)?.vehicle_factor_model?.riskBands ?? getLiveRiskBandConfig() ?? loadRiskBandConfig();
+      (model as any)?.riskBands ?? (versions.find(v => v.id === selectedId)?.vehicle_factor_model as any)?.riskBands ?? getLiveRiskBandConfig() ?? loadRiskBandConfig();
     if (!bands) return model;
     return { ...(model ?? ({} as VehicleFactorModel)), riskBands: bands, websiteDiscountMode: 'single' } as VehicleFactorModel;
   }
