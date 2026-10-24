@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import WebsiteFooter from '@/components/WebsiteFooter';
 import { CLAIMS_PHONE, CLAIMS_PHONE_TEL, CLAIMS_EMAIL, WHATSAPP_URL } from '@/constants/contact';
+import SimpleCaptcha, { useSimpleCaptcha } from '@/components/forms/SimpleCaptcha';
 
 
 const initialForm = {
@@ -76,6 +77,7 @@ const Complaints = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [form, setForm] = useState<FormState>(initialForm);
+  const captcha = useSimpleCaptcha();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -156,6 +158,10 @@ const Complaints = () => {
       toast({ title: 'Please check the form', description: 'Some required fields need attention.', variant: 'destructive' });
       return;
     }
+    if (!captcha.verify()) {
+      toast({ title: 'Quick security check', description: 'Please answer the quick maths question before submitting.', variant: 'destructive' });
+      return;
+    }
     if (form.category !== NOT_WARRANTY && regStatus !== 'valid') {
       setErrors((prev) => ({ ...prev, registrationPlate: regStatus === 'checking' ? 'Checking your registration — one moment…' : "We couldn't find that registration on a customer record. Please check and try again." }));
       toast({ title: 'Registration not recognised', description: 'Please enter the vehicle registration linked to your warranty.', variant: 'destructive' });
@@ -167,6 +173,7 @@ const Complaints = () => {
       if (error || !data?.success) throw new Error(error?.message || data?.error || 'Submission failed');
       setReference(data.reference);
       setForm(initialForm);
+      captcha.reset();
       setRegStatus('idle');
       setRegCustomerName(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -476,8 +483,11 @@ const Complaints = () => {
                 {errors.confirmAccurate && <FieldError msg={errors.confirmAccurate} />}
               </div>
 
+              {/* Spam protection */}
+              <SimpleCaptcha captcha={captcha} idPrefix="complaints" />
+
               {/* Submit */}
-              <button
+               <button
                 type="submit"
                 disabled={submitting}
                 className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-brand-orange hover:bg-brand-orange-light disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"

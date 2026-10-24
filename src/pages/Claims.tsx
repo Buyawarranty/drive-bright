@@ -12,6 +12,7 @@ import { ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CLAIMS_PHONE, CLAIMS_PHONE_TEL } from '@/constants/contact';
+import SimpleCaptcha, { useSimpleCaptcha } from '@/components/forms/SimpleCaptcha';
 
 
 
@@ -43,6 +44,7 @@ const Claims = () => {
   });
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const captcha = useSimpleCaptcha();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [hasSubmittedClaim, setHasSubmittedClaim] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
