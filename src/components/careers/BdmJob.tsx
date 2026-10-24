@@ -139,8 +139,9 @@ export const BdmJob: React.FC = () => (
       <section aria-labelledby="bdm-hours" className="mb-14">
         <Header id="bdm-hours" n={6} title="Working hours" />
         <div className="grid gap-4 sm:grid-cols-3">
-          <Perk Icon={Clock} title="Monday to Friday" body="Plus a half-day on alternate Saturday mornings." />
-          <Perk Icon={Clock} title="Saturday pattern" body="Part of the normal contractual pattern, with no weekday off in lieu." />
+          <Perk Icon={Clock} title="Monday to Friday" body="Standard weekday hours, fully remote." />
+          <Perk Icon={Clock} title="Saturday half day" body="Twice a month, and flexible when you need it to reach targets." />
+
           <Perk Icon={Laptop} title="No travel" body="Fully remote, with no field sales or travel requirements." />
         </div>
       </section>
