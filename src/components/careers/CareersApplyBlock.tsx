@@ -30,7 +30,7 @@ const fileToBase64 = (file: File) =>
     reader.readAsDataURL(file);
   });
 
-export const CareersApplyBlock: React.FC = () => {
+export const CareersApplyBlock: React.FC<{ role?: string; experienceLabel?: string }> = ({ role, experienceLabel }) => {
   const [copied, setCopied] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [name, setName] = useState('');
@@ -90,6 +90,7 @@ export const CareersApplyBlock: React.FC = () => {
           phone: phone.trim(),
           note: note.trim(),
           warrantySalesExperience,
+          ...(role ? { role } : {}),
           fileName: file.name,
           fileType: file.type || 'application/octet-stream',
           fileBase64,
@@ -246,7 +247,7 @@ export const CareersApplyBlock: React.FC = () => {
             onChange={(e) => setWarrantySalesExperience(e.target.checked)}
             className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
           />
-          <span>I have experience of selling vehicle warranties*</span>
+          <span>{experienceLabel || 'I have experience of selling vehicle warranties'}*</span>
         </label>
         <Button
           type="submit"
