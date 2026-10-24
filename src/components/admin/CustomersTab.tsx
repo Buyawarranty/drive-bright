@@ -7187,6 +7187,7 @@ Please log in and change your password after first login.`;
                       bumper_portal: 'Bumper',
                       stripe: 'Stripe',
                       stripe_dashboard: 'Stripe',
+                      stripe_payg: 'Stripe PAYG',
                       payment_assist: 'Payment Assist',
                       paybetter: 'PayBetter',
                       klarna: 'Klarna',
@@ -7234,6 +7235,7 @@ Please log in and change your password after first login.`;
                               <DropdownMenuContent align="start">
                                 {[
                                   { value: 'stripe', label: 'Stripe' },
+                                  { value: 'stripe_payg', label: 'Stripe PAYG' },
                                   { value: 'payment_assist', label: 'Payment Assist' },
                                   { value: 'bumper', label: 'Bumper' },
                                   { value: 'paypal', label: 'PayPal' },
