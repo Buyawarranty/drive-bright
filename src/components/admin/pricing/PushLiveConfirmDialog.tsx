@@ -56,20 +56,20 @@ export default function PushLiveConfirmDialog({
               {gapPct !== null ? (
                 <div className="space-y-1">
                   <label htmlFor="push-live-gap" className="font-semibold text-foreground">
-                    How much cheaper should the website be than Quotes &amp; Orders?
+                    Website price difference versus Quotes &amp; Orders
                   </label>
                   <div className="flex items-center gap-2">
                     <input
                       id="push-live-gap"
                       type="number"
-                      min={0}
+                      min={-50}
                       max={50}
                       step={1}
                       value={gapPct}
                       onChange={e => onGapPctChange?.(Number(e.target.value))}
                       className="h-9 w-24 rounded-md border border-input bg-background px-3 text-sm"
                     />
-                    <span className="text-muted-foreground">% cheaper on Step 3/4</span>
+                    <span className="text-muted-foreground">% · negative = more expensive</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     The customer journey price is the Quotes &amp; Orders price minus this

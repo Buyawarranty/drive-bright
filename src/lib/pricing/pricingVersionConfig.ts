@@ -11,6 +11,7 @@
  */
 
 import type { VehicleFactorModel, VehicleFactorInput } from './vehicleFactorModel';
+import { normalizeWebsiteDiscount } from './websiteDiscount';
 
 export type RoundingRule = 'ceil_pound' | 'round_pound' | 'floor_pound';
 
@@ -101,7 +102,7 @@ export function resolveWebDiscountPct(config?: PricingVersionConfig | null): num
   if (config?.web_discount_pct == null) return CODE_WEB_DISCOUNT_PCT;
   const raw = Number(config.web_discount_pct);
   if (!Number.isFinite(raw)) return CODE_WEB_DISCOUNT_PCT;
-  return Math.min(Math.max(0, raw), MAX_WEB_DISCOUNT_PCT);
+  return normalizeWebsiteDiscount(raw);
 }
 
 export function resolveRoundingRule(config?: PricingVersionConfig | null): RoundingRule {

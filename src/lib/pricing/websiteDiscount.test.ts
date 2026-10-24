@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { applyLivePricingVersion } from './applyLivePricingVersion';
 import { applyWebsiteSellFloor } from './netFloor';
-import { getBasePrice, getLivePricingOverride, setLivePricingOverride } from '../pricingMatrix';
+import { deriveCustomerPriceFromAdmin, getBasePrice, getLivePricingOverride, setLivePricingOverride } from '../pricingMatrix';
 import { discountedWebsiteTotal, normalizeWebsiteDiscount, readWebsiteDiscountDraft } from './websiteDiscount';
 
 const cheap = { voluntaryExcess: 500, claimLimit: 1000, labourRate: 50 };
@@ -13,6 +13,14 @@ const grid = {
 afterEach(() => setLivePricingOverride(null, 10));
 
 describe('single website discount', () => {
+  it('allows a website price 10% more expensive without changing agent prices', () => {
+    setLivePricingOverride(grid, -10, true);
+    expect(normalizeWebsiteDiscount(-10)).toBe(-10);
+    expect(discountedWebsiteTotal(1000, -10, 399)).toBe(1100);
+    expect(deriveCustomerPriceFromAdmin(1000, -10)).toBe(1100);
+    expect(applyWebsiteSellFloor(2000, { paymentPeriod: '24months', ...cheap })).toBe(2200);
+    expect(getBasePrice('24months', 100, 1000, 'admin')).toBe(2000);
+  });
   it('starts at the chosen 10% without a saved browser draft', () => {
     expect(readWebsiteDiscountDraft()).toBe(10);
   });

@@ -16,7 +16,7 @@
  */
 
 import { getVehicleRuleMinPrice } from './pricing/vehicleRules';
-import { MAX_WEBSITE_DISCOUNT_PCT } from './pricing/websiteDiscount';
+import { MAX_WEBSITE_DISCOUNT_PCT, normalizeWebsiteDiscount } from './pricing/websiteDiscount';
 import { getLiveRiskBandFactor, getLiveRiskBandMinPrice, getLiveRiskBandFixedPrice } from './pricing/liveRiskBands';
 
 // Base pricing matrix - 3% INCREASE applied (Jun 2026), floored to whole numbers
@@ -746,8 +746,8 @@ export const MAX_WEB_DISCOUNT_VS_GRID_PCT = MAX_WEBSITE_DISCOUNT_PCT;
 
 /** Clamp any requested web discount to the 0–10% band. */
 export function clampWebDiscountPct(discountPct: number): number {
-  if (!Number.isFinite(discountPct) || discountPct <= 0) return 0;
-  return Math.min(discountPct, MAX_WEB_DISCOUNT_VS_GRID_PCT);
+  if (!Number.isFinite(discountPct)) return 0;
+  return normalizeWebsiteDiscount(discountPct);
 }
 
 /** Derive the customer (Step 3) price from an admin Quotes & Orders price. */

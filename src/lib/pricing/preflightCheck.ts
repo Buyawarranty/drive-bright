@@ -11,6 +11,7 @@
  */
 
 import { MAX_WEB_DISCOUNT_PCT } from './pricingVersionConfig';
+import { MIN_WEBSITE_DISCOUNT_PCT } from './websiteDiscount';
 import {
   EXCLUDED_MAKES,
   EXCLUDED_MODEL_RULES,
@@ -255,7 +256,7 @@ function checkVehicleModel(model: any): PreflightItem {
 
 function checkWebGap(pct: number | null | undefined): PreflightItem {
   const value = Number(pct);
-  if (!Number.isFinite(value) || value < 0) {
+  if (!Number.isFinite(value) || value < MIN_WEBSITE_DISCOUNT_PCT) {
     return {
       key: 'webGap',
       label: 'Step 3/4 gap',
@@ -283,7 +284,7 @@ function checkWebGap(pct: number | null | undefined): PreflightItem {
     key: 'webGap',
     label: 'Step 3/4 gap',
     severity: 'ok',
-    detail: `Website prices ${value}% below Quotes & Orders.`,
+    detail: `Website prices ${Math.abs(value)}% ${value < 0 ? 'above' : 'below'} Quotes & Orders.`,
   };
 }
 
