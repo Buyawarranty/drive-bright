@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import CareersApplyBlock from '@/components/careers/CareersApplyBlock';
+import BdmJob from '@/components/careers/BdmJob';
+import { useSearchParams } from 'react-router-dom';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
@@ -153,7 +155,20 @@ const breadcrumbSchema = {
   ],
 };
 
+const JOBS = [
+  { id: 'sales', label: 'Vehicle Warranty Sales Executive' },
+  { id: 'bdm', label: 'Business Development Manager' },
+] as const;
+
 const Careers: React.FC = () => {
+  const [params, setParams] = useSearchParams();
+  const job = params.get('job') === 'bdm' ? 'bdm' : 'sales';
+  const selectJob = (id: string) => {
+    const next = new URLSearchParams(params);
+    if (id === 'sales') next.delete('job'); else next.set('job', id);
+    setParams(next, { replace: true });
+    window.scrollTo({ top: 0 });
+  };
   return (
     <main className="min-h-screen bg-[#F9FAFB] text-[#111827]">
       <SEOHead
@@ -171,6 +186,24 @@ const Careers: React.FC = () => {
       </Helmet>
 
 
+      <nav aria-label="Open jobs" className="sticky top-0 z-30 border-b border-[#E5E7EB] bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8">
+          <span className="mr-1 shrink-0 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Open jobs</span>
+          {JOBS.map((j) => (
+            <button
+              key={j.id}
+              type="button"
+              onClick={() => selectJob(j.id)}
+              aria-pressed={job === j.id}
+              className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${job === j.id ? 'border-[#F97316] bg-[#F97316] text-white' : 'border-[#E5E7EB] bg-white text-[#111827] hover:border-[#F97316]'}`}
+            >
+              {j.label}
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {job === 'bdm' ? <BdmJob /> : (<>
       {/* Hero */}
       <section className="bg-white border-b border-[#E5E7EB]">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
@@ -530,6 +563,8 @@ const Careers: React.FC = () => {
           </div>
         </section>
       </div>
+
+      </>)}
 
       <ScrollToTopButton />
     </main>
