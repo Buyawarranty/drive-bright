@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { careerContactError } from '../../../supabase/functions/_shared/careerApplicationRules';
+import SimpleCaptcha, { useSimpleCaptcha } from '@/components/forms/SimpleCaptcha';
 
 const RECIPIENT = 'info@buyawarranty.co.uk';
 const SUBJECT = 'Vehicle Warranty Sales Executive Application';
@@ -40,6 +41,7 @@ export const CareersApplyBlock: React.FC<{ role?: string; experienceLabel?: stri
   const [warrantySalesExperience, setWarrantySalesExperience] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const captcha = useSimpleCaptcha();
 
   const copyEmail = async () => {
     try {
@@ -79,6 +81,10 @@ export const CareersApplyBlock: React.FC<{ role?: string; experienceLabel?: stri
       toast.error(`CV must be under ${MAX_MB} MB`);
       return;
     }
+    if (!captcha.verify()) {
+      toast.error('Please answer the quick security question before sending');
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -106,6 +112,7 @@ export const CareersApplyBlock: React.FC<{ role?: string; experienceLabel?: stri
       setNote('');
       setWarrantySalesExperience(false);
       setFile(null);
+      captcha.reset();
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       console.error('Career application failed:', err);
@@ -249,6 +256,7 @@ export const CareersApplyBlock: React.FC<{ role?: string; experienceLabel?: stri
           />
           <span>{experienceLabel || 'I have experience of selling vehicle warranties'}*</span>
         </label>
+        <SimpleCaptcha captcha={captcha} idPrefix="careers" className="mt-5" />
         <Button
           type="submit"
           disabled={submitting || !warrantySalesExperience}
