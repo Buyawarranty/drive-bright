@@ -28,6 +28,10 @@ import type { DateRange } from 'react-day-picker';
 import { RenewalPoolBar } from '@/components/admin/renewals/RenewalPoolBar';
 import { useCustomerActivity } from '@/hooks/useCustomerActivity';
 import { useRenewalLeadSync } from '@/hooks/useRenewalLeadSync';
+import { CallCountCell } from '@/components/admin/leads/CallCountCell';
+import { UnifiedNotesPanel } from '@/components/admin/leads/notes';
+import { RenewalLeadActions } from './RenewalLeadActions';
+import type { LeadStatus } from '@/hooks/useLeads';
 
 import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
 import { CustomerActivityCell } from '@/components/admin/leads/CustomerActivityCell';
@@ -223,6 +227,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [leaderboard, setLeaderboard] = useState<Record<string, { worked: number; renewed: number }>>({});
   const [bulkAssignTo, setBulkAssignTo] = useState<string>('');
   const [pinnedRow, setPinnedRow] = useState<PolicyRow | null>(null);
+  const [expandedPolicyId, setExpandedPolicyId] = useState<string | null>(null);
 
   // Renewal Pool reservation → pin the reserved policy at the top with a mint highlight.
   const renewalReservation = useRenewalReservation();
@@ -1092,26 +1097,29 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
       ) : (
         <div className="border rounded-lg overflow-hidden bg-card">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[1846px] table-fixed text-sm">
+              <colgroup>
+                {[44, 36, 110, 95, 60, 120, 110, 150, 90, 170, 85, 80, 100, 110, 100, 140, 120].map((width, index) => <col key={index} width={width} />)}
+              </colgroup>
               <thead className="bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground">
                 <tr>
                   <th className="text-center p-2 w-[44px] text-[11px] font-semibold uppercase tracking-wider">#</th>
                   <th className="p-2 w-[36px]">
                     <Checkbox checked={allSelected} onCheckedChange={toggleAllVisible} />
                   </th>
-                  <th className="sticky left-0 z-10 bg-muted p-2 text-left w-[110px] min-w-[110px]">Agent</th>
+                  <th className="p-2 text-left w-[110px] min-w-[110px]">Agent</th>
                   <th className="text-left p-2 w-[95px]">Status</th>
                   <th className="text-center p-2 w-[60px]">Calls</th>
                   <th className="text-left p-2 w-[120px]">Actions</th>
                   <th className="text-left p-2 w-[110px]">Name</th>
                   <th className="text-left p-2 w-[150px]">Phone</th>
                   <th className="text-left p-2 w-[90px]">WhatsApp</th>
-                  <th className="text-left p-2 w-[180px]">Email</th>
+                  <th className="text-left p-2 w-[170px]">Email</th>
                   <th className="text-left p-2 w-[85px]">Reg</th>
                   <th className="text-left p-2 w-[80px]" title="What the customer paid for their current policy — hover for plan, duration, excess, claim limit and add-ons.">Payment</th>
                   <th className="text-left p-2 w-[100px]" title="When the customer paid for / started their current policy.">Paid Date</th>
                   <th className="text-left p-2 w-[110px]">Agent activity</th>
-                  <th className="text-left p-2 w-[110px]">Lead Date</th>
+                  <th className="text-left p-2 w-[100px]">Lead Date</th>
                   <th className="text-left p-2 w-[140px]" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</th>
                   <th className="text-left p-2 w-[120px]">
                     <button
@@ -1138,7 +1146,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                   const phone = r.customers?.phone || '';
                   // Live New Leads activity for this renewal (owner, calls, notes, status).
                   const leadSync = email ? leadSyncByEmail[email] : undefined;
-                  const callCount = (email ? (callCountsByEmail[email] || 0) : 0) + (leadSync?.callCount || 0);
+                  const callCount = leadSync?.callCount ?? (email ? (callCountsByEmail[email] || 0) : 0);
                   const leadOwner = leadSync?.assignedAdminId ? agentByAdminId.get(leadSync.assignedAdminId) : undefined;
                   const assignedAuthId = r.customers?.assigned_to ?? leadOwner?.user_id ?? null;
                   const assignedAgent = assignedAuthId ? agentByAuthId.get(assignedAuthId) : undefined;
@@ -1162,13 +1170,13 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                     <React.Fragment key={r.id}>
                     <tr className={`border-t hover:bg-muted/30 align-top ${liveInNewLeads ? 'bg-sky-50/60 border-l-4 border-l-sky-500' : ''} ${isSelected ? 'bg-primary/5' : ''} ${isUrgent ? 'border-l-4 border-l-red-500' : ''} ${isPinned ? 'bg-emerald-50/70 ring-1 ring-emerald-300' : ''}`}>
                       <td className="p-2 text-center text-xs tabular-nums text-muted-foreground font-medium">{rowNumber}</td>
-                      <td className="sticky left-0 z-[1] bg-card p-2">
+                      <td className="p-2">
                         <Checkbox checked={isSelected} onCheckedChange={() => toggleRow(r.id)} />
                       </td>
                       <td className="p-2">
                         <Select value={assignedAuthId ?? UNASSIGNED}
                           onValueChange={(v) => reassignCustomer(r, v)}>
-                          <SelectTrigger className="h-7 w-[130px] text-xs">
+                          <SelectTrigger className="h-7 w-full text-xs">
                             <SelectValue placeholder="Assign…">
                               {assignedAgent ? (
                                 <span className="flex items-center gap-1">
@@ -1189,7 +1197,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       </td>
                       <td className="p-2">
                         <Select value={r.retention_outcome ?? ''} onValueChange={(v) => markWorked(r, v)}>
-                          <SelectTrigger className="h-7 w-[110px] text-xs"><SelectValue placeholder="—" /></SelectTrigger>
+                          <SelectTrigger className="h-7 w-full text-xs"><SelectValue placeholder="—" /></SelectTrigger>
                           <SelectContent>
                             {OUTCOMES.map((o) => (
                               <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
@@ -1198,6 +1206,9 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                         </Select>
                       </td>
                       <td className="p-2">
+                        {leadSync ? (
+                          <CallCountCell lead={{ id: leadSync.leadId, call_count: leadSync.callCount, manual_call_adjustment: leadSync.manualCallAdjustment, status: (leadSync.status || 'new') as LeadStatus, last_contacted_at: leadSync.lastContactedAt }} agentId={currentAdminId ?? undefined} />
+                        ) : (
                         <div className="flex items-center justify-center gap-1">
                           <Badge variant={callCount > 0 ? 'secondary' : 'outline'} className="text-[11px] tabular-nums min-w-[24px] justify-center">
                             {callCount}
@@ -1212,8 +1223,14 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                             +
                           </Button>
                         </div>
+                        )}
                       </td>
                       <td className="p-2">
+                        {leadSync ? (
+                          <RenewalLeadActions leadId={leadSync.leadId} phone={phone} email={email} noteCount={leadSync.noteCount} expanded={expandedPolicyId === r.id}
+                            onToggleNotes={() => { setExpandedPolicyId(prev => prev === r.id ? null : r.id); void refreshLeadSync(); }}
+                            onQuote={onNavigateToTab ? () => onNavigateToTab('get-quote', sendQuotePrefill) : undefined} />
+                        ) : (
                         <div className="flex items-center gap-1 flex-wrap">
                           {onNavigateToTab && (
                             <Button size="sm" variant="default" className="h-7 px-2 text-xs gap-1"
@@ -1263,6 +1280,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                             Worked
                           </Button>
                         </div>
+                        )}
                       </td>
                       <td className="p-2">
                         <div className="font-medium text-sm leading-tight flex items-center gap-1 flex-wrap">
@@ -1307,7 +1325,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       <td className="p-2 text-xs">
                         {phone ? (
                           <Button asChild size="sm" variant="outline" className="h-7 px-2 text-xs" title="Call customer"
-                            onClick={() => logCustomerCall(r)}>
+                            onClick={leadSync ? undefined : () => logCustomerCall(r)}>
                             <a href={`tel:${phone}`} className="gap-1"><Phone className="h-3 w-3" />{phone}</a>
                           </Button>
                         ) : '—'}
@@ -1328,7 +1346,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                           </Button>
                         ) : <span className="text-xs text-muted-foreground">—</span>}
                       </td>
-                      <td className="p-2 text-xs truncate max-w-[180px]" title={email}>{email || '—'}</td>
+                      <td className="p-2 text-xs truncate max-w-[170px]" title={email}>{email || '—'}</td>
                       <td className="p-2 text-xs uppercase">{r.customers?.registration_plate || '—'}</td>
                       <td className="p-2 text-xs whitespace-nowrap">
                         <Popover>
@@ -1419,9 +1437,10 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                         </div>
                       </td>
                     </tr>
-                    {liveInNewLeads && leadSync && (
+                    {expandedPolicyId === r.id && leadSync && (
                       <tr className="bg-sky-50/60 border-l-4 border-l-sky-500">
-                        <td colSpan={18} className="px-3 pb-3 pt-0">
+                        <td colSpan={17} className="px-3 pb-3 pt-0">
+                          <UnifiedNotesPanel leadId={leadSync.leadId} hidePoolOutcome />
                           <div className="rounded-md border border-sky-300 bg-card px-3 py-2 text-xs">
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                               <Badge className="bg-sky-600 text-white border-sky-700 text-[10px]">Live in New Leads</Badge>

@@ -11,7 +11,7 @@ import { formatTimeAgo } from '@/lib/formatTimeAgo';
 
 
 interface CallCountCellProps {
-  lead: Lead;
+  lead: Pick<Lead, 'id' | 'call_count' | 'status' | 'last_contacted_at'> & { manual_call_adjustment?: number };
   // Kept for prop compatibility with existing call sites; no longer used.
   onUpdateCallCount?: (increment: number) => void;
   onUpdateStatus?: (status: LeadStatus) => void;

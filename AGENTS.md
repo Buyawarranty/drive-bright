@@ -1,4 +1,5 @@
 # Project architecture rules
+- Linked renewals reuse the New Leads call counter, dial/email/reminder controls and full notes panel keyed by the existing lead ID; preserve policy outcomes and routing so activity stays with the same lead across views.
 - Cyber security is read-only and admin/super-admin-only; a service-only summary RPC checks protected roles and returns counts, while a JWT-checked endpoint inspects only fixed published URLs, so no secrets or customer records enter reports.
 - Keep CLI asset pointers; portableAssetsPlugin resolves external-host URLs; mobile caps sit on wrappers.
 - Abandoned Cart lists and exports use the shared fail-closed eligibility loader and active-staff-checked history RPC returning only excluded cart IDs, keeping restricted claims data server-side and barring cancelled/refunded customers.
