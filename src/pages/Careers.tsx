@@ -18,6 +18,7 @@ import {
 import { SEOHead } from '@/components/SEOHead';
 import CareersApplyBlock from '@/components/careers/CareersApplyBlock';
 import BdmJob from '@/components/careers/BdmJob';
+import SalesManagerJob from '@/components/careers/SalesManagerJob';
 import { useSearchParams } from 'react-router-dom';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
@@ -158,11 +159,13 @@ const breadcrumbSchema = {
 const JOBS = [
   { id: 'sales', label: 'Vehicle Warranty Sales Executive' },
   { id: 'bdm', label: 'Business Development Manager' },
+  { id: 'sales-manager', label: 'Sales Manager' },
 ] as const;
 
 const Careers: React.FC = () => {
   const [params, setParams] = useSearchParams();
-  const job = params.get('job') === 'bdm' ? 'bdm' : 'sales';
+  const raw = params.get('job');
+  const job = raw === 'bdm' || raw === 'sales-manager' ? raw : 'sales';
   const selectJob = (id: string) => {
     const next = new URLSearchParams(params);
     if (id === 'sales') next.delete('job'); else next.set('job', id);
@@ -203,7 +206,7 @@ const Careers: React.FC = () => {
         </div>
       </nav>
 
-      {job === 'bdm' ? <BdmJob /> : (<>
+      {job === 'bdm' ? <BdmJob /> : job === 'sales-manager' ? <SalesManagerJob /> : (<>
       {/* Hero */}
       <section className="bg-white border-b border-[#E5E7EB]">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
