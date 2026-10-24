@@ -77,7 +77,7 @@ export const BdmJob: React.FC = () => (
         <div className="grid gap-10 md:grid-cols-2 md:items-center">
           <div>
             <div className="mb-4 inline-flex items-center rounded-full bg-[#FFF4EC] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#F97316]">We're hiring</div>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Careers at Buyawarranty</h1>
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Careers at Buya<span className="text-brand-orange">warranty</span></h1>
             <p className="mt-4 text-lg font-semibold text-[#111827]">Business Development Manager – Automotive Warranties</p>
             <p className="mt-3 max-w-xl text-base leading-7 text-[#6B7280]">
               <span className="font-bold">Fully remote</span> (work from home anywhere in the UK) · Full-time permanent PAYE (contractor option available) · £40,000 basic + uncapped commission · £70,000+ potential
