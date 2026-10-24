@@ -18,6 +18,14 @@ const ANALYTICS_TABS = new Set(['analytics', 'page-analytics']);
 
 const SOCIAL_ANALYTICS_BLOCKED_ROLES = new Set(['sales', 'sales_lead']);
 
+/** All bookmarks for Call data share the same per-user permission. */
+export function canAccessCallData(role: string | null | undefined, permissions?: Record<string, boolean> | null): boolean {
+  if (role === 'super_admin' || role === 'dev_tester') return true;
+  if (permissions && 'tab_overview' in permissions) return permissions.tab_overview === true;
+  if (role === 'sales' || role === 'sales_lead') return false;
+  return role === 'admin' || role === 'sales_manager' || role === 'performance_manager';
+}
+
 /** SEO Audit reuses the existing assistant permission, not a separate grant. */
 export function canAccessSeoAudit(role: string | null | undefined, permissions?: Record<string, boolean> | null): boolean {
   return role === 'super_admin' || permissions?.['tab_growth-agent'] === true || permissions?.['tab_seo-review'] === true;

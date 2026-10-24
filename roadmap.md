@@ -1,5 +1,10 @@
 # Roadmap
 
+## Call permissions and inbound naming
+- [x] Make Call data permission explicit and default-off for sales agents and sales leads across menu and direct access.
+- [x] Rename visible Call Rail wording to Call inbound without changing tracking.
+- [x] Eight access regression tests passed and preview build OK; signed-in verification unavailable with external unmanaged Supabase.
+
 ## Renewals / New Leads parity
 - [x] Match normal New Leads column widths; linked renewals use the shared live call counter, dial/email/reminder controls and expandable full notes.
 - [x] Preserve renewal outcomes, eligibility, assignment and RR/ORR routing; seven existing call/ORR tests pass, preview build OK, protected route redirects without runtime errors.

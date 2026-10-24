@@ -125,8 +125,8 @@ const ADMIN_TABS = [
   { id: 'ghl-sync-log', label: 'GHL Sync Log', description: 'GoHighLevel synchronisation audit log' },
   { id: 'security', label: 'Security', description: 'Security scans, blocked IPs and audit logs' },
   { id: 'unsubscribe', label: 'Unsubscribe', description: 'Manually unsubscribe customers from emails or remove from new leads' },
-  { id: 'overview', label: 'Live Calls Data', description: 'Manager landing page — live KPIs, hourly performance, queue and alerts' },
-  { id: 'call-tracking', label: 'Call rail', description: 'Inbound call tracking and assignments' },
+  { id: 'overview', label: 'Call data', description: 'Call totals and performance — off by default for sales agents and sales leads' },
+  { id: 'call-tracking', label: 'Call inbound', description: 'Inbound call tracking and assignments' },
   
   { id: 'complaints', label: 'Complaints', description: 'Manage customer complaints and resolutions' },
   { id: 'non-claim-complaints', label: 'Non claims complaints', description: 'Complaints not related to a claim' },
@@ -225,6 +225,7 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
   admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true, 'tab_new-leads_lead-routing': true, 'tab_new-leads_live-tracking': true },
   dev_tester: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true },
   sales_lead: {
+    'tab_overview': false,
     'tab_new-leads': true,
     'tab_get-quote': true,
     'tab_customers': true,
@@ -241,6 +242,7 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_unsubscribe': true,
   },
   sales: {
+    'tab_overview': false,
     'tab_new-leads': true,
     'tab_get-quote': true,
     'tab_customers': true,

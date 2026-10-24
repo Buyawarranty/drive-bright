@@ -63,7 +63,7 @@ export const CallRailTrackerAssignments = () => {
         .select('id, name, color, callrail_banner_enabled')
         .order('name', { ascending: true }),
     ]);
-    if (tErr) toast.error('Failed to load CallRail trackers');
+    if (tErr) toast.error('Failed to load inbound call trackers');
     if (aErr) toast.error('Failed to load agents');
     if (teamErr) toast.error('Failed to load teams');
     setTrackers((t as Tracker[]) || []);
@@ -130,7 +130,7 @@ export const CallRailTrackerAssignments = () => {
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Phone className="h-4 w-4 text-primary" />
-          CallRail Tracker Assignments
+          Inbound tracker assignments
           <Badge variant="secondary" className="ml-2 text-[10px]">Management &amp; Lead Gen</Badge>
         </CardTitle>
         <p className="text-xs text-muted-foreground">
@@ -213,7 +213,7 @@ export const CallRailTrackerAssignments = () => {
               <h4 className="text-sm font-semibold mb-2">Missed-call routing</h4>
               {trackers.length === 0 ? (
                 <div className="text-sm text-muted-foreground border border-dashed rounded-md p-4">
-                  No tracking numbers found yet. They will appear here automatically after the first CallRail webhook is received.
+                  No tracking numbers found yet. They will appear here automatically after the first inbound call update is received.
                 </div>
               ) : (
                 <div className="overflow-x-auto border rounded-md">
