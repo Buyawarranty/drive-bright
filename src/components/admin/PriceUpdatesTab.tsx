@@ -630,9 +630,7 @@ export default function PriceUpdatesTab() {
     const wasPending = pendingNewPlan;
     setBusy(true);
     try {
-      const id = await ensureDraftPersisted();
-      if (!id) return false;
-      await saveVersion(id, {
+      const payload = {
         label,
         notes,
         admin_matrix: roundMatrixWhole(adjustedMatrix ?? matrix),
@@ -640,7 +638,15 @@ export default function PriceUpdatesTab() {
         claim_limit_factors: currentClaimLimitFactors(),
         labour_rate_factors: currentLabourRateFactors(),
         vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
-      });
+      };
+      if (wasPending) {
+        const saved = await createVersion(label, payload.admin_matrix, discountPct, notes, payload.claim_limit_factors, payload.labour_rate_factors, payload.vehicle_factor_model);
+        setSelectedId(saved.id);
+        setPendingNewPlan(false);
+      } else if (selectedId) {
+        await saveVersion(selectedId, payload);
+      }
+      /* Whole-plan writes above are atomic: one insert or one update. */
       if (adjustedMatrix) setMatrix(adjustedMatrix);
       toast.success(wasPending ? 'Plan saved — still a test, nothing is live' : 'Draft saved (test only — not live)');
       return true;
@@ -1031,7 +1037,7 @@ export default function PriceUpdatesTab() {
         </div>
         <p className="text-sm text-muted-foreground">
           Build and test prices without touching live pricing. The customer journey (Step 3/4) is always
-          the Quotes &amp; Orders price minus {discountPct}%, rounded to the nearest pound. Nothing changes
+          the Quotes &amp; Orders price {discountPct < 0 ? 'plus' : 'minus'} {Math.abs(discountPct)}%, rounded to the nearest pound. Nothing changes
           for customers or agents until you press <strong>Push live</strong>.
         </p>
 
@@ -1443,7 +1449,7 @@ export default function PriceUpdatesTab() {
               <div>
                 <div className="font-medium">{v.label}</div>
                 <div className="text-xs text-muted-foreground">
-                  Website is {Number(v.step3_discount_pct)}% below these prices ·{' '}
+                  Website is {Math.abs(Number(v.step3_discount_pct))}% {Number(v.step3_discount_pct) < 0 ? 'above' : 'below'} these prices ·{' '}
                   {v.published_at
                     ? `published ${new Date(v.published_at).toLocaleString('en-GB')}`
                     : `saved ${new Date(v.updated_at).toLocaleString('en-GB')}`}
@@ -1617,8 +1623,8 @@ export default function PriceUpdatesTab() {
               <CardDescription>
                 <strong>This grid is the live source of truth.</strong> Whatever is in these cells
                 when you press <strong>Push live</strong> is what Quotes &amp; Orders charges, and
-                the customer journey (Step 3/4) is automatically this minus{' '}
-                {effectiveDiscountPct(discountPct)}% (10% by default), rounded to the nearest whole
+                the customer journey (Step 3/4) is automatically this {discountPct < 0 ? 'plus' : 'minus'}{' '}
+                {Math.abs(discountPct)}% (10% by default), rounded to the nearest whole
                 pound. Nothing changes for customers or agents until you press{' '}
                 <strong>Push live</strong>.
               </CardDescription>
@@ -1647,16 +1653,9 @@ export default function PriceUpdatesTab() {
                 <Textarea rows={3} value={notes} onChange={e => setNotes(e.target.value)} />
               </div>
 
-              <Tabs defaultValue="12months">
-                <TabsList>
-                  {PERIODS.map(p => (
-                    <TabsTrigger key={p} value={p}>
-                      {PERIOD_LABELS[p]}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
                 {PERIODS.map(period => (
-                  <TabsContent key={period} value={period} className="pt-4">
+                  <section key={period} className="pt-4 space-y-2">
+                    <h4 className="font-semibold">{PERIOD_LABELS[period]}</h4>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm border-collapse">
                         <thead>
@@ -1810,9 +1809,9 @@ export default function PriceUpdatesTab() {
                       </table>
 
                     </div>
-                  </TabsContent>
+                  </section>
                 ))}
-              </Tabs>
+
 
             </div>
           )}

@@ -855,8 +855,8 @@ export default function AgeBandPricingPreview({
             />
           </div>
           <div className="space-y-1">
-            <Label>Website discount</Label>
-            <Button variant="link" onClick={() => document.getElementById('website-discount')?.scrollIntoView({ behavior: 'smooth' })}>{websiteDiscountPct}% — purple section</Button>
+            <Label>Website price difference</Label>
+            <Button variant="link" onClick={() => document.getElementById('website-discount')?.scrollIntoView({ behavior: 'smooth' })}>{Math.abs(websiteDiscountPct)}% {websiteDiscountPct < 0 ? 'more expensive' : 'cheaper'}</Button>
           </div>
         </div>
 
@@ -1315,8 +1315,7 @@ export default function AgeBandPricingPreview({
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 p-3">
             <p className="text-xs text-muted-foreground">
               Vehicles set to a “Not covered” treatment never get an automatic quote — they show the
-              manual referral message instead. Saving here applies these rules straight away on the
-              Quotes &amp; Orders page and on the customer journey (Step 3 → Step 4).
+              manual referral message instead. {planEditor ? 'These rules stay with this test plan until it is pushed live.' : 'Saving here applies these rules straight away on Quotes & Orders and the customer journey.'}
             </p>
             <div className="flex items-center gap-2">
               <Badge variant={dirty ? 'destructive' : 'secondary'}>
