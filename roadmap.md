@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Renewals / New Leads parity
-- [ ] Match the current New Leads column layout and shared call/note controls for linked renewals.
-- [ ] Preserve renewal outcomes, eligibility, assignment and RR/ORR routing; verify available checks.
+- [x] Match normal New Leads column widths; linked renewals use the shared live call counter, dial/email/reminder controls and expandable full notes.
+- [x] Preserve renewal outcomes, eligibility, assignment and RR/ORR routing; seven existing call/ORR tests pass, preview build OK, protected route redirects without runtime errors.
+- [ ] Signed-in call/note save and visual comparison: unavailable with external unmanaged Supabase session; requested New Leads screenshot has not been attached.
 
 ## Dial 9 call timing and Adam's totals
 - [x] Measured active two-minute import: Adam's 114 calls on 23 Oct all correctly owned; completed-call arrival median 56.1s, p95 106.3s, maximum 119.5s.
