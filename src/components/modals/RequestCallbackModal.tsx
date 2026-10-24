@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
 import pandaMascot from '@/assets/panda-mascot.png';
+import SimpleCaptcha, { useSimpleCaptcha } from '@/components/forms/SimpleCaptcha';
 
 const CarIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -31,6 +32,7 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
   const [showContent, setShowContent] = useState(false);
+  const captcha = useSimpleCaptcha();
 
   useEffect(() => {
     if (isOpen) {
@@ -57,8 +59,8 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
     setPhone(digits);
     if (error && validateUKPhone(digits).isValid) setError('');
 
-    // Auto-submit on valid number
-    if (validateUKPhone(digits).isValid && !isSubmitting) {
+    // Auto-submit on valid number (only once the security question is answered)
+    if (validateUKPhone(digits).isValid && !isSubmitting && captcha.isSolved) {
       setTimeout(() => {
         const form = e.target.closest('form');
         if (form) form.requestSubmit();
@@ -70,6 +72,7 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
     e.preventDefault();
     if (!phone.trim()) { setError('Please enter your phone number'); return; }
     if (!isPhoneValid) { setError('Please enter a valid UK phone number (e.g. 07123 456789)'); return; }
+    if (!captcha.verify()) { setError('Please answer the quick security question'); return; }
 
     setIsSubmitting(true);
     setError('');
@@ -109,6 +112,7 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
       setTimeout(() => {
         setIsSuccess(false);
         setPhone('');
+        captcha.reset();
         onClose();
       }, 3500);
     } catch (err) {
@@ -128,6 +132,7 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
       setPhone('');
       setError('');
       setIsSuccess(false);
+      captcha.reset();
       onClose();
     }
   };
@@ -266,6 +271,9 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                     />
                   </div>
                 </div>
+
+                {/* Spam protection */}
+                <SimpleCaptcha captcha={captcha} idPrefix="callback-modal" />
 
                 {/* CTA Button */}
                 <Button
