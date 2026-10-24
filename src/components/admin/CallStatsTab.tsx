@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from './UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 import { LeadSpeedTable } from './call-stats/LeadSpeedTable';
+import { startCallRefresh } from './call-stats/callRefresh';
 
 interface CallEvent {
   id: string;
@@ -108,10 +109,12 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
   const [events, setEvents] = useState<CallEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    let ranOnce = false;
 
     const run = async () => {
       // Never hammer the DB while the tab is backgrounded — this page is a
@@ -119,14 +122,28 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
       // their Zoiper / Dial 9 windows. Fetching in the background adds nothing
       // and just competes for network + CPU with active calls.
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
-      if (ranOnce || cancelled) return;
-      ranOnce = true;
+      if (cancelled) return;
 
       setLoading(true);
       const from = new Date(dateFrom); from.setHours(0, 0, 0, 0);
       const to = new Date(dateTo); to.setHours(23, 59, 59, 999);
 
-      const [agentsRes, teamRes, eventsRes] = await Promise.all([
+      try {
+      const loadEvents = async () => {
+        const all: CallEvent[] = [];
+        for (let offset = 0; ; offset += 1000) {
+          const result = await supabase.from('zoiper_call_events')
+            .select('id, agent_user_id, agent_email, agent_extension, direction, status, dialed_number, started_at, answered_at, duration_seconds, talk_seconds')
+            .gte('started_at', from.toISOString()).lte('started_at', to.toISOString())
+            .order('started_at', { ascending: false }).order('id', { ascending: false })
+            .range(offset, offset + 999);
+          if (result.error) throw result.error;
+          const page = (result.data ?? []) as CallEvent[];
+          all.push(...page);
+          if (cancelled || page.length < 1000) return all;
+        }
+      };
+      const [agentsRes, teamRes, callEvents] = await Promise.all([
         supabase
           .from('admin_users')
           .select('id, first_name, last_name, email, role, sip_extension, is_active')
@@ -134,35 +151,32 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
         supabase
           .from('lead_team_members')
           .select('admin_user_id, team_id, lead_teams!inner(name, color)'),
-        supabase
-          .from('zoiper_call_events')
-          .select('id, agent_user_id, agent_email, agent_extension, direction, status, dialed_number, started_at, answered_at, duration_seconds, talk_seconds')
-          .gte('started_at', from.toISOString())
-          .lte('started_at', to.toISOString())
-          .order('started_at', { ascending: false })
-          .limit(2500),
+        loadEvents(),
       ]);
       if (cancelled) return;
       setAgents((agentsRes.data as AgentRow[]) || []);
       setTeamMembers((teamRes.data as any as TeamMember[]) || []);
-      setEvents((eventsRes.data as CallEvent[]) || []);
+      setEvents(callEvents);
+      setLastUpdated(new Date());
+      setLoadError(null);
 
       if (cancelled) return;
       setLoading(false);
+      } catch {
+        if (!cancelled) {
+          setLoadError('Call totals could not refresh. The last successful figures are still shown.');
+          setLoading(false);
+        }
+      }
     };
 
     // Debounce so rapid date-filter changes coalesce into one query.
-    const t = window.setTimeout(run, 250);
-    const onVis = () => {
-      if (document.visibilityState === 'visible' && !ranOnce) run();
-    };
-    document.addEventListener('visibilitychange', onVis);
+    const watcher = startCallRefresh(run);
     return () => {
       cancelled = true;
-      window.clearTimeout(t);
-      document.removeEventListener('visibilitychange', onVis);
+      watcher.stop();
     };
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, refreshKey]);
 
   const teamByAgent = useMemo(() => {
     const m: Record<string, { name: string; color: string | null }> = {};
@@ -338,6 +352,8 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {lastUpdated && <span className="text-xs text-muted-foreground">Updated {format(lastUpdated, 'HH:mm:ss')}</span>}
+          <Button variant="outline" size="sm" disabled={loading} onClick={() => setRefreshKey(k => k + 1)}><Clock className="mr-1 h-4 w-4" /> Refresh calls</Button>
           <UnifiedDateFilter
             scope="signup"
             period={period}
@@ -388,6 +404,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
           </Button>
         </div>
       </div>
+      {loadError && <p role="alert" className="text-sm text-destructive">{loadError}</p>}
 
       {/* KPI tiles */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
