@@ -53,8 +53,7 @@ const industries = [
 ];
 
 const benefits = [
-  '£30,000 annual basic salary (PAYE)',
-  '£40,000 on-target earnings',
+  '£40,000 annual basic salary (PAYE)',
   '£70,000+ exceptional earning potential',
   'Uncapped, performance-based commission',
   'Commission on new dealership acquisition and ongoing qualifying warranty sales',
@@ -69,7 +68,7 @@ export const BdmJob: React.FC = () => (
   <>
     <Helmet>
       <title>Remote Business Development Manager Jobs UK – Automotive Warranties | Buyawarranty</title>
-      <meta name="description" content="Fully remote Business Development Manager role selling vehicle warranties to UK car dealerships. £30,000 basic, £40,000 OTE, £70,000+ potential, uncapped commission." />
+      <meta name="description" content="Fully remote Business Development Manager role selling vehicle warranties to UK car dealerships. £40,000 basic, £70,000+ potential, uncapped commission." />
       <meta name="keywords" content={BDM_KEYWORDS} />
     </Helmet>
 
@@ -81,7 +80,7 @@ export const BdmJob: React.FC = () => (
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Careers at Buyawarranty</h1>
             <p className="mt-4 text-lg font-semibold text-[#111827]">Business Development Manager – Automotive Warranties</p>
             <p className="mt-3 max-w-xl text-base leading-7 text-[#6B7280]">
-              <span className="font-bold">Fully remote</span> (work from home anywhere in the UK) · Full-time permanent PAYE (contractor option available) · £30,000 basic + uncapped commission · OTE £40,000 · £70,000+ potential
+              <span className="font-bold">Fully remote</span> (work from home anywhere in the UK) · Full-time permanent PAYE (contractor option available) · £40,000 basic + uncapped commission · £70,000+ potential
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a href="#apply" className="inline-flex items-center justify-center rounded-xl bg-[#F97316] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#EA580C] focus:outline-none focus:ring-4 focus:ring-orange-200">
@@ -114,8 +113,8 @@ export const BdmJob: React.FC = () => (
       <section aria-labelledby="bdm-earn" className="mb-14">
         <Header id="bdm-earn" n={2} title="Salary and earnings" />
         <div className="grid gap-4 sm:grid-cols-3">
-          <Earn tier="Basic salary" range="£30,000" />
-          <Earn tier="On-target earnings" range="£40,000" highlight />
+          <Earn tier="Basic salary" range="£40,000" />
+          <Earn tier="Plus commission" range="Uncapped" highlight />
           <Earn tier="Exceptional potential" range="£70,000+" />
         </div>
         <p className="mt-4 text-xs text-[#6B7280]">Commission is uncapped. Earnings above basic depend on performance and are not guaranteed.</p>
@@ -176,7 +175,7 @@ export const BdmJob: React.FC = () => (
           <Summary Icon={Briefcase} label="Job type" value="Full-time, permanent" />
           <Summary Icon={Award} label="Employment type" value="PAYE (contractor option)" />
           <Summary Icon={Home} label="Location" value="Remote, United Kingdom" />
-          <Summary Icon={PoundSterling} label="Basic / OTE" value="£30,000 / £40,000" />
+          <Summary Icon={PoundSterling} label="Basic salary" value="£40,000 + commission" />
           <Summary Icon={TrendingUp} label="Potential" value="£70,000+ uncapped" />
           <Summary Icon={Users} label="Customers" value="Car dealerships" />
         </div>
