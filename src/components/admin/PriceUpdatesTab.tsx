@@ -1,6 +1,5 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
-import WebsiteDiscountPanel from './pricing/WebsiteDiscountPanel';
-import PercentagePriceSave from './pricing/PercentagePriceSave';
+import { hydratePlanModel } from '@/lib/pricing/planEditor';
 import { normalizeWebsiteDiscount, readWebsiteDiscountDraft, saveWebsiteDiscountDraft, WEBSITE_DISCOUNT_CHANGED_EVENT } from '@/lib/pricing/websiteDiscount';
 import { type VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 import { getLiveRiskBandConfig } from '@/lib/pricing/liveRiskBands';
@@ -294,14 +293,17 @@ export default function PriceUpdatesTab() {
   }, [drafts.length]);
 
   function loadIntoEditor(v: PricingVersion) {
+    setLiveEditorModel(hydratePlanModel(codeAgeBandModel, {
+      ...(v.vehicle_factor_model ?? liveVersion?.vehicle_factor_model ?? {}),
+      ...(v.claim_limit_factors ? { claimLimits: v.claim_limit_factors } : {}),
+      ...(v.labour_rate_factors ? { labourRates: v.labour_rate_factors } : {}),
+    }));
     setPendingNewPlan(false);
     setSelectedId(v.id);
     setLabel(v.label);
     setNotes(v.notes ?? '');
-    if (v.vehicle_factor_model?.websiteDiscountMode === 'single') {
-      setDiscountPct(normalizeWebsiteDiscount(v.step3_discount_pct));
-      saveWebsiteDiscountDraft(v.step3_discount_pct);
-    }
+    setDiscountPct(normalizeWebsiteDiscount(v.step3_discount_pct));
+    saveWebsiteDiscountDraft(v.step3_discount_pct);
     setMatrix(roundMatrixWhole(v.admin_matrix));
   }
 
@@ -315,7 +317,33 @@ export default function PriceUpdatesTab() {
   const [pushGapPct, setPushGapPct] = useState<number>(10);
 
   /** "Save as a new plan" dialog. */
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorSection, setEditorSection] = useState('plan-price-grid');
+  const [copyName, setCopyName] = useState('');
   const [saveAsOpen, setSaveAsOpen] = useState(false);
+
+  function openPlanEditor(section = 'plan-price-grid') {
+    if (!selectedId && !pendingNewPlan) {
+      toast.error('Choose a pricing plan first');
+      return;
+    }
+    setEditorSection(section);
+    setEditorOpen(true);
+  }
+
+  useEffect(() => {
+    if (!editorOpen) return;
+    const timer = setTimeout(() => document.getElementById(editorSection)?.scrollIntoView({ block: 'start' }), 100);
+    return () => clearTimeout(timer);
+  }, [editorOpen, editorSection]);
+
+  function updatePlanVariables(model: AgeBandModel) {
+    const figures = (m: any) => JSON.stringify({ ...m, websiteDiscountPct: undefined });
+    if (liveEditorModel && figures(model) !== figures(liveEditorModel)) {
+      setMatrix(roundMatrixWhole(buildAdminMatrixFromModel(model)));
+    }
+    setLiveEditorModel(model);
+  }
   const [saveAsName, setSaveAsName] = useState('');
 
   /** History: ask to make a saved/archived version the live pricing again. */
@@ -402,7 +430,10 @@ export default function PriceUpdatesTab() {
     setPendingNewPlan(true);
     setLabel(planName);
     setNotes('');
-    setDiscountPct(readWebsiteDiscountDraft());
+    setLiveEditorModel(hydratePlanModel(codeAgeBandModel, liveVersion?.vehicle_factor_model));
+    setDiscountPct(normalizeWebsiteDiscount(liveVersion?.step3_discount_pct ?? 10));
+    saveWebsiteDiscountDraft(liveVersion?.step3_discount_pct ?? 10);
+    setEditorOpen(true);
     setMatrix(roundMatrixWhole(liveVersion ? liveVersion.admin_matrix : buildCodeAdminMatrix()));
     setNewPlanName('');
     toast.success(`New plan “${planName}” started — a copy of live. Nothing is saved yet; press Save in a section when you're ready.`);
@@ -422,7 +453,7 @@ export default function PriceUpdatesTab() {
       notes,
       currentClaimLimitFactors(),
       currentLabourRateFactors(),
-      liveVersion?.vehicle_factor_model ?? null
+      withRiskBands(currentVehicleFactorModel())
     );
     setSelectedId(v.id);
     setPendingNewPlan(false);
@@ -431,7 +462,7 @@ export default function PriceUpdatesTab() {
 
   /** Save the current editor contents as a brand-new plan with a new name, then switch to it. */
   async function handleSaveAsNewPlan() {
-    const name = saveAsName.trim();
+    const name = (editorOpen ? copyName : saveAsName).trim();
     if (!name) {
       toast.error('Type a name for the new plan');
       return;
@@ -449,6 +480,7 @@ export default function PriceUpdatesTab() {
       );
       setSaveAsOpen(false);
       setSaveAsName('');
+      setCopyName('');
       loadIntoEditor(v);
       toast.success(`Saved as new plan “${name}” — still a test, nothing is live`);
     } catch (e: any) {
@@ -464,16 +496,8 @@ export default function PriceUpdatesTab() {
    * the £3,000 / £5,000 tiers keep pricing off the old built-in steps.
    */
   function currentClaimLimitFactors(): { limit: number; factor: number }[] | null {
-    const fromEditor = liveEditorModel?.claimLimits;
-    let list: any[] | null = Array.isArray(fromEditor) && fromEditor.length ? fromEditor : null;
-    if (!list) {
-      try {
-        const saved = JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || '{}');
-        if (Array.isArray(saved?.claimLimits) && saved.claimLimits.length) list = saved.claimLimits;
-      } catch {
-        list = null;
-      }
-    }
+    const fromEditor = liveEditorModel?.claimLimits ?? resolvePushModel()?.model?.claimLimits;
+    const list: any[] | null = Array.isArray(fromEditor) && fromEditor.length ? fromEditor : null;
     if (!list) return null;
     const clean = list
       .map((c: any) => ({ limit: Number(c.limit), factor: Number(c.factor) }))
@@ -487,16 +511,8 @@ export default function PriceUpdatesTab() {
    * the built-in code factors.
    */
   function currentLabourRateFactors(): { rate: number; factor: number; label?: string | null }[] | null {
-    const fromEditor = liveEditorModel?.labourRates;
-    let list: any[] | null = Array.isArray(fromEditor) && fromEditor.length ? fromEditor : null;
-    if (!list) {
-      try {
-        const saved = JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || '{}');
-        if (Array.isArray(saved?.labourRates) && saved.labourRates.length) list = saved.labourRates;
-      } catch {
-        list = null;
-      }
-    }
+    const fromEditor = liveEditorModel?.labourRates ?? resolvePushModel()?.model?.labourRates;
+    const list: any[] | null = Array.isArray(fromEditor) && fromEditor.length ? fromEditor : null;
     if (!list) return null;
     const clean = list
       .map((l: any) => ({ rate: Number(l.rate), factor: Number(l.factor), label: l.uxPosition ?? l.label ?? null }))
@@ -517,13 +533,9 @@ export default function PriceUpdatesTab() {
   function resolvePushModel(): { model: any; source: string } | null {
     const ok = (m: any) => m && Array.isArray(m.bands) && m.bands.length > 0;
     if (ok(liveEditorModel)) return { model: liveEditorModel, source: 'the vehicle figures editor' };
-    try {
-      const saved = JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || 'null');
-      if (ok(saved)) return { model: saved, source: 'your saved vehicle figures' };
-    } catch { /* ignore */ }
-    const own = drafts.find(d => d.id === selectedId)?.vehicle_factor_model;
+    const own = versions.find(d => d.id === selectedId)?.vehicle_factor_model;
     if (ok(own)) return { model: own, source: 'this plan' };
-    if (ok(liveVersion?.vehicle_factor_model)) return { model: liveVersion!.vehicle_factor_model, source: 'the current live plan' };
+    if (ok(liveVersion?.vehicle_factor_model)) return { model: liveVersion?.vehicle_factor_model, source: 'the current live plan' };
     return { model: codeAgeBandModel, source: 'the built-in standard figures' };
   }
 
@@ -531,6 +543,7 @@ export default function PriceUpdatesTab() {
     const m: any = resolvePushModel()?.model;
     if (!m || !Array.isArray(m.bands) || !m.bands.length) return null;
     return {
+      ...m,
       bands: m.bands.map((b: any) => ({ key: String(b.key), oneYear: b.oneYear ?? null })),
       refBandKey: String(m.refBandKey ?? m.bands[0]?.key ?? ''),
       mileageBands: (m.mileageBands || []).map((b: any) => ({
@@ -567,7 +580,7 @@ export default function PriceUpdatesTab() {
    */
   function withRiskBands(model: VehicleFactorModel | null): VehicleFactorModel | null {
     const bands =
-      (model as any)?.riskBands ?? getLiveRiskBandConfig() ?? loadRiskBandConfig();
+      (model as any)?.riskBands ?? versions.find(v => v.id === selectedId)?.vehicle_factor_model?.riskBands ?? getLiveRiskBandConfig() ?? loadRiskBandConfig();
     if (!bands) return model;
     return { ...(model ?? ({} as VehicleFactorModel)), riskBands: bands, websiteDiscountMode: 'single' } as VehicleFactorModel;
   }
@@ -610,6 +623,10 @@ export default function PriceUpdatesTab() {
 
   async function handleSave(adjustedMatrix?: PricingMatrixShape): Promise<boolean> {
     if (!selectedId && !pendingNewPlan) return false;
+    if (!label.trim() || (!pendingNewPlan && !drafts.some(d => d.id === selectedId))) {
+      toast.error('Choose a test plan and give it a name before saving');
+      return false;
+    }
     const wasPending = pendingNewPlan;
     setBusy(true);
     try {
@@ -811,6 +828,10 @@ export default function PriceUpdatesTab() {
   /** Last resort: the built-in code figures, which are always complete. */
   const codeAgeBandModel = useMemo(
     () => ({
+      twoYearMult: 1.65,
+      threeYearMult: 2.35,
+      payInFullFactor: 0.9,
+      refBandKey: '6-7',
       bands: PROPOSED_AGE_BANDS,
       mileageBands: PROPOSED_MILEAGE_BANDS,
       powertrains: PROPOSED_POWERTRAIN_FACTORS,
@@ -987,36 +1008,6 @@ export default function PriceUpdatesTab() {
 
   return (
     <div className="space-y-6 p-1">
-      <WebsiteDiscountPanel
-        busy={busy}
-        plans={drafts}
-        selectedPlanId={pendingNewPlan ? 'new-plan' : drafts.some(d => d.id === selectedId) ? selectedId ?? '' : ''}
-        planName={label || 'Untitled draft'}
-        canSave={pendingNewPlan || drafts.some(d => d.id === selectedId)}
-        onSelectPlan={id => {
-          const plan = drafts.find(d => d.id === id);
-          if (plan) {
-            loadIntoEditor(plan);
-            setDiscountPct(normalizeWebsiteDiscount(plan.step3_discount_pct));
-            saveWebsiteDiscountDraft(plan.step3_discount_pct);
-          }
-        }}
-        onSave={async pct => {
-        if (!pendingNewPlan && !drafts.some(d => d.id === selectedId)) {
-          toast.error('Choose a test plan to update');
-          return;
-        }
-        setBusy(true);
-        try {
-          saveWebsiteDiscountDraft(pct);
-          const id = await ensureDraftPersisted();
-          if (!id) return;
-          await saveVersion(id, { step3_discount_pct: pct });
-          toast.success(`Discount saved to “${label || 'Untitled draft'}” — live prices unchanged`);
-        } catch (e: unknown) {
-          toast.error(e instanceof Error ? e.message : 'Could not save the test discount');
-        } finally { setBusy(false); }
-      }} />
       {/* One calm control bar: what is live, what you are editing, and the actions. */}
       <section aria-labelledby="plan-bar-heading" className="rounded-lg border bg-card p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1062,10 +1053,13 @@ export default function PriceUpdatesTab() {
           {selectedId && <Badge variant="secondary" className="mb-1">Test draft — not live</Badge>}
           {(selectedId || pendingNewPlan) && (
             <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" onClick={() => openPlanEditor()} disabled={busy}>
+                <FlaskConical className="h-4 w-4 mr-1" /> Edit plan
+              </Button>
               <Button size="sm" variant="outline" onClick={() => handleSave()} disabled={busy}>
                 <Save className="h-4 w-4 mr-1" /> Save changes
               </Button>
-              <Button size="sm" variant="outline" onClick={() => { setSaveAsName(`${label || 'Untitled plan'} copy`); setSaveAsOpen(true); }} disabled={busy}>
+              <Button size="sm" variant="outline" onClick={() => { setCopyName(`${label || 'Untitled plan'} copy`); openPlanEditor(); }} disabled={busy}>
                 <Copy className="h-4 w-4 mr-1" /> Save as a new plan
               </Button>
             </div>
@@ -1106,32 +1100,19 @@ export default function PriceUpdatesTab() {
               <li>Powertrain factors: {pushModel?.powertrains?.length ?? 0}</li>
               <li>Vehicle type factors: {pushModel?.vehicleTypes?.length ?? 0}</li>
             </ul>
-            <p>Edit these under <strong>Edit prices → Vehicle variables</strong> before pushing live.</p>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button variant="link" size="sm" onClick={() => openPlanEditor('plan-vehicle-variables')}>Edit vehicle variables</Button>
+              <Button variant="link" size="sm" onClick={() => openPlanEditor('plan-price-grid')}>Edit price grid</Button>
+              <Button variant="link" size="sm" onClick={() => openPlanEditor('website-discount')}>Edit website price difference</Button>
+            </div>
           </div>
         </details>
 
-        <details className="rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
-          <summary className="cursor-pointer font-medium">Why are there two places to enter prices?</summary>
-          <div className="pt-2 text-sm space-y-2 text-muted-foreground">
-            <p>
-              <strong className="text-foreground">1. Vehicle variables</strong> (Edit prices → Vehicle
-              variables) — a calculator. You set base prices per age band, term multipliers, mileage,
-              labour and claim-limit factors, then press <strong className="text-foreground">Build test draft from this model</strong>.
-              It does not go live on its own; it only writes those numbers into the price grid.
-            </p>
-            <p>
-              <strong className="text-foreground">2. Price grid</strong> (Edit prices → Price grid) — the
-              actual table of Quotes &amp; Orders prices. <strong className="text-foreground">This is the one that works</strong>:
-              only what is in this grid when you press <strong className="text-foreground">Push live</strong> is used by agents
-              and customers. You can type straight into it and skip the calculator entirely.
-            </p>
-            <p>
-              Every publish sets the customer journey (Step 3 / Step 4) to the grid price
-              <strong className="text-foreground"> minus {effectiveDiscountPct(discountPct)}%</strong>, rounded to the nearest
-              pound — 10% is the default and is applied automatically if no other figure is set.
-            </p>
-          </div>
-        </details>
+        <nav aria-label="Pricing plan shortcuts" className="flex flex-wrap gap-2 border-t pt-3">
+          <Button variant="outline" size="sm" disabled={busy || (!selectedId && !pendingNewPlan)} onClick={() => openPlanEditor('plan-price-grid')}>Price grid</Button>
+          <Button variant="outline" size="sm" disabled={busy || (!selectedId && !pendingNewPlan)} onClick={() => openPlanEditor('plan-vehicle-variables')}>Vehicle variables</Button>
+          <Button variant="outline" size="sm" disabled={busy || (!selectedId && !pendingNewPlan)} onClick={() => openPlanEditor('website-discount')}>Website price difference</Button>
+        </nav>
       </section>
 
       <div id="claim-limit-auth" className="scroll-mt-4 rounded-lg border bg-card p-4">
@@ -1438,42 +1419,193 @@ export default function PriceUpdatesTab() {
 
 
         <TabsContent value="editor" className="space-y-6 mt-4">
-          {/* One editing page: the price grid and the vehicle variables sit in a
-              single scroll, so a whole plan is updated in one place with one
-              save — no more wondering which section belonged to which plan. */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 p-3">
-            <p className="text-sm">
-              <span className="font-semibold">Editing: {label || 'Untitled plan'}</span>
-              <span className="text-muted-foreground">
-                {' '}— everything on this page belongs to this plan. One save stores the price grid, the vehicle variables and the notes together.
-              </span>
-            </p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleSave()} disabled={busy || (!selectedId && !pendingNewPlan)}>
-                <Save className="h-4 w-4 mr-1" /> Save everything (test only)
-              </Button>
-              <Button size="sm" onClick={handlePublish} disabled={busy || (!selectedId && !pendingNewPlan)}>
-                <Rocket className="h-4 w-4 mr-1" /> Push live
-              </Button>
-            </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
+            <h3 className="font-semibold">{label || 'Choose a pricing plan'}</h3>
+            <Button onClick={() => openPlanEditor()} disabled={busy || (!selectedId && !pendingNewPlan)}><FlaskConical className="mr-2 h-4 w-4" /> Edit plan — all settings</Button>
           </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">History</CardTitle>
+          <CardDescription>
+            Every saved and published pricing structure. Open one for a quick summary, then load it
+            into the editor or restore it live.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {versions.length === 0 && (
+            <p className="text-sm text-muted-foreground">No pricing versions yet.</p>
+          )}
+          {versions.map(v => (
+            <div
+              key={v.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-2"
+            >
+              <div>
+                <div className="font-medium">{v.label}</div>
+                <div className="text-xs text-muted-foreground">
+                  Website is {Number(v.step3_discount_pct)}% below these prices ·{' '}
+                  {v.published_at
+                    ? `published ${new Date(v.published_at).toLocaleString('en-GB')}`
+                    : `saved ${new Date(v.updated_at).toLocaleString('en-GB')}`}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge
+                  className={
+                    v.status === 'live'
+                      ? 'bg-emerald-600'
+                      : v.status === 'draft'
+                        ? 'bg-amber-500'
+                        : undefined
+                  }
+                  variant={v.status === 'archived' ? 'secondary' : 'default'}
+                >
+                  {v.status === 'live' ? 'Live' : v.status === 'draft' ? 'Test draft' : 'Archived'}
+                </Badge>
+                <Button variant="outline" size="sm" onClick={() => setPreviewVersion(v)}>
+                  Open
+                </Button>
+                {v.status !== 'live' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleArchive(v.id, v.status !== 'archived')}
+                  >
+                    {v.status === 'archived' ? (
+                      <><ArchiveRestore className="h-4 w-4 mr-1" /> Unarchive</>
+                    ) : (
+                      <><Archive className="h-4 w-4 mr-1" /> Archive</>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
-          <section className="space-y-4">
+      {/* Quick summary of a saved/published version — no full grid dump. */}
+      <Dialog open={!!previewVersion} onOpenChange={open => !open && setPreviewVersion(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base">{previewVersion?.label}</DialogTitle>
+            <DialogDescription>
+              {previewVersion
+                ? `${
+                    previewVersion.status === 'live'
+                      ? 'Currently live'
+                      : previewVersion.status === 'draft'
+                        ? 'Test draft'
+                        : 'Archived'
+                  } · website is ${Number(previewVersion.step3_discount_pct)}% below these prices`
+                : ''}
+            </DialogDescription>
+          </DialogHeader>
+
+          {previewVersion && (
+            <div className="space-y-3">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-muted-foreground">
+                    <th className="py-1">Term</th>
+                    <th className="py-1">£0 excess</th>
+                    <th className="py-1">£150 excess</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PERIODS.map(p => {
+                    // Old versions (July original, Aug hybrid, anything restored)
+                    // are shown at the permanent minimum sellable price too.
+                    const cell = (ex: number) => {
+                      const v = previewVersion.admin_matrix?.[p]?.[String(ex)]?.['2000'];
+                      if (!v) return null;
+                      return clampToNetFloor(Number(v), {
+                        paymentPeriod: p as any,
+                        voluntaryExcess: ex,
+                        claimLimit: 2000,
+                      });
+                    };
+                    return (
+                      <tr key={p} className="border-t">
+                        <td className="py-1.5 font-medium">{PERIOD_LABELS[p] || p}</td>
+                        <td className="py-1.5">{cell(0) ? formatGBP(cell(0)!) : '—'}</td>
+                        <td className="py-1.5">{cell(150) ? formatGBP(cell(150)!) : '—'}</td>
+                      </tr>
+                    );
+                  })}
+
+                </tbody>
+              </table>
+              <p className="text-xs text-muted-foreground">
+                Showing the £2,000 claim limit as a reference. Load it into the editor to see every
+                cell.
+              </p>
+              {previewVersion.notes && (
+                <p className="text-xs text-muted-foreground">{previewVersion.notes}</p>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={busy}
+              onClick={() => {
+                if (previewVersion) loadIntoEditor(previewVersion);
+                setPreviewVersion(null);
+                toast.success('Loaded into the editor — nothing is live until you push it');
+              }}
+            >
+              Load into editor
+            </Button>
+            {previewVersion?.status !== 'live' && (
+              <Button size="sm" disabled={busy} onClick={() => handleRestoreVersion(previewVersion!)}>
+                <Rocket className="h-4 w-4 mr-1" /> Push this pricing live
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+        </TabsContent>
+      </Tabs>
+
+      <Dialog open={editorOpen} onOpenChange={open => { if (!busy) setEditorOpen(open); }}>
+        <DialogContent className="flex h-[92dvh] max-w-[min(1440px,calc(100vw-2rem))] flex-col gap-0 overflow-hidden p-0" onInteractOutside={event => event.preventDefault()}>
+          <DialogHeader className="shrink-0 border-b px-5 py-4 pr-12">
+            <DialogTitle className="break-words">Edit pricing plan: {label || 'Untitled plan'}</DialogTitle>
+            <DialogDescription>Test draft — live prices unchanged</DialogDescription>
+            <div className="flex flex-wrap items-end gap-3 pt-2">
+              <div className="min-w-0 flex-1 space-y-1">
+                <Label htmlFor="editor-plan-name">Plan name</Label>
+                <Input id="editor-plan-name" value={label} onChange={e => setLabel(e.target.value)} disabled={busy} />
+              </div>
+              <nav aria-label="Editor sections" className="flex flex-wrap gap-1">
+                <Button size="sm" variant="outline" onClick={() => setEditorSection('plan-price-grid')}>Price grid</Button>
+                <Button size="sm" variant="outline" onClick={() => setEditorSection('plan-vehicle-variables')}>Vehicle variables</Button>
+                <Button size="sm" variant="outline" onClick={() => setEditorSection('website-discount')}>Website price difference</Button>
+              </nav>
+            </div>
+          </DialogHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 space-y-6">
+            <section id="website-discount" className="website-discount-theme scroll-mt-4 border-b border-primary/30 pb-5 space-y-3">
+              <h3 className="font-semibold text-primary">Website price difference · {label || 'Untitled plan'}</h3>
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="website-direction">Website versus Quotes &amp; Orders</Label>
+                  <select id="website-direction" className="h-10 rounded-md border bg-background px-3 text-sm" value={discountPct < 0 ? 'more' : 'less'} onChange={e => { const pct = (e.target.value === 'more' ? -1 : 1) * (Math.abs(discountPct) || 10); setDiscountPct(pct); saveWebsiteDiscountDraft(pct); }}>
+                    <option value="less">Cheaper</option><option value="more">More expensive</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="editor-website-pct">Difference (%)</Label>
+                  <Input id="editor-website-pct" className="w-28" type="number" min={0} max={50} step={0.5} value={Math.abs(discountPct)} onChange={e => { const pct = normalizeWebsiteDiscount(Number(e.target.value) * (discountPct < 0 ? -1 : 1)); setDiscountPct(pct); saveWebsiteDiscountDraft(pct); }} />
+                </div>
+                <span className="pb-2 text-sm">Website: {Math.abs(discountPct)}% {discountPct < 0 ? 'more expensive' : 'cheaper'} · all cover lengths</span>
+              </div>
+            </section>
+          <section id="plan-price-grid" className="space-y-4 scroll-mt-4">
             <h3 className="text-base font-semibold">1 · Price grid (this one goes live)</h3>
-          <SectionPushLiveBar
-            sectionLabel="Price grid (this one goes live)"
-            liveLabel={liveVersion?.label ?? null}
-            busy={busy}
-            candidates={[]}
-            directPush={{
-              label: label ? `this grid — ${label}` : 'this grid',
-              run: handlePublish,
-            }}
-          />
-
-
-
-
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1503,32 +1635,6 @@ export default function PriceUpdatesTab() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
-            {drafts.map(d => (
-              <div key={d.id} className="flex items-center gap-1">
-                <Button
-                  variant={selectedId === d.id ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => loadIntoEditor(d)}
-                >
-                  {d.label}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  title="Archive this plan — kept in the price update log"
-                  onClick={() => handleArchive(d.id, true)}
-                >
-                  <Archive className="h-4 w-4 text-muted-foreground" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => handleDelete(d.id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
-            ))}
-            {loading && <span className="text-sm text-muted-foreground">Loading…</span>}
-          </div>
-
           {!selectedId && !pendingNewPlan ? (
             <p className="text-sm text-muted-foreground">
               Create a plan above to start. It is pre-filled with the prices currently in use, so
@@ -1536,20 +1642,6 @@ export default function PriceUpdatesTab() {
             </p>
           ) : (
             <div className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="space-y-1">
-                  <Label>Draft name</Label>
-                  <Input value={label} onChange={e => setLabel(e.target.value)} />
-                </div>
-                <div className="space-y-1">
-                  <Label>Website discount</Label>
-                  <Button variant="link" onClick={() => document.getElementById('website-discount')?.scrollIntoView({ behavior: 'smooth' })}>{discountPct}% — change in the purple section</Button>
-                </div>
-              </div>
-
-              <PercentagePriceSave key={selectedId ?? 'new-plan'} matrix={matrix} busy={busy || (!pendingNewPlan && !drafts.some(d => d.id === selectedId))} onSave={handleSave} onPublish={handlePublish} />
-
-
               <div className="space-y-1">
                 <Label>Notes (why this change)</Label>
                 <Textarea rows={3} value={notes} onChange={e => setNotes(e.target.value)} />
@@ -1722,193 +1814,39 @@ export default function PriceUpdatesTab() {
                 ))}
               </Tabs>
 
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" onClick={() => handleSave()} disabled={busy}>
-                  <Save className="h-4 w-4 mr-1" /> Save draft (test only)
-                </Button>
-                <Button onClick={handlePublish} disabled={busy}>
-                  <Rocket className="h-4 w-4 mr-1" /> Push live
-                </Button>
-              </div>
             </div>
           )}
         </CardContent>
       </Card>
           </section>
 
-          <section className="space-y-4">
+          <section id="plan-vehicle-variables" className="space-y-4 scroll-mt-4">
             <h3 className="text-base font-semibold">2 · Vehicle variables</h3>
-            <SectionPushLiveBar
-              sectionLabel="Vehicle risk pricing model"
-              liveLabel={liveVersion?.label ?? null}
-              liveWebDiscountPct={discountPct}
-              busy={busy}
-              onPush={handlePushModelLive}
-              candidates={[
-                {
-                  key: 'builder',
-                  label: 'Vehicle risk model figures',
-                  description: 'Publishes the bands and factors currently in the builder below.',
-                  getModel: () => effectiveLiveModel,
-                },
-              ]}
-            />
-            <p className="text-sm text-muted-foreground">
-              <strong>The vehicle risk pricing model on its own.</strong> Edit the bands and factors here, then press{' '}
-              <strong>“Save &amp; push this model live”</strong> to send it to customers.
-            </p>
             <AgeBandPricingPreview
-              onBuildDraft={handleBuildDraftFromModel}
-              onModelChange={setLiveEditorModel}
+              key={selectedId ?? 'new-plan'}
+              initialModel={liveEditorModel}
+              planEditor
+              onModelChange={updatePlanVariables}
+              onBuildDraft={async modelMatrix => {
+                setMatrix(roundMatrixWhole(modelMatrix));
+                setEditorSection('plan-price-grid');
+              }}
             />
           </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">History</CardTitle>
-          <CardDescription>
-            Every saved and published pricing structure. Open one for a quick summary, then load it
-            into the editor or restore it live.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {versions.length === 0 && (
-            <p className="text-sm text-muted-foreground">No pricing versions yet.</p>
-          )}
-          {versions.map(v => (
-            <div
-              key={v.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-2"
-            >
-              <div>
-                <div className="font-medium">{v.label}</div>
-                <div className="text-xs text-muted-foreground">
-                  Website is {Number(v.step3_discount_pct)}% below these prices ·{' '}
-                  {v.published_at
-                    ? `published ${new Date(v.published_at).toLocaleString('en-GB')}`
-                    : `saved ${new Date(v.updated_at).toLocaleString('en-GB')}`}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge
-                  className={
-                    v.status === 'live'
-                      ? 'bg-emerald-600'
-                      : v.status === 'draft'
-                        ? 'bg-amber-500'
-                        : undefined
-                  }
-                  variant={v.status === 'archived' ? 'secondary' : 'default'}
-                >
-                  {v.status === 'live' ? 'Live' : v.status === 'draft' ? 'Test draft' : 'Archived'}
-                </Badge>
-                <Button variant="outline" size="sm" onClick={() => setPreviewVersion(v)}>
-                  Open
-                </Button>
-                {v.status !== 'live' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleArchive(v.id, v.status !== 'archived')}
-                  >
-                    {v.status === 'archived' ? (
-                      <><ArchiveRestore className="h-4 w-4 mr-1" /> Unarchive</>
-                    ) : (
-                      <><Archive className="h-4 w-4 mr-1" /> Archive</>
-                    )}
-                  </Button>
-                )}
-              </div>
+          </div>
+          <DialogFooter className="shrink-0 border-t px-5 py-4 gap-3 sm:items-end sm:justify-between">
+            <div className="flex flex-wrap items-end gap-2 min-w-0">
+              <div className="space-y-1"><Label htmlFor="editor-copy-name">Save as a new plan</Label><Input id="editor-copy-name" value={copyName} onChange={e => setCopyName(e.target.value)} placeholder="New plan name" disabled={busy} /></div>
+              <Button variant="outline" onClick={handleSaveAsNewPlan} disabled={busy || !copyName.trim()}><Copy className="mr-2 h-4 w-4" /> Save as new plan</Button>
             </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Quick summary of a saved/published version — no full grid dump. */}
-      <Dialog open={!!previewVersion} onOpenChange={open => !open && setPreviewVersion(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-base">{previewVersion?.label}</DialogTitle>
-            <DialogDescription>
-              {previewVersion
-                ? `${
-                    previewVersion.status === 'live'
-                      ? 'Currently live'
-                      : previewVersion.status === 'draft'
-                        ? 'Test draft'
-                        : 'Archived'
-                  } · website is ${Number(previewVersion.step3_discount_pct)}% below these prices`
-                : ''}
-            </DialogDescription>
-          </DialogHeader>
-
-          {previewVersion && (
-            <div className="space-y-3">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-muted-foreground">
-                    <th className="py-1">Term</th>
-                    <th className="py-1">£0 excess</th>
-                    <th className="py-1">£150 excess</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {PERIODS.map(p => {
-                    // Old versions (July original, Aug hybrid, anything restored)
-                    // are shown at the permanent minimum sellable price too.
-                    const cell = (ex: number) => {
-                      const v = previewVersion.admin_matrix?.[p]?.[String(ex)]?.['2000'];
-                      if (!v) return null;
-                      return clampToNetFloor(Number(v), {
-                        paymentPeriod: p as any,
-                        voluntaryExcess: ex,
-                        claimLimit: 2000,
-                      });
-                    };
-                    return (
-                      <tr key={p} className="border-t">
-                        <td className="py-1.5 font-medium">{PERIOD_LABELS[p] || p}</td>
-                        <td className="py-1.5">{cell(0) ? formatGBP(cell(0)!) : '—'}</td>
-                        <td className="py-1.5">{cell(150) ? formatGBP(cell(150)!) : '—'}</td>
-                      </tr>
-                    );
-                  })}
-
-                </tbody>
-              </table>
-              <p className="text-xs text-muted-foreground">
-                Showing the £2,000 claim limit as a reference. Load it into the editor to see every
-                cell.
-              </p>
-              {previewVersion.notes && (
-                <p className="text-xs text-muted-foreground">{previewVersion.notes}</p>
-              )}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" disabled={busy} onClick={() => setEditorOpen(false)}>Close</Button>
+              <Button onClick={() => handleSave()} disabled={busy || !label.trim() || (!pendingNewPlan && !drafts.some(d => d.id === selectedId))}><Save className="mr-2 h-4 w-4" />{busy ? 'Saving…' : `Save all changes to “${label || 'Untitled plan'}”`}</Button>
             </div>
-          )}
-
-          <DialogFooter className="gap-2 sm:justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={busy}
-              onClick={() => {
-                if (previewVersion) loadIntoEditor(previewVersion);
-                setPreviewVersion(null);
-                toast.success('Loaded into the editor — nothing is live until you push it');
-              }}
-            >
-              Load into editor
-            </Button>
-            {previewVersion?.status !== 'live' && (
-              <Button size="sm" disabled={busy} onClick={() => handleRestoreVersion(previewVersion!)}>
-                <Rocket className="h-4 w-4 mr-1" /> Push this pricing live
-              </Button>
-            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
-        </TabsContent>
-      </Tabs>
 
       <Dialog open={saveAsOpen} onOpenChange={setSaveAsOpen}>
         <DialogContent className="max-w-md">
