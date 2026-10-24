@@ -503,7 +503,7 @@ const Careers: React.FC = () => {
             <PerkCard Icon={Wifi} title="Reliable internet" body="A stable high-speed home broadband connection." />
             <PerkCard Icon={Laptop} title="A computer" body="A laptop or desktop for CRM and calls." />
             <PerkCard Icon={Home} title="Quiet workspace" body="A professional environment free from distractions." />
-            <PerkCard Icon={Clock} title="UK business hours" body="Availability during standard UK working hours." />
+            <PerkCard Icon={Clock} title="Working hours" body="Monday to Friday, plus a Saturday half day twice a month, and flexible when you need to reach targets." />
           </div>
           <p className="mt-6 text-sm leading-6 text-[#6B7280]">
             A suitable headset with a microphone can be provided where required. Full onboarding,
