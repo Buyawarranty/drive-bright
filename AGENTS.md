@@ -1,4 +1,5 @@
 # Project architecture rules
+- Call data bookmarks share the existing tab_overview permission through one helper used by sidebar and render guards; preserve underlying call scopes, collection and attribution.
 - Linked renewals reuse the New Leads call counter, dial/email/reminder controls and full notes panel keyed by the existing lead ID; preserve policy outcomes and routing so activity stays with the same lead across views.
 - Cyber security is read-only and admin/super-admin-only; a service-only summary RPC checks protected roles and returns counts, while a JWT-checked endpoint inspects only fixed published URLs, so no secrets or customer records enter reports.
 - Keep CLI asset pointers; portableAssetsPlugin resolves external-host URLs; mobile caps sit on wrappers.

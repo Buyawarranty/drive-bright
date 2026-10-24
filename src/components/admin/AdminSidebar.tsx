@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
-import { canAccessSeoAudit } from '@/lib/tabAccess';
+import { canAccessSeoAudit, canAccessCallData } from '@/lib/tabAccess';
 import { canViewCyberSecurity } from '../../../supabase/functions/_shared/cyber-security-rules';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -155,7 +155,7 @@ export const defaultTabs: Tab[] = [
   },
   {
     id: 'overview',
-    label: 'Live Calls Data',
+    label: 'Call data',
     icon: BarChart3,
     description: 'Your dials, talk time and missed calls — managers see every agent'
   },
@@ -173,7 +173,7 @@ export const defaultTabs: Tab[] = [
   },
   {
     id: 'call-tracking',
-    label: 'Call rail',
+    label: 'Call inbound',
     icon: PhoneCall,
     description: 'Inbound call tracking, assignments and analytics'
   },
@@ -776,11 +776,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   // on or off for any user regardless of their role's defaults.
   const applyExplicitPermissionOverrides = (tabs: Tab[]) => {
     if (!userPermissions || Object.keys(userPermissions).length === 0) return tabs;
-    // Live Calls Data stays visible for sales staff — what they see inside is
-    // controlled by their call data scope (off / own / team / all).
-    const salesLike = userRole === 'sales' || userRole === 'sales_lead' || userRole === 'sales_manager' || userRole === 'performance_manager';
     const allowed = new Map(tabs.map(t => [t.id, t]));
-    if (salesLike) allowed.set('overview', defaultTabs.find(t => t.id === 'overview')!);
     defaultTabs.forEach(tab => {
       const permKey = `tab_${tab.id}`;
       if (!(permKey in userPermissions)) return;
@@ -789,8 +785,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       } else if (
         userPermissions[permKey] === false &&
         tab.id !== 'account' &&
-        tab.id !== 'unsubscribe' &&
-        !(salesLike && tab.id === 'overview')
+        tab.id !== 'unsubscribe'
       ) {
         allowed.delete(tab.id);
       }
@@ -803,6 +798,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   // Staff Hub is available to all staff
   const filterRestricted = (tabs: Tab[]) => {
     const withPerms = applyExplicitPermissionOverrides(tabs);
+    const callDataTab = defaultTabs.find(t => t.id === 'overview');
+    const callDataAllowed = canAccessCallData(userRole, userPermissions);
+    const callDataFiltered = withPerms.filter(t => t.id !== 'overview');
+    if (callDataAllowed && callDataTab) callDataFiltered.push(callDataTab);
     // Price Updates is hard-restricted to management + Accounts, regardless of
     // any per-user tab permission grant.
     const PRICE_UPDATES_ROLES = new Set([
@@ -810,7 +809,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       'accounts', 'accounts_manager', 'accounts_payroll',
     ]);
     const priceUpdatesAllowed = !!userRole && PRICE_UPDATES_ROLES.has(userRole);
-    let base = priceUpdatesAllowed ? withPerms : withPerms.filter(t => t.id !== 'price-updates');
+    let base = priceUpdatesAllowed ? callDataFiltered : callDataFiltered.filter(t => t.id !== 'price-updates');
     // Step 3 Sandbox is hard-restricted to super admin only, regardless of any
     // per-user tab permission grant (the tab itself also re-checks server-side).
     if (userRole !== 'super_admin') base = base.filter(t => t.id !== 'step3-sandbox');

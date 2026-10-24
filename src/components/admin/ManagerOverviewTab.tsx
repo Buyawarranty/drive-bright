@@ -664,7 +664,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
         <div className="flex items-center gap-2 mb-2">
           <PhoneCall className="w-4 h-4 text-emerald-600" />
           <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Inbound Calls</h2>
-          <span className="text-xs text-muted-foreground">CallRail + Zoiper (customer → us)</span>
+          <span className="text-xs text-muted-foreground">Inbound tracking + Zoiper (customer → us)</span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
           <KpiCard label="New Inbound Leads" icon={Users}

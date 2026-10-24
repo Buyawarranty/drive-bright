@@ -220,7 +220,7 @@ export const CallRailReconciliationPanel = () => {
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Matches each inbound Call rail call to Zoiper / Dial 9 activity and logged call notes on the same number,
+          Matches each inbound call to Zoiper / Dial 9 activity and logged call notes on the same number,
           so you can see the follow-up was actually made.
         </p>
       </CardHeader>

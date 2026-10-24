@@ -1,5 +1,25 @@
 import { describe, it, expect } from 'vitest';
-import { isAnalyticsBlocked, canAccessSeoAudit } from './tabAccess';
+import { isAnalyticsBlocked, canAccessSeoAudit, canAccessCallData } from './tabAccess';
+
+describe('Call data permission', () => {
+  it('defaults off for every sales agent', () => {
+    expect(canAccessCallData('sales')).toBe(false);
+    expect(canAccessCallData('sales', {})).toBe(false);
+    expect(canAccessCallData('sales', { 'tab_call-stats': true })).toBe(false);
+  });
+  it('defaults off for sales leads', () => {
+    expect(canAccessCallData('sales_lead')).toBe(false);
+    expect(canAccessCallData('sales_lead', {})).toBe(false);
+  });
+  it('allows an explicit grant and respects a revoke', () => {
+    for (const role of ['sales', 'sales_lead', 'sales_manager', 'admin']) {
+      expect(canAccessCallData(role, { tab_overview: true })).toBe(true);
+      expect(canAccessCallData(role, { tab_overview: false })).toBe(false);
+    }
+    expect(canAccessCallData('super_admin', { tab_overview: false })).toBe(true);
+    expect(canAccessCallData('sales_manager')).toBe(true);
+  });
+});
 
 describe('SEO Audit assistant access', () => {
   it('uses the existing assistant grant for staff and always allows super admins', () => {

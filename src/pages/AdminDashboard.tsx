@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { lazyWithRetry, forceFreshReload } from '@/utils/lazyWithRetry';
 import { SEOHead } from '@/components/SEOHead';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { isAnalyticsBlocked, canAccessSeoAudit } from '@/lib/tabAccess';
+import { isAnalyticsBlocked, canAccessSeoAudit, canAccessCallData } from '@/lib/tabAccess';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -216,9 +216,7 @@ const ACCOUNTS_ALLOWED_ROLES = new Set([
 
 const canonicalTabId = (tab: string) => (LIVE_CALLS_TAB_IDS.has(tab) ? 'overview' : tab);
 
-// Roles that always keep access to Live Calls Data. What they can actually see
-// inside is governed by lead_team_members.call_data_scope (off / own / team / all).
-const LIVE_CALLS_ALWAYS_ALLOWED_ROLES = new Set(['sales', 'sales_lead', 'sales_manager', 'performance_manager', 'admin']);
+// Call data section access is separate from its existing own/team/all data scope.
 
 // Shared "no access" screen for sections a login is explicitly blocked from
 // (used by the shared backup sales login, which is denied Analytics,
@@ -259,7 +257,7 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   // Analytics is hard-blocked for sales roles ahead of the explicit-grant check
   // below, so a per-user tab_analytics tick can never reopen it for them.
   if (isAnalyticsBlocked(tab, role)) return false;
-  if (tab === 'overview' && role && LIVE_CALLS_ALWAYS_ALLOWED_ROLES.has(role)) return true;
+  if (tab === 'overview') return canAccessCallData(role, permissions);
   // Permissions win over role hardcoding: any user (any role, now or in future)
   // granted tab_<id> = true in User Permissions gets the tab. This is what makes
   // a new "Claims access level" work without touching role lists.

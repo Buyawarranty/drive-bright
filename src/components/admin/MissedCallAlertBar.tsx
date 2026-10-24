@@ -29,7 +29,7 @@ interface Props {
 }
 
 const PROVIDER_LABEL: Record<string, string> = {
-  callrail: 'CallRail',
+  callrail: 'Call inbound',
   zoiper: 'Zoiper',
   dial9: 'Dial9',
 };
@@ -365,7 +365,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         assigned_to: currentAdminId,
         assigned_at: new Date().toISOString(),
         lead_source: 'callrail_missed_call',
-        notes: `Auto-created from missed CallRail call at ${new Date(call.created_at).toLocaleString()}${call.tracking_number ? ` on ${call.tracking_number}` : ''}.`,
+        notes: `Auto-created from missed inbound call at ${new Date(call.created_at).toLocaleString()}${call.tracking_number ? ` on ${call.tracking_number}` : ''}.`,
       } as any)
       .select('id')
       .maybeSingle();

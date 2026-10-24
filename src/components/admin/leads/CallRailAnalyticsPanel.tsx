@@ -355,9 +355,9 @@ export const CallRailAnalyticsPanel = () => {
             {/* Recent calls — CallRail provenance */}
             <div>
               <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                <h4 className="text-sm font-semibold">Recent CallRail calls (verification)</h4>
+                <h4 className="text-sm font-semibold">Recent inbound calls (verification)</h4>
                 <span className="text-[11px] text-muted-foreground">
-                  Every row shows the exact CallRail Call ID + link to CallRail's own dashboard as proof of source.
+                  Each call includes its source ID and a link to the provider dashboard.
                 </span>
               </div>
               <div className="overflow-x-auto border rounded-md">
@@ -366,7 +366,7 @@ export const CallRailAnalyticsPanel = () => {
                     <tr className="text-left">
                       <th className="py-2 px-3 font-medium">When</th>
                       <th className="py-2 px-3 font-medium">Caller</th>
-                      <th className="py-2 px-3 font-medium">CallRail Call ID</th>
+                      <th className="py-2 px-3 font-medium">Inbound call ID</th>
                       <th className="py-2 px-3 font-medium">Tracker</th>
                       <th className="py-2 px-3 font-medium">Status</th>
                       <th className="py-2 px-3 font-medium text-right">Duration</th>
@@ -396,7 +396,7 @@ export const CallRailAnalyticsPanel = () => {
                                   className="p-1 rounded hover:bg-muted"
                                   onClick={() => {
                                     navigator.clipboard.writeText(cid);
-                                    toast.success('CallRail Call ID copied');
+                                    toast.success('Inbound call ID copied');
                                   }}
                                   title="Copy Call ID"
                                 >
@@ -426,7 +426,7 @@ export const CallRailAnalyticsPanel = () => {
                                   size="sm"
                                   variant="ghost"
                                   className="h-7 px-2"
-                                  title="Play recording (CallRail)"
+                                  title="Play inbound recording"
                                 >
                                   <a href={c.recording_url} target="_blank" rel="noreferrer">
                                     <Play className="h-3 w-3" />
@@ -439,10 +439,10 @@ export const CallRailAnalyticsPanel = () => {
                                   size="sm"
                                   variant="outline"
                                   className="h-7 px-2 text-[11px]"
-                                  title="Open in CallRail"
+                                  title="Open source call"
                                 >
                                   <a href={crUrl} target="_blank" rel="noreferrer">
-                                    Open in CallRail <ExternalLink className="h-3 w-3 ml-1" />
+                                    Open source call <ExternalLink className="h-3 w-3 ml-1" />
                                   </a>
                                 </Button>
                               )}
