@@ -612,7 +612,7 @@ export const CustomersTab = ({
   // ── Part payment plans (read-only summary used for row tags + filtering) ──────
   const [filterByPartPayment, setFilterByPartPayment] = useState<'all' | 'has' | 'outstanding' | 'completed'>('all');
   const [partPaymentPlans, setPartPaymentPlans] = useState<Map<string, {
-    total_due: number; status: string; next_due_date: string | null; paid: number;
+    total_due: number; status: string; next_due_date: string | null; paid: number; hasStripe: boolean;
   }>>(new Map());
 
   useEffect(() => {
@@ -624,20 +624,24 @@ export const CustomersTab = ({
           .select('customer_id, total_due, status, next_due_date'),
         supabase
           .from('customer_part_payments')
-          .select('customer_id, amount'),
+          .select('customer_id, amount, payment_method'),
       ]);
       if (cancelled) return;
       const paidById = new Map<string, number>();
+      const stripeById = new Set<string>();
       (payments ?? []).forEach((p: any) => {
         paidById.set(p.customer_id, (paidById.get(p.customer_id) ?? 0) + Number(p.amount || 0));
+        const method = String(p.payment_method || '').toLowerCase();
+        if (method.includes('stripe')) stripeById.add(p.customer_id);
       });
-      const map = new Map<string, { total_due: number; status: string; next_due_date: string | null; paid: number }>();
+      const map = new Map<string, { total_due: number; status: string; next_due_date: string | null; paid: number; hasStripe: boolean }>();
       (plans ?? []).forEach((p: any) => {
         map.set(p.customer_id, {
           total_due: Number(p.total_due || 0),
           status: p.status,
           next_due_date: p.next_due_date,
           paid: paidById.get(p.customer_id) ?? 0,
+          hasStripe: stripeById.has(p.customer_id),
         });
       });
       setPartPaymentPlans(map);
@@ -645,6 +649,21 @@ export const CustomersTab = ({
     loadPartPayments();
     return () => { cancelled = true; };
   }, []);
+
+  // Stripe PAYG = deposit taken on Stripe (balance outstanding) or a part-payment
+  // plan with Stripe payments still owing. Used for the row tag + highlight so staff
+  // know to chase the remaining balance.
+  const getStripePaygOutstanding = useCallback((customer: any): number => {
+    if (customer.deposit_taken && !customer.payment_collected_at) {
+      return Math.max(Number(customer.balance_due_amount || 0), 0);
+    }
+    const plan = partPaymentPlans.get(customer.id);
+    if (plan?.hasStripe) {
+      const outstanding = Math.max(plan.total_due - plan.paid, 0);
+      if (plan.status !== 'completed' && outstanding > 0) return outstanding;
+    }
+    return 0;
+  }, [partPaymentPlans]);
 
   const [notes, setNotes] = useState<AdminNote[]>([]);
   const [newNote, setNewNote] = useState('');
