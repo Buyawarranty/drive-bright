@@ -24,7 +24,7 @@ import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import pandaThumbs from '@/assets/panda-thumbs-up.png';
-import careersHeroImage from '@/assets/careers-hero-panda-vehicles.png.asset.json';
+import careersHeroImage from '@/assets/vehicle-warranty-sales-executive-careers-buyawarranty.png.asset.json';
 import pandaVehicles from '@/assets/panda-savings-vehicles.png';
 import pandaThumbsNew from '@/assets/panda-thumbs-new.png.asset.json';
 
@@ -246,7 +246,9 @@ const Careers: React.FC = () => {
             <div className="flex justify-center">
               <img
                 src={careersHeroImage.url}
-                alt="Miles the Buyawarranty panda with a car, SUV, van and motorbike"
+                alt="Vehicle warranty sales executive careers at Buyawarranty – Miles the panda with a You're Protected shield beside a car, van and SUV"
+                width={1536}
+                height={1024}
                 className="w-full max-w-md md:max-w-lg h-auto object-contain"
                 loading="eager"
               />

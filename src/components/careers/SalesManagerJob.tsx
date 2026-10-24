@@ -2,7 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ArrowRight, Home, PoundSterling, TrendingUp, Headphones, GraduationCap, Users, CheckCircle2, Briefcase, Laptop, Clock, Award, Phone } from 'lucide-react';
 import CareersApplyBlock from '@/components/careers/CareersApplyBlock';
-import careersHeroImage from '@/assets/careers-hero-panda-vehicles.png.asset.json';
+import careersHeroImage from '@/assets/telesales-sales-manager-vehicle-warranty-jobs-buyawarranty.png.asset.json';
 
 export const SALES_MANAGER_ROLE = 'Telesales Sales Manager – Vehicle Warranties';
 
@@ -89,7 +89,7 @@ export const SalesManagerJob: React.FC = () => (
             </div>
           </div>
           <div className="flex justify-center">
-            <img src={careersHeroImage.url} alt="Miles the Buyawarranty panda with a car, SUV, van and motorbike" className="w-full max-w-md md:max-w-lg h-auto object-contain" loading="eager" />
+            <img src={careersHeroImage.url} alt="Remote telesales sales manager job in vehicle warranties – Miles the Buyawarranty panda leading a line-up of a car, van, SUV and motorbike" width={1920} height={640} className="w-full max-w-2xl h-auto object-contain" loading="eager" />
           </div>
         </div>
       </div>
