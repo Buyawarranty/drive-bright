@@ -144,9 +144,9 @@ export const SalesManagerJob: React.FC = () => (
       </section>
 
       <section aria-labelledby="bdm-benefits" className="mb-14">
-        <Header id="bdm-benefits" n={7} title="Salary and benefits" />
+        <Header id="bdm-benefits" n={7} title="Why join Buyawarranty?" />
         <Ticks items={benefits} />
-        <p className="mt-4 text-sm text-[#6B7280]">Contractor opportunities are also available, with separate remuneration and contractual terms.</p>
+        <p className="mt-4 text-sm text-[#6B7280]">Both PAYE employment and self-employed arrangements can be considered, subject to the nature of the working relationship and applicable requirements.</p>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           <Perk Icon={GraduationCap} title="Full training" body="Product training and ongoing support from day one." />
           <Perk Icon={Headphones} title="Kit provided" body="Laptop, phone system and CRM for PAYE employees." />
@@ -158,23 +158,23 @@ export const SalesManagerJob: React.FC = () => (
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF4EC] text-[#F97316]"><Award className="h-6 w-6" /></div>
           <h2 id="bdm-apply" className="text-2xl font-bold">Apply for the Sales Manager role</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#6B7280]">If you have led a successful telesales team — ideally selling vehicle warranties, motor finance or dealership add-on products — we'd like to hear from you.</p>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#6B7280]">If you're an experienced Sales Manager who can demonstrate success leading teams, increasing conversions and driving revenue, we'd like to hear from you. Lead the team. Drive growth. Be rewarded for results.</p>
         </div>
         <div className="mt-8 rounded-2xl bg-[#F9FAFB] p-6 border border-[#E5E7EB]">
           <p className="text-sm font-semibold text-[#111827] mb-3">Please submit your CV with a short note explaining:</p>
           <ul className="space-y-2 text-sm text-[#374151]">
-            {['The size and type of sales teams you have managed', 'Your team results against target', 'Your vehicle warranty or automotive sales background'].map(l => (
+            {['The size and type of sales teams you have managed', 'Your previous management achievements and team results against target', 'Any vehicle warranty, automotive or insurance sales background'].map(l => (
               <li key={l} className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-[#F97316] mt-0.5 flex-none" /><span>{l}</span></li>
             ))}
           </ul>
         </div>
-        <CareersApplyBlock role={SALES_MANAGER_ROLE} experienceLabel="I have experience managing or leading a telesales team" />
+        <CareersApplyBlock role={SALES_MANAGER_ROLE} experienceLabel="I have significant experience managing a telesales or contact-centre sales team" />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 text-sm">
-          <Summary Icon={Briefcase} label="Job type" value="Full-time, permanent" />
-          <Summary Icon={Award} label="Employment type" value="PAYE (contractor option)" />
+          <Summary Icon={Briefcase} label="Job type" value="Full-time" />
+          <Summary Icon={Award} label="Employment type" value="PAYE or self-employed" />
           <Summary Icon={Home} label="Location" value="Remote, United Kingdom" />
-          <Summary Icon={PoundSterling} label="Basic / OTE" value="£30,000 / £40,000" />
-          <Summary Icon={TrendingUp} label="Potential" value="£70,000+ uncapped" />
+          <Summary Icon={PoundSterling} label="PAYE basic" value="£45,000 + commission" />
+          <Summary Icon={TrendingUp} label="Potential" value="Up to £80,000" />
           <Summary Icon={Users} label="Team" value="Remote telesales" />
         </div>
       </section>
@@ -196,11 +196,11 @@ const Perk = ({ Icon, title, body }: { Icon: IconT; title: string; body: string 
     <p className="mt-2 text-sm leading-6 text-[#6B7280]">{body}</p>
   </article>
 );
-const Earn = ({ tier, range, highlight }: { tier: string; range: string; highlight?: boolean }) => (
+const Earn = ({ tier, range, highlight, note }: { tier: string; range: string; highlight?: boolean; note?: string }) => (
   <article className={`rounded-2xl border p-6 shadow-sm ${highlight ? 'border-[#F97316] bg-[#FFF4EC]' : 'border-[#E5E7EB] bg-white'}`}>
     <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{tier}</p>
     <p className="mt-2 text-2xl font-bold text-[#111827]">{range}</p>
-    <p className="mt-2 text-xs text-[#6B7280]">per year</p>
+    <p className="mt-2 text-xs text-[#6B7280]">{note ?? 'per year'}</p>
   </article>
 );
 const Ticks = ({ items }: { items: string[] }) => (
