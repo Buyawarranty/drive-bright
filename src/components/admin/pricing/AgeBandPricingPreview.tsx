@@ -307,7 +307,11 @@ export function buildAdminMatrixFromModel(model: AgeBandModel): Record<string, R
 export default function AgeBandPricingPreview({
   onBuildDraft,
   onModelChange,
+  initialModel,
+  planEditor = false,
 }: {
+  initialModel?: Partial<AgeBandModel>;
+  planEditor?: boolean;
   onBuildDraft?: (
     matrix: Record<string, Record<string, Record<string, number>>>,
     websiteDiscountPct: number,
@@ -322,6 +326,7 @@ export default function AgeBandPricingPreview({
 
 } = {}) {
   const saved: Partial<AgeBandModel> = useMemo(() => {
+    if (initialModel) return initialModel;
     try {
       return JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || '{}');
     } catch {
@@ -418,6 +423,7 @@ export default function AgeBandPricingPreview({
 
 
   const model: AgeBandModel = {
+    ...saved,
     bands,
     twoYearMult,
     threeYearMult,
@@ -562,7 +568,7 @@ export default function AgeBandPricingPreview({
     if (!onBuildDraft) return;
     setBusy(true);
     try {
-      handleSaveModel();
+      if (!planEditor) handleSaveModel();
       await onBuildDraft(
         buildAdminMatrixFromModel(model),
         websiteDiscountPct,
@@ -739,28 +745,28 @@ export default function AgeBandPricingPreview({
       <CardContent className="space-y-5">
         {/* Save bar — sticky so it is reachable from anywhere in this long panel */}
         <div className="sticky top-0 z-20 -mx-6 flex flex-wrap items-center gap-2 border-b bg-background/95 px-6 py-3 backdrop-blur">
-          <Button size="sm" onClick={handleSaveModel} disabled={busy}>
+          {!planEditor && <Button size="sm" onClick={handleSaveModel} disabled={busy}>
             <Save className="mr-1 h-4 w-4" /> Save figures
-          </Button>
+          </Button>}
           {onBuildDraft && (
             <>
               <Button size="sm" variant="secondary" onClick={() => handleBuildDraft(false)} disabled={busy}>
-                <Rocket className="mr-1 h-4 w-4" /> Build test draft from this model
+                <Rocket className="mr-1 h-4 w-4" /> {planEditor ? 'Apply variables to price grid' : 'Build test draft from this model'}
               </Button>
-              <Button
+              {!planEditor && <Button
                 size="sm"
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 onClick={() => handleBuildDraft(true)}
                 disabled={busy}
               >
                 <Rocket className="mr-1 h-4 w-4" /> Save &amp; push this model live
-              </Button>
+              </Button>}
             </>
           )}
 
-          <Button size="sm" variant="outline" onClick={handleResetModel} disabled={busy}>
+          {!planEditor && <Button size="sm" variant="outline" onClick={handleResetModel} disabled={busy}>
             <RotateCcw className="mr-1 h-4 w-4" /> Reset to defaults
-          </Button>
+          </Button>}
           <div className="flex items-center gap-2">
             <Label className="text-xs whitespace-nowrap">Reference age band</Label>
             <select
@@ -782,7 +788,7 @@ export default function AgeBandPricingPreview({
           </Badge>
         </div>
 
-        <Alert>
+        {!planEditor && <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
             <strong>This is the calculator, not the live prices.</strong> “Save figures” only keeps
@@ -791,7 +797,7 @@ export default function AgeBandPricingPreview({
             <strong>Push live</strong> at the top of Price updates. The website (Step 3 / Step 4)
             price uses the single website discount in the purple section.
           </AlertDescription>
-        </Alert>
+        </Alert>}
 
 
         <div className="space-y-2">
@@ -1316,9 +1322,9 @@ export default function AgeBandPricingPreview({
               <Badge variant={dirty ? 'destructive' : 'secondary'}>
                 {dirty ? 'Unsaved changes' : 'Saved'}
               </Badge>
-              <Button size="sm" onClick={handlePublishFloors} disabled={busy}>
+              {!planEditor && <Button size="sm" onClick={handlePublishFloors} disabled={busy}>
                 <Save className="mr-1 h-4 w-4" /> Save &amp; apply floors
-              </Button>
+              </Button>}
             </div>
           </div>
 
