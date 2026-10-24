@@ -1631,6 +1631,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         )}
                       >
                         <option value="">Select payment source...</option>
+                        <option value="stripe_payg">Stripe PAYG (deposit, balance chased on Stripe)</option>
                         <option value="stripe_dashboard">Stripe Dashboard</option>
                         <option value="bumper_portal">Bumper Portal</option>
                         <option value="payment_assist">Payment Assist</option>
