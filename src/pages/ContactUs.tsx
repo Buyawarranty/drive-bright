@@ -573,6 +573,8 @@ const ContactUs = () => {
                         />
                       </div>
 
+                      <SimpleCaptcha captcha={formCaptcha} idPrefix="contact" />
+
                       <div className="flex justify-end">
                         <Button
                           type="submit"
@@ -659,6 +661,7 @@ const ContactUs = () => {
                           <option value="Late afternoon (3pm – 5pm)">Late afternoon (3pm – 5pm)</option>
                         </select>
                       </div>
+                      <SimpleCaptcha captcha={callbackCaptcha} idPrefix="callback" />
                       <Button
                         type="submit"
                         disabled={callbackSending || !validUkPhone(callbackPhone)}
