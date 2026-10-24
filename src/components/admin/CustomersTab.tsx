@@ -6930,21 +6930,26 @@ Please log in and change your password after first login.`;
                             if (!plan) return null;
                             const outstanding = Math.max(plan.total_due - plan.paid, 0);
                             const done = plan.status === 'completed' || outstanding <= 0;
+                            const stripe = plan.hasStripe;
                             return (
                               <Badge
                                 variant="outline"
                                 className={`h-5 px-1.5 text-[10px] font-semibold uppercase tracking-wide ${
                                   done
                                     ? 'border-emerald-500 text-emerald-700 bg-emerald-50'
-                                    : 'border-orange-500 text-orange-700 bg-orange-50'
+                                    : stripe
+                                      ? 'border-violet-600 text-violet-700 bg-violet-50'
+                                      : 'border-orange-500 text-orange-700 bg-orange-50'
                                 }`}
                                 title={
                                   done
                                     ? 'Part payment plan settled in full'
-                                    : `Part payment plan — £${outstanding.toFixed(2)} outstanding of £${plan.total_due.toFixed(2)}`
+                                    : `${stripe ? 'Stripe PAYG — chase the remaining balance on Stripe' : 'Part payment plan'} — £${outstanding.toFixed(2)} outstanding of £${plan.total_due.toFixed(2)}`
                                 }
                               >
-                                {done ? 'Part paid · settled' : `Part payment · £${outstanding.toFixed(0)} due`}
+                                {done
+                                  ? (stripe ? 'Stripe · settled' : 'Part paid · settled')
+                                  : (stripe ? `Stripe PAYG · £${outstanding.toFixed(0)} due` : `Part payment · £${outstanding.toFixed(0)} due`)}
                               </Badge>
                             );
                           })()}
@@ -7001,10 +7006,10 @@ Please log in and change your password after first login.`;
                           )}
                           {!!(customer as any).deposit_taken && !(customer as any).payment_collected_at && (
                             <Badge
-                              className="bg-amber-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold"
-                              title={`Deposit £${Number((customer as any).deposit_amount || 0)} taken on Stripe · balance £${Number((customer as any).balance_due_amount || 0)} outstanding`}
+                              className="bg-violet-600 text-white text-[10px] px-1.5 py-0 h-4 font-bold"
+                              title={`Deposit £${Number((customer as any).deposit_amount || 0)} taken on Stripe · balance £${Number((customer as any).balance_due_amount || 0)} outstanding — chase the rest on Stripe`}
                             >
-                              💰 PAYMENT DUE £{Number((customer as any).balance_due_amount || 0)}
+                              💰 STRIPE PAYG · £{Number((customer as any).balance_due_amount || 0)} DUE
                             </Badge>
                           )}
                           {(customer as any).deferred_status === 'pending_payment' && (() => {
