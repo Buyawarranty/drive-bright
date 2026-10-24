@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 import { SALES_PHONE, SALES_PHONE_TEL, CLAIMS_PHONE, CLAIMS_PHONE_TEL, SUPPORT_EMAIL, CLAIMS_EMAIL, WHATSAPP_URL } from '@/constants/contact';
+import SimpleCaptcha, { useSimpleCaptcha } from '@/components/forms/SimpleCaptcha';
 import pandaSupport from '@/assets/customer-support-panda.webp';
 
 const ALLOWED_TYPES = [
@@ -44,6 +45,9 @@ const ContactUs = () => {
   const [callbackTime, setCallbackTime] = useState('Anytime');
   const [callbackSending, setCallbackSending] = useState(false);
   const [callbackDone, setCallbackDone] = useState(false);
+
+  const formCaptcha = useSimpleCaptcha();
+  const callbackCaptcha = useSimpleCaptcha();
 
   // UK-time aware "open now" checks (handles GMT/BST automatically)
   const [now, setNow] = useState(() => new Date());
@@ -145,6 +149,15 @@ const ContactUs = () => {
       return;
     }
 
+    if (!formCaptcha.verify()) {
+      toast({
+        title: "Quick security check",
+        description: "Please answer the quick maths question before sending.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -178,6 +191,7 @@ const ContactUs = () => {
       setReference(`BAW-${Math.floor(10000 + Math.random() * 89999)}`);
       setFormData({ name: '', email: '', phone: '', message: '' });
       setFile(null);
+      formCaptcha.reset();
 
     } catch (error: any) {
       console.error('Submission error:', error);
@@ -210,6 +224,15 @@ const ContactUs = () => {
       return;
     }
 
+    if (!callbackCaptcha.verify()) {
+      toast({
+        title: "Quick security check",
+        description: "Please answer the quick maths question before sending.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setCallbackSending(true);
     try {
       const { error } = await supabase
@@ -231,6 +254,7 @@ const ContactUs = () => {
       if (error) throw error;
       setCallbackDone(true);
       setCallbackPhone('');
+      callbackCaptcha.reset();
     } catch (err: any) {
       console.error('Callback request error:', err);
       toast({
