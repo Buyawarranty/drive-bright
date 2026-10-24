@@ -9,65 +9,64 @@ export const SALES_MANAGER_ROLE = 'Telesales Sales Manager – Vehicle Warrantie
 const SM_KEYWORDS = 'sales manager jobs, telesales manager jobs, remote sales manager, telesales team leader, call centre sales manager, contact centre manager jobs, vehicle warranty sales manager, warranty sales team leader, car warranty sales manager, inbound sales manager, outbound sales manager, remote team leader jobs, motor finance sales manager, car finance team leader, dealership sales manager, F&I manager jobs, GAP insurance sales manager, insurance sales manager, business development manager jobs, BDM jobs remote, automotive business development manager, warranty business development manager, dealer relationship manager jobs, dealer account manager, automotive account manager, car finance business development manager, motor finance BDM, dealer finance account manager, car finance broker jobs, motor finance broker jobs, vehicle warranty sales jobs, warranty sales executive, warranty manager jobs, used car sales manager jobs, motor trade sales executive, automotive aftermarket sales, GAP insurance sales jobs, vehicle protection products sales, B2B telesales jobs, outbound telesales jobs UK, cold calling jobs, new business sales jobs, remote B2B sales jobs, work from home sales jobs, uncapped commission, insurance sales jobs, financial services sales, recruitment sales jobs, buyawarranty careers';
 
 const responsibilities = [
-  "Lead, coach and motivate a fully remote telesales team selling vehicle warranties",
-  "Set daily, weekly and monthly targets for calls, conversions and revenue",
-  "Monitor call activity, call quality and CRM records, giving clear feedback",
-  "Run daily huddles, one-to-ones and performance reviews over video and phone",
-  "Listen to calls and coach on objection handling, closing and compliance",
-  "Recruit, onboard and train new sales agents",
-  "Manage lead allocation so every enquiry is worked quickly",
-  "Handle escalated customer calls and support agents with complex sales",
-  "Report on team performance, conversion rates and sales forecasts",
-  "Ensure customers are treated fairly and products are explained clearly",
-  "Lead by example, taking and closing calls when the team needs it",
+  "Lead and manage the entire remote sales team",
+  "Motivate, coach and develop high-performing sales executives",
+  "Run regular performance reviews and team meetings",
+  "Set and monitor individual and team targets",
+  "Identify underperformance and put improvement plans in place",
+  "Maintain accountability, productivity and high standards across the team",
+  "Take ownership of sales conversions, team revenue and performance",
+  "Monitor daily, weekly and monthly KPIs",
+  "Improve sales techniques and closing rates",
+  "Review sales calls and deliver targeted coaching",
+  "Develop strategies to maximise revenue and profitability",
+  "Ensure consistent customer service and compliant sales practices",
+  "Help recruit and onboard new remote sales executives",
+  "Build structured training and coaching programmes",
+  "Build a scalable, successful remote sales operation and spot future team leaders",
+  "Report directly to senior management with accurate updates and forecasts",
+  "Monitor CRM data and sales reporting, and identify operational improvements",
+  "Take responsibility for team results and commercial performance",
 ];
 
 const essentials = [
-  "Proven experience managing or leading a telesales or contact-centre sales team",
-  "Strong personal track record in telephone sales, ideally vehicle warranties",
-  "Confident managing a remote team and keeping it motivated and accountable",
-  "Excellent coaching skills \u2014 call listening, feedback and performance plans",
-  "Comfortable working with targets, KPIs, dashboards and sales reports",
-  "Experience using CRM systems, diallers and online sales tools",
-  "Organised, resilient and calm under pressure",
-  "Clear understanding of treating customers fairly in regulated sales",
-  "Self-motivated and comfortable working independently from home",
+  "Significant experience as a Sales Manager, Telesales Manager or Contact Centre Sales Manager",
+  "Proven success managing and improving sales teams",
+  "Strong experience with telephone sales, conversions and performance coaching",
+  "Experience managing remote or distributed sales teams",
+  "Excellent leadership, communication and motivational skills",
+  "Strong understanding of sales targets, CRM reporting and KPIs",
+  "Experience recruiting, training and developing salespeople",
+  "Ability to demonstrate measurable commercial achievements",
 ];
 
 const industries = [
-  "Vehicle Warranty Sales Manager / Warranty Sales Team Leader",
-  "Telesales Manager / Telesales Team Leader",
-  "Contact Centre Sales Manager / Call Centre Manager",
-  "Inbound or Outbound Sales Manager",
-  "Remote Sales Manager / Virtual Team Leader",
-  "Warranty Manager / Warranty Business Development Manager",
+  "Vehicle warranty sales",
+  "Automotive or motor trade sales",
+  "Insurance, financial services or related telesales",
+  "Managing high-volume inbound sales operations",
+  "Growing and scaling sales teams",
+  "Telesales Manager / Contact Centre Sales Manager",
   "Car Finance Sales Manager / Motor Finance Team Leader",
-  "Dealership Sales Manager / Used Car Sales Manager",
-  "Business Manager / F&I Manager",
-  "GAP Insurance / Vehicle Protection Products Sales Manager",
-  "Automotive Aftermarket Sales Manager",
-  "Insurance Sales Manager / Financial Services Sales Manager",
-  "Senior Sales Executive ready to step up to management",
+  "Dealership Sales Manager / F&I Manager",
 ];
 
 const benefits = [
-  '£30,000 annual basic salary (PAYE)',
-  '£40,000 on-target earnings',
-  '£70,000+ exceptional earning potential',
-  'Uncapped, performance-based commission',
-  'Commission and bonuses based on team sales performance',
-  'Fully remote working',
-  'Company laptop, telephone system and CRM provided for PAYE employees',
-  'Full product training and ongoing support',
-  'Career progression opportunities',
-  'Paid annual leave and workplace pension for eligible PAYE employees',
+  'Fully remote: manage the team from anywhere in the UK',
+  'Flexible engagement: PAYE employment or a suitable self-employed arrangement',
+  '£45,000 PAYE basic salary plus commission, or an agreed contractor package',
+  'Up to £80,000 a year for exceptional results',
+  'Lead an expanding sales operation in a growing business',
+  'Real responsibility for team performance, recruitment and development',
+  'Benefit financially from the success of the team you manage',
+  'Help shape the future of our sales operation',
 ];
 
 export const SalesManagerJob: React.FC = () => (
   <>
     <Helmet>
       <title>Remote Telesales Sales Manager Jobs UK – Vehicle Warranties | Buyawarranty</title>
-      <meta name="description" content="Fully remote Sales Manager role leading a vehicle warranty telesales team. £30,000 basic, £40,000 OTE, £70,000+ potential, uncapped commission." />
+      <meta name="description" content="Exceptional, experienced Sales Manager wanted to lead Buyawarranty's fully remote sales team. £45,000 PAYE basic plus commission, up to £80,000. PAYE or self-employed." />
       <meta name="keywords" content={SM_KEYWORDS} />
     </Helmet>
 
@@ -77,9 +76,9 @@ export const SalesManagerJob: React.FC = () => (
           <div>
             <div className="mb-4 inline-flex items-center rounded-full bg-[#FFF4EC] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#F97316]">We're hiring</div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Careers at Buyawarranty</h1>
-            <p className="mt-4 text-lg font-semibold text-[#111827]">Sales Manager – Vehicle Warranty Telesales</p>
+            <p className="mt-4 text-lg font-semibold text-[#111827]">Experienced Sales Manager – Lead, Build & Grow Our Remote Sales Team</p>
             <p className="mt-3 max-w-xl text-base leading-7 text-[#6B7280]">
-              <span className="font-bold">Fully remote</span> (work from home anywhere in the UK) · Full-time permanent PAYE (contractor option available) · £30,000 basic + uncapped commission · OTE £40,000 · £70,000+ potential
+              <span className="font-bold">Fully remote</span> (anywhere in the UK) · Full-time · PAYE or self-employed · £45,000 basic + performance commission · Up to £80,000 for exceptional performance
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a href="#apply" className="inline-flex items-center justify-center rounded-xl bg-[#F97316] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#EA580C] focus:outline-none focus:ring-4 focus:ring-orange-200">
@@ -99,24 +98,24 @@ export const SalesManagerJob: React.FC = () => (
       <section id="role" aria-labelledby="bdm-about" className="mb-14">
         <Header id="bdm-about" n={1} title="About the role" />
         <div className="space-y-4 text-sm leading-7 text-[#374151]">
-          <p>Buyawarranty is a growing UK vehicle warranty telesales company. We are seeking an experienced, results-driven Sales Manager and vehicle warranty sales expert to lead, coach and grow our fully remote telesales team.</p>
-          <p>This is a fully remote management position with a guaranteed basic salary and uncapped, performance-based commission. You will manage a home-based team of sales agents handling warm customer enquiries, drive call activity and conversions, coach every agent to hit target and step in on calls when needed.</p>
+          <p>Buyawarranty is a growing UK vehicle warranty company, and we're looking for an <strong>exceptional, experienced Sales Manager</strong> to take responsibility for our expanding remote sales operation.</p>
+          <p>This is a senior, hands-on leadership position requiring proven experience managing sales teams, improving conversions, driving revenue and developing high-performing salespeople. You'll manage our entire remote sales team, with the opportunity to earn additional commission based on team performance and business growth.</p>
         </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          <Perk Icon={Briefcase} title="Permanent PAYE" body="Full-time permanent role, with a contractor option available." />
-          <Perk Icon={Home} title="Fully remote" body="Work from home anywhere in the UK. No travel or field sales." />
-          <Perk Icon={Phone} title="Remote team" body="Lead a home-based telesales team over phone and video." />
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <Perk Icon={Briefcase} title="Option 1 – PAYE employment" body="£45,000 annual basic salary, commission linked to qualifying team performance, full-time remote employment with applicable benefits and statutory entitlements. Up to £80,000 a year for exceptional results." />
+          <Perk Icon={Award} title="Option 2 – Self-employed" body="For suitably experienced professionals where the arrangement genuinely supports self-employed status. Management fee and performance commission negotiated by experience and responsibilities, up to £80,000 a year." />
         </div>
+        <p className="mt-4 text-xs text-[#6B7280]">The arrangement, payment structure and performance expectations will be agreed before you start, subject to the correct legal and tax status.</p>
       </section>
 
       <section aria-labelledby="bdm-earn" className="mb-14">
-        <Header id="bdm-earn" n={2} title="Salary and earnings" />
+        <Header id="bdm-earn" n={2} title="Performance and earnings tiers (PAYE)" />
         <div className="grid gap-4 sm:grid-cols-3">
-          <Earn tier="Basic salary" range="£30,000" />
-          <Earn tier="On-target earnings" range="£40,000" highlight />
-          <Earn tier="Exceptional potential" range="£70,000+" />
+          <Earn tier="Tier 1 – Successful" range="£60,000" note="£45,000 basic + illustrative £15,000 commission" />
+          <Earn tier="Tier 2 – High performance" range="£70,000" note="£45,000 basic + illustrative £25,000 commission" highlight />
+          <Earn tier="Tier 3 – Exceptional" range="£80,000" note="£45,000 basic + illustrative £35,000 commission" />
         </div>
-        <p className="mt-4 text-xs text-[#6B7280]">Commission is uncapped. Earnings above basic depend on performance and are not guaranteed.</p>
+        <p className="mt-4 text-xs text-[#6B7280]">Commission is linked to agreed qualifying sales and performance targets. These tiers are illustrative, and earnings above the basic salary are not guaranteed. Self-employed remuneration is negotiated separately.</p>
       </section>
 
       <section aria-labelledby="bdm-resp" className="mb-14">
@@ -125,13 +124,13 @@ export const SalesManagerJob: React.FC = () => (
       </section>
 
       <section aria-labelledby="bdm-skills" className="mb-14">
-        <Header id="bdm-skills" n={4} title="Essential experience and skills" />
+        <Header id="bdm-skills" n={4} title="Essential experience" />
+        <p className="mb-4 text-sm leading-7 text-[#374151]">We are looking for an expert sales leader with a proven record of delivering results.</p>
         <Ticks items={essentials} />
       </section>
 
       <section aria-labelledby="bdm-industry" className="mb-14">
-        <Header id="bdm-industry" n={5} title="Relevant industry experience" />
-        <p className="mb-4 text-sm leading-7 text-[#374151]">We particularly welcome applicants with experience in any of these positions or sectors. Automotive experience is desirable but not essential — strong outbound B2B salespeople from other sectors are encouraged to apply.</p>
+        <Header id="bdm-industry" n={5} title="Desirable experience" />
         <Ticks items={industries} />
       </section>
 
