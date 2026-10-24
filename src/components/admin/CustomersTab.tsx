@@ -1478,7 +1478,7 @@ export const CustomersTab = ({
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [debouncedSearchTerm, customers, serverSearchResults, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating, filterPayLaterClaims, canSeePayLaterClaims, payLaterClaimIds, payLaterClaimCustomers]);
+  }, [debouncedSearchTerm, customers, serverSearchResults, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating, filterPayLaterClaims, canSeePayLaterClaims, payLaterClaimIds, payLaterClaimCustomers, getStripePaygOutstanding]);
 
 
   const fetchAvailableTags = async () => {
@@ -1919,7 +1919,7 @@ export const CustomersTab = ({
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, serverSearchResults, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, showPendingConfirmationOnly, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, filterByPartPayment, partPaymentPlans, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating, filterPayLaterClaims, canSeePayLaterClaims, payLaterClaimIds, payLaterClaimCustomers]);
+  }, [customers, serverSearchResults, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, showPendingConfirmationOnly, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, filterByPartPayment, partPaymentPlans, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating, filterPayLaterClaims, canSeePayLaterClaims, payLaterClaimIds, payLaterClaimCustomers, getStripePaygOutstanding]);
 
   const getCurrentUser = async () => {
     try {
