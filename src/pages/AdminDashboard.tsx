@@ -1,9 +1,9 @@
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import GrowthAgentTab from '@/components/admin/growth/GrowthAgentTab';
 import { GatewayRenewalBanner } from '@/components/admin/GatewayRenewalBanner';
 import { canViewCyberSecurity } from '../../supabase/functions/_shared/cyber-security-rules';
 const CyberSecurityTab = lazy(() => import('@/components/admin/CyberSecurityTab'));
 import LeadCountTab from '@/components/admin/LeadCountTab';
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
