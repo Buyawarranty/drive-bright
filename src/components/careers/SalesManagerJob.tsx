@@ -54,7 +54,8 @@ const industries = [
 const benefits = [
   'Fully remote: manage the team from anywhere in the UK',
   'Flexible engagement: PAYE employment or a suitable self-employed arrangement',
-  '£45,000 PAYE basic salary plus commission, or an agreed contractor package',
+  '£45,000 PAYE basic salary plus uncapped commission, or an agreed contractor package',
+  'Uncapped commission — the better the team performs, the more you earn',
   'Up to £80,000 a year for exceptional results',
   'Lead an expanding sales operation in a growing business',
   'Real responsibility for team performance, recruitment and development',
@@ -66,7 +67,7 @@ export const SalesManagerJob: React.FC = () => (
   <>
     <Helmet>
       <title>Remote Telesales Sales Manager Jobs UK – Vehicle Warranties | Buyawarranty</title>
-      <meta name="description" content="Exceptional, experienced Sales Manager wanted to lead Buyawarranty's fully remote sales team. £45,000 PAYE basic plus commission, up to £80,000. PAYE or self-employed." />
+      <meta name="description" content="Exceptional, experienced Sales Manager wanted to lead Buyawarranty's fully remote sales team. £45,000 PAYE basic plus uncapped commission, up to £80,000. PAYE or self-employed." />
       <meta name="keywords" content={SM_KEYWORDS} />
     </Helmet>
 
@@ -78,7 +79,7 @@ export const SalesManagerJob: React.FC = () => (
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Careers at Buya<span className="text-brand-orange">warranty</span></h1>
             <p className="mt-4 text-lg font-semibold text-[#111827]">Experienced Sales Manager – Lead, Build & Grow Our Remote Sales Team</p>
             <p className="mt-3 max-w-xl text-base leading-7 text-[#6B7280]">
-              <span className="font-bold">Fully remote</span> (anywhere in the UK) · Full-time · PAYE or self-employed · £45,000 basic + performance commission · Up to £80,000 for exceptional performance
+              <span className="font-bold">Fully remote</span> (anywhere in the UK) · Full-time · PAYE or self-employed · £45,000 basic + uncapped commission · Up to £80,000 for exceptional performance
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a href="#apply" className="inline-flex items-center justify-center rounded-xl bg-[#F97316] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#EA580C] focus:outline-none focus:ring-4 focus:ring-orange-200">
@@ -99,11 +100,11 @@ export const SalesManagerJob: React.FC = () => (
         <Header id="bdm-about" n={1} title="About the role" />
         <div className="space-y-4 text-sm leading-7 text-[#374151]">
           <p>Buyawarranty is a growing UK vehicle warranty company, and we're looking for an <strong>exceptional, experienced Sales Manager</strong> to take responsibility for our expanding remote sales operation.</p>
-          <p>This is a senior, hands-on leadership position requiring proven experience managing sales teams, improving conversions, driving revenue and developing high-performing salespeople. You'll manage our entire remote sales team, with the opportunity to earn additional commission based on team performance and business growth.</p>
+          <p>This is a senior, hands-on leadership position requiring proven experience managing sales teams, improving conversions, driving revenue and developing high-performing salespeople. You'll manage our entire remote sales team, with the opportunity to earn uncapped commission based on team performance and business growth.</p>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Perk Icon={Briefcase} title="Option 1 – PAYE employment" body="£45,000 annual basic salary, commission linked to qualifying team performance, full-time remote employment with applicable benefits and statutory entitlements. Up to £80,000 a year for exceptional results." />
-          <Perk Icon={Award} title="Option 2 – Self-employed" body="For suitably experienced professionals where the arrangement genuinely supports self-employed status. Management fee and performance commission negotiated by experience and responsibilities, up to £80,000 a year." />
+          <Perk Icon={Briefcase} title="Option 1 – PAYE employment" body="£45,000 annual basic salary, uncapped commission linked to qualifying team performance, full-time remote employment with applicable benefits and statutory entitlements. Up to £80,000 a year for exceptional results." />
+          <Perk Icon={Award} title="Option 2 – Self-employed" body="For suitably experienced professionals where the arrangement genuinely supports self-employed status. Management fee and uncapped performance commission negotiated by experience and responsibilities, up to £80,000 a year." />
         </div>
         <p className="mt-4 text-xs text-[#6B7280]">The arrangement, payment structure and performance expectations will be agreed before you start, subject to the correct legal and tax status.</p>
       </section>
@@ -115,7 +116,7 @@ export const SalesManagerJob: React.FC = () => (
           <Earn tier="Tier 2 – High performance" range="£70,000" note="£45,000 basic + illustrative £25,000 commission" highlight />
           <Earn tier="Tier 3 – Exceptional" range="£80,000" note="£45,000 basic + illustrative £35,000 commission" />
         </div>
-        <p className="mt-4 text-xs text-[#6B7280]">Commission is linked to agreed qualifying sales and performance targets. These tiers are illustrative, and earnings above the basic salary are not guaranteed. Self-employed remuneration is negotiated separately.</p>
+        <p className="mt-4 text-xs text-[#6B7280]">Commission is uncapped and linked to agreed qualifying sales and performance targets. These tiers are illustrative, and earnings above the basic salary are not guaranteed. Self-employed remuneration is negotiated separately.</p>
       </section>
 
       <section aria-labelledby="bdm-resp" className="mb-14">
@@ -174,7 +175,7 @@ export const SalesManagerJob: React.FC = () => (
           <Summary Icon={Briefcase} label="Job type" value="Full-time" />
           <Summary Icon={Award} label="Employment type" value="PAYE or self-employed" />
           <Summary Icon={Home} label="Location" value="Remote, United Kingdom" />
-          <Summary Icon={PoundSterling} label="PAYE basic" value="£45,000 + commission" />
+          <Summary Icon={PoundSterling} label="PAYE basic" value="£45,000 + uncapped commission" />
           <Summary Icon={TrendingUp} label="Potential" value="Up to £80,000" />
           <Summary Icon={Users} label="Team" value="Remote telesales" />
         </div>
