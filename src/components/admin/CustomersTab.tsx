@@ -1746,8 +1746,9 @@ export const CustomersTab = ({
           const status = customer.status?.toLowerCase() || '';
           return status === 'cancelled' || status === 'refunded';
         } else if (filterBySource === 'payment_due') {
-          // Deposit taken on Stripe, balance still outstanding
-          return !!(customer as any).deposit_taken && !(customer as any).payment_collected_at;
+          // Stripe PAYG — deposit taken on Stripe or a Stripe part-payment plan
+          // with a balance still outstanding
+          return getStripePaygOutstanding(customer) > 0;
         }
 
         return true;
