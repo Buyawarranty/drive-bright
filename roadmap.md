@@ -1,5 +1,9 @@
 # Roadmap
 
+## Renewals / New Leads parity
+- [ ] Match the current New Leads column layout and shared call/note controls for linked renewals.
+- [ ] Preserve renewal outcomes, eligibility, assignment and RR/ORR routing; verify available checks.
+
 ## Dial 9 call timing and Adam's totals
 - [x] Measured active two-minute import: Adam's 114 calls on 23 Oct all correctly owned; completed-call arrival median 56.1s, p95 106.3s, maximum 119.5s.
 - [x] Corrected the detailed table's one-time-only load: visible 30s refresh, refresh on return, manual refresh, full pagination and error retention; call credit unchanged.
