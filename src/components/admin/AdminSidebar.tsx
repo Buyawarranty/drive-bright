@@ -798,10 +798,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   // Staff Hub is available to all staff
   const filterRestricted = (tabs: Tab[]) => {
     const withPerms = applyExplicitPermissionOverrides(tabs);
-    const callDataTab = defaultTabs.find(t => t.id === 'overview');
     const callDataAllowed = canAccessCallData(userRole, userPermissions);
-    const callDataFiltered = withPerms.filter(t => t.id !== 'overview');
-    if (callDataAllowed && callDataTab) callDataFiltered.push(callDataTab);
+    const permittedIds = new Set(withPerms.map(t => t.id));
+    const callDataFiltered = defaultTabs.filter(t => t.id === 'overview' ? callDataAllowed : permittedIds.has(t.id));
     // Price Updates is hard-restricted to management + Accounts, regardless of
     // any per-user tab permission grant.
     const PRICE_UPDATES_ROLES = new Set([
