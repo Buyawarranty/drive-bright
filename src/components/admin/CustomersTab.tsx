@@ -1428,7 +1428,7 @@ export const CustomersTab = ({
       // so search every sensible variant of what was typed.
       const spaced = alnum.length >= 5 ? `%${alnum.slice(0, -3)} ${alnum.slice(-3)}%` : alnumLike;
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('customers')
           .select('*, customer_policies!customer_id(id, policy_number, policy_end_date, policy_start_date, status, warranty_number, claim_limit, payment_amount)')
           .or([
@@ -1444,7 +1444,16 @@ export const CustomersTab = ({
             `warranty_reference_number.ilike.${alnumLike}`,
             `warranty_number.ilike.${alnumLike}`,
             `postcode.ilike.${alnumLike}`,
-          ].join(','))
+          ].join(','));
+        // Sales agents and sales leads only ever see their own customers — the
+        // server-side search is scoped the same way so the full list never
+        // leaves the database for these roles.
+        if (isSalesScopedRole && effectiveAdminId) {
+          query = query.or(
+            `assigned_to.eq.${effectiveAdminId},sale_credit_admin_user_id.eq.${effectiveAdminId},payment_confirmed_by.eq.${effectiveAdminId},quote_sent_by.eq.${effectiveAdminId}`
+          );
+        }
+        const { data, error } = await query
           .order('signup_date', { ascending: false })
           .limit(200);
 
@@ -1474,7 +1483,7 @@ export const CustomersTab = ({
     };
     run();
     return () => { cancelled = true; };
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, isSalesScopedRole, effectiveAdminId]);
 
   useEffect(() => {
     applyFiltersAndSort();
@@ -1512,6 +1521,20 @@ export const CustomersTab = ({
     }
     if (canSeePayLaterClaims && filterPayLaterClaims) {
       filtered = filtered.filter(c => payLaterClaimIds.has(c.id));
+    }
+
+    // Sales agents and sales leads only see their own customers — assigned to
+    // them or with sale credit / payment confirmation / quote attributed to
+    // them. Admin, super admin and managers keep the full list. This runs
+    // before every other filter (including search) so no view can surface
+    // another agent's customer.
+    if (isSalesScopedRole && effectiveAdminId) {
+      filtered = filtered.filter(customer =>
+        customer.assigned_to === effectiveAdminId ||
+        (customer as any).sale_credit_admin_user_id === effectiveAdminId ||
+        (customer as any).payment_confirmed_by === effectiveAdminId ||
+        (customer as any).quote_sent_by === effectiveAdminId
+      );
     }
 
     // Apply search filter — sales/sales_lead restricted to name, email, phone, reg plate only
@@ -5133,7 +5156,7 @@ Buyawarranty.co.uk`,
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="search"
-                      placeholder={isSalesScopedRole ? 'Search all customers — name, email, phone, reg…' : 'Search name, email, phone, reg…'}
+                      placeholder={isSalesScopedRole ? 'Search your customers — name, email, phone, reg…' : 'Search name, email, phone, reg…'}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-9 h-9"
