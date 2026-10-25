@@ -4,6 +4,8 @@ import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
+import { useCanSeeAllAgentData } from '@/hooks/useCanSeeAllAgentData';
+import { shouldHideOtherAgentNames, dealOwnerLabel } from '@/lib/agentDataVisibility';
 import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
 import { canViewPayLaterClaims, hasPayLaterClaim } from '@/lib/payLaterClaims';
 import { canUseStaffExport, canUseFullStaffExport, staffExportRows } from '@/lib/staffExportAccess';
@@ -758,6 +760,14 @@ export const CustomersTab = ({
   const isSuperAdmin = normalizedRole === 'super_admin';
   const isAdmin = normalizedRole === 'admin';
   const canSeePayLaterClaims = canViewPayLaterClaims(normalizedRole);
+  // "See all sales agents data" switch (Lead Allocation, default off): when off,
+  // sales agents / sales leads only see their own name on their own deals —
+  // every other agent's name is hidden from them in this tab.
+  const { canSeeAllAgentData } = useCanSeeAllAgentData(
+    isImpersonating && viewAsAgent
+      ? { adminUserId: viewAsAgent.id, role: normalizedRole }
+      : undefined
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -822,6 +832,11 @@ export const CustomersTab = ({
   const isSalesAgent = normalizedRole === 'sales';
   const isSalesLead = normalizedRole === 'sales_lead';
   const isSalesScopedRole = isSalesAgent || isSalesLead;
+  // When the "See all sales agents data" switch is off for this agent, hide
+  // every other agent's name — they only see their own name on their own deals.
+  const hideOtherAgentNames = shouldHideOtherAgentNames(normalizedRole, canSeeAllAgentData);
+  const maskDealOwner = (ownerId: string | null | undefined, realName: string) =>
+    dealOwnerLabel(hideOtherAgentNames, ownerId, effectiveAdminId, realName);
   // Google Ads-style date filter visible only for these roles
   const canUseDateFilter = isSuperAdmin || isAdmin || isLeadGen || isClaimsManager || isSalesScopedRole;
 
@@ -5243,6 +5258,9 @@ Buyawarranty.co.uk`,
                         )}
                         {adminUsers
                           .filter(u => ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'].includes(u.role))
+                          // Agents without the "See all sales agents data" switch only ever
+                          // see themselves in this filter — other agents' names stay hidden.
+                          .filter(u => !hideOtherAgentNames || u.id === effectiveAdminId)
                           // Always keep former agents selectable. Their historical sales must
                           // remain findable even when the current date range has no deals.
                           .sort((a, b) => Number(a.is_active === false) - Number(b.is_active === false))
@@ -6879,10 +6897,14 @@ Please log in and change your password after first login.`;
                                         vehicleReg={selectedCustomer.registration_plate}
                                       />
                                       <CustomerServiceNotes customerId={selectedCustomer.id} customerType="active" />
-                                      <CustomerAssignmentHistoryPanel
-                                        email={selectedCustomer.email}
-                                        phone={(selectedCustomer as any).phone || (selectedCustomer as any).mobile}
-                                      />
+                                      {/* Handover history names every agent who touched the deal —
+                                          hidden from agents without the "See all sales agents data" switch */}
+                                      {!hideOtherAgentNames && (
+                                        <CustomerAssignmentHistoryPanel
+                                           email={selectedCustomer.email}
+                                          phone={(selectedCustomer as any).phone || (selectedCustomer as any).mobile}
+                                        />
+                                      )}
 
                                     </>
                                   )}
@@ -7364,7 +7386,8 @@ Please log in and change your password after first login.`;
                               }
                               if (customer.assigned_to === WEBSITE_SALES_ACCOUNT_ID) return 'Website';
                               const u = adminUsers.find(a => a.id === customer.assigned_to);
-                              return u ? (`${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email) : 'Assigned';
+                              const realName = u ? (`${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email) : 'Assigned';
+                              return maskDealOwner(customer.assigned_to, realName);
                             })()}
                           </span>
                         )}

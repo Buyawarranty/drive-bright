@@ -39,6 +39,7 @@ import { Button } from '@/components/ui/button';
 import { Percent, BellRing } from 'lucide-react';
 import { triggerTestLeadAlert } from '@/hooks/useNewLeadAlert';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
+import { AgentDataVisibilityPanel } from './leads/AgentDataVisibilityPanel';
 import { PausedAgentsOverrideBar } from './leads/PausedAgentsOverrideBar';
 import { CancellationsAllocationPanel } from './leads/CancellationsAllocationPanel';
 import { SaveOnlineSaleAllocationPanel } from './leads/SaveOnlineSaleAllocationPanel';
@@ -388,6 +389,10 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       )}
 
       {isManagement && <StaffLeadAccessPanel />}
+
+      {/* See all sales agents data — per-agent switch (default off) controlling
+          whether sales agents see other agents' names on deals in Customer Management */}
+      {isManagement && <AgentDataVisibilityPanel />}
 
       {/* Quotes & Orders — Confirm external payment price block master switch */}
       {isManagement && <ConfirmPaymentBlockPanel />}
