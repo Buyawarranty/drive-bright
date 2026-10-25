@@ -4,6 +4,9 @@ import { CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRealAdminId } from '@/hooks/useCurrentAdminId';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
+import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
+import { useViewAs } from '@/contexts/ViewAsContext';
+import { isSalesPopupRole } from '@/lib/popupAccess';
 import {
   saleAuthPopupCutoff,
   isSaleAuthWithinPopupWindow,
@@ -23,19 +26,38 @@ import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 export const SaleAuthorisationResultPopup: React.FC = () => {
   const adminId = useRealAdminId();
   const [items, setItems] = useState<any[]>([]);
+  const { effectiveRole } = useViewAs();
+  const canShow = usePopupLeadOwnership(items.flatMap(i => i.lead_id ? [i.lead_id] : []));
+  const visibleItems = items.filter(i => canShow(i.lead_id));
 
   const load = useCallback(async () => {
     if (!adminId) return;
     const { data } = await (supabase as any)
       .from('sale_authorisations')
-      .select('id, status, customer_name, warranty_number, paid_amount, decided_by_name, updated_at')
+      .select('id, policy_id, status, customer_name, warranty_number, paid_amount, decided_by_name, updated_at')
       .eq('agent_admin_id', adminId)
       .is('agent_seen_at', null)
       .gte('updated_at', saleAuthPopupCutoff())
       .order('updated_at', { ascending: false })
       .limit(10);
-    setItems((data || []).filter((i: any) => isSaleAuthWithinPopupWindow(i.updated_at)));
-  }, [adminId]);
+    const recent = (data || []).filter((i: any) => isSaleAuthWithinPopupWindow(i.updated_at));
+    if (!isSalesPopupRole(effectiveRole)) { setItems(recent); return; }
+    // Recipient history is not ownership: resolve the policy's customer to today's lead.
+    const resolved = await Promise.all(recent.map(async (item: any) => {
+      try {
+        const { data: policy } = await supabase.from('customer_policies').select('customer_id').eq('id', item.policy_id).maybeSingle();
+        if (!policy?.customer_id) return { ...item, lead_id: null };
+        const { data: customer } = await supabase.from('customers').select('email, phone').eq('id', policy.customer_id).maybeSingle();
+        const phone9 = (customer?.phone || '').replace(/\D/g, '').slice(-9);
+        const { data: leads } = await supabase.rpc('find_lead_owner_by_contact', {
+          _email: customer?.email?.trim().toLowerCase() || null,
+          _phone9: phone9.length === 9 ? phone9 : null,
+        });
+        return { ...item, lead_id: leads?.[0]?.id || null };
+      } catch { return { ...item, lead_id: null }; }
+    }));
+    setItems(resolved);
+  }, [adminId, effectiveRole]);
 
   useEffect(() => {
     if (!adminId) return;
@@ -54,12 +76,12 @@ export const SaleAuthorisationResultPopup: React.FC = () => {
       .eq('id', id);
   };
 
-  if (!items.length) return null;
+  if (!visibleItems.length) return null;
 
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.saleAuthorisationResult}>
       <div className="flex flex-col gap-2">
-        {items.map((i) => {
+        {visibleItems.map((i) => {
           const ok = i.status === 'approved';
           return (
             <div

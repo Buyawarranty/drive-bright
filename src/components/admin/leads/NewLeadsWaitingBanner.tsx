@@ -5,6 +5,8 @@ import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSharkTankCounts, useSharkTankSettings } from '@/hooks/useSharkTank';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
 import { consumeAlertSound } from '@/lib/alertSoundBudget';
+import { useViewAs } from '@/contexts/ViewAsContext';
+import { isSalesPopupRole } from '@/lib/popupAccess';
 
 interface Props {
   activeTab: string;
@@ -19,6 +21,7 @@ interface Props {
  */
 export function NewLeadsWaitingBanner({ activeTab, onGo }: Props) {
   const adminId = useCurrentAdminId();
+  const { effectiveRole } = useViewAs();
   const { workstreamsByAgent } = useAgentTeams();
   const { settings } = useSharkTankSettings();
   const counts = useSharkTankCounts();
@@ -27,8 +30,8 @@ export function NewLeadsWaitingBanner({ activeTab, onGo }: Props) {
 
   const ws = adminId ? workstreamsByAgent.get(adminId) : undefined;
   const eligible = useMemo(
-    () => !!ws && ws.new_leads && (ws.recontact || ws.renewals),
-    [ws]
+    () => !!effectiveRole && !isSalesPopupRole(effectiveRole) && !!ws && ws.new_leads && (ws.recontact || ws.renewals),
+    [ws, effectiveRole]
   );
 
   const available = counts.queued;
