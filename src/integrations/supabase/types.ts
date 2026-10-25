@@ -15921,6 +15921,10 @@ export type Database = {
         }[]
       }
       get_crm_attendance: {
+        Args: { p_from: string; p_to: string; p_user_id: string }
+        Returns: Json
+      }
+      get_crm_attendance_internal: {
         Args: { p_from: string; p_to: string }
         Returns: Json
       }
@@ -16635,6 +16639,15 @@ export type Database = {
         }[]
       }
       record_crm_attendance: {
+        Args: {
+          p_current_tab?: string
+          p_kind: string
+          p_session_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      record_crm_attendance_internal: {
         Args: { p_current_tab?: string; p_kind: string; p_session_id: string }
         Returns: undefined
       }
