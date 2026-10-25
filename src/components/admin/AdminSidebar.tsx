@@ -10,6 +10,7 @@ import { canViewCyberSecurity } from '../../../supabase/functions/_shared/cyber-
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { signOutWithAttendance } from '@/lib/crmAttendanceClient';
+import { canViewCrmAttendance } from '@/lib/crmAttendanceRules';
 import {
   DndContext,
   closestCenter,
@@ -814,6 +815,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     // per-user tab permission grant (the tab itself also re-checks server-side).
     if (userRole !== 'super_admin') base = base.filter(t => t.id !== 'step3-sandbox');
     if (!canViewCyberSecurity(userRole)) base = base.filter(t => t.id !== 'cyber-security');
+    if (!canViewCrmAttendance(userRole)) base = base.filter(t => t.id !== 'attendance');
     base = base.filter(t => t.id !== 'reporting');
     if (priceUpdatesAllowed) {
       const reporting = defaultTabs.find(t => t.id === 'reporting');

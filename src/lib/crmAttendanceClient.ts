@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { withTimeout } from '@/lib/withTimeout';
 
 type AttendanceKind = 'open' | 'activity' | 'ping' | 'hidden' | 'left_crm' | 'logout';
 let endSession: (() => Promise<void>) | undefined;
@@ -9,10 +10,9 @@ export function registerAttendanceLogout(handler: () => Promise<void>) {
 }
 
 export async function recordCrmAttendance(sessionId: string, kind: AttendanceKind, tab?: string) {
-  const { error, data } = await supabase.functions.invoke('crm-attendance', {
+  const { error, data } = await withTimeout(supabase.functions.invoke('crm-attendance', {
     body: { action: 'record', sessionId, kind, tab: tab || null },
-    signal: AbortSignal.timeout(8000),
-  });
+  }), 8000, 'Attendance recording');
   if (error || data?.error) throw new Error('Unable to record CRM attendance');
 }
 

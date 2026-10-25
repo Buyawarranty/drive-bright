@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from './UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 import { crmAttendanceStatus } from '@/lib/crmAttendanceRules';
+import { withTimeout } from '@/lib/withTimeout';
 
 interface Staff { id: string; email: string; first_name: string | null; last_name: string | null; role: string }
 interface AttendanceDay { admin_user_id: string; day: string; active_seconds: number; first_activity_at: string | null; last_activity_at: string | null }
@@ -42,7 +43,7 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
     const current = generation.current;
     setLoading(true);
     try {
-      const { data, error: requestError } = await supabase.functions.invoke('crm-attendance', { body: { action: 'report', from, to }, signal: AbortSignal.timeout(12000) });
+      const { data, error: requestError } = await withTimeout(supabase.functions.invoke('crm-attendance', { body: { action: 'report', from, to } }), 12000, 'Attendance report');
       if (requestError || data?.error) throw new Error(data?.error || 'Unable to load attendance');
       if (current === generation.current) { setReport(data as Report); setError(''); setNow(Date.now()); }
     } catch {

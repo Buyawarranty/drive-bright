@@ -238,6 +238,7 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   const tab = canonicalTabId(rawTab);
   const permKey = `tab_${tab}`;
   if (tab === 'account') return true;
+  if (tab === 'attendance') return canViewCrmAttendance(role);
   if (tab === 'cyber-security') return canViewCyberSecurity(role);
   if (tab === 'unsubscribe') return true;
   if (tab === 'reporting') return ['admin','super_admin','sales_manager','accounts','accounts_manager','accounts_payroll'].includes(role || '');
