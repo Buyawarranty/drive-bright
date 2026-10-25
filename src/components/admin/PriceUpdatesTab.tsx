@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { hydratePlanModel } from '@/lib/pricing/planEditor';
+import PlanLiveComparison from '@/components/admin/pricing/PlanLiveComparison';
 import { normalizeWebsiteDiscount, readWebsiteDiscountDraft, saveWebsiteDiscountDraft, WEBSITE_DISCOUNT_CHANGED_EVENT } from '@/lib/pricing/websiteDiscount';
 import { type VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 import { getLiveRiskBandConfig } from '@/lib/pricing/liveRiskBands';
@@ -328,6 +329,13 @@ export default function PriceUpdatesTab() {
       return;
     }
     setEditorSection(section);
+    setEditorOpen(true);
+  }
+
+  function openSavedPlan(v: PricingVersion) {
+    loadIntoEditor(v);
+    setPreviewVersion(null);
+    setEditorSection('plan-live-comparison');
     setEditorOpen(true);
   }
 
@@ -1468,9 +1476,10 @@ export default function PriceUpdatesTab() {
                 >
                   {v.status === 'live' ? 'Live' : v.status === 'draft' ? 'Test draft' : 'Archived'}
                 </Badge>
-                <Button variant="outline" size="sm" onClick={() => setPreviewVersion(v)}>
+                <Button variant="outline" size="sm" onClick={() => openSavedPlan(v)}>
                   Open
                 </Button>
+                <Button variant="ghost" size="sm" onClick={() => setPreviewVersion(v)}>Compare prices</Button>
                 {v.status !== 'live' && (
                   <Button
                     variant="outline"
@@ -1492,7 +1501,7 @@ export default function PriceUpdatesTab() {
 
       {/* Quick summary of a saved/published version — no full grid dump. */}
       <Dialog open={!!previewVersion} onOpenChange={open => !open && setPreviewVersion(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-[min(1200px,calc(100vw-2rem))] max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base">{previewVersion?.label}</DialogTitle>
             <DialogDescription>
@@ -1503,49 +1512,14 @@ export default function PriceUpdatesTab() {
                       : previewVersion.status === 'draft'
                         ? 'Test draft'
                         : 'Archived'
-                  } · website is ${Number(previewVersion.step3_discount_pct)}% below these prices`
+                  } · website is ${Math.abs(Number(previewVersion.step3_discount_pct))}% ${Number(previewVersion.step3_discount_pct) < 0 ? 'above' : 'below'} Quotes & Orders before minimums`
                 : ''}
             </DialogDescription>
           </DialogHeader>
 
           {previewVersion && (
             <div className="space-y-3">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-muted-foreground">
-                    <th className="py-1">Term</th>
-                    <th className="py-1">£0 excess</th>
-                    <th className="py-1">£150 excess</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {PERIODS.map(p => {
-                    // Old versions (July original, Aug hybrid, anything restored)
-                    // are shown at the permanent minimum sellable price too.
-                    const cell = (ex: number) => {
-                      const v = previewVersion.admin_matrix?.[p]?.[String(ex)]?.['2000'];
-                      if (!v) return null;
-                      return clampToNetFloor(Number(v), {
-                        paymentPeriod: p as any,
-                        voluntaryExcess: ex,
-                        claimLimit: 2000,
-                      });
-                    };
-                    return (
-                      <tr key={p} className="border-t">
-                        <td className="py-1.5 font-medium">{PERIOD_LABELS[p] || p}</td>
-                        <td className="py-1.5">{cell(0) ? formatGBP(cell(0)!) : '—'}</td>
-                        <td className="py-1.5">{cell(150) ? formatGBP(cell(150)!) : '—'}</td>
-                      </tr>
-                    );
-                  })}
-
-                </tbody>
-              </table>
-              <p className="text-xs text-muted-foreground">
-                Showing the £2,000 claim limit as a reference. Load it into the editor to see every
-                cell.
-              </p>
+              <PlanLiveComparison matrix={previewVersion.admin_matrix} discountPct={normalizeWebsiteDiscount(previewVersion.step3_discount_pct)} liveMatrix={liveVersion?.admin_matrix ?? codeMatrix} liveDiscountPct={normalizeWebsiteDiscount(liveVersion?.step3_discount_pct ?? 10)} liveLabel={liveVersion?.label ?? 'Built-in code pricing'} />
               {previewVersion.notes && (
                 <p className="text-xs text-muted-foreground">{previewVersion.notes}</p>
               )}
@@ -1558,15 +1532,13 @@ export default function PriceUpdatesTab() {
               size="sm"
               disabled={busy}
               onClick={() => {
-                if (previewVersion) loadIntoEditor(previewVersion);
-                setPreviewVersion(null);
-                toast.success('Loaded into the editor — nothing is live until you push it');
+                if (previewVersion) openSavedPlan(previewVersion);
               }}
             >
               Load into editor
             </Button>
-            {previewVersion?.status !== 'live' && (
-              <Button size="sm" disabled={busy} onClick={() => handleRestoreVersion(previewVersion!)}>
+            {previewVersion && previewVersion.status !== 'live' && (
+              <Button size="sm" disabled={busy} onClick={() => { if (previewVersion) handleRestoreVersion(previewVersion); }}>
                 <Rocket className="h-4 w-4 mr-1" /> Push this pricing live
               </Button>
             )}
@@ -1580,13 +1552,14 @@ export default function PriceUpdatesTab() {
         <DialogContent className="flex h-[92dvh] max-w-[min(1440px,calc(100vw-2rem))] flex-col gap-0 overflow-hidden p-0" onInteractOutside={event => event.preventDefault()}>
           <DialogHeader className="shrink-0 border-b px-5 py-4 pr-12">
             <DialogTitle className="break-words">Edit pricing plan: {label || 'Untitled plan'}</DialogTitle>
-            <DialogDescription>Test draft — live prices unchanged</DialogDescription>
+            <DialogDescription>Review all variables for this plan · saving does not change live prices</DialogDescription>
             <div className="flex flex-wrap items-end gap-3 pt-2">
               <div className="min-w-0 flex-1 space-y-1">
                 <Label htmlFor="editor-plan-name">Plan name</Label>
                 <Input id="editor-plan-name" value={label} onChange={e => setLabel(e.target.value)} disabled={busy} />
               </div>
               <nav aria-label="Editor sections" className="flex flex-wrap gap-1">
+                <Button size="sm" variant="outline" onClick={() => setEditorSection('plan-live-comparison')}>Live comparison</Button>
                 <Button size="sm" variant="outline" onClick={() => setEditorSection('plan-price-grid')}>Price grid</Button>
                 <Button size="sm" variant="outline" onClick={() => setEditorSection('plan-vehicle-variables')}>Vehicle variables</Button>
                 <Button size="sm" variant="outline" onClick={() => setEditorSection('website-discount')}>Website price difference</Button>
@@ -1594,6 +1567,9 @@ export default function PriceUpdatesTab() {
             </div>
           </DialogHeader>
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 space-y-6">
+            <section id="plan-live-comparison" className="scroll-mt-4 border-b pb-5">
+              <PlanLiveComparison matrix={matrix} discountPct={discountPct} liveMatrix={liveVersion?.admin_matrix ?? codeMatrix} liveDiscountPct={normalizeWebsiteDiscount(liveVersion?.step3_discount_pct ?? 10)} liveLabel={liveVersion?.label ?? 'Built-in code pricing'} />
+            </section>
             <section id="website-discount" className="website-discount-theme scroll-mt-4 border-b border-primary/30 pb-5 space-y-3">
               <h3 className="font-semibold text-primary">Website price difference · {label || 'Untitled plan'}</h3>
               <div className="flex flex-wrap items-end gap-3">
@@ -1700,7 +1676,7 @@ export default function PriceUpdatesTab() {
                                 const value =
                                   matrix?.[period]?.[String(excess)]?.[String(limit)] ?? 0;
                                 const codeValue =
-                                  codeMatrix?.[period]?.[String(excess)]?.[String(limit)] ?? 0;
+                                  (liveVersion?.admin_matrix ?? codeMatrix)?.[period]?.[String(excess)]?.[String(limit)] ?? 0;
                                 const raw = deriveCustomerPriceFromAdmin(value, discountPct);
                                 // PERMANENT floor, shaped for this excess + claim limit.
                                 // Whatever grid or pricing model is loaded here, this is the
