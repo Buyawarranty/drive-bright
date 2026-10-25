@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canSeeLeadPopup, canSeePopup, isSalesPopupRole, POPUP_TYPES } from '../popupAccess';
+import { canSeeLeadPopup, canSeeVerifiedLeadNotification, canSeePopup, isSalesPopupRole, POPUP_TYPES } from '../popupAccess';
 
 describe.each(['sales', 'sales_lead'])('%s pop-ups', role => {
   it('shows only currently assigned own leads', () => {
@@ -18,6 +18,12 @@ describe.each(['sales', 'sales_lead'])('%s pop-ups', role => {
     expect(canSeePopup('failed_payment', role, { popup_failed_payment: true })).toBe(true);
     expect(canSeePopup('failed_payment', role, { popup_failed_payment: false })).toBe(false);
   });
+  it('requires a currently verified lead for WhatsApp, bell and authorisation notifications', () => {
+    expect(canSeeVerifiedLeadNotification(role, 'own-lead', true)).toBe(true);
+    expect(canSeeVerifiedLeadNotification(role, 'other-lead', false)).toBe(false);
+    expect(canSeeVerifiedLeadNotification(role, 'reassigned-lead', false)).toBe(false);
+    expect(canSeeVerifiedLeadNotification(role, null, true)).toBe(false);
+  });
 });
 it('keeps management lead visibility unchanged', () => {
   for (const role of ['admin', 'super_admin', 'sales_manager']) expect(canSeeLeadPopup(role, 'self', 'other')).toBe(true);
@@ -30,4 +36,5 @@ it('defines sales as sales agents and sales leads only', () => {
 it('fails closed while role is unresolved', () => {
   expect(canSeeLeadPopup(null, 'self', 'self')).toBe(false);
   expect(canSeePopup('new_leads', null, { popup_new_leads: true })).toBe(false);
+  expect(canSeeVerifiedLeadNotification(null, 'own-lead', true)).toBe(false);
 });

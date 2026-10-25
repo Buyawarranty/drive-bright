@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useViewAs } from '@/contexts/ViewAsContext';
-import { canSeeLeadPopup, isSalesPopupRole } from '@/lib/popupAccess';
+import { canSeeLeadPopup, canSeeVerifiedLeadNotification, isSalesPopupRole } from '@/lib/popupAccess';
 import { fetchByIdsInBatches } from '@/utils/batchedIn';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 
@@ -39,6 +39,6 @@ export function usePopupLeadOwnership(leadIds: string[]) {
       }).subscribe();
     return () => { cancelled = true; stop(); void supabase.removeChannel(channel); };
   }, [role, viewerId, key, ids]);
-  return (leadId?: string | null) => !!role && (!isSalesPopupRole(role) ||
-    (!!leadId && verified?.key === key && verified.viewerId === viewerId && verified.ids.has(leadId)));
+  return (leadId?: string | null) => canSeeVerifiedLeadNotification(role, leadId,
+    !!leadId && verified?.key === key && verified.viewerId === viewerId && verified.ids.has(leadId));
 }

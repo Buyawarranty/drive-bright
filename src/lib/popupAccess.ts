@@ -13,6 +13,13 @@ export const isSalesPopupRole = (role?: string | null) => role === 'sales' || ro
 export const canSeeLeadPopup = (role: string | null | undefined, viewerId: string | null | undefined, ownerId: string | null | undefined) =>
   !!role && (!isSalesPopupRole(role) || (!!viewerId && ownerId === viewerId));
 
+/** Notifications must have a verified current lead, not merely an old recipient. */
+export const canSeeVerifiedLeadNotification = (
+  role: string | null | undefined,
+  leadId: string | null | undefined,
+  currentlyVerified: boolean,
+) => !!role && (!isSalesPopupRole(role) || (!!leadId && currentlyVerified));
+
 // These surfaces resolve and enforce current lead ownership before showing rows.
 const OWN_LEAD_POPUPS = new Set(['new_leads', 'stuck_checkout', 'failed_payment', 'reminders']);
 
