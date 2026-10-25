@@ -1460,11 +1460,8 @@ const AdminDashboardInner: React.FC<{
 
 
 
-      {/*
-        Alert policy (Aug 2026): sales staff see ONE stacked new-lead banner only.
-        Every other pop-up/banner is management-only so the sales team isn't
-        buried in notifications.
-      */}
+      {/* Sales and sales leads receive only ownership-enforced lead alerts.
+          Unscoped alerts remain unavailable even with explicit popup grants. */}
       {(() => {
         const isManagementAlerts = ['admin', 'super_admin', 'sales_manager'].includes(displayRole || '');
         const show = (id: string) => canSeePopup(id, displayRole, displayPermissions);
@@ -1505,7 +1502,7 @@ const AdminDashboardInner: React.FC<{
 
             {show('new_leads') && <NewLeadAlerts />}
             {isManagementAlerts && <SaleNeedsAuthorisationAlert />}
-            <SaleAuthorisationResultPopup />
+            {!isImpersonating && <SaleAuthorisationResultPopup />}
             {show('stuck_checkout') && <StuckCheckoutAlert />}
             {show('new_leads') && (
               <Suspense fallback={null}>
