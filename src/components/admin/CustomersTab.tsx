@@ -1483,7 +1483,7 @@ export const CustomersTab = ({
     };
     run();
     return () => { cancelled = true; };
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, isSalesScopedRole, effectiveAdminId]);
 
   useEffect(() => {
     applyFiltersAndSort();
@@ -1521,6 +1521,20 @@ export const CustomersTab = ({
     }
     if (canSeePayLaterClaims && filterPayLaterClaims) {
       filtered = filtered.filter(c => payLaterClaimIds.has(c.id));
+    }
+
+    // Sales agents and sales leads only see their own customers — assigned to
+    // them or with sale credit / payment confirmation / quote attributed to
+    // them. Admin, super admin and managers keep the full list. This runs
+    // before every other filter (including search) so no view can surface
+    // another agent's customer.
+    if (isSalesScopedRole && effectiveAdminId) {
+      filtered = filtered.filter(customer =>
+        customer.assigned_to === effectiveAdminId ||
+        (customer as any).sale_credit_admin_user_id === effectiveAdminId ||
+        (customer as any).payment_confirmed_by === effectiveAdminId ||
+        (customer as any).quote_sent_by === effectiveAdminId
+      );
     }
 
     // Apply search filter — sales/sales_lead restricted to name, email, phone, reg plate only
