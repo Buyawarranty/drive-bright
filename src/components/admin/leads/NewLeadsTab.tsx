@@ -73,6 +73,7 @@ import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
 import { useDataExport } from '@/hooks/useDataExport';
 import { LeadsFullExportMenu } from './LeadsFullExportMenu';
 import { canUseStaffExport, staffExportRows } from '@/lib/staffExportAccess';
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
 
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
@@ -253,12 +254,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const { canReassign: canAssignLeads } = useLeadRoutingPermission();
   
   // Export permission - admin, super_admin, performance_manager, sales_manager, lead_gen
-  const canExport =
-    userRole === 'super_admin' ||
-    userRole === 'admin' ||
-    userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' ||
-    userRole === 'sales_manager' ||
-    userRole === 'lead_gen';
+  const canExport = useCustomerDataExportAccess();
   
   // Granular permissions for sub-views
   // hasGranularPermission returns: true (granted), false (denied), undefined (not set)
@@ -1486,7 +1482,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, []);
 
   const handleExport = useCallback((format: 'csv' | 'xlsx') => {
-    if (!canUseStaffExport(userRole)) {
+    if (!canExport) {
       toast.error('You do not have permission to export leads');
       return;
     }
@@ -1495,7 +1491,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
       : filteredLeads;
 
-    const leadsToExport = staffExportRows(baseLeads, userRole, lead => lead.created_at);
+    const leadsToExport = staffExportRows(baseLeads, userRole, lead => lead.created_at, new Date(), canExport);
 
     const exportData = leadsToExport.map(lead => ({
       // Every export must name the agent the lead is assigned to.
@@ -1531,7 +1527,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     } else {
       exportToExcel(exportData, { filename: 'leads', format: 'xlsx' });
     }
-  }, [selectedLeads, filteredLeads, exportToCSV, exportToExcel, userRole, sourceHidden, adminUsersMapForExport]);
+  }, [selectedLeads, filteredLeads, exportToCSV, exportToExcel, userRole, sourceHidden, adminUsersMapForExport, canExport]);
 
   // WATI (WhatsApp) export — management only. Produces WATI's bulk-contact CSV format.
   const handleWatiExport = useCallback(() => {
