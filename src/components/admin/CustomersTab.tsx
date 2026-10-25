@@ -5257,6 +5257,9 @@ Buyawarranty.co.uk`,
                         )}
                         {adminUsers
                           .filter(u => ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'].includes(u.role))
+                          // Agents without the "See all sales agents data" switch only ever
+                          // see themselves in this filter — other agents' names stay hidden.
+                          .filter(u => !hideOtherAgentNames || u.id === effectiveAdminId)
                           // Always keep former agents selectable. Their historical sales must
                           // remain findable even when the current date range has no deals.
                           .sort((a, b) => Number(a.is_active === false) - Number(b.is_active === false))
@@ -7378,7 +7381,8 @@ Please log in and change your password after first login.`;
                               }
                               if (customer.assigned_to === WEBSITE_SALES_ACCOUNT_ID) return 'Website';
                               const u = adminUsers.find(a => a.id === customer.assigned_to);
-                              return u ? (`${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email) : 'Assigned';
+                              const realName = u ? (`${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email) : 'Assigned';
+                              return dealOwnerLabel(customer.assigned_to, realName);
                             })()}
                           </span>
                         )}
