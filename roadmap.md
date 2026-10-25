@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Customer-data export permissions
-- [ ] Admin/super-admin default export access; every other staff role requires an explicit Export files grant.
-- [ ] Protect granting/revoking this permission so only admin/super-admin can change it.
-- [ ] Apply the shared rule across customer-data exports and run regression checks; no publication.
+- [x] Admin/super-admin default export access; every other staff role requires a new explicit Export files grant. No grants pre-enabled.
+- [x] Export files control in Edit user permissions; protected grant table permits only admin/super-admin creation and removal. Old per-tab grants/email prefixes no longer confer export access.
+- [x] Shared live check protects customer/lead CSV and Excel, claims PDF/CSV, cancelled/refunded lists, abandoned carts, audiences, recovery, customer login/email logs, chatbot data and lead notes/call summary exports; existing record visibility unchanged.
+- [ ] Signed-in permission grant/revoke and download read-back: unavailable with external unmanaged Supabase. Updated app export controls remain unpublished; existing production client is unchanged until publication.
 
 ## Live CRM attendance
 - [x] Extend existing attendance with meaningful CRM time, first/last use, CRM-open and explicit sign-out session history; all staff and Today are defaults.
