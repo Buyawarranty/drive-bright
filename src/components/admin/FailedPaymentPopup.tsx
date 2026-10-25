@@ -4,6 +4,7 @@ import { X, CreditCard, Phone, ChevronDown, ChevronUp } from 'lucide-react';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { useFailedPayments } from '@/hooks/useFailedPayments';
 import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
+import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
 
 const HIDDEN_KEY = 'bw:failed-payment-hidden';
 const loadHidden = (): string[] => { try { return JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]'); } catch { return []; } };
@@ -12,14 +13,15 @@ const loadHidden = (): string[] => { try { return JSON.parse(localStorage.getIte
 export const FailedPaymentPopup: React.FC<{ onOpenMissedPayments?: () => void }> = ({ onOpenMissedPayments }) => {
   const [since] = useState(() => Date.now() - 24 * 3600 * 1000);
   const { items } = useFailedPayments(since);
+  const canShow = usePopupLeadOwnership(items.flatMap(i => i.leadId ? [i.leadId] : []));
   const [hidden, setHidden] = useState<Set<string>>(() => new Set(loadHidden()));
   const [expanded, setExpanded] = useState(false);
-  const open = useMemo(() => items.filter(i => !hidden.has(i.key)), [items, hidden]);
+  const open = items.filter(i => !hidden.has(i.key) && canShow(i.leadId));
   const shown = expanded ? open : open.slice(0, 1);
   const more = open.length - 1;
 
   const dismiss = (key: string) => {
-    { const i = items.find(x => x.key === key); if (i) pushRecentAlert({ key: `fp-${key}`, title: 'Payment failed', detail: `${i.name || i.email || 'Customer'}${i.amount != null ? ' – £' + Number(i.amount).toFixed(2) : ''}`, tone: 'red' }); }
+    { const i = open.find(x => x.key === key); if (i) pushRecentAlert({ key: `fp-${key}`, leadId: i.leadId, title: 'Payment failed', detail: `${i.name || i.email || 'Customer'}${i.amount != null ? ' – £' + Number(i.amount).toFixed(2) : ''}`, tone: 'red' }); }
     const next = new Set(hidden); next.add(key); setHidden(next);
     try { localStorage.setItem(HIDDEN_KEY, JSON.stringify([...next].slice(-300))); } catch { /* ignore */ }
   };

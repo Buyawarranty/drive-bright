@@ -1,6 +1,6 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
-import { POPUP_TYPES, popupKey } from '@/lib/popupAccess';
+import { POPUP_TYPES, popupKey, isSalesPopupRole, canSeePopup } from '@/lib/popupAccess';
 
 type Mode = 'default' | 'on' | 'off';
 
@@ -20,9 +20,9 @@ export const PopupPermissionsSection: React.FC<{
   return (
     <div className="space-y-2">
       <Label className="text-base font-semibold">Pop-ups (Live Alerts)</Label>
-      <p className="text-xs text-muted-foreground">Choose which pop-ups this person sees. "Default" follows their role.</p>
+      <p className="text-xs text-muted-foreground">{isSalesPopupRole(role) ? 'Sales pop-ups are limited to their own assigned leads. Other agents’ and unassigned leads remain hidden.' : 'Choose which pop-ups this person sees. "Default" follows their role.'}</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 border rounded-lg p-3">
-        {POPUP_TYPES.map((t) => {
+        {POPUP_TYPES.filter(t => !isSalesPopupRole(role) || canSeePopup(t.id, role, { [popupKey(t.id)]: true })).map((t) => {
           const k = popupKey(t.id);
           const mode: Mode = k in perms ? (perms[k] ? 'on' : 'off') : 'default';
           const defOn = t.defaultRoles === 'all' || t.defaultRoles.includes(role || '');

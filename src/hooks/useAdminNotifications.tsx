@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { withBackgroundPriority } from '@/lib/requestQueue';
+import { canSeeLeadPopup, isSalesPopupRole } from '@/lib/popupAccess';
 
 export interface AdminNotification {
   id: string;
@@ -88,7 +89,9 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
           if (!adminId) {
             resubQuery = resubQuery.eq('id', '00000000-0000-0000-0000-000000000000');
           } else {
-            resubQuery = resubQuery.or(`owner_agent.eq.${adminId},assigned_to.eq.${adminId}`);
+            resubQuery = isSalesPopupRole(userRole)
+              ? resubQuery.eq('assigned_to', adminId)
+              : resubQuery.or(`owner_agent.eq.${adminId},assigned_to.eq.${adminId}`);
           }
         }
 
@@ -100,9 +103,9 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
         ]);
 
         return {
-          contacts: contactsRes.data,
-          claims: claimsRes.data,
-          customers: customersRes.data,
+          contacts: isSalesPopupRole(userRole) ? [] : contactsRes.data,
+          claims: isSalesPopupRole(userRole) ? [] : claimsRes.data,
+          customers: isSalesPopupRole(userRole) ? [] : customersRes.data,
           resubmissions: resubmissionsRes.data,
         };
       });
@@ -261,7 +264,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
         table: 'customers',
       }, (payload) => {
         const data = payload.new as { name: string; email: string };
-        toast.success('New Customer!', {
+        if (userRole && !isSalesPopupRole(userRole)) toast.success('New Customer!', {
           description: `${data.name} (${data.email})`,
           duration: 5000,
         });
@@ -307,8 +310,9 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
           // "🔥 Lead Came Back!" toast — they read it as a brand-new lead.
           const isManagement = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
           const ownsLead =
-            !!adminId &&
-            (newData.owner_agent === adminId || newData.assigned_to === adminId);
+            isSalesPopupRole(userRole)
+              ? canSeeLeadPopup(userRole, adminId, newData.assigned_to)
+              : !!adminId && (newData.owner_agent === adminId || newData.assigned_to === adminId);
           if (!isManagement && !ownsLead) {
             scheduleRefetch();
             return;

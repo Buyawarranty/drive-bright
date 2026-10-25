@@ -7,6 +7,7 @@ import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { fetchByIdsInBatches } from '@/utils/batchedIn';
 import { withPriority } from '@/lib/requestQueue';
 import { consumeAlertSound } from '@/lib/alertSoundBudget';
+import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
 
 
 // Business-hours gate — pop-ups AND beeps only fire 09:00–18:00 Europe/London.
@@ -584,7 +585,9 @@ export const useNewLeadAlert = () => {
 
   // Undismissed + not currently snoozed = visible. Once snooze expires, card
   // reappears and the beep fires again.
+  const canShow = usePopupLeadOwnership(queue.map(l => l.id));
   const visibleQueue = [...testAlerts, ...queue].filter((l) => {
+    if (!canShow(l.id)) return false;
     if (dismissedIds.has(l.id)) return false;
     const until = snoozedUntil[l.id];
     if (until && until > now) return false;

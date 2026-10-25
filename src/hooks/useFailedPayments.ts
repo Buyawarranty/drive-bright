@@ -14,6 +14,7 @@ export type FailedPayment = {
   reason: string;
   leadId?: string;
   ownerName?: string;
+  ownerId?: string | null;
   leadStatus?: string;
 };
 
@@ -61,7 +62,7 @@ export async function fetchFailedPayments(sinceMs: number): Promise<FailedPaymen
     for (const r of list) {
       const l: any = (leads || []).find((x: any) => norm(x.email) === r.email);
       if (!l) continue;
-      r.leadId = l.id; r.leadStatus = l.status; r.ownerName = nameOf(l.assigned_to);
+      r.leadId = l.id; r.leadStatus = l.status; r.ownerName = nameOf(l.assigned_to); r.ownerId = l.assigned_to;
       r.name ||= [l.first_name, l.last_name].filter(Boolean).join(' ');
     }
   }

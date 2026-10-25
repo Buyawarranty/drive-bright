@@ -6,6 +6,7 @@
 export type RecentAlertTone = 'red' | 'blue' | 'amber' | 'green' | 'orange' | 'emerald';
 export interface RecentAlert {
   key: string;
+  leadId?: string;
   title: string;
   detail: string;
   details?: string[];

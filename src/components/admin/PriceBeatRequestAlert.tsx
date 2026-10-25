@@ -6,10 +6,14 @@ import { formatDistanceToNow } from 'date-fns';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
+import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
+import { useViewAs } from '@/contexts/ViewAsContext';
+import { isSalesPopupRole } from '@/lib/popupAccess';
 
 const DISMISSED_KEY = 'price-beat-alert-dismissed-ids';
 
 interface Row {
+  leadId?: string;
   id: string;
   phone: string | null;
   vehicle_reg: string | null;
@@ -33,6 +37,8 @@ export const PriceBeatRequestAlert: React.FC = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [dismissed, setDismissed] = useState<string[]>(readDismissed);
   const [expanded, setExpanded] = useState(true);
+  const { effectiveRole } = useViewAs();
+  const canShow = usePopupLeadOwnership(rows.flatMap(r => r.leadId ? [r.leadId] : []));
 
   const load = useCallback(async () => {
     const since = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
@@ -43,8 +49,17 @@ export const PriceBeatRequestAlert: React.FC = () => {
       .gte('created_at', since)
       .order('created_at', { ascending: false })
       .limit(30);
-    setRows(((data as Row[]) || []).filter((r) => r.cart_metadata?.source === 'price_beat_banner'));
-  }, []);
+    const requests = ((data as Row[]) || []).filter((r) => r.cart_metadata?.source === 'price_beat_banner');
+    if (isSalesPopupRole(effectiveRole)) {
+      const matched = await Promise.all(requests.map(async r => {
+        const phone9 = (r.phone || '').replace(/\D/g, '').slice(-9);
+        if (phone9.length !== 9) return r;
+        const { data: leads, error } = await supabase.rpc('find_lead_owner_by_contact', { _email: null, _phone9: phone9 });
+        return { ...r, leadId: error ? undefined : leads?.[0]?.id };
+      }));
+      setRows(matched);
+    } else setRows(requests);
+  }, [effectiveRole]);
 
   useEffect(() => {
     load();
@@ -56,11 +71,11 @@ export const PriceBeatRequestAlert: React.FC = () => {
     return () => { supabase.removeChannel(ch); stop(); };
   }, [load]);
 
-  const live = useMemo(() => rows.filter((r) => !dismissed.includes(r.id)), [rows, dismissed]);
+  const live = rows.filter((r) => !dismissed.includes(r.id) && canShow(r.leadId));
 
   const dismiss = (id: string) => {
     const r = rows.find((x) => x.id === id);
-    if (r) pushRecentAlert({ key: `price-beat-${id}`, title: 'Price beat request', detail: `${r.vehicle_reg || 'No reg'} – ${r.phone || ''}`, tone: 'orange' });
+    if (r && canShow(r.leadId)) pushRecentAlert({ key: `price-beat-${id}`, leadId: r.leadId, title: 'Price beat request', detail: `${r.vehicle_reg || 'No reg'} – ${r.phone || ''}`, tone: 'orange' });
     setDismissed((prev) => {
       const next = [...new Set([...prev, id])].slice(-200);
       try { localStorage.setItem(DISMISSED_KEY, JSON.stringify(next)); } catch { /* ignore */ }

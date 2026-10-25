@@ -5,7 +5,16 @@
  * Each pop-up's own internal rules (named chat recipients, lead owner, etc.) still apply.
  */
 export const MANAGEMENT_ROLES = ['admin', 'super_admin', 'sales_manager'];
-const SALES_CHAT_ROLES = ['admin', 'super_admin', 'sales_manager', 'sales', 'sales_lead'];
+const SALES_CHAT_ROLES = ['admin', 'super_admin'];
+
+export const isSalesPopupRole = (role?: string | null) => role === 'sales' || role === 'sales_lead';
+
+/** Ownership is mandatory even if a pop-up permission was explicitly enabled. */
+export const canSeeLeadPopup = (role: string | null | undefined, viewerId: string | null | undefined, ownerId: string | null | undefined) =>
+  !!role && (!isSalesPopupRole(role) || (!!viewerId && ownerId === viewerId));
+
+// These surfaces resolve and enforce current lead ownership before showing rows.
+const OWN_LEAD_POPUPS = new Set(['new_leads', 'stuck_checkout', 'failed_payment', 'reminders']);
 
 export const POPUP_TYPES: { id: string; label: string; description: string; defaultRoles: string[] | 'all' }[] = [
   { id: 'new_leads', label: 'New lead alerts', description: 'New leads landing in the agent queue', defaultRoles: 'all' },
@@ -26,6 +35,9 @@ export const POPUP_TYPES: { id: string; label: string; description: string; defa
 export const popupKey = (id: string) => `popup_${id}`;
 
 export const canSeePopup = (id: string, role: string | null | undefined, perms: Record<string, boolean> | null | undefined) => {
+  if (!role) return false;
+  if (['sales', 'sales_lead', 'sales_manager'].includes(role) && ['chat_request', 'live_chat_question'].includes(id)) return false;
+  if (isSalesPopupRole(role) && !OWN_LEAD_POPUPS.has(id)) return false;
   const k = popupKey(id);
   if (perms && k in perms) return perms[k] === true;
   const t = POPUP_TYPES.find((p) => p.id === id);
