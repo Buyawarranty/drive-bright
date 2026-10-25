@@ -152,7 +152,7 @@ export const SalesManagerJob: React.FC = () => (
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           <Perk Icon={GraduationCap} title="Full training" body="Product training and ongoing support from day one." />
           <Perk Icon={Headphones} title="Ongoing support" body="A supportive team behind you from day one." />
-          <Perk Icon={TrendingUp} title="Progression" body="Grow with a business expanding its sales team." />
+          <Perk Icon={TrendingUp} title="Earnings upside" body="Uncapped commission linked to qualifying team performance." />
         </div>
       </section>
 

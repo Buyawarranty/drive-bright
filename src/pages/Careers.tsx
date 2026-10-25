@@ -37,7 +37,7 @@ const jobPostingSchema = {
   '@type': 'JobPosting',
   title: 'Vehicle Warranty Sales Executive',
   description:
-    '<p>Buyawarranty is hiring a remote UK-based Vehicle Warranty Sales Executive. Full-time PAYE employment with warm inbound and outbound leads, full training, uncapped commission and long-term career progression. Realistic OTE £35,000–£80,000+.</p><p>You will handle warm enquiries, recommend suitable vehicle warranty cover, explain benefits, close sales over the telephone and maintain accurate CRM records. Minimum two years telesales experience required.</p><p>This role would suit someone with extensive telesales experience, or a car finance broker / finance broker from a car finance brokerage, motor finance, vehicle finance, dealership F&amp;I, GAP insurance or add-on product sales background.</p>',
+    '<p>Buyawarranty is hiring a remote UK-based Vehicle Warranty Sales Executive. Full-time PAYE employment with warm inbound and outbound leads, full training and uncapped commission. Realistic OTE £35,000–£80,000+.</p><p>You will handle warm enquiries, recommend suitable vehicle warranty cover, explain benefits, close sales over the telephone and maintain accurate CRM records. Minimum two years telesales experience required.</p><p>This role would suit someone with extensive telesales experience, or a car finance broker / finance broker from a car finance brokerage, motor finance, vehicle finance, dealership F&amp;I, GAP insurance or add-on product sales background.</p>',
   identifier: {
     '@type': 'PropertyValue',
     name: 'Buyawarranty',
@@ -109,7 +109,7 @@ const faqSchema = {
       name: 'Do you offer contract roles as well as permanent roles?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. We hire on both bases. Permanent roles are full-time PAYE employment with a basic salary plus uncapped commission and long-term progression. Contract roles are available for experienced sales people who prefer fixed-term, seasonal or self-employed contract work, with commission-led earnings. Tell us which you prefer when you apply and we can discuss both.',
+        text: 'Yes. We hire on both bases. Permanent roles are full-time PAYE employment with a basic salary plus uncapped commission. Contract roles are available for experienced sales people who prefer fixed-term, seasonal or self-employed contract work, with commission-led earnings. Tell us which you prefer when you apply and we can discuss both.',
       },
     },
     {
@@ -331,17 +331,13 @@ const Careers: React.FC = () => {
               inbound telephone sales, outbound telesales, handling objections and closing sales.
               Relevant direct sales experience is also welcomed, alongside vehicle warranty sales experience.
             </p>
-            <p>
-              High performers will also have opportunities for long-term career development and
-              progression within the business.
-            </p>
           </div>
 
           <div className="mt-6 grid gap-5 md:grid-cols-3">
             <PerkCard
               Icon={Briefcase}
               title="Permanent roles"
-              body="Full-time PAYE employment, basic salary, uncapped commission and progression."
+              body="Full-time PAYE employment, basic salary and uncapped commission."
             />
             <PerkCard
               Icon={Clock}
@@ -387,7 +383,6 @@ const Careers: React.FC = () => {
             <PerkCard Icon={Headphones} title="Ongoing support" body="Coaching and mentoring from a UK-based team." />
             <PerkCard Icon={PoundSterling} title="Uncapped commission" body="Paid on every sale with monthly incentives and bonuses." />
             <PerkCard Icon={Home} title="Fully remote" body="Work from home with a supportive, connected team." />
-            <PerkCard Icon={TrendingUp} title="Career progression" body="Long-term opportunities to grow within the business." />
           </div>
         </section>
 

@@ -59,7 +59,6 @@ const benefits = [
   'Commission on new dealership acquisition and ongoing qualifying warranty sales',
   'Fully remote working',
   'Full product training and ongoing support',
-  'Career progression opportunities',
   'Paid annual leave and workplace pension for eligible PAYE employees',
 ];
 
@@ -152,7 +151,7 @@ export const BdmJob: React.FC = () => (
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           <Perk Icon={GraduationCap} title="Full training" body="Product training and ongoing support from day one." />
           <Perk Icon={Headphones} title="Ongoing support" body="A supportive team behind you from day one." />
-          <Perk Icon={TrendingUp} title="Progression" body="Grow with a business expanding its dealer network." />
+          <Perk Icon={TrendingUp} title="Earnings upside" body="Uncapped commission on every qualifying sale." />
         </div>
       </section>
 
