@@ -1,5 +1,10 @@
 # Roadmap
 
+## Own-lead imports and optional attendance bar
+- [ ] Restrict Quotes & Orders lead search and import to the sales/sales lead viewer's own assigned leads.
+- [ ] Default their New Leads attendance bar off; add management-controlled per-agent own-bar switch in Lead Allocation without changing tracking.
+- [ ] Run ownership/visibility regression checks and verify available preview signals.
+
 ## Customer-data export permissions
 - [x] Admin/super-admin default export access; every other staff role requires a new explicit Export files grant. No grants pre-enabled.
 - [x] Export files control in Edit user permissions; protected grant table permits only admin/super-admin creation and removal. Old per-tab grants/email prefixes no longer confer export access.
