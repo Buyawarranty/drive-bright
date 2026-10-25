@@ -28,6 +28,7 @@ import { AdminAccessLogPanel } from './AdminAccessLogPanel';
 import { useAuth } from '@/hooks/useAuth';
 import { ClaimsDataAccessManager } from './claims/ClaimsDataAccessManager';
 import { defaultTabs as SIDEBAR_TABS } from './AdminSidebar';
+import { ExportFilesPermission } from './ExportFilesPermission';
 
 /**
  * Lead types (workstreams) an agent can be switched on for. These mirror the
@@ -166,14 +167,12 @@ const GRANULAR_PERMISSIONS = {
     { key: 'view', label: 'View', description: 'Can view customer data' },
     { key: 'own-only', label: 'Own Customers Only', description: 'Only see customers from their own orders (via Quotes & Orders)' },
     { key: 'see-source', label: 'See Source', description: 'Can see the customer acquisition source (Google/Facebook/Organic/Website)' },
-    { key: 'export', label: 'Export', description: 'Can export customer data to CSV/Excel' },
     { key: 'delete', label: 'Delete', description: 'Can delete customer records' },
   ],
   'new-leads': [
     { key: 'view', label: 'View', description: 'Can view lead data' },
     { key: 'assign', label: 'Assign Leads', description: 'Can assign or reassign leads to agents' },
     { key: 'see-source', label: 'See Source', description: 'Can see the lead source (Google/Facebook/Organic)' },
-    { key: 'export', label: 'Export', description: 'Can export lead data to CSV/Excel' },
     { key: 'delete', label: 'Delete', description: 'Can delete lead records' },
     { key: 'all-leads', label: 'See All Leads', description: 'Can see all leads (OFF = only their own assigned leads)' },
     { key: 'my-dashboard', label: 'My Dashboard', description: 'Can view My Dashboard section' },
@@ -1490,6 +1489,7 @@ export const UserPermissionsTab = () => {
 
   const renderTabPermissionsSection = (perms: Record<string, boolean>, isEditing: boolean, role?: string) => (
     <div className="space-y-4">
+      {isEditing && editingUser && <ExportFilesPermission adminUserId={editingUser.id} role={editingUser.role} canManage={currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin'} />}
       <div className="flex items-center justify-between">
         <Label className="text-base font-semibold">Tab Access Permissions</Label>
         <div className="flex gap-2">
