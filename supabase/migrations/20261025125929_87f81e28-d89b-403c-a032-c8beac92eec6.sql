@@ -1,0 +1,1 @@
+ALTER FUNCTION public.can_import_quote_lead(uuid,uuid) SECURITY INVOKER;
