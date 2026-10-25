@@ -1,3 +1,5 @@
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -208,7 +210,9 @@ export const ReassignmentAuditLog: React.FC = () => {
     });
   }, [rows, search, audits, byAdminId]);
 
-  const exportCsv = () => {
+  const exportFilesAllowed = useCustomerDataExportAccess();
+  const exportCsv = async () => {
+    if (!await requireCustomerDataExport()) return;
     const header = ['Time', 'Lead', 'Lead ID', 'From agent', 'To agent', 'Changed by', 'Type', 'Reason'];
     const lines = filtered.map((r) => {
       const audit = auditFor(r);
@@ -313,7 +317,7 @@ export const ReassignmentAuditLog: React.FC = () => {
           <Button variant="outline" size="icon" onClick={() => setRefreshKey((k) => k + 1)} title="Refresh">
             <RefreshCw className="h-4 w-4" />
           </Button>
-          <Button variant="outline" className="gap-2" onClick={exportCsv} disabled={filtered.length === 0}>
+          <Button variant="outline" className="gap-2" onClick={exportCsv} disabled={!exportFilesAllowed || (filtered.length === 0)}>
             <Download className="h-4 w-4" />
             Export CSV
           </Button>

@@ -1,3 +1,5 @@
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -1379,7 +1381,9 @@ const UnifiedEmailHub = () => {
 
     const sourceTypes = Array.from(new Set(emailLogs.map(l => (l.metadata as any)?.source_function).filter(Boolean))) as string[];
 
-    const handleExportCsv = () => {
+    const exportFilesAllowed = useCustomerDataExportAccess();
+  const handleExportCsv = async () => {
+    if (!await requireCustomerDataExport()) return;
       const headers = [
         'Sent At', 'Status', 'Recipient Email', 'Recipient Name', 'Subject',
         'Template', 'Source Function', 'Registration Plate', 'Policy Number',
@@ -1425,7 +1429,7 @@ const UnifiedEmailHub = () => {
             <p className="text-muted-foreground">Every email sent to a customer — fully searchable, filterable, exportable.</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExportCsv}>
+            <Button variant="outline" onClick={handleExportCsv} disabled={!exportFilesAllowed}>
               <Download className="w-4 h-4 mr-2" />
               Export CSV
             </Button>

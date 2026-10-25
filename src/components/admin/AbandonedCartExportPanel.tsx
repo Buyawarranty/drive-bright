@@ -1,3 +1,5 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { filterEligibleAbandonedCarts } from '@/lib/abandonedCartEligibility';
@@ -200,6 +202,7 @@ interface Props {
 }
 
 export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) => {
+  const canExport = useCustomerDataExportAccess();
   const [platform, setPlatform] = useState<Platform>('google');
   const [preset, setPreset] = useState<DatePreset>('last7');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
@@ -309,6 +312,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
   }, [filtered, platform]);
 
   const handleExport = async () => {
+    if (!await requireCustomerDataExport()) return;
     if (uniqueByEmail.length === 0) {
       toast.error('No carts to export in this date range');
       return;
@@ -426,7 +430,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
             </Select>
           </div>
           <div className="flex items-end">
-            <Button onClick={handleExport} disabled={exporting || uniqueByEmail.length === 0} className="w-full">
+            <Button onClick={handleExport} disabled={!canExport || exporting || uniqueByEmail.length === 0} className="w-full">
               <Download className="w-4 h-4 mr-2" />
               {exporting ? 'Exporting...' : `Export ${uniqueByEmail.length} carts`}
             </Button>

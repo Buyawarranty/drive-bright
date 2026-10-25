@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 
 interface ExportOptions {
   filename: string;
@@ -37,7 +38,8 @@ export function useDataExport() {
     }
   }, []);
 
-  const exportToCSV = useCallback((data: Record<string, any>[], options: ExportOptions) => {
+  const exportToCSV = useCallback(async (data: Record<string, any>[], options: ExportOptions) => {
+    if (!await requireCustomerDataExport()) return;
     if (!data || data.length === 0) {
       toast.error('No data to export');
       return;
@@ -76,7 +78,8 @@ export function useDataExport() {
     }
   }, [downloadFile]);
 
-  const exportToExcel = useCallback((data: Record<string, any>[], options: ExportOptions) => {
+  const exportToExcel = useCallback(async (data: Record<string, any>[], options: ExportOptions) => {
+    if (!await requireCustomerDataExport()) return;
     // Excel can open CSV files, so we use CSV format for compatibility
     if (!data || data.length === 0) {
       toast.error('No data to export');

@@ -1,0 +1,1 @@
+REVOKE UPDATE,TRUNCATE,REFERENCES,TRIGGER ON public.staff_export_grants FROM authenticated,anon; REVOKE ALL ON public.staff_export_grants FROM anon;

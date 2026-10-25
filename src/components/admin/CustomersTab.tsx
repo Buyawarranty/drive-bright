@@ -7,6 +7,8 @@ import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCre
 import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
 import { canViewPayLaterClaims, hasPayLaterClaim } from '@/lib/payLaterClaims';
 import { canUseStaffExport, canUseFullStaffExport, staffExportRows } from '@/lib/staffExportAccess';
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 
 import { ReferencePriceCell } from '@/components/admin/customers/ReferencePriceCell';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
@@ -749,7 +751,7 @@ export const CustomersTab = ({
   const normalizedRole = isImpersonating && viewAsAgent
     ? viewAsAgent.role?.trim().toLowerCase() || ''
     : currentAdminUser?.role?.trim().toLowerCase() || '';
-  const canExport = exportPermission && canUseStaffExport(normalizedRole);
+  const canExport = useCustomerDataExportAccess();
   const effectiveAdminId = isImpersonating && viewAsAgent
     ? viewAsAgent.id
     : currentAdminUser?.id;
@@ -3575,7 +3577,7 @@ export const CustomersTab = ({
       return v;
     };
 
-    return staffExportRows(filteredCustomers, role, customer => customer.signup_date).map((customer: any) => {
+    return staffExportRows(filteredCustomers, role, customer => customer.signup_date, new Date(), canExport).map((customer: any) => {
       const row: Record<string, any> = {
         'Name': customer.name,
         'Email': customer.email,
@@ -3608,11 +3610,12 @@ export const CustomersTab = ({
       }
       return row;
     });
-  }, [filteredCustomers, normalizedRole]);
+  }, [filteredCustomers, normalizedRole, canExport]);
 
 
-  const handleExport = (format: 'csv' | 'xlsx') => {
-    if (!canUseStaffExport(normalizedRole) || (!canExport && !canExportFullCustomers)) {
+  const handleExport = async (format: 'csv' | 'xlsx') => {
+    if (!await requireCustomerDataExport()) return;
+    if (!canExport) {
       toast.error('You do not have permission to export customers');
       return;
     }
@@ -3626,7 +3629,7 @@ export const CustomersTab = ({
 
   // Full export: every column from the customers row, for management + accounts + lead_gen.
   // Used for deep analysis / data handovers; not available to standard sales agents.
-  const canExportFullCustomers = canUseFullStaffExport(normalizedRole);
+  const canExportFullCustomers = canExport;
 
 
   const buildFullCsvRows = (list: any[]) => {
@@ -3647,7 +3650,8 @@ export const CustomersTab = ({
     return { rows, keys };
   };
 
-  const handleExportFullCsv = () => {
+  const handleExportFullCsv = async () => {
+    if (!await requireCustomerDataExport()) return;
     if (!canExportFullCustomers) {
       toast.error('You do not have permission to export the full customer dataset');
       return;
@@ -3673,6 +3677,7 @@ export const CustomersTab = ({
   // Queries Supabase directly with pagination + signup_date DESC ordering so the
   // export is not capped by the 3000-row in-memory list (which is ordered by updated_at).
   const exportForRange = async (start: Date, end: Date, label: string) => {
+    if (!await requireCustomerDataExport()) return;
     if (!canExportFullCustomers) {
       toast.error('You do not have permission to export');
       return;
@@ -3821,7 +3826,8 @@ export const CustomersTab = ({
   // Format follows Google's required schema: Google Click ID, Conversion Name,
   // Conversion Time, Conversion Value, Conversion Currency.
   // Only includes customers that have a gclid recorded.
-  const handleExportGoogleConversions = () => {
+  const handleExportGoogleConversions = async () => {
+    if (!await requireCustomerDataExport()) return;
     const rows = filteredCustomers
       .filter(c => !!(c.gclid && String(c.gclid).trim()))
       .map(c => {
@@ -3850,7 +3856,8 @@ export const CustomersTab = ({
   };
 
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
+    if (!await requireCustomerDataExport()) return;
     const exportData = getExportData();
     if (!exportData.length) {
       toast.error('No data to export');

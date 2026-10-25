@@ -1,3 +1,5 @@
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -206,7 +208,9 @@ export const MarketingAudienceTab: React.FC = () => {
   });
 
   // Export to CSV
-  const exportToCSV = () => {
+  const exportFilesAllowed = useCustomerDataExportAccess();
+  const exportToCSV = async () => {
+    if (!await requireCustomerDataExport()) return;
     if (!audience || audience.length === 0) {
       toast.error('No data to export');
       return;
@@ -267,7 +271,7 @@ export const MarketingAudienceTab: React.FC = () => {
             <Button
               variant="outline"
               onClick={exportToCSV}
-              disabled={!audience?.length}
+              disabled={!exportFilesAllowed || (!audience?.length)}
             >
               <Download className="h-4 w-4 mr-2" />
               Export CSV

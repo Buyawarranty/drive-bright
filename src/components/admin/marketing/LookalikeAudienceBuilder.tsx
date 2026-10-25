@@ -1,3 +1,5 @@
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -124,7 +126,9 @@ export const LookalikeAudienceBuilder: React.FC = () => {
     };
   }, [filtered]);
 
-  const exportCsv = () => {
+  const exportFilesAllowed = useCustomerDataExportAccess();
+  const exportCsv = async () => {
+    if (!await requireCustomerDataExport()) return;
     if (!filtered.length) { toast.error('No customers match these filters'); return; }
     const header = ['Email', 'Phone', 'First Name', 'Last Name', 'Zip', 'Country', 'Vehicle', 'Year', 'Amount Paid', 'Payment Method', 'Term', 'Signup Date'];
     const lines = filtered.map(r => {
@@ -172,7 +176,7 @@ export const LookalikeAudienceBuilder: React.FC = () => {
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
               <RefreshCw className={`h-4 w-4 mr-1 ${isFetching ? 'animate-spin' : ''}`} /> Refresh
             </Button>
-            <Button size="sm" onClick={exportCsv} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button size="sm" onClick={exportCsv} className="bg-emerald-600 hover:bg-emerald-700" disabled={!exportFilesAllowed}>
               <Download className="h-4 w-4 mr-1" /> Export CSV
             </Button>
           </div>

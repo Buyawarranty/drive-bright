@@ -1,3 +1,5 @@
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -110,7 +112,9 @@ export const CustomerLoginActivity: React.FC<Props> = ({ email, customerId }) =>
     if (email || customerId) load();
   }, [email, customerId, load]);
 
-  const exportCsv = () => {
+  const exportFilesAllowed = useCustomerDataExportAccess();
+  const exportCsv = async () => {
+    if (!await requireCustomerDataExport()) return;
     const rows = [
       ['Timestamp', 'Source', 'Event', 'Success', 'Email', 'IP', 'Device', 'Failure reason'],
       ...events.map(e => [
@@ -147,7 +151,7 @@ export const CustomerLoginActivity: React.FC<Props> = ({ email, customerId }) =>
             <Button size="sm" variant="ghost" onClick={load} disabled={loading} className="h-7 px-2">
               {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
             </Button>
-            <Button size="sm" variant="ghost" onClick={exportCsv} disabled={!events.length} className="h-7 px-2">
+            <Button size="sm" variant="ghost" onClick={exportCsv} disabled={!exportFilesAllowed || (!events.length)} className="h-7 px-2">
               <Download className="h-3.5 w-3.5" />
             </Button>
           </div>

@@ -1,4 +1,7 @@
-export const exportToCSV = (data: any[], filename: string) => {
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
+
+export const exportToCSV = async (data: any[], filename: string) => {
+  if (!await requireCustomerDataExport()) return;
   if (data.length === 0) {
     return;
   }
@@ -36,6 +39,7 @@ export const exportToCSV = (data: any[], filename: string) => {
 };
 
 export const exportToPDF = async (data: any[], filename: string) => {
+  if (!await requireCustomerDataExport()) return;
   // For PDF export, we'll create a simple HTML structure and use window.print
   // In a production environment, you might want to use a library like jsPDF or pdfmake
   

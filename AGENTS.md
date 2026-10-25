@@ -36,4 +36,4 @@
 - Handover backups stay atomic; indexed normalized ownership lookups and bounded per-RPC timeouts prevent large transfers timing out.
 - Payment-click reads require active staff; call-event writes require the caller's own active staff ID, and lead/allocation audit writes stay system-only so client accounts cannot forge history. Staff archiving must explicitly reject a missing management role.
 - Bulk pricing imports require the shared active-admin authentication guard before parsing updates; preserve existing calculations after authorization to protect live prices.
-- Staff export controls use shared role-only safeguards and an effective-role date window; email prefixes and parent overrides never confer export privileges. These controls do not replace table RLS or prevent copying already-readable records.
+- Customer-data exports recheck a shared server permission before downloads; only active admin/super-admin have default access, and other staff require a separately RLS-protected export grant managed only by those roles. Export grants never widen table RLS or prevent copying already-readable records.

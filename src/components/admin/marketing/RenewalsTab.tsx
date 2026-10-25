@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useDataExport } from '@/hooks/useDataExport';
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { format, differenceInDays, isPast, addDays } from 'date-fns';
@@ -68,9 +69,7 @@ export const RenewalsTab: React.FC = () => {
   const { userRole, user } = useAuth();
   const { exportToCSV, exportToExcel } = useDataExport();
 
-  const canExportRenewals =
-    MANAGER_EXPORT_ROLES.includes(userRole || '') ||
-    (user?.email || '').toLowerCase().startsWith('accounts@');
+  const canExportRenewals = useCustomerDataExportAccess();
 
   const [rangeExportOpen, setRangeExportOpen] = useState(false);
   const [rangeExportFrom, setRangeExportFrom] = useState('');
