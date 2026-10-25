@@ -1519,42 +1519,7 @@ export default function PriceUpdatesTab() {
 
           {previewVersion && (
             <div className="space-y-3">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-muted-foreground">
-                    <th className="py-1">Term</th>
-                    <th className="py-1">£0 excess</th>
-                    <th className="py-1">£150 excess</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {PERIODS.map(p => {
-                    // Old versions (July original, Aug hybrid, anything restored)
-                    // are shown at the permanent minimum sellable price too.
-                    const cell = (ex: number) => {
-                      const v = previewVersion.admin_matrix?.[p]?.[String(ex)]?.['2000'];
-                      if (!v) return null;
-                      return clampToNetFloor(Number(v), {
-                        paymentPeriod: p as any,
-                        voluntaryExcess: ex,
-                        claimLimit: 2000,
-                      });
-                    };
-                    return (
-                      <tr key={p} className="border-t">
-                        <td className="py-1.5 font-medium">{PERIOD_LABELS[p] || p}</td>
-                        <td className="py-1.5">{cell(0) ? formatGBP(cell(0)!) : '—'}</td>
-                        <td className="py-1.5">{cell(150) ? formatGBP(cell(150)!) : '—'}</td>
-                      </tr>
-                    );
-                  })}
-
-                </tbody>
-              </table>
-              <p className="text-xs text-muted-foreground">
-                Showing the £2,000 claim limit as a reference. Load it into the editor to see every
-                cell.
-              </p>
+              <PlanLiveComparison matrix={previewVersion.admin_matrix} discountPct={normalizeWebsiteDiscount(previewVersion.step3_discount_pct)} liveMatrix={liveVersion?.admin_matrix ?? codeMatrix} liveDiscountPct={normalizeWebsiteDiscount(liveVersion?.step3_discount_pct ?? 10)} liveLabel={liveVersion?.label ?? 'Built-in code pricing'} />
               {previewVersion.notes && (
                 <p className="text-xs text-muted-foreground">{previewVersion.notes}</p>
               )}
