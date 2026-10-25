@@ -22,6 +22,7 @@ import { PaginationControls } from '@/components/ui/pagination-controls';
 import { usePagination } from '@/hooks/usePagination';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
 import { useAuth } from '@/hooks/useAuth';
 import { QuickCancellationAdd } from './QuickCancellationAdd';
 import { MonthlyCohortRetention } from './MonthlyCohortRetention';
@@ -90,7 +91,7 @@ export const CancellationsTab: React.FC<{
   const { canExportTab } = usePermissions();
   const { exportToCSV: exportDataToCSV } = useDataExport();
   const { user, userRole } = useAuth();
-  const canExport = canExportTab('customers');
+  const canExport = useCustomerDataExportAccess();
 
   const [loadedAdminUsers, setLoadedAdminUsers] = useState<AdminUser[]>([]);
   const adminUsers = adminUsersProp ?? loadedAdminUsers;
@@ -404,11 +405,7 @@ export const CancellationsTab: React.FC<{
   };
 
   // Full export: every column from the cancellation row, for management + lead_gen only.
-  const canExportFullCancellations =
-    currentAdminUser?.role === 'super_admin' ||
-    currentAdminUser?.role === 'admin' ||
-    currentAdminUser?.role === 'sales_manager' ||
-    currentAdminUser?.role === 'lead_gen';
+  const canExportFullCancellations = canExport;
 
   const handleExportFullCsv = () => {
     if (!canExportFullCancellations) {

@@ -20,6 +20,7 @@ import { useDataExport } from '@/hooks/useDataExport';
 import { AgentNoSourceExportDialog } from './AgentNoSourceExportDialog';
 import { canUseFullStaffExport } from '@/lib/staffExportAccess';
 import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 
 interface LeadsFullExportMenuProps {
   userRole?: string | null;
@@ -156,6 +157,7 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
 
   // Server-side paginated export by created_at so results are never truncated.
   const exportForRange = async (start: Date, end: Date, label: string) => {
+    if (!await requireCustomerDataExport()) return;
     if (!canExportFull) {
       toast.error('You do not have permission to export');
       return;

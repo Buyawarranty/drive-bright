@@ -1841,7 +1841,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 {hideSandboxLeads ? 'Chat test leads hidden' : 'Chat test leads showing'}
               </Button>
             )}
-            {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+            {canExport && (
               <Button
                 variant="outline"
                 size="sm"
@@ -1853,7 +1853,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 Export for WATI (WhatsApp)
               </Button>
             )}
-            {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+            {canExport && (
               <Button
                 variant="outline"
                 size="sm"
@@ -1865,7 +1865,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 Lead with notes
               </Button>
             )}
-            {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+            {canExport && (
               <Button
                 variant="outline"
                 size="sm"

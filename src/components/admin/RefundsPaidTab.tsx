@@ -21,6 +21,7 @@ import { PaginationControls } from '@/components/ui/pagination-controls';
 import { usePagination } from '@/hooks/usePagination';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
 import { useAuth } from '@/hooks/useAuth';
 
 const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
@@ -85,7 +86,7 @@ export const RefundsPaidTab: React.FC<{
   const { canExportTab } = usePermissions();
   const { exportToCSV: exportDataToCSV } = useDataExport();
   const { user, userRole } = useAuth();
-  const canExport = canExportTab('customers');
+  const canExport = useCustomerDataExportAccess();
 
   const [loadedAdminUsers, setLoadedAdminUsers] = useState<AdminUser[]>([]);
   const adminUsers = adminUsersProp ?? loadedAdminUsers;

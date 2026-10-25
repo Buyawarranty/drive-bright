@@ -3677,6 +3677,7 @@ export const CustomersTab = ({
   // Queries Supabase directly with pagination + signup_date DESC ordering so the
   // export is not capped by the 3000-row in-memory list (which is ordered by updated_at).
   const exportForRange = async (start: Date, end: Date, label: string) => {
+    if (!await requireCustomerDataExport()) return;
     if (!canExportFullCustomers) {
       toast.error('You do not have permission to export');
       return;
