@@ -1,0 +1,23 @@
+import { supabase } from '@/integrations/supabase/client';
+
+type AttendanceKind = 'open' | 'activity' | 'ping' | 'hidden' | 'left_crm' | 'logout';
+let endSession: (() => Promise<void>) | undefined;
+
+export function registerAttendanceLogout(handler: () => Promise<void>) {
+  endSession = handler;
+  return () => { if (endSession === handler) endSession = undefined; };
+}
+
+export async function recordCrmAttendance(sessionId: string, kind: AttendanceKind, tab?: string) {
+  const { error, data } = await supabase.functions.invoke('crm-attendance', {
+    body: { action: 'record', sessionId, kind, tab: tab || null },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (error || data?.error) throw new Error('Unable to record CRM attendance');
+}
+
+export async function signOutWithAttendance() {
+  // Attendance must not trap someone in their account during an outage.
+  await endSession?.().catch(() => undefined);
+  return supabase.auth.signOut();
+}
