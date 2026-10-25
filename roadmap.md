@@ -7,7 +7,8 @@
 - [ ] Real signed-in save/read-back remains unavailable with external unmanaged Supabase. Additional existing claim-limit test expects 939 but current unchanged engine returns 1033; pricing left untouched.
 
 ## Sales own-lead pop-ups
-- [ ] Audit and close remaining notification-bell, WhatsApp reply and authorisation-result ownership gaps; recheck screenshot's checkout alert without changing management or allocation.
+- [x] Closed notification-bell, WhatsApp reply and policy-linked authorisation-result ownership gaps; suppressed unassigned Open Pool nudges for sales/sales leads. Screenshot's checkout alert already checks current lead ownership; management and allocation unchanged.
+- [x] 21 ownership/privacy regression tests passed; preview build OK, protected access redirects to sign-in without runtime errors. Signed-in notification read-back remains unavailable with external unmanaged Supabase; nothing published.
 - [x] Own-lead checks cover new-lead, failed-payment, stuck-checkout, price-beat and recent alerts; reminder and resubmission alerts use current assignment. Unscoped and website-chat pop-ups remain blocked for sales/sales leads, even with permission overrides; allocation and management access unchanged.
 - [x] 19 ownership/privacy regression tests passed; preview build OK and protected route redirects to authentication with no runtime errors. Nothing published.
 - [ ] Signed-in own/other-lead alert read-back is unavailable with external unmanaged Supabase.
