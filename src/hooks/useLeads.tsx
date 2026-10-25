@@ -852,13 +852,19 @@ export const useLeads = (options?: UseLeadsOptions) => {
       // fetch can never quietly narrow a search back down to the agent's own rows.
       const fetchGlobalSearchLeads = async () => {
         if (!serverSearchTermRef.current?.trim()) return { data: [], error: null } as any;
-        return await applyServerSearchFilter(
-          supabase
-            .from('sales_leads')
-            .select(SELECT_COLUMNS)
-            .order('created_at', { ascending: false })
-            .limit(LEADS_PAGE_SIZE)
-        );
+        let query = supabase
+          .from('sales_leads')
+          .select(SELECT_COLUMNS)
+          .order('created_at', { ascending: false })
+          .limit(LEADS_PAGE_SIZE);
+        // Sold leads (converted/upgraded) must never reach a sales agent's or
+        // sales lead's browser — not even as search hits. Exclude them in the
+        // query itself so the data never leaves the database for these roles.
+        const searchRole = impersonationRef.current.effectiveRole?.trim().toLowerCase();
+        if (searchRole === 'sales' || searchRole === 'sales_lead') {
+          query = query.not('status', 'in', '(converted,upgraded)');
+        }
+        return await applyServerSearchFilter(query);
       };
 
       const isSearching = !!serverSearchTermRef.current?.trim();

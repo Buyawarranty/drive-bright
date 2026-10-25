@@ -201,3 +201,4 @@ Updated: just now
 - [Footer ICO logo](mem://brand/footer-ico-logo) — "ico." wordmark restored in footer Company details (16 Oct 2026); still no C1994014 number, no shield
 - [Analytics Visibility](mem://admin/analytics/visibility-limited-to-management) — sales, sales_lead and sales_manager never see Analytics (menu + direct link); management/accounts/lead_gen only
 - [Expired warranties](mem://features/expired-warranties) — Policies auto-expire on end date (nightly job); Expired status filter in Customer Management; clean expired customers still feed Renewals
+- [Sold leads hidden from sales](mem://admin/leads/sold-leads-hidden-from-sales) — Converted/upgraded leads vanish for sales/sales_lead in New Leads list, counts and search; management keeps full view

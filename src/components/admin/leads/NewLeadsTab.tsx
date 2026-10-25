@@ -757,9 +757,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       if (s === 'fake_lead') return false;
       if (s === 'lost') return false;
       if (s === 'not_interested') return false;
+      // Sold leads (converted/upgraded) vanish for sales agents and sales
+      // leads — list, counts and search all derive from this memo, so they
+      // can never browse or look up a sold customer. Management keeps full
+      // visibility.
+      if (isSalesFeedUser && (s === 'converted' || s === 'upgraded')) return false;
       return true;
     }),
-    [leads]
+    [leads, isSalesFeedUser]
   );
 
 
