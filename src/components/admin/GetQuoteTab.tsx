@@ -103,6 +103,7 @@ import { useSavedPricingModel } from './pricing/useSavedPricingModel';
 import { invokeWithFreshSession } from '@/lib/invokeWithFreshSession';
 import { normalizeSavedEmailEdit } from '@/lib/quoteEmailEditPersistence';
 import { markHeavyTabBusy } from '@/lib/heavyTabBusy';
+import { isOwnLeadImportRole } from '@/lib/salesLeadPrivacy';
 
 
 
@@ -241,6 +242,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const { toast } = useToast();
   const { userRole, user } = useAuth();
   const currentAdminId = useCurrentAdminId();
+  const quoteViewerRole = effectiveUserRole ?? userRole;
+  const ownLeadImportsOnly = isOwnLeadImportRole(quoteViewerRole);
   const canOverrideAge = ['super_admin', 'admin', 'sales_manager', 'performance_manager', 'claims_manager'].includes(userRole || '');
   const tyreCoverEnabled = useFeatureEnabled('addon_tyre_cover', false);
   const [step, setStep] = useState(1);
@@ -923,7 +926,21 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   // Handle lead selection (from search or pre-populated)
-  const handleLeadSelect = (lead: LeadData) => {
+  const handleLeadSelect = async (lead: LeadData) => {
+    if (!quoteViewerRole) return;
+    if (ownLeadImportsOnly) {
+      if (!currentAdminId || lead.id.includes(':')) {
+        toast({ title: 'Import restricted', description: 'You can only import leads assigned to you.', variant: 'destructive' });
+        return;
+      }
+      const { data, error } = await supabase.rpc('can_import_quote_lead', {
+        p_lead_id: lead.id, p_viewer_admin_id: currentAdminId,
+      }).abortSignal(AbortSignal.timeout(12000));
+      if (error || data !== true) {
+        toast({ title: 'Import restricted', description: 'You can only import leads currently assigned to you.', variant: 'destructive' });
+        return;
+      }
+    }
     // Abandoned-cart rows arrive with a synthetic id ("cart:<uuid>"). Storing that
     // as the sales lead id broke everything downstream that writes it to a uuid
     // column (payment links, "mark lead converted"), so the import looked dead.
@@ -1061,7 +1078,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     if (prePopulatedLead) {
       handleLeadSelect(prePopulatedLead);
     }
-  }, [prePopulatedLead]);
+  }, [prePopulatedLead, currentAdminId, quoteViewerRole]);
 
 
   // Auto-pull the customer's name / email / phone from a matching lead when the
@@ -1075,6 +1092,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     // PERF: this reg match scans sales_leads, so only run it once the agent has
     // typed a full plate and has stopped typing — not on every keystroke.
     if (reg.length < 6) return;
+    if (!quoteViewerRole || (ownLeadImportsOnly && !currentAdminId)) return;
     if (selectedLeadId) return;
     if (autoLeadReg === reg) return;
     setAutoLeadReg(reg);
@@ -1084,12 +1102,14 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         const spaced = reg.length > 4 ? `${reg.slice(0, reg.length - 3)} ${reg.slice(-3)}` : reg;
         // PERF: indexed equality on vehicle_reg (plates are stored uppercase),
         // never ilike — an ilike scan of every lead took ~65ms per keystroke.
-        const { data } = await supabase
+        let query = supabase
           .from('sales_leads')
           .select('id, first_name, last_name, email, phone, assigned_to, mileage, created_at')
           .in('vehicle_reg', [reg, spaced])
           .order('created_at', { ascending: false })
           .limit(1);
+        if (ownLeadImportsOnly && currentAdminId) query = query.eq('assigned_to', currentAdminId);
+        const { data } = await query;
         if (cancelled) return;
         const lead = (data as any[])?.[0];
         if (!lead) return;
@@ -1114,7 +1134,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }, 500);
     return () => { cancelled = true; clearTimeout(debounce); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regNumber, selectedLeadId]);
+  }, [regNumber, selectedLeadId, currentAdminId, quoteViewerRole, ownLeadImportsOnly]);
 
 
   // MOT mileage lookup is OFF in Quotes & Orders. Only the registration plate is
@@ -4620,7 +4640,7 @@ Questions? Call 0330 229 5040`;
                           )}
                         </>
                       )}
-                      <LeadSearchPopover onSelectLead={handleLeadSelect} />
+                      <LeadSearchPopover onSelectLead={handleLeadSelect} userRole={quoteViewerRole} />
                       {savedQuotes.length > 0 && (
                         <Button
                           variant="outline"
@@ -5207,6 +5227,7 @@ Questions? Call 0330 229 5040`;
                   <div className="flex items-center gap-2 flex-wrap">
                     <LeadSearchPopover 
                       onSelectLead={handleLeadSelect} 
+                      userRole={quoteViewerRole}
                       className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-300"
                     />
                     <Button

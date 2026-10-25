@@ -8,6 +8,8 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { WidgetErrorBoundary } from '../WidgetErrorBoundary';
 import { LeadFreezeRulesCard } from './LeadFreezeRulesCard';
 import { ProgressOverviewStrip } from './ProgressOverviewStrip';
+import { useOwnAttendanceBar } from '@/hooks/useOwnAttendanceBar';
+import { showPersonalAttendanceBar } from '@/lib/salesLeadPrivacy';
 import { AllAgentsProgressPanel } from './AllAgentsProgressPanel';
 import { LeadFreezeNoticeBanner } from './LeadFreezeNoticeBanner';
 
@@ -163,6 +165,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Paid lead lock system — only admin/super_admin bypass the lock
   const isPaidLocked = !isAdminOrSuperAdmin;
   const currentAdminId = useCurrentAdminId();
+  const ownAttendanceBarEnabled = useOwnAttendanceBar(currentAdminId);
   const { hasApprovedAccess, hasPendingRequest, requestAccess } = useLeadAccessRequests([], currentAdminId);
   
   const paidLeadAccessCheck = useCallback((leadId: string) => ({
@@ -1763,7 +1766,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       ) : (
         <>
           <WidgetErrorBoundary label="Lead freeze notice"><LeadFreezeNoticeBanner adminUserId={currentAdminId} /></WidgetErrorBoundary>
-          <WidgetErrorBoundary label="Progress overview"><ProgressOverviewStrip /></WidgetErrorBoundary>
+          {showPersonalAttendanceBar(userRole, ownAttendanceBarEnabled) && (
+            <WidgetErrorBoundary label="Progress overview"><ProgressOverviewStrip /></WidgetErrorBoundary>
+          )}
         </>
       )}
       <WidgetErrorBoundary label="Lead Freeze rules"><LeadFreezeRulesCard /></WidgetErrorBoundary>
@@ -2203,7 +2208,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <span className="hidden sm:inline">Per Agent</span>
               </Button>
             )}
-            {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' || userRole === 'sales_lead' || userRole === 'claims_manager') && (
+            {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' || userRole === 'claims_manager') && (
               <AttendanceQuickLink />
             )}
           </div>

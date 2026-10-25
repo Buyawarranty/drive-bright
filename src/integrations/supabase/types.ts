@@ -9074,6 +9074,7 @@ export type Database = {
           notice_seen_at: string | null
           previous_team_id: string | null
           role_in_team: string
+          show_own_attendance_bar: boolean
           team_changed_at: string | null
           team_id: string
           workstream_new_leads: boolean
@@ -9090,6 +9091,7 @@ export type Database = {
           notice_seen_at?: string | null
           previous_team_id?: string | null
           role_in_team?: string
+          show_own_attendance_bar?: boolean
           team_changed_at?: string | null
           team_id: string
           workstream_new_leads?: boolean
@@ -9106,6 +9108,7 @@ export type Database = {
           notice_seen_at?: string | null
           previous_team_id?: string | null
           role_in_team?: string
+          show_own_attendance_bar?: boolean
           team_changed_at?: string | null
           team_id?: string
           workstream_new_leads?: boolean
@@ -15684,6 +15687,10 @@ export type Database = {
         Returns: string
       }
       can_export_customer_data: { Args: never; Returns: boolean }
+      can_import_quote_lead: {
+        Args: { p_lead_id: string; p_viewer_admin_id?: string }
+        Returns: boolean
+      }
       can_manage_claim_reminders: { Args: never; Returns: boolean }
       can_manage_lead_routing: { Args: { _user_id: string }; Returns: boolean }
       can_manage_reporting: { Args: { _uid?: string }; Returns: boolean }
@@ -16813,6 +16820,25 @@ export type Database = {
       }
       save_pinned_shortcuts: { Args: { ids: string[] }; Returns: undefined }
       search_import_leads: {
+        Args: { p_limit?: number; p_term: string }
+        Returns: {
+          assigned_to: string
+          created_at: string
+          email: string
+          first_name: string
+          last_name: string
+          mileage: string
+          phone: string
+          plan_interest: string
+          row_id: string
+          source: string
+          vehicle_make: string
+          vehicle_model: string
+          vehicle_reg: string
+          vehicle_year: string
+        }[]
+      }
+      search_import_leads_unrestricted: {
         Args: { p_limit?: number; p_term: string }
         Returns: {
           assigned_to: string

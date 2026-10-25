@@ -40,6 +40,7 @@ import { Percent, BellRing } from 'lucide-react';
 import { triggerTestLeadAlert } from '@/hooks/useNewLeadAlert';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
 import { AgentDataVisibilityPanel } from './leads/AgentDataVisibilityPanel';
+import { OwnAttendanceBarPanel } from './leads/OwnAttendanceBarPanel';
 import { PausedAgentsOverrideBar } from './leads/PausedAgentsOverrideBar';
 import { CancellationsAllocationPanel } from './leads/CancellationsAllocationPanel';
 import { SaveOnlineSaleAllocationPanel } from './leads/SaveOnlineSaleAllocationPanel';
@@ -69,6 +70,7 @@ const QUICK_LINKS = [
   { id: 'lead-freeze', label: 'Leads on / off', className: 'bg-teal-300/50 text-teal-900 border-teal-200/50 hover:bg-teal-400/50' },
 
   { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
+  { id: 'own-attendance-bar', label: 'Own attendance bar', className: 'bg-muted text-foreground border-border hover:bg-accent' },
   { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
   { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-300/50 text-rose-900 border-rose-200/50 hover:bg-rose-400/50' },
   { id: 'recovery-audit', label: 'Recover leads', className: 'bg-cyan-300/50 text-cyan-900 border-cyan-200/50 hover:bg-cyan-400/50' },
@@ -393,6 +395,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       {/* See all sales agents data — per-agent switch (default off) controlling
           whether sales agents see other agents' names on deals in Customer Management */}
       {isManagement && <AgentDataVisibilityPanel />}
+      {isManagement && <OwnAttendanceBarPanel />}
 
       {/* Quotes & Orders — Confirm external payment price block master switch */}
       {isManagement && <ConfirmPaymentBlockPanel />}

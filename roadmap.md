@@ -1,5 +1,11 @@
 # Roadmap
 
+## Own-lead imports and optional attendance bar
+- [x] Restrict shared import search and Quotes & Orders manual/prepopulated import to the sales/sales lead viewer's own assigned leads; skip customer/cart fallback and recheck current ownership. Registration autofill uses the same own-agent scope.
+- [x] Default their personal New Leads progress/attendance bar off; add management-controlled per-agent own-bar switch and shortcut in Lead Allocation without changing tracking or management reports. All six current team settings remain off.
+- [x] 24 regression checks passed; preview build OK and public access remains protected with no runtime errors. Database restrictions applied; app display changes unpublished.
+- [ ] Signed-in import and switch save/read-back unavailable with external unmanaged Supabase.
+
 ## Customer-data export permissions
 - [x] Admin/super-admin default export access; every other staff role requires a new explicit Export files grant. No grants pre-enabled.
 - [x] Export files control in Edit user permissions; protected grant table permits only admin/super-admin creation and removal. Old per-tab grants/email prefixes no longer confer export access.
