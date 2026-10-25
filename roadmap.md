@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Visible pricing editor and live comparison
-- [ ] Make saved-plan Load into editor open the full named editor immediately, including grid, vehicle variables and website difference.
-- [ ] Show saved-plan sample prices against current live pricing and matching Quotes & Orders versus Step 3 differences; preserve all pricing and publication behavior.
-- [ ] Run pricing regressions and verify editor presentation; signed-in checks require an available session.
+- [x] Saved-plan Open and Load into editor now open the full named editor immediately, including grid, vehicle variables and website difference.
+- [x] Shared read-only comparison shows matching live/plan Q&O and Step 3 totals, pound/percentage changes and Q&O versus Step 3; grid live labels now use the published matrix rather than code defaults. No pricing or publication changes.
+- [x] 29 targeted pricing tests passed; preview build OK. Isolated Playwright fixture verified Open, Load into editor, comparison totals and vehicle shortcut with screenshots and no runtime errors.
+- [ ] Real signed-in save/read-back remains unavailable with external unmanaged Supabase. Additional existing claim-limit test expects 939 but current unchanged engine returns 1033; pricing left untouched.
 
 ## Sales own-lead pop-ups
 - [x] Own-lead checks cover new-lead, failed-payment, stuck-checkout, price-beat and recent alerts; reminder and resubmission alerts use current assignment. Unscoped and website-chat pop-ups remain blocked for sales/sales leads, even with permission overrides; allocation and management access unchanged.
