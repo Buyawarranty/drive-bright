@@ -1,5 +1,9 @@
 # Roadmap
 
+## Sales own-lead pop-ups
+- [ ] Enforce own-lead-only pop-ups for sales and sales leads across CRM alerts without changing allocation or management access.
+- [ ] Verify ownership rules with regression tests and preview checks; retain existing sales chat prohibitions.
+
 ## Own-lead imports and optional attendance bar
 - [x] Restrict shared import search and Quotes & Orders manual/prepopulated import to the sales/sales lead viewer's own assigned leads; skip customer/cart fallback and recheck current ownership. Registration autofill uses the same own-agent scope.
 - [x] Default their personal New Leads progress/attendance bar off; add management-controlled per-agent own-bar switch and shortcut in Lead Allocation without changing tracking or management reports. All six current team settings remain off.
