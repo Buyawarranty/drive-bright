@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealAdminId } from '@/hooks/useCurrentAdminId';
+import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
+import { useViewAs } from '@/contexts/ViewAsContext';
 
 interface ReplyAlert {
   message_id: string;
@@ -20,6 +22,8 @@ const POLL_MS = 15000;
 export const WhatsAppReplyAlerts = () => {
   const adminId = useRealAdminId();
   const [replies, setReplies] = useState<ReplyAlert[]>([]);
+  const { isImpersonating } = useViewAs();
+  const canShow = usePopupLeadOwnership(replies.flatMap(reply => reply.lead_id ? [reply.lead_id] : []));
   const dismissedRef = useRef<Set<string>>(new Set());
   const storageKey = adminId ? `whatsapp_reply_notifications_seen:${adminId}` : null;
 
@@ -63,7 +67,7 @@ export const WhatsAppReplyAlerts = () => {
     };
   }, [adminId, load]);
 
-  const visible = useMemo(() => replies.slice(0, 3), [replies]);
+  const visible = replies.filter(reply => canShow(reply.lead_id)).slice(0, 3);
   const [opened, setOpened] = useState<Set<string>>(new Set());
 
   const markOpened = (messageId: string) => {
@@ -90,7 +94,7 @@ export const WhatsAppReplyAlerts = () => {
     window.location.href = `/admin-dashboard/?tab=new-leads&q=${query}`;
   };
 
-  if (!adminId || visible.length === 0) return null;
+  if (!adminId || isImpersonating || visible.length === 0) return null;
 
   const unreadNumbers = new Map<string, number>();
   visible.forEach((reply) => {

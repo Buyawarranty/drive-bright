@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { withBackgroundPriority } from '@/lib/requestQueue';
 import { canSeeLeadPopup, isSalesPopupRole } from '@/lib/popupAccess';
+import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
 
 export interface AdminNotification {
   id: string;
@@ -23,6 +24,9 @@ interface CountState {
 
 export const useAdminNotifications = (userRole?: string | null, adminId?: string | null) => {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const canShow = usePopupLeadOwnership(notifications.filter(n => n.type === 'lead_resubmission').map(n => n.reference_id));
+  const visibleNotifications = !userRole ? [] : notifications.filter(n =>
+    !isSalesPopupRole(userRole) || (n.type === 'lead_resubmission' && canShow(n.reference_id)));
   const [counts, setCounts] = useState<CountState>({ contacts: 0, claims: 0, customers: 0, resubmissions: 0 });
   const [loading, setLoading] = useState(true);
   const [readIds, setReadIds] = useState<Set<string>>(() => {
@@ -49,6 +53,11 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
   const knownLeadResubmissionCountsRef = useRef<Record<string, number>>({});
 
   const fetchNotifications = useCallback(async () => {
+    if (!userRole || !adminId) {
+      setNotifications([]);
+      setLoading(false);
+      return;
+    }
     const currentReadIds = readIdsRef.current;
     try {
       // Fetch new contact submissions (last 24 hours, status = 'new')
@@ -159,7 +168,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
           type: 'lead_resubmission',
           title: '🔥 Lead Came Back!',
           message: `${name}${regInfo} resubmitted (×${r.resubmission_count})`,
-          created_at: r.last_resubmitted_at!,
+          created_at: r.last_resubmitted_at || '',
           is_read: currentReadIds.has(`resub-${r.id}-${r.resubmission_count}`),
           reference_id: r.id,
         });
@@ -280,6 +289,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
         schema: 'public',
         table: 'sales_leads',
       }, (payload) => {
+        scheduleRefetch(); // Assignment changes must also remove old-recipient notices.
         const oldData = payload.old as { resubmission_count?: number };
         const newData = payload.new as { 
           id?: string;
@@ -378,10 +388,10 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
   }, [notifications]);
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = visibleNotifications.filter(n => !n.is_read).length;
 
   return {
-    notifications,
+    notifications: visibleNotifications,
     counts,
     unreadCount,
     loading,
