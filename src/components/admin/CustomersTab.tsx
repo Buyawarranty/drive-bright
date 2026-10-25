@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
 import { useCanSeeAllAgentData } from '@/hooks/useCanSeeAllAgentData';
+import { shouldHideOtherAgentNames, dealOwnerLabel } from '@/lib/agentDataVisibility';
 import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
 import { canViewPayLaterClaims, hasPayLaterClaim } from '@/lib/payLaterClaims';
 import { canUseStaffExport, canUseFullStaffExport, staffExportRows } from '@/lib/staffExportAccess';
@@ -7386,7 +7387,7 @@ Please log in and change your password after first login.`;
                               if (customer.assigned_to === WEBSITE_SALES_ACCOUNT_ID) return 'Website';
                               const u = adminUsers.find(a => a.id === customer.assigned_to);
                               const realName = u ? (`${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email) : 'Assigned';
-                              return dealOwnerLabel(customer.assigned_to, realName);
+                              return maskDealOwner(customer.assigned_to, realName);
                             })()}
                           </span>
                         )}
