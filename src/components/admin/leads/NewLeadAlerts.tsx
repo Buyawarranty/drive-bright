@@ -44,7 +44,7 @@ export const NewLeadAlerts: React.FC = () => {
   const { queue, dismissLead: rawDismissLead, snoozeLead } = useNewLeadAlert();
   const dismissLead = (id: string) => {
     const l: any = queue.find((x) => x.id === id);
-    if (l) pushRecentAlert({ key: `lead-${id}`, title: 'New lead', detail: `${[l.first_name, l.last_name].filter(Boolean).join(' ') || 'Lead'}${l.vehicle_reg ? ' – ' + l.vehicle_reg : ''}`, tone: 'emerald' });
+    if (l) pushRecentAlert({ key: `lead-${id}`, leadId: id, title: 'New lead', detail: `${[l.first_name, l.last_name].filter(Boolean).join(' ') || 'Lead'}${l.vehicle_reg ? ' – ' + l.vehicle_reg : ''}`, tone: 'emerald' });
     rawDismissLead(id);
   };
   const navigate = useNavigate();

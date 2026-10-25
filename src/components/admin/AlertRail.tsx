@@ -5,6 +5,7 @@ import { readRecentAlerts, removeRecentAlert, RECENT_ALERTS_EVENT, type RecentAl
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Button } from '@/components/ui/button';
 import { isLiveAlertsOpen, setLiveAlertsOpen } from '@/lib/liveAlertsPanelState';
+import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
 
 /**
  * Live Alerts panel for the admin dashboard.
@@ -63,7 +64,9 @@ const ago = (at: number) => {
 };
 
 const RecentAlerts: React.FC = () => {
-  const [list, setList] = React.useState<RecentAlert[]>(() => readRecentAlerts());
+  const [storedList, setList] = React.useState<RecentAlert[]>(() => readRecentAlerts());
+  const canShow = usePopupLeadOwnership(storedList.flatMap(a => a.leadId ? [a.leadId] : []));
+  const list = storedList.filter(a => canShow(a.leadId));
   const [all, setAll] = React.useState(false);
   const [open, setOpen] = React.useState(true);
   const [expandedKeys, setExpandedKeys] = React.useState<string[]>([]);
