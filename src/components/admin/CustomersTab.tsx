@@ -833,9 +833,9 @@ export const CustomersTab = ({
   const isSalesScopedRole = isSalesAgent || isSalesLead;
   // When the "See all sales agents data" switch is off for this agent, hide
   // every other agent's name — they only see their own name on their own deals.
-  const hideOtherAgentNames = isSalesScopedRole && !canSeeAllAgentData;
-  const dealOwnerLabel = (ownerId: string | null | undefined, realName: string) =>
-    hideOtherAgentNames && ownerId && ownerId !== effectiveAdminId ? 'Sales agent' : realName;
+  const hideOtherAgentNames = shouldHideOtherAgentNames(normalizedRole, canSeeAllAgentData);
+  const maskDealOwner = (ownerId: string | null | undefined, realName: string) =>
+    dealOwnerLabel(hideOtherAgentNames, ownerId, effectiveAdminId, realName);
   // Google Ads-style date filter visible only for these roles
   const canUseDateFilter = isSuperAdmin || isAdmin || isLeadGen || isClaimsManager || isSalesScopedRole;
 
