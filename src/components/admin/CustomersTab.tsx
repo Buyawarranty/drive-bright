@@ -5156,7 +5156,7 @@ Buyawarranty.co.uk`,
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="search"
-                      placeholder={isSalesScopedRole ? 'Search all customers — name, email, phone, reg…' : 'Search name, email, phone, reg…'}
+                      placeholder={isSalesScopedRole ? 'Search your customers — name, email, phone, reg…' : 'Search name, email, phone, reg…'}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-9 h-9"
