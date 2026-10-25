@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Sales own-lead pop-ups
-- [ ] Enforce own-lead-only pop-ups for sales and sales leads across CRM alerts without changing allocation or management access.
-- [ ] Verify ownership rules with regression tests and preview checks; retain existing sales chat prohibitions.
+- [x] Own-lead checks cover new-lead, failed-payment, stuck-checkout, price-beat and recent alerts; reminder and resubmission alerts use current assignment. Unscoped and website-chat pop-ups remain blocked for sales/sales leads, even with permission overrides; allocation and management access unchanged.
+- [x] 19 ownership/privacy regression tests passed; preview build OK and protected route redirects to authentication with no runtime errors. Nothing published.
+- [ ] Signed-in own/other-lead alert read-back is unavailable with external unmanaged Supabase.
 
 ## Own-lead imports and optional attendance bar
 - [x] Restrict shared import search and Quotes & Orders manual/prepopulated import to the sales/sales lead viewer's own assigned leads; skip customer/cart fallback and recheck current ownership. Registration autofill uses the same own-agent scope.
