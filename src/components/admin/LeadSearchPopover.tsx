@@ -9,6 +9,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { cn } from '@/lib/utils';
 import { withPriority } from '@/lib/requestQueue';
+import { useAuth } from '@/hooks/useAuth';
+import { useViewAs } from '@/contexts/ViewAsContext';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { canSelectQuoteLead, isOwnLeadImportRole } from '@/lib/salesLeadPrivacy';
 
 
 export interface LeadData {
@@ -30,12 +34,19 @@ export interface LeadData {
 interface LeadSearchPopoverProps {
   onSelectLead: (lead: LeadData) => void;
   className?: string;
+  userRole?: string | null;
 }
 
 export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   onSelectLead,
-  className
+  className,
+  userRole: roleOverride,
 }) => {
+  const { userRole } = useAuth();
+  const { effectiveRole } = useViewAs();
+  const role = roleOverride ?? effectiveRole ?? userRole;
+  const adminId = useCurrentAdminId();
+  const ownOnly = isOwnLeadImportRole(role);
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [leads, setLeads] = useState<LeadData[]>([]);
@@ -44,6 +55,28 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   const [rescuing, setRescuing] = useState(false);
   const [rescueNote, setRescueNote] = useState<string | null>(null);
   const adminMap = useAllAdminUsersMap();
+
+  // Scoped searches never run the unrestricted cart/customer fallback paths.
+  const ownSearch = React.useCallback(async (term: string) => {
+    if (!adminId || !role) return [];
+    const raw = term.trim();
+    let query = supabase.from('sales_leads')
+      .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to')
+      .eq('assigned_to', adminId).order('created_at', { ascending: false }).limit(50);
+    if (raw) {
+      const quote = (value: string) => `"%${value.replace(/["\\,()]/g, ' ').trim()}%"`;
+      const compact = raw.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      const spaced = compact.length >= 5 ? `${compact.slice(0, -3)} ${compact.slice(-3)}` : compact;
+      const clauses = ['first_name', 'last_name', 'email', 'phone'].map(col => `${col}.ilike.${quote(raw)}`);
+      if (compact) clauses.push(`vehicle_reg.ilike.${quote(compact)}`, `vehicle_reg.ilike.${quote(spaced)}`);
+      const digits = raw.replace(/\D/g, '');
+      if (digits.length >= 7) clauses.push(`phone.ilike.${quote(digits.slice(-9))}`);
+      query = query.or(clauses.join(','));
+    } else query = query.eq('is_paid', false);
+    const { data, error } = await query.abortSignal(AbortSignal.timeout(12000));
+    if (error) throw error;
+    return (data ?? []).filter(lead => canSelectQuoteLead(role, adminId, lead));
+  }, [adminId, role]);
 
   const ownerNameFor = React.useCallback((assignedTo?: string | null) => {
     if (!assignedTo) return null;
@@ -117,6 +150,13 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     setRescueNote(null);
     setLoadError(null);
     try {
+      if (!role) { setLeads([]); return; }
+      if (ownOnly) {
+        const found = await ownSearch(raw);
+        setLeads(found);
+        setRescueNote(found.length ? `Found ${found.length} of your leads.` : 'No matching leads assigned to you.');
+        return;
+      }
       // Try the server-side lookup first — it is the fastest and widest search.
       const rpcRows = await rpcSearch(raw);
       if (rpcRows && rpcRows.length > 0) {
@@ -211,7 +251,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     } finally {
       setRescuing(false);
     }
-  }, [searchTerm, rpcSearch]);
+  }, [searchTerm, rpcSearch, ownOnly, ownSearch, role]);
 
 
   // Fetch leads when popover opens or search term changes
@@ -250,6 +290,15 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     const fetchLeads = async () => {
       setLoading(true);
       try {
+        if (!role || (ownOnly && !adminId)) {
+          setLeads([]);
+          return;
+        }
+        if (ownOnly) {
+          const rows = await ownSearch(searchTerm);
+          if (!cancelled) { setLeads(rows); setLoadError(null); setRescueNote(null); }
+          return;
+        }
         const hasSearch = !!searchTerm.trim();
 
         // Primary path for any search: one indexed server-side lookup.
@@ -503,10 +552,11 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
       clearTimeout(debounce);
       clearTimeout(watchdog);
     };
-  }, [open, searchTerm, rpcSearch]);
+  }, [open, searchTerm, rpcSearch, role, ownOnly, ownSearch, adminId]);
 
 
   const handleSelectLead = (lead: LeadData) => {
+    if (!canSelectQuoteLead(role, adminId, lead)) return;
     onSelectLead({ ...lead, owner_name: ownerNameFor(lead.assigned_to) });
     setOpen(false);
     setSearchTerm('');
@@ -556,7 +606,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               {rescuing && <span className="text-xs text-muted-foreground">Running backup search…</span>}
             </div>
-          ) : leads.length === 0 ? (
+          ) : leads.filter(lead => canSelectQuoteLead(role, adminId, lead)).length === 0 ? (
             <div className="text-center py-8 px-3 text-muted-foreground space-y-3">
               <div>
                 {loadError ? (
@@ -586,7 +636,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
           ) : (
 
             <div className="p-2 space-y-1">
-              {leads.map((lead) => (
+              {leads.filter(lead => canSelectQuoteLead(role, adminId, lead)).map((lead) => (
                 <button
                   type="button"
                   key={lead.id}
