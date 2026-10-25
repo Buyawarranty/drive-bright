@@ -6896,10 +6896,14 @@ Please log in and change your password after first login.`;
                                         vehicleReg={selectedCustomer.registration_plate}
                                       />
                                       <CustomerServiceNotes customerId={selectedCustomer.id} customerType="active" />
-                                      <CustomerAssignmentHistoryPanel
-                                        email={selectedCustomer.email}
-                                        phone={(selectedCustomer as any).phone || (selectedCustomer as any).mobile}
-                                      />
+                                      {/* Handover history names every agent who touched the deal —
+                                          hidden from agents without the "See all sales agents data" switch */}
+                                      {!hideOtherAgentNames && (
+                                        <CustomerAssignmentHistoryPanel
+                                           email={selectedCustomer.email}
+                                          phone={(selectedCustomer as any).phone || (selectedCustomer as any).mobile}
+                                        />
+                                      )}
 
                                     </>
                                   )}
