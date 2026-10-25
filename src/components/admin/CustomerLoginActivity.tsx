@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -110,7 +111,8 @@ export const CustomerLoginActivity: React.FC<Props> = ({ email, customerId }) =>
     if (email || customerId) load();
   }, [email, customerId, load]);
 
-  const exportCsv = () => {
+  const exportCsv = async () => {
+    if (!await requireCustomerDataExport()) return;
     const rows = [
       ['Timestamp', 'Source', 'Event', 'Success', 'Email', 'IP', 'Device', 'Failure reason'],
       ...events.map(e => [

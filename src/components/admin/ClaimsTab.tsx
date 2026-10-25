@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 
@@ -239,12 +240,14 @@ export const ClaimsTab = ({
   const totalCount = managerClaims.length;
 
 
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
+    if (!await requireCustomerDataExport()) return;
     exportToCSV(claims.map(formatClaimForExport as any), 'claims_export');
     toast({ title: 'Success', description: 'Exported to CSV' });
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
+    if (!await requireCustomerDataExport()) return;
     exportToPDF(claims.map(formatClaimForExport as any), 'claims_report');
   };
 

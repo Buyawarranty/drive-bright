@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -124,7 +125,8 @@ export const LookalikeAudienceBuilder: React.FC = () => {
     };
   }, [filtered]);
 
-  const exportCsv = () => {
+  const exportCsv = async () => {
+    if (!await requireCustomerDataExport()) return;
     if (!filtered.length) { toast.error('No customers match these filters'); return; }
     const header = ['Email', 'Phone', 'First Name', 'Last Name', 'Zip', 'Country', 'Vehicle', 'Year', 'Amount Paid', 'Payment Method', 'Term', 'Signup Date'];
     const lines = filtered.map(r => {

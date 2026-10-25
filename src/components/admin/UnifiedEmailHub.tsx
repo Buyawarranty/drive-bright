@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -1379,7 +1380,8 @@ const UnifiedEmailHub = () => {
 
     const sourceTypes = Array.from(new Set(emailLogs.map(l => (l.metadata as any)?.source_function).filter(Boolean))) as string[];
 
-    const handleExportCsv = () => {
+    const handleExportCsv = async () => {
+    if (!await requireCustomerDataExport()) return;
       const headers = [
         'Sent At', 'Status', 'Recipient Email', 'Recipient Name', 'Subject',
         'Template', 'Source Function', 'Registration Plate', 'Policy Number',

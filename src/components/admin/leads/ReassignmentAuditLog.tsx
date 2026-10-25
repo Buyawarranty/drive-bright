@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -208,7 +209,8 @@ export const ReassignmentAuditLog: React.FC = () => {
     });
   }, [rows, search, audits, byAdminId]);
 
-  const exportCsv = () => {
+  const exportCsv = async () => {
+    if (!await requireCustomerDataExport()) return;
     const header = ['Time', 'Lead', 'Lead ID', 'From agent', 'To agent', 'Changed by', 'Type', 'Reason'];
     const lines = filtered.map((r) => {
       const audit = auditFor(r);

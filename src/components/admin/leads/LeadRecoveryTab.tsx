@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Lead, AdminUser, LeadTag, LeadPriority } from '@/hooks/useLeads';
@@ -1377,7 +1378,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     }
   }, [currentUserId, currentRole, filteredLeads, claimSourceLeads, leads, agents, customerEmails, customerRegs, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, myOnly]);
 
-  const exportCsv = useCallback(() => {
+  const exportCsv = useCallback(async () => {
+    if (!await requireCustomerDataExport()) return;
     if (!filteredLeads.length) {
       toast.error('Nothing to export', { description: 'There are no leads in the current view.' });
       return;

@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { filterEligibleAbandonedCarts } from '@/lib/abandonedCartEligibility';
@@ -309,6 +310,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
   }, [filtered, platform]);
 
   const handleExport = async () => {
+    if (!await requireCustomerDataExport()) return;
     if (uniqueByEmail.length === 0) {
       toast.error('No carts to export in this date range');
       return;

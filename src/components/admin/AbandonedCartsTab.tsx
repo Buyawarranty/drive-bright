@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -182,6 +183,7 @@ export const AbandonedCartsTab: React.FC = () => {
   };
 
   const exportAllCarts = async (platform: 'google' | 'facebook') => {
+    if (!await requireCustomerDataExport()) return;
     try {
       const eligible = await filterEligibleAbandonedCarts(carts);
       setCarts(eligible);

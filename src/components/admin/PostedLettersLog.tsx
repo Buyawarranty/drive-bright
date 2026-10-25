@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -617,7 +618,8 @@ export const PostedLettersLog: React.FC = () => {
   const selectedEntries = filteredEntries.filter(e => selectedIds.has(e.id));
 
   // Export CSV
-  const exportCSV = () => {
+  const exportCSV = async () => {
+    if (!await requireCustomerDataExport()) return;
     const headers = ['Date Sent', 'Reg Plate', 'Customer Name', 'Email', 'Warranty Number', 'Plan Type', 'Status'];
     const rows = filteredEntries.map(e => [
       format(new Date(e.sent_at), 'dd/MM/yyyy'),

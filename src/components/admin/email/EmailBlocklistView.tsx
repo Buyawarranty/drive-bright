@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,8 @@ export const EmailBlocklistView: React.FC = () => {
     (u.vehicle_reg || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
+    if (!await requireCustomerDataExport()) return;
     const headers = ['Email', 'Customer Name', 'Vehicle Reg', 'Reason', 'Source', 'Blocked By', 'Date'];
     const rows = filtered.map(u => [
       u.email,

@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -206,7 +207,8 @@ export const MarketingAudienceTab: React.FC = () => {
   });
 
   // Export to CSV
-  const exportToCSV = () => {
+  const exportToCSV = async () => {
+    if (!await requireCustomerDataExport()) return;
     if (!audience || audience.length === 0) {
       toast.error('No data to export');
       return;

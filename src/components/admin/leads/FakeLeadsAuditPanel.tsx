@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, subWeeks, subMonths, format, formatDistanceToNow, parseISO } from 'date-fns';
@@ -342,7 +343,8 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
     }
   };
 
-  const exportCsv = () => {
+  const exportCsv = async () => {
+    if (!await requireCustomerDataExport()) return;
     const headers = ['Marked at', 'Marked by', 'Name', 'Email', 'Phone', 'Phone validity', 'Reg', 'Call count',
       'Reason', 'Reason note', 'Audit status', 'Audited by', 'Audited at'];
     const lines = [headers.join(',')];

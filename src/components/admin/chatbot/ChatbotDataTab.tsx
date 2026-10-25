@@ -1,3 +1,4 @@
+import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -193,7 +194,8 @@ export default function ChatbotDataTab() {
     }
   };
 
-  const exportCsv = () => {
+  const exportCsv = async () => {
+    if (!await requireCustomerDataExport()) return;
 
     const header = ['created_at', 'event_type', 'topic', 'customer_wording', 'registration', 'vehicle', 'quoted_price', 'term_months', 'grounded'];
     const rows = filtered.map((e) => [
