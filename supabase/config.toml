@@ -1,4 +1,6 @@
 project_id = "mzlpuxzwyrcyrgrongeb"
+[functions.crm-attendance]
+verify_jwt = false
 [functions.paylater-claims]
 verify_jwt = false
 

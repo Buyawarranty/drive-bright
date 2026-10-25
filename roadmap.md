@@ -1,5 +1,11 @@
 # Roadmap
 
+## Live CRM attendance
+- [x] Extend existing attendance with meaningful CRM time, first/last use, CRM-open and explicit sign-out session history; all staff and Today are defaults.
+- [x] Management-only all-staff reporting, service-only writes with staff identity checks, per-user capped time and no mouse-only/synthetic browser events; existing allocation presence unchanged.
+- [x] 14 activity/access tests passed, preview build OK, public route gated and deployed endpoint rejects invalid tokens with 401; nothing published.
+- [ ] Authenticated recording/report read-back: unavailable with external unmanaged Supabase; browser interaction signals reduce casual fakery but cannot prove genuine work or defeat determined browser automation. CRM-open times are not separate authentication-login audit records; unexpected closes show estimated last connection.
+
 ## Call permissions and inbound naming
 - [x] Make Call data permission explicit and default-off for sales agents and sales leads across menu and direct access.
 - [x] Rename visible Call Rail wording to Call inbound without changing tracking.

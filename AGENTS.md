@@ -1,4 +1,5 @@
 # Project architecture rules
+- CRM attendance uses a dedicated session ledger and per-user serialized server clock, separate from allocation presence; JWT-checked service-only recording owns timestamps and totals, while management-only reporting separates meaningful use from open-session time.
 - Call data bookmarks share the existing tab_overview permission through one helper used by sidebar and render guards; preserve underlying call scopes, collection and attribution.
 - Linked renewals reuse the New Leads call counter, dial/email/reminder controls and full notes panel keyed by the existing lead ID; preserve policy outcomes and routing so activity stays with the same lead across views.
 - Cyber security is read-only and admin/super-admin-only; a service-only summary RPC checks protected roles and returns counts, while a JWT-checked endpoint inspects only fixed published URLs, so no secrets or customer records enter reports.

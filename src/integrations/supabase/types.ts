@@ -4209,6 +4209,93 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_attendance_days: {
+        Row: {
+          active_seconds: number
+          admin_user_id: string
+          created_at: string
+          day: string
+          first_activity_at: string | null
+          last_activity_at: string | null
+          last_activity_clock: string | null
+          last_tick_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_seconds?: number
+          admin_user_id: string
+          created_at?: string
+          day: string
+          first_activity_at?: string | null
+          last_activity_at?: string | null
+          last_activity_clock?: string | null
+          last_tick_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_seconds?: number
+          admin_user_id?: string
+          created_at?: string
+          day?: string
+          first_activity_at?: string | null
+          last_activity_at?: string | null
+          last_activity_clock?: string | null
+          last_tick_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      crm_attendance_sessions: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          current_tab: string | null
+          end_reason: string | null
+          ended_at: string | null
+          first_activity_at: string | null
+          id: string
+          last_activity_at: string | null
+          last_seen_at: string
+          started_at: string
+          updated_at: string
+          user_id: string
+          visible: boolean
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          current_tab?: string | null
+          end_reason?: string | null
+          ended_at?: string | null
+          first_activity_at?: string | null
+          id: string
+          last_activity_at?: string | null
+          last_seen_at?: string
+          started_at?: string
+          updated_at?: string
+          user_id: string
+          visible?: boolean
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          current_tab?: string | null
+          end_reason?: string | null
+          ended_at?: string | null
+          first_activity_at?: string | null
+          id?: string
+          last_activity_at?: string | null
+          last_seen_at?: string
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       customer_documents: {
         Row: {
           created_at: string
@@ -15833,6 +15920,14 @@ export type Database = {
           used_6mo: number
         }[]
       }
+      get_crm_attendance: {
+        Args: { p_from: string; p_to: string; p_user_id: string }
+        Returns: Json
+      }
+      get_crm_attendance_internal: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
       get_cyber_security_status: { Args: { p_user_id: string }; Returns: Json }
       get_direct_sales_analysis: { Args: { _from?: string }; Returns: Json }
       get_direct_sales_substeps: { Args: { _from?: string }; Returns: Json }
@@ -16542,6 +16637,19 @@ export type Database = {
           taken_today: number
           taken_total: number
         }[]
+      }
+      record_crm_attendance: {
+        Args: {
+          p_current_tab?: string
+          p_kind: string
+          p_session_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      record_crm_attendance_internal: {
+        Args: { p_current_tab?: string; p_kind: string; p_session_id: string }
+        Returns: undefined
       }
       recover_leads_from_step2: {
         Args: { p_lookback_hours?: number }

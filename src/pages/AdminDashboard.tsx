@@ -7,6 +7,8 @@ import LeadCountTab from '@/components/admin/LeadCountTab';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { canViewCrmAttendance } from '@/lib/crmAttendanceRules';
+import { signOutWithAttendance } from '@/lib/crmAttendanceClient';
 import { lazyWithRetry, forceFreshReload } from '@/utils/lazyWithRetry';
 import { SEOHead } from '@/components/SEOHead';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
@@ -236,6 +238,7 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   const tab = canonicalTabId(rawTab);
   const permKey = `tab_${tab}`;
   if (tab === 'account') return true;
+  if (tab === 'attendance') return canViewCrmAttendance(role);
   if (tab === 'cyber-security') return canViewCyberSecurity(role);
   if (tab === 'unsubscribe') return true;
   if (tab === 'reporting') return ['admin','super_admin','sales_manager','accounts','accounts_manager','accounts_payroll'].includes(role || '');
@@ -1255,6 +1258,7 @@ const AdminDashboard = () => {
       case 'unsubscribe':
         return <UnsubscribeTab />;
       case 'attendance':
+        if (!canViewCrmAttendance(effectiveUserRole)) return <div className="p-6"><h2 className="text-xl font-semibold">Access denied</h2><p className="text-sm text-muted-foreground mt-1">Staff attendance is restricted to management.</p></div>;
         return <AttendanceTab />;
       case 'hr':
         return <HRTab userRole={effectiveUserRole} />;
@@ -1433,7 +1437,7 @@ const AdminDashboardInner: React.FC<{
                         <Button variant="outline" className="w-full bg-green-500 text-white border-green-500 hover:bg-green-600 hover:border-green-600 text-lg py-3" onClick={() => setIsMobileMenuOpen(false)}>WhatsApp Us</Button>
                       </a>
                       <Button className="w-full bg-orange-500 text-white hover:bg-orange-600 text-lg py-3" onClick={() => { setIsMobileMenuOpen(false); navigateToQuoteForm(); }}>Get my quote</Button>
-                      <button onClick={async () => { await supabase.auth.signOut(); navigate('/auth'); setIsMobileMenuOpen(false); }} className="w-full bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors text-lg">Sign Out</button>
+                      <button onClick={async () => { await signOutWithAttendance(); navigate('/auth'); setIsMobileMenuOpen(false); }} className="w-full bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors text-lg">Sign Out</button>
                     </div>
                   </div>
                 </SheetContent>

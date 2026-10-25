@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { withBackgroundPriority } from '@/lib/requestQueue';
 import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
+import { useCrmAttendance } from '@/hooks/useCrmAttendance';
 
 interface UseUserPresenceOptions {
   currentTab?: string;
@@ -10,6 +11,7 @@ interface UseUserPresenceOptions {
 
 export const useUserPresence = (options: UseUserPresenceOptions = {}) => {
   const { currentTab, heartbeatInterval = 30000 } = options; // Default 30 seconds
+  useCrmAttendance(currentTab);
   const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
   const isActiveRef = useRef(true);
 
