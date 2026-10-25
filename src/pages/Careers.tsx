@@ -101,7 +101,7 @@ const faqSchema = {
       name: 'Is this vehicle warranty sales job fully remote?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. The Vehicle Warranty Sales Executive role is fully remote and home-based anywhere in the UK. There is no office attendance and no commuting. You need reliable home broadband, a laptop or desktop, a quiet workspace and availability during UK business hours. A headset can be provided where required.',
+        text: 'Yes. The Vehicle Warranty Sales Executive role is fully remote and home-based anywhere in the UK. There is no office attendance and no commuting. You need reliable home broadband, a laptop or desktop, a quiet workspace and availability during UK business hours.',
       },
     },
     {
@@ -378,7 +378,7 @@ const Careers: React.FC = () => {
           <p className="mb-6 max-w-3xl text-sm leading-6 text-[#6B7280]">
             This is not a cold-calling-only position. You will work with warm inbound and outbound
             enquiries from customers who have already shown an interest in vehicle warranty cover.
-            We provide the training, tools and support you need to succeed.
+            We provide the training and support you need to succeed.
           </p>
 
           <div className="grid gap-5 md:grid-cols-3">
@@ -506,7 +506,7 @@ const Careers: React.FC = () => {
             <PerkCard Icon={Clock} title="Working hours" body="Monday to Friday, plus a Saturday half day twice a month, and flexible when you need to reach targets." />
           </div>
           <p className="mt-6 text-sm leading-6 text-[#6B7280]">
-            A suitable headset with a microphone can be provided where required. Full onboarding,
+            Full onboarding,
             product training and system setup support will be provided.
           </p>
         </section>
