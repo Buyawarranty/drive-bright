@@ -1,3 +1,4 @@
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
 import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -343,6 +344,7 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
     }
   };
 
+  const exportFilesAllowed = useCustomerDataExportAccess();
   const exportCsv = async () => {
     if (!await requireCustomerDataExport()) return;
     const headers = ['Marked at', 'Marked by', 'Name', 'Email', 'Phone', 'Phone validity', 'Reg', 'Call count',
@@ -447,7 +449,7 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
               <RefreshCw className={cn('h-3.5 w-3.5 mr-1', (refreshing || loading) && 'animate-spin')} /> Refresh
             </Button>
             {canExport && (
-              <Button variant="outline" size="sm" onClick={exportCsv} disabled={filteredLeads.length === 0}>
+              <Button variant="outline" size="sm" onClick={exportCsv} disabled={!exportFilesAllowed || (filteredLeads.length === 0)}>
                 <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
               </Button>
             )}

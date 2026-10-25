@@ -1,3 +1,4 @@
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
 import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -182,6 +183,7 @@ export const AbandonedCartsTab: React.FC = () => {
     }
   };
 
+  const exportFilesAllowed = useCustomerDataExportAccess();
   const exportAllCarts = async (platform: 'google' | 'facebook') => {
     if (!await requireCustomerDataExport()) return;
     try {

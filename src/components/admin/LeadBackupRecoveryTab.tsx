@@ -1,3 +1,4 @@
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
 import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -377,6 +378,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
     return { total, success, failed, pending };
   }, [step2Attempts]);
 
+  const exportFilesAllowed = useCustomerDataExportAccess();
   const handleExportCSV = async () => {
     if (!await requireCustomerDataExport()) return;
     const headers = ['First Name', 'Email', 'Phone', 'Vehicle Reg', 'Source', 'Status', 'Type', 'Date Created', 'In Marketing'];
@@ -429,7 +431,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button variant="outline" onClick={handleExportCSV}>
+          <Button variant="outline" onClick={handleExportCSV} disabled={!exportFilesAllowed}>
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>

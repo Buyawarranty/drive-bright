@@ -1,3 +1,4 @@
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
 import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -618,6 +619,7 @@ export const PostedLettersLog: React.FC = () => {
   const selectedEntries = filteredEntries.filter(e => selectedIds.has(e.id));
 
   // Export CSV
+  const exportFilesAllowed = useCustomerDataExportAccess();
   const exportCSV = async () => {
     if (!await requireCustomerDataExport()) return;
     const headers = ['Date Sent', 'Reg Plate', 'Customer Name', 'Email', 'Warranty Number', 'Plan Type', 'Status'];
@@ -831,7 +833,7 @@ export const PostedLettersLog: React.FC = () => {
                 className="pl-9 h-8 text-sm"
               />
             </div>
-            <Button size="sm" variant="outline" onClick={exportCSV} className="gap-1">
+            <Button size="sm" variant="outline" onClick={exportCSV} className="gap-1" disabled={!exportFilesAllowed}>
               <Download className="h-3.5 w-3.5" />
               CSV
             </Button>

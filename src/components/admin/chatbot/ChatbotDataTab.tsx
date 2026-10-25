@@ -1,3 +1,4 @@
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
 import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -194,6 +195,7 @@ export default function ChatbotDataTab() {
     }
   };
 
+  const exportFilesAllowed = useCustomerDataExportAccess();
   const exportCsv = async () => {
     if (!await requireCustomerDataExport()) return;
 
@@ -280,7 +282,7 @@ export default function ChatbotDataTab() {
           <Button size="sm" variant="outline" onClick={downloadBrief} disabled={!filtered.length}>
             <FileText className="h-4 w-4 mr-1" /> Download brief
           </Button>
-          <Button size="sm" variant="outline" onClick={exportCsv} disabled={!filtered.length}>
+          <Button size="sm" variant="outline" onClick={exportCsv} disabled={!exportFilesAllowed || (!filtered.length)}>
             <Download className="h-4 w-4 mr-1" /> Export CSV
           </Button>
           <Button size="sm" variant="outline" asChild>

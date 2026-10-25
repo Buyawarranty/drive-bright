@@ -1,3 +1,4 @@
+import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
 import { requireCustomerDataExport } from '@/lib/customerDataExport';
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -20,6 +21,7 @@ export const EmailBlocklistView: React.FC = () => {
     (u.vehicle_reg || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const exportFilesAllowed = useCustomerDataExportAccess();
   const handleExportCSV = async () => {
     if (!await requireCustomerDataExport()) return;
     const headers = ['Email', 'Customer Name', 'Vehicle Reg', 'Reason', 'Source', 'Blocked By', 'Date'];
@@ -54,7 +56,7 @@ export const EmailBlocklistView: React.FC = () => {
             Customers who have been opted out of all marketing emails ({unsubscribes.length} blocked)
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleExportCSV}>
+        <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!exportFilesAllowed}>
           <Download className="h-4 w-4 mr-1.5" />
           Export CSV
         </Button>
