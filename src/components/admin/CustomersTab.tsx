@@ -4,6 +4,7 @@ import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
+import { useCanSeeAllAgentData } from '@/hooks/useCanSeeAllAgentData';
 import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
 import { canViewPayLaterClaims, hasPayLaterClaim } from '@/lib/payLaterClaims';
 import { canUseStaffExport, canUseFullStaffExport, staffExportRows } from '@/lib/staffExportAccess';
@@ -758,6 +759,14 @@ export const CustomersTab = ({
   const isSuperAdmin = normalizedRole === 'super_admin';
   const isAdmin = normalizedRole === 'admin';
   const canSeePayLaterClaims = canViewPayLaterClaims(normalizedRole);
+  // "See all sales agents data" switch (Lead Allocation, default off): when off,
+  // sales agents / sales leads only see their own name on their own deals —
+  // every other agent's name is hidden from them in this tab.
+  const { canSeeAllAgentData } = useCanSeeAllAgentData(
+    isImpersonating && viewAsAgent
+      ? { adminUserId: viewAsAgent.id, role: normalizedRole }
+      : undefined
+  );
 
   useEffect(() => {
     let cancelled = false;
