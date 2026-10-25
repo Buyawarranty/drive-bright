@@ -1,5 +1,10 @@
 # Roadmap
 
+## Visible pricing editor and live comparison
+- [ ] Make saved-plan Load into editor open the full named editor immediately, including grid, vehicle variables and website difference.
+- [ ] Show saved-plan sample prices against current live pricing and matching Quotes & Orders versus Step 3 differences; preserve all pricing and publication behavior.
+- [ ] Run pricing regressions and verify editor presentation; signed-in checks require an available session.
+
 ## Sales own-lead pop-ups
 - [x] Own-lead checks cover new-lead, failed-payment, stuck-checkout, price-beat and recent alerts; reminder and resubmission alerts use current assignment. Unscoped and website-chat pop-ups remain blocked for sales/sales leads, even with permission overrides; allocation and management access unchanged.
 - [x] 19 ownership/privacy regression tests passed; preview build OK and protected route redirects to authentication with no runtime errors. Nothing published.
