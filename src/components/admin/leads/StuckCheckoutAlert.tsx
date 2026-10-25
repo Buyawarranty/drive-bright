@@ -11,6 +11,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useIsManagement } from '@/hooks/useIsManagement';
 import { Button } from '@/components/ui/button';
 import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
+import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
 
 const DISMISSED_IDS_KEY = 'stuck-checkout-alert-dismissed-ids';
 
@@ -112,6 +113,8 @@ export const StuckCheckoutAlert: React.FC = () => {
   const [dismissedIds, setDismissedIds] = useState<string[]>(() => readDismissed());
   const [expanded, setExpanded] = useState(true);
   const [owners, setOwners] = useState<OwnerMap>({});
+  const [leadIds, setLeadIds] = useState<Record<string, string>>({});
+  const canShow = usePopupLeadOwnership(Object.values(leadIds));
   const myAdminId = useCurrentAdminId();
   const { isManagement } = useIsManagement();
   const [showAllRows, setShowAllRows] = useState(false);
@@ -151,7 +154,7 @@ export const StuckCheckoutAlert: React.FC = () => {
   // it counts as a new visit and pops up again. A customer a salesperson is
   // already handling (Contacting) raises no fresh pop-ups, and one marked
   // Recovered or Closed stops popping up altogether.
-  const live = useMemo((): Group[] => {
+  const grouped = useMemo((): Group[] => {
     const asc = rows.filter((r) => !isTestStruggle(r)).slice().sort(
       (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     );
@@ -219,7 +222,7 @@ export const StuckCheckoutAlert: React.FC = () => {
 
   // Resolve which agent owns each stuck customer's lead (by email / phone tail-9).
   useEffect(() => {
-    const unresolved = live.filter((g) => !(g.head.id in owners));
+    const unresolved = grouped.filter((g) => !(g.head.id in owners));
     if (unresolved.length === 0) return;
     let cancelled = false;
     (async () => {
@@ -234,8 +237,8 @@ export const StuckCheckoutAlert: React.FC = () => {
               _phone9: phone9.length === 9 ? phone9 : null,
             });
             const rowsFound = (data as any[]) || [];
-            const owner = rowsFound.find((x) => x.assigned_to)?.assigned_to ?? null;
-            return [r.id, owner] as const;
+            const lead = rowsFound[0];
+            return [r.id, lead?.assigned_to ?? null, lead?.id] as const;
           } catch {
             return [r.id, null] as const;
           }
@@ -243,9 +246,11 @@ export const StuckCheckoutAlert: React.FC = () => {
       );
       if (cancelled) return;
       setOwners((prev) => ({ ...prev, ...Object.fromEntries(results) }));
+      setLeadIds(prev => ({ ...prev, ...Object.fromEntries(results.flatMap(r => r[2] ? [[r[0], r[2]]] : [])) }));
     })();
     return () => { cancelled = true; };
-  }, [live, owners]);
+  }, [grouped, owners]);
+  const live = grouped.filter(g => canShow(leadIds[g.head.id]));
 
   // Management-only report: last 7 days — how many alerts fired, how fast
   // sales respond (time to "Contacting") and how many checkouts were recovered.
@@ -287,7 +292,7 @@ export const StuckCheckoutAlert: React.FC = () => {
   const dismiss = (g: Group) => {
     const r = g.head;
     if (r) pushRecentAlert({
-      key: `stuck-${r.id}`, title: 'Checkout stuck',
+      key: `stuck-${r.id}`, leadId: leadIds[r.id], title: 'Checkout stuck',
       detail: `${r.customer_name || r.customer_email || r.customer_phone || 'Customer'}${r.vehicle_reg ? ' – ' + r.vehicle_reg : ''}`,
       tone: 'red',
       details: [

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { notifyDueReminders, requestNotificationPermission } from '@/lib/reminderAlerts';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
+import { canSeeLeadPopup, isSalesPopupRole } from '@/lib/popupAccess';
 
 
 export interface DueReminder {
@@ -31,7 +32,7 @@ export const useDueReminders = () => {
 
       const { data: adminUser } = await supabase
         .from('admin_users')
-        .select('id')
+        .select('id, role')
         .eq('user_id', userData.user.id)
         .maybeSingle();
 
@@ -70,7 +71,7 @@ export const useDueReminders = () => {
       let claimsMap: Record<string, any> = {};
 
       if (regularIds.length > 0) {
-        const { data: ld } = await supabase.from('sales_leads').select('id, email, first_name, last_name, vehicle_reg').in('id', regularIds);
+        const { data: ld } = await supabase.from('sales_leads').select('id, email, first_name, last_name, vehicle_reg, assigned_to').in('id', regularIds);
         (ld || []).forEach((l: any) => { leadsMap[l.id] = l; });
       }
       if (cartIds.length > 0) {
@@ -86,7 +87,9 @@ export const useDueReminders = () => {
         (cd || []).forEach((c: any) => { claimsMap[c.id] = c; });
       }
 
-      const mapped = reminderData.map((r: any) => {
+      const eligible = reminderData.filter((r: any) => !isSalesPopupRole(adminUser.role) ||
+        r.lead_id.startsWith('personal_') || canSeeLeadPopup(adminUser.role, adminUser.id, leadsMap[r.lead_id]?.assigned_to));
+      const mapped = eligible.map((r: any) => {
         let lead = null;
         if (r.lead_id.startsWith('customer_')) {
           const d = customersMap[r.lead_id.replace('customer_', '')];
