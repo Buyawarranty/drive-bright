@@ -13492,6 +13492,35 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_export_grants: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          granted_by: string
+          updated_at: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          granted_by?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          granted_by?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_export_grants_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_hub_documents: {
         Row: {
           allowed_roles: string[]
@@ -15651,6 +15680,7 @@ export type Database = {
         Args: { payment_type: string; start_date: string }
         Returns: string
       }
+      can_export_customer_data: { Args: never; Returns: boolean }
       can_manage_claim_reminders: { Args: never; Returns: boolean }
       can_manage_lead_routing: { Args: { _user_id: string }; Returns: boolean }
       can_manage_reporting: { Args: { _uid?: string }; Returns: boolean }
