@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import type { PricingVersion } from '@/hooks/usePricingVersions';
+import { priceDifference } from '@/lib/pricing/priceComparison';
+import { normalizeWebsiteDiscount } from '@/lib/pricing/websiteDiscount';
 
 
 /**
@@ -22,7 +24,7 @@ import type { PricingVersion } from '@/hooks/usePricingVersions';
 /** A representative cell so each row shows a comparable headline figure. */
 function sampleGridPrice(v: PricingVersion): number | null {
   const m: any = v.admin_matrix;
-  const cell = m?.['24months']?.['100']?.['2000'] ?? m?.['24months']?.['100']?.['1000'];
+  const cell = m?.['24months']?.['100']?.['2000'];
   const n = Number(cell);
   return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
 }
@@ -120,6 +122,11 @@ function useDailySales(fromISO: string | null) {
 
 const money = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
 
+const websiteGapLabel = (v: PricingVersion) => {
+  const pct = normalizeWebsiteDiscount(v.step3_discount_pct);
+  return `website ${pct < 0 ? '+' : '−'}${Math.abs(pct)}%`;
+};
+
 export default function PriceUpdateLogPanel({
   versions,
   busy,
@@ -138,6 +145,8 @@ export default function PriceUpdateLogPanel({
   const [savingId, setSavingId] = useState<string | null>(null);
   const [openNotes, setOpenNotes] = useState<Record<string, boolean>>({});
   const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
+  const liveVersion = versions.find(v => v.status === 'live');
+  const liveSample = liveVersion ? sampleGridPrice(liveVersion) : null;
 
   // Earliest date in the log — everything we need sales for.
   const earliestISO = useMemo(() => {
@@ -327,6 +336,7 @@ export default function PriceUpdateLogPanel({
         {rows.map((v) => {
           const isLive = v.status === 'live';
           const sample = sampleGridPrice(v);
+          const liveDifference = sample !== null && liveSample !== null ? priceDifference(sample, liveSample) : null;
           // "Previous" always means the chronologically previous model, whatever
           // display sort is chosen.
           const baseIdx = baseRows.findIndex(r => r.id === v.id);
@@ -416,9 +426,22 @@ export default function PriceUpdateLogPanel({
                   <div className="mt-1 text-xs text-muted-foreground">
                     {v.published_at ? 'Pushed live' : 'Saved'} {whenLabel(v)}
                     {sample !== null && <> · 2yr £100 excess / £2,000 limit: £{sample}</>}
-                    {' · website −'}
-                    {Math.round(Number(v.step3_discount_pct) > 0 ? Number(v.step3_discount_pct) : 10)}%
+                    {' · '}{websiteGapLabel(v)}
                   </div>
+                  {!isLive && (
+                    <div className="mt-2 space-y-1 border-l-2 border-border pl-3 text-xs">
+                      <p className="text-foreground">
+                        <strong>Current live: {liveVersion?.label ?? 'No published plan available'}</strong>
+                        {liveVersion && <> · {liveVersion.published_at ? 'Pushed live' : 'Saved'} {whenLabel(liveVersion)} · 2yr £100 excess / £2,000 limit: {liveSample !== null ? money(liveSample) : 'unavailable'} · {websiteGapLabel(liveVersion)}</>}
+                      </p>
+                      {liveDifference && (
+                        <p className="font-semibold text-foreground">
+                          This plan versus current live (same grid example): {liveDifference.direction === 'same' ? 'No price change' : <>{money(Math.abs(liveDifference.amount))} {liveDifference.direction} ({Math.abs(liveDifference.percent).toFixed(1)}%)</>}
+                        </p>
+                      )}
+                      <p className="text-muted-foreground">Quotes &amp; Orders grid reference, before vehicle adjustments, minimums and offers.</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
