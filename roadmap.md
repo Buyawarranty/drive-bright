@@ -1,5 +1,10 @@
 # Roadmap
 
+## Live CRM attendance
+- [ ] Extend existing attendance with real interaction time, first/last use and session login/logout history for all staff.
+- [ ] Protect all-staff reporting with management access and reject mouse-only or synthetic activity.
+- [ ] Test activity rules and verify available reporting paths; no publication.
+
 ## Call permissions and inbound naming
 - [x] Make Call data permission explicit and default-off for sales agents and sales leads across menu and direct access.
 - [x] Rename visible Call Rail wording to Call inbound without changing tracking.
