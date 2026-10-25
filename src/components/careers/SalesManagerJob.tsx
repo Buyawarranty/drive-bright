@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ArrowRight, Home, PoundSterling, TrendingUp, Headphones, GraduationCap, Users, CheckCircle2, Briefcase, Laptop, Clock, Award, Phone, LineChart, Sun, Sunrise, Sunset } from 'lucide-react';
+import { ArrowRight, Home, PoundSterling, TrendingUp, Headphones, GraduationCap, Users, CheckCircle2, Briefcase, Laptop, Clock, Award, Sun, Sunrise, Sunset } from 'lucide-react';
 import CareersApplyBlock from '@/components/careers/CareersApplyBlock';
 import careersHeroImage from '@/assets/telesales-sales-manager-vehicle-warranty-jobs-buyawarranty.png.asset.json';
 
