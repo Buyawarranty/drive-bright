@@ -151,7 +151,7 @@ export const SalesManagerJob: React.FC = () => (
         <p className="mt-4 text-sm text-[#6B7280]">Both PAYE employment and self-employed arrangements can be considered, subject to the nature of the working relationship and applicable requirements.</p>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           <Perk Icon={GraduationCap} title="Full training" body="Product training and ongoing support from day one." />
-          <Perk Icon={Headphones} title="Kit provided" body="Laptop, phone system and CRM for PAYE employees." />
+          <Perk Icon={Headphones} title="Ongoing support" body="A supportive team behind you from day one." />
           <Perk Icon={TrendingUp} title="Progression" body="Grow with a business expanding its sales team." />
         </div>
       </section>
