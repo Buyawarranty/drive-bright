@@ -9,6 +9,7 @@ import { canAccessSeoAudit, canAccessCallData } from '@/lib/tabAccess';
 import { canViewCyberSecurity } from '../../../supabase/functions/_shared/cyber-security-rules';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { signOutWithAttendance } from '@/lib/crmAttendanceClient';
 import {
   DndContext,
   closestCenter,
@@ -624,14 +625,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   }, [userRole]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOutWithAttendance();
     localStorage.removeItem('masterAdmin');
     navigate('/auth');
   };
 
   const handleChangeUser = async () => {
     // Sign out and return to login so a different user can sign in
-    await supabase.auth.signOut();
+    await signOutWithAttendance();
     localStorage.removeItem('masterAdmin');
     navigate('/auth');
   };

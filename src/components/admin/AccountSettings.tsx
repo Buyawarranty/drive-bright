@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { signOutWithAttendance } from '@/lib/crmAttendanceClient';
 
 const AccountSettings = () => {
   const { user } = useAuth();
@@ -67,7 +68,7 @@ const AccountSettings = () => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await signOutWithAttendance();
       if (error) {
         toast.error('Failed to sign out');
       } else {
@@ -165,7 +166,7 @@ const AccountSettings = () => {
             variant="default"
             onClick={async () => {
               try {
-                await supabase.auth.signOut();
+                await signOutWithAttendance();
               } catch (e) {
                 // ignore — still send them to the login screen
               }

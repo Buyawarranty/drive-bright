@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { withTimeout } from '@/lib/withTimeout';
+import { signOutWithAttendance } from '@/lib/crmAttendanceClient';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -134,7 +135,7 @@ export const useAuth = () => {
 
   const signOut = async () => {
     console.log('=== Signing out ===');
-    await supabase.auth.signOut();
+    await signOutWithAttendance();
     // Also clear master admin status
     setIsMasterAdmin(false);
     localStorage.removeItem('masterAdmin');

@@ -11,6 +11,7 @@ import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/a
 import { DateRange } from 'react-day-picker';
 import { AttendanceLoginCharts } from '@/components/admin/AttendanceLoginCharts';
 import { formatTimeAgo } from '@/lib/formatTimeAgo';
+import LiveCrmAttendance from './LiveCrmAttendance';
 
 
 interface AdminUserRow {
@@ -101,7 +102,7 @@ interface WorkStats {
   last: string | null;
 }
 
-export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => {
+const LegacyAttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [presences, setPresences] = useState<Presence[]>([]);
   const [onlineDays, setOnlineDays] = useState<AggregatedOnlineDay[]>([]);
@@ -597,4 +598,5 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
   );
 };
 
+export const AttendanceTab = LiveCrmAttendance;
 export default AttendanceTab;
