@@ -17,11 +17,13 @@ import { useAuth } from '@/hooks/useAuth';
 import StaffDeviceSecurityPanel from './StaffDeviceSecurityPanel';
 import CrmDailySessions from './CrmDailySessions';
 import { AttendanceReportRequests } from '@/lib/attendanceReportRequests';
+import { firstCrmPresence } from '@/lib/crmFirstPresence';
 
 interface Staff { id: string; email: string; first_name: string | null; last_name: string | null; role: string }
 interface AttendanceDay { admin_user_id: string; day: string; active_seconds: number; first_activity_at: string | null; last_activity_at: string | null }
 interface AttendanceSession { id: string; admin_user_id: string; started_at: string; last_seen_at: string; first_activity_at: string | null; last_activity_at: string | null; ended_at: string | null; end_reason: string | null; current_tab: string | null; visible: boolean }
-interface Report { staff: Staff[]; days: AttendanceDay[]; sessions: AttendanceSession[]; measured_at: string }
+interface Observation { admin_user_id: string; first_seen_at: string }
+interface Report { staff: Staff[]; days: AttendanceDay[]; sessions: AttendanceSession[]; measured_at: string; observations?: Observation[]; observationsUnavailable?: boolean }
 
 const ukDate = (date: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
 const duration = (seconds: number) => `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
@@ -59,9 +61,22 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
     if (!ticket) return;
     setLoading(true);
     try {
-      const { data, error: requestError } = await withTimeout(supabase.functions.invoke('crm-attendance', { body: { action: 'report', from, to } }), 12000, 'Attendance report');
+      const loadObservations = async () => {
+        const observations: Observation[] = [];
+        for (let offset = 0; ; offset += 500) {
+          const { data, error } = await withTimeout(supabase.from('staff_work_locations').select('admin_user_id, first_seen_at').gte('session_date', from).lte('session_date', to).order('first_seen_at').order('id').range(offset, offset + 499), 12000, 'First CRM observations');
+          if (error) throw error;
+          observations.push(...(data || []));
+          if ((data?.length || 0) < 500) return observations;
+        }
+      };
+      const [response, observationResult] = await Promise.all([
+        withTimeout(supabase.functions.invoke('crm-attendance', { body: { action: 'report', from, to } }), 12000, 'Attendance report'),
+        loadObservations().then(observations => ({ observations, observationsUnavailable: false })).catch(() => ({ observations: [], observationsUnavailable: true })),
+      ]);
+      const { data, error: requestError } = response;
       if (requestError || data?.error) throw new Error(data?.error || 'Unable to load attendance');
-      if (requests.current.isCurrent(requestKey, ticket)) { setReport(data as Report); setError(''); setNow(Date.now()); }
+      if (requests.current.isCurrent(requestKey, ticket)) { setReport({ ...data, ...observationResult } as Report); setError(''); setNow(Date.now()); }
     } catch {
       if (requests.current.isCurrent(requestKey, ticket)) setError('Attendance could not refresh. The last successful figures are kept.');
     } finally {
@@ -94,7 +109,8 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
       const next = crmAttendanceStatus(session, now);
       return best === 'active' || next === 'active' ? 'active' : best === 'idle' || next === 'idle' ? 'idle' : 'offline';
     }, 'offline') : 'offline';
-    return { staff, sessions, latest, active, first: starts[0], last: finishes[finishes.length - 1], status };
+    const presence = firstCrmPresence(sessions, (report?.observations || []).filter(item => item.admin_user_id === staff.id));
+    return { staff, sessions, latest, active, presence, first: starts[0], last: finishes[finishes.length - 1], status };
   }).sort((a, b) => ({ active: 0, idle: 1, offline: 2 }[a.status] - { active: 0, idle: 1, offline: 2 }[b.status]) || b.active - a.active), [report, search, team, filterRoles, live, now]);
 
   const selected = rows.find(row => row.staff.id === selectedStaff);
@@ -117,13 +133,14 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
       <div className="relative ml-auto w-full sm:w-64"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input aria-label="Search staff" placeholder="Search staff" value={search} onChange={event => setSearch(event.target.value)} className="pl-9" /></div>
     </div>
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+    {report?.observationsUnavailable && <p role="alert" className="text-sm text-destructive">Earlier CRM observations could not load. First recorded presence currently uses detailed sessions only.</p>}
     <p className="text-sm text-muted-foreground">Saved sign-in is not continuous attendance. Online means a recent CRM connection; idle means connected without recent real use. Computer locks are not recorded — paused or missing connections show last seen, not a confirmed sign-out.</p>
-    <div className="overflow-x-auto"><table className="w-full min-w-[1050px] text-sm"><thead className="border-b text-muted-foreground text-left"><tr>{['Staff member', 'Status', 'Real CRM time', 'CRM opened', 'First real use', 'Last real use', 'Signed out / last seen', 'Current section', 'Sessions'].map(label => <th key={label} className="py-3 px-2 font-medium">{label}</th>)}</tr></thead>
+    <div className="overflow-x-auto"><table className="w-full min-w-[1050px] text-sm"><thead className="border-b text-muted-foreground text-left"><tr>{['Staff member', 'Status', 'Recorded active time', 'First recorded CRM presence', 'First recorded interaction', 'Last recorded interaction', 'Signed out / last seen', 'Current section', 'Sessions'].map(label => <th key={label} className="py-3 px-2 font-medium">{label}</th>)}</tr></thead>
       <tbody>{rows.map(row => <tr key={row.staff.id} className="border-b hover:bg-muted/40">
         <td className="p-2 py-4"><div className="font-medium">{staffName(row.staff)}</div><div className="text-xs text-muted-foreground">{row.staff.email}</div><div className="text-xs text-muted-foreground">{row.staff.role.replaceAll('_', ' ')}</div></td>
         <td className="p-2"><Badge variant={row.status === 'active' ? 'default' : 'secondary'}>{!live ? 'Historical' : row.status === 'active' ? 'Online · active' : row.status === 'idle' ? 'Online · idle' : 'Offline'}</Badge></td>
         <td className="p-2 font-semibold tabular-nums">{duration(row.active)}</td>
-        <td className="p-2 tabular-nums">{time([...row.sessions].sort((a, b) => a.started_at.localeCompare(b.started_at))[0]?.started_at)}</td>
+        <td className="p-2 tabular-nums">{time(row.presence?.at)}<div className="text-xs text-muted-foreground">{row.presence?.source || 'No observation recorded'}</div></td>
         <td className="p-2 tabular-nums">{time(row.first)}</td><td className="p-2 tabular-nums">{time(row.last)}</td>
         <td className="p-2 tabular-nums">{time(row.latest?.ended_at || row.latest?.last_seen_at)}<div className="text-xs text-muted-foreground">{row.latest ? row.latest.end_reason === 'logout' ? 'Signed out' : row.latest.ended_at ? 'Left CRM' : row.status === 'offline' ? 'Connection ended (estimated)' : 'Last connection' : '—'}</div></td>
         <td className="p-2 capitalize">{row.status !== 'offline' ? row.latest?.current_tab?.replaceAll('-', ' ') || '—' : '—'}</td>

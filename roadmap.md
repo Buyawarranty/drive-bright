@@ -1,5 +1,10 @@
 # Roadmap
 
+## Clear earliest CRM presence
+- [x] Primary first-presence column combines existing session starts and paginated RLS-protected location observations, labels source and separates first/last recorded interactions. Observation failures explicitly warn that earlier presence is unavailable; no active-time or historical-gap invention.
+- [x] James's 09:06 versus 11:47 rule tested; 13 tests pass and preview build OK. Isolated browser shows earlier observation, later interaction, date-race protection and no runtime errors; nothing published.
+- [ ] Real signed-in first-presence UI read-back unavailable with external unmanaged Supabase; unknown periods before detailed recording cannot be reconstructed.
+
 ## Yesterday attendance loading and history
 - [x] Fixed shared busy/date-change race: independent date requests load immediately and stale results cannot overwrite the selection. Two dedicated regressions and 13 attendance tests pass.
 - [x] Database counts confirm 11 daily records and 160 sessions on 26 October, zero overlapping sessions for 25 October. Source has no attendance pruning and no matching scheduled cleanup found; stored history is not deleted by date selection. Prior unrecorded activity cannot be reconstructed.
