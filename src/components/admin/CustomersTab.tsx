@@ -9,8 +9,8 @@ import { shouldHideOtherAgentNames, dealOwnerLabel } from '@/lib/agentDataVisibi
 import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
 import { canViewPayLaterClaims, hasPayLaterClaim } from '@/lib/payLaterClaims';
 import { canUseStaffExport, canUseFullStaffExport, staffExportRows } from '@/lib/staffExportAccess';
-import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
-import { requireCustomerDataExport } from '@/lib/customerDataExport';
+import { useExportPermissions } from '@/hooks/useExportPermissions';
+import { requireCustomersExport } from '@/lib/customerDataExport';
 
 import { ReferencePriceCell } from '@/components/admin/customers/ReferencePriceCell';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
@@ -753,7 +753,7 @@ export const CustomersTab = ({
   const normalizedRole = isImpersonating && viewAsAgent
     ? viewAsAgent.role?.trim().toLowerCase() || ''
     : currentAdminUser?.role?.trim().toLowerCase() || '';
-  const canExport = useCustomerDataExportAccess();
+  const { canExportCustomers: canExport, canSeeLeadSource } = useExportPermissions();
   const effectiveAdminId = isImpersonating && viewAsAgent
     ? viewAsAgent.id
     : currentAdminUser?.id;
@@ -824,11 +824,11 @@ export const CustomersTab = ({
   // Management only: raise a "save the deal" rescue lead straight from a customer record
   const canRaiseSaveDeal = isSuperAdmin || isAdmin || normalizedRole === 'sales_manager';
 
-  // See Source column — granular permission with role-based defaults
-  // (super_admin, admin, lead_gen ON by default; togglable per user)
+  // See Source column — off by default for everyone except admin/super admin;
+  // anyone else needs the granular tick or the "See lead source" grant.
   const seeSourceGranular = hasGranularPermission('customers', 'see-source');
-  const seeSourceDefault = isSuperAdmin || normalizedRole === 'admin' || normalizedRole === 'lead_gen';
-  const canSeeSourceColumn = seeSourceGranular === undefined ? seeSourceDefault : seeSourceGranular;
+  const seeSourceDefault = isSuperAdmin || normalizedRole === 'admin';
+  const canSeeSourceColumn = (seeSourceGranular === undefined ? seeSourceDefault : seeSourceGranular) || canSeeLeadSource;
   const isSalesAgent = normalizedRole === 'sales';
   const isSalesLead = normalizedRole === 'sales_lead';
   const isSalesScopedRole = isSalesAgent || isSalesLead;
