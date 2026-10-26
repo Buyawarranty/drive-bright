@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dailyStaffActivity, groupActivityByAgent, observedIdleSpans } from './crmDailyActivity';
+import { dailyStaffActivity, groupActivityByAgent, observedIdleSpans, type ActivityDay } from './crmDailyActivity';
 import { splitDailySessions, type CrmSession } from './crmSessionTimeline';
 const session: CrmSession = { id: 'a', admin_user_id: 'staff', started_at: '2026-10-26T09:00:00Z', last_seen_at: '2026-10-26T10:00:00Z', first_activity_at: '2026-10-26T09:01:00Z', last_activity_at: '2026-10-26T09:20:00Z', ended_at: null, end_reason: null, visible: true, current_tab: null };
 const now = Date.parse('2026-10-26T12:00:00Z');
