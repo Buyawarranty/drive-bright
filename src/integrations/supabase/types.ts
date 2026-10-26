@@ -15995,6 +15995,7 @@ export type Database = {
         Args: { p_agent_id: string; p_override?: boolean }
         Returns: Json
       }
+      enforce_staff_approved_device: { Args: never; Returns: undefined }
       enforce_staff_password_renewal: { Args: never; Returns: undefined }
       evaluate_agent_lead_freeze: {
         Args: never
@@ -17109,6 +17110,17 @@ export type Database = {
         Args: { admin_uuid: string; customer_uuid: string }
         Returns: undefined
       }
+      staff_access_log_attempt: {
+        Args: {
+          p_email: string
+          p_hash: string
+          p_ip: string
+          p_label: string
+          p_outcome: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       staff_device_access: {
         Args: { p_hash: string; p_user_id: string }
         Returns: Json
@@ -17116,6 +17128,15 @@ export type Database = {
       staff_device_decide: {
         Args: { p_approve: boolean; p_caller: string; p_device: string }
         Returns: undefined
+      }
+      staff_device_report: {
+        Args: {
+          p_caller: string
+          p_from: string
+          p_offset?: number
+          p_to: string
+        }
+        Returns: Json
       }
       staff_password_record_change: {
         Args: { p_user_id: string }
