@@ -123,13 +123,30 @@ const SalesLogin = () => {
         throw new Error('Unable to verify your access. Please contact support.');
       }
 
-      const userRoles = roles?.map(r => r.role) || [];
+      let userRoles = roles?.map(r => r.role) || [];
       const staffRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager', 'performance_manager', 'sales_manager'];
+
+      // An empty result can mean the role read went out before the fresh
+      // session token was attached (e.g. another tab refreshing the same
+      // shared account). Retry once with the session we just received.
+      if (!userRoles.some(r => staffRoles.includes(r)) && authData.session) {
+        try {
+          await supabase.auth.setSession({ access_token: authData.session.access_token, refresh_token: authData.session.refresh_token });
+          const retry = await withTimeout(
+            supabase.from('user_roles').select('role').eq('user_id', authData.user.id),
+            10000,
+            'Role re-check'
+          );
+          userRoles = retry.data?.map(r => r.role) || [];
+        } catch (retryErr) {
+          console.error('Role re-check failed:', retryErr);
+        }
+      }
       const hasAccess = userRoles.some(r => staffRoles.includes(r));
 
       if (!hasAccess) {
         // Sign out the user since they don't have sales access
-        await supabase.auth.signOut();
+        await supabase.auth.signOut({ scope: 'local' });
         throw new Error('Access denied. This login is for sales team members only.');
       }
 
