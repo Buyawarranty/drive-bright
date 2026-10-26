@@ -61,6 +61,7 @@ import { ManualAddLeadDialog } from './ManualAddLeadDialog';
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
 import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
 import { LostLeadsAuditPanel } from './LostLeadsAuditPanel';
+import { LeadFullExportDialog } from './LeadFullExportDialog';
 import { TeamChangeNoticeDialog } from './TeamChangeNoticeDialog';
 import { TeamFilterChips } from './TeamFilterChips';
 import { TeamSourceBreakdown } from './TeamSourceBreakdown';
@@ -2294,7 +2295,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           {/* Lost / archived / not interested restore tool — same gate as Fake Leads Audit */}
           {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' || hasGranularPermission('new-leads', 'fake-audit') === true) && (
             <>
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                {/* Super-admin-only full lead export (any status, any date range) — renders nothing for other roles */}
+                <LeadFullExportDialog />
                 <Button size="sm" variant={showLostAudit || activeFilter === 'lost' ? 'default' : 'outline'} className="h-7 text-xs" onClick={() => setShowLostAudit(v => !v)}>
                   {showLostAudit || activeFilter === 'lost' ? 'Hide restore lost leads' : 'Restore lost / archived leads'}
                 </Button>
