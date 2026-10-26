@@ -3629,7 +3629,7 @@ export const CustomersTab = ({
 
 
   const handleExport = async (format: 'csv' | 'xlsx') => {
-    if (!await requireCustomerDataExport()) return;
+    if (!await requireCustomersExport()) return;
     if (!canExport) {
       toast.error('You do not have permission to export customers');
       return;
@@ -3666,7 +3666,7 @@ export const CustomersTab = ({
   };
 
   const handleExportFullCsv = async () => {
-    if (!await requireCustomerDataExport()) return;
+    if (!await requireCustomersExport()) return;
     if (!canExportFullCustomers) {
       toast.error('You do not have permission to export the full customer dataset');
       return;
@@ -3692,7 +3692,7 @@ export const CustomersTab = ({
   // Queries Supabase directly with pagination + signup_date DESC ordering so the
   // export is not capped by the 3000-row in-memory list (which is ordered by updated_at).
   const exportForRange = async (start: Date, end: Date, label: string) => {
-    if (!await requireCustomerDataExport()) return;
+    if (!await requireCustomersExport()) return;
     if (!canExportFullCustomers) {
       toast.error('You do not have permission to export');
       return;
@@ -3842,7 +3842,7 @@ export const CustomersTab = ({
   // Conversion Time, Conversion Value, Conversion Currency.
   // Only includes customers that have a gclid recorded.
   const handleExportGoogleConversions = async () => {
-    if (!await requireCustomerDataExport()) return;
+    if (!await requireCustomersExport()) return;
     const rows = filteredCustomers
       .filter(c => !!(c.gclid && String(c.gclid).trim()))
       .map(c => {
@@ -3872,7 +3872,7 @@ export const CustomersTab = ({
 
 
   const handleExportPDF = async () => {
-    if (!await requireCustomerDataExport()) return;
+    if (!await requireCustomersExport()) return;
     const exportData = getExportData();
     if (!exportData.length) {
       toast.error('No data to export');
