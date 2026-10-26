@@ -1,5 +1,10 @@
 # Roadmap
 
+## Approved-device staff access
+- [ ] Restrict staff CRM access to administrator-approved devices even when logged out, replacing shared-login allowance; never auto-approve the first sign-in.
+- [ ] Combine attempted/successful/blocked sign-ins, account online state, admin alerts, approximate locations and GMT timestamps in Staff access & security log.
+- [ ] Design server enforcement and safe administrator enrolment before activating restrictions, preserving customer/public website access and preventing staff lockout.
+
 ## CRM attendance and access history
 - [x] Bring attendance, recorded locations and protected sign-in/access records together in Attendance; include inactive staff history and explicit GMT timestamps. Sign-in audit is admin/super-admin only; service-only RPC omits raw auth payloads.
 - [x] Timestamp/activity tests passed, preview build OK; signed-out Attendance redirects to /auth without runtime errors. Function privileges verified service-only; login and allocation behaviour unchanged.
