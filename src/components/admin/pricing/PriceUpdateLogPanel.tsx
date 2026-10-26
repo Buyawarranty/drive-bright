@@ -447,7 +447,17 @@ export default function PriceUpdateLogPanel({
                   )}
                 </div>
 
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onView?.(v)}
+                    title="Open the full detail view: every price, comparison with the current live model, and edit options"
+                  >
+                    <Eye className="mr-1 h-4 w-4" />
+                    View / edit
+                  </Button>
                   <Button
                     type="button"
                     size="sm"
