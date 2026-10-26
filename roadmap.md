@@ -1,9 +1,11 @@
 # Roadmap
 
 ## Approved-device staff access
-- [ ] Restrict staff CRM access to administrator-approved devices even when logged out, replacing shared-login allowance; never auto-approve the first sign-in.
-- [ ] Combine attempted/successful/blocked sign-ins, account online state, admin alerts, approximate locations and GMT timestamps in Staff access & security log.
-- [ ] Design server enforcement and safe administrator enrolment before activating restrictions, preserving customer/public website access and preventing staff lockout.
+- [x] Added private approved-browser records, admin-only approval/revocation, password-verified Sales login attempt logging, requested device registration and staged shared-guard checks. No device auto-approved; restrictions remain OFF.
+- [x] Staff access & security log combines device requests, successful/failed/blocked attempts through the new sales sign-in service, recent CRM online state, in-page admin alerts, available IP locations and GMT times alongside attendance/history.
+- [x] Twelve frontend tests and two edge tests pass; preview build OK; signed-out log redirects to /auth without runtime errors. Service-only function privileges verified.
+- [ ] Activation blocked on trusted administrator browser enrolment and authenticated end-to-end read-back, unavailable with external unmanaged Supabase. No enforcement toggle exposed.
+- [ ] Complete enforcement across custom staff edge endpoints, direct Realtime/storage paths and PostgREST hook before enabling. Existing public endpoints identified in read-only audit also need separately verified integration authorization. Browser bearer credentials are not hardware-bound and do not prevent deliberate credential/token copying; use a stronger device-bound factor for that threat.
 
 ## CRM attendance and access history
 - [x] Bring attendance, recorded locations and protected sign-in/access records together in Attendance; include inactive staff history and explicit GMT timestamps. Sign-in audit is admin/super-admin only; service-only RPC omits raw auth payloads.
