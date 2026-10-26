@@ -1,5 +1,5 @@
-import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
-import { requireCustomerDataExport } from '@/lib/customerDataExport';
+import { useExportPermissions } from '@/hooks/useExportPermissions';
+import { requireNewLeadsExport } from '@/lib/customerDataExport';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Lead, AdminUser, LeadTag, LeadPriority } from '@/hooks/useLeads';
@@ -1379,15 +1379,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     }
   }, [currentUserId, currentRole, filteredLeads, claimSourceLeads, leads, agents, customerEmails, customerRegs, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, myOnly]);
 
-  const exportFilesAllowed = useCustomerDataExportAccess();
+  const { canExportNewLeads: exportFilesAllowed, canSeeLeadSource } = useExportPermissions();
   const exportCsv = useCallback(async () => {
-    if (!await requireCustomerDataExport()) return;
+    if (!await requireNewLeadsExport()) return;
     if (!filteredLeads.length) {
       toast.error('Nothing to export', { description: 'There are no leads in the current view.' });
       return;
     }
+    // Source column only leaves the database when the person has the
+    // "See lead source" grant — it is hidden on this page for all roles.
     const headers = [
-      'First name','Last name','Email','Phone','Status','Source','Plan interest',
+      'First name','Last name','Email','Phone','Status',...(canSeeLeadSource ? ['Source'] : []),'Plan interest',
       'Vehicle reg','Vehicle make','Vehicle model','Vehicle year','Mileage',
       'Cart value','Quote amount','Calls','Last contacted','Last worked','Recovery outcome',
       'Assigned to','Assigned at','Date added','Created at',
@@ -1400,7 +1402,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     const rows = filteredLeads.map((l: any) => {
       const a = l.assigned_to ? agentByAuthId.get(l.assigned_to) : undefined;
       return [
-        l.first_name, l.last_name, l.email, l.phone, l.status, l.lead_source, l.plan_interest,
+        l.first_name, l.last_name, l.email, l.phone, l.status, ...(canSeeLeadSource ? [l.lead_source] : []), l.plan_interest,
         l.vehicle_reg, l.vehicle_make, l.vehicle_model, l.vehicle_year, l.mileage,
         l.cart_value, l.quote_amount, l.call_count || 0,
         l.last_contacted_at, l.recovery_worked_at, l.recovery_outcome,
@@ -1417,7 +1419,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast.success(`Exported ${rows.length} leads`);
-  }, [filteredLeads, agentByAuthId, segment]);
+  }, [filteredLeads, agentByAuthId, segment, canSeeLeadSource]);
 
 
   const dueTodayCount = counts['due_today'] ?? 0;

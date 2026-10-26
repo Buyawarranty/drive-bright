@@ -77,7 +77,8 @@ import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
 import { useDataExport } from '@/hooks/useDataExport';
 import { LeadsFullExportMenu } from './LeadsFullExportMenu';
 import { canUseStaffExport, staffExportRows } from '@/lib/staffExportAccess';
-import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
+import { useExportPermissions } from '@/hooks/useExportPermissions';
+import { requireNewLeadsExport } from '@/lib/customerDataExport';
 
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
@@ -258,8 +259,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // pass; sales/sales_lead only when their cap flag is on). See StaffLeadAccessPanel.
   const { canReassign: canAssignLeads } = useLeadRoutingPermission();
   
-  // Export permission - admin, super_admin, performance_manager, sales_manager, lead_gen
-  const canExport = useCustomerDataExportAccess();
+  // Scoped export + lead-source permissions — off by default for everyone
+  // except admin/super admin; granted per person in User Permissions.
+  const { canExportNewLeads: canExport, canSeeLeadSource } = useExportPermissions();
   
   // Granular permissions for sub-views
   // hasGranularPermission returns: true (granted), false (denied), undefined (not set)
@@ -382,8 +384,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Super admin can still locally hide via the H toggle.
   const seeSourceGranular = hasGranularPermission('new-leads', 'see-source');
   const isAdminRole = userRole === 'admin';
-  const seeSourceDefault = isSuperAdmin || isAdminRole || isLeadGenUser;
-  const seeSourceAllowed = seeSourceGranular === undefined ? seeSourceDefault : seeSourceGranular;
+  // Off by default: only admin/super admin see source automatically; anyone
+  // else needs the granular tick or the "See lead source" grant.
+  const seeSourceDefault = isSuperAdmin || isAdminRole;
+  const seeSourceAllowed = (seeSourceGranular === undefined ? seeSourceDefault : seeSourceGranular) || canSeeLeadSource;
   // Hard rule: sales roles (agents, sales leads, sales managers) never see the
   // lead source anywhere in New Leads — not even if a granular permission was
   // switched on for them by mistake.
@@ -1490,11 +1494,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     setActiveView(view);
   }, []);
 
-  const handleExport = useCallback((format: 'csv' | 'xlsx') => {
+  const handleExport = useCallback(async (format: 'csv' | 'xlsx') => {
     if (!canExport) {
       toast.error('You do not have permission to export leads');
       return;
     }
+    if (!await requireNewLeadsExport()) return;
 
     const baseLeads = selectedLeads.size > 0
       ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
