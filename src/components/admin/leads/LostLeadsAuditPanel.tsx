@@ -138,7 +138,7 @@ export const LostLeadsAuditPanel: React.FC<Props> = ({ currentAdminId }) => {
       const { error: actErr } = await supabase.from('lead_activities').insert(activities);
       if (actErr) console.error('Restore audit log failed', actErr);
 
-      toast.success(`${ids.length} lead${ids.length === 1 ? '' : 's'} restored to New`);
+      toast.success(`${ids.length} lead${ids.length === 1 ? '' : 's'} restored — held for management until assigned`);
       await fetchData();
     } catch (e: any) {
       toast.error(`Restore failed: ${e?.message || 'unknown error'}`);
