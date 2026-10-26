@@ -1419,7 +1419,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast.success(`Exported ${rows.length} leads`);
-  }, [filteredLeads, agentByAuthId, segment]);
+  }, [filteredLeads, agentByAuthId, segment, canSeeLeadSource]);
 
 
   const dueTodayCount = counts['due_today'] ?? 0;
