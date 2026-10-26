@@ -40,7 +40,7 @@ import { useIsManagement } from '@/hooks/useIsManagement';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
   Tag, AlertTriangle, FileText, StickyNote, NotebookPen,
-  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe, Copy, Check, PencilLine
+  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe, Copy, Check, CheckCheck, PencilLine
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -145,6 +145,8 @@ interface LeadTableRowProps {
   repeatCustomer?: import('@/hooks/useRepeatCustomers').RepeatCustomerInfo;
   /** Open Round Robin Sandbox: show Time to contact between Agent and Status. */
   sandboxMode?: boolean;
+  /** Management-only "seen" receipts for this lead (who opened it, when). */
+  seenReceipts?: import('@/hooks/useLeadViewReceipts').LeadViewReceipt[];
 }
 
 const statusColors: Record<LeadStatus, string> = {

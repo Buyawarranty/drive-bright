@@ -317,10 +317,19 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     );
   };
 
+  // "Seen" receipts: management reads who opened each visible lead; every
+  // staff member's own expand records a receipt (server-checked).
+  const { isManagement } = useIsManagement();
+  const { receiptsByLead, markLeadSeen } = useLeadViewReceipts(pagedLeadIds, isManagement === true);
+
   // Memoized callbacks for row actions
   const handleToggleExpand = useCallback((leadId: string) => {
-    setExpandedLead(prev => prev === leadId ? null : leadId);
-  }, []);
+    setExpandedLead(prev => {
+      const next = prev === leadId ? null : leadId;
+      if (next) void markLeadSeen(next, currentAdminId);
+      return next;
+    });
+  }, [markLeadSeen, currentAdminId]);
 
   // "Converted" always asks the agent to confirm the payment first.
   const { guardStatusChange, convertedConfirmDialog } = useConfirmConverted(onUpdateStatus);
@@ -424,6 +433,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   sentQuotes={quotesByEmail[lead.email?.toLowerCase()] || []}
                   onSelect={isReadOnly ? noop : () => onSelectLead(lead.id)}
                   onToggleExpand={() => handleToggleExpand(lead.id)}
+                  seenReceipts={receiptsByLead.get(lead.id)}
                   onUpdateStatus={isReadOnly ? noop : (status) => guardStatusChange(lead.id, status)}
                   onAssign={isReadOnly ? noop : (userId) => onAssign(lead.id, userId)}
                   onAutoAssign={isReadOnly ? noop : () => onAutoAssign(lead.id)}
