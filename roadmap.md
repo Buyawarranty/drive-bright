@@ -1,5 +1,9 @@
 # Roadmap
 
+## Graphical daily active and idle review
+- [ ] Add all-staff daily comparison bars and session timelines with available idle windows, explicit session start/end details and honest historical data gaps.
+- [ ] Test overlap-safe durations and idle evidence; verify chart interactions and existing protected access. Real signed-in read-back remains blocked by external unmanaged Supabase.
+
 ## Clear earliest CRM presence
 - [x] Primary first-presence column combines existing session starts and paginated RLS-protected location observations, labels source and separates first/last recorded interactions. Observation failures explicitly warn that earlier presence is unavailable; no active-time or historical-gap invention.
 - [x] James's 09:06 versus 11:47 rule tested; 13 tests pass and preview build OK. Isolated browser shows earlier observation, later interaction, date-race protection and no runtime errors; nothing published.
