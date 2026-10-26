@@ -1402,7 +1402,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     const rows = filteredLeads.map((l: any) => {
       const a = l.assigned_to ? agentByAuthId.get(l.assigned_to) : undefined;
       return [
-        l.first_name, l.last_name, l.email, l.phone, l.status, l.lead_source, l.plan_interest,
+        l.first_name, l.last_name, l.email, l.phone, l.status, ...(canSeeLeadSource ? [l.lead_source] : []), l.plan_interest,
         l.vehicle_reg, l.vehicle_make, l.vehicle_model, l.vehicle_year, l.mileage,
         l.cart_value, l.quote_amount, l.call_count || 0,
         l.last_contacted_at, l.recovery_worked_at, l.recovery_outcome,
