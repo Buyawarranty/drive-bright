@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.release_management_hold_on_assignment() FROM anon, authenticated, public;
