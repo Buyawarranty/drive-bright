@@ -26,6 +26,21 @@ export function canAccessCallData(role: string | null | undefined, permissions?:
   return role === 'admin' || role === 'sales_manager' || role === 'performance_manager';
 }
 
+/**
+ * Leads data (archive): the management view of every lead ever received —
+ * the lost/archived restore panel and its history. Admin and super admin
+ * always have it; everyone else needs the explicit
+ * 'tab_new-leads_leads-archive' grant in User Permissions. Sales roles can
+ * only ever get it through that grant, never by default.
+ */
+export function canAccessLeadsArchive(
+  role: string | null | undefined,
+  granularGrant: boolean | undefined,
+): boolean {
+  if (role === 'super_admin' || role === 'admin') return true;
+  return granularGrant === true;
+}
+
 /** SEO Audit reuses the existing assistant permission, not a separate grant. */
 export function canAccessSeoAudit(role: string | null | undefined, permissions?: Record<string, boolean> | null): boolean {
   return role === 'super_admin' || permissions?.['tab_growth-agent'] === true || permissions?.['tab_seo-review'] === true;

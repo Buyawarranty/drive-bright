@@ -178,6 +178,7 @@ const GRANULAR_PERMISSIONS = {
     { key: 'my-dashboard', label: 'My Dashboard', description: 'Can view My Dashboard section' },
     { key: 'team-view', label: 'Team View', description: 'Can view Team View (manager view)' },
     { key: 'fake-audit', label: 'Fake Lead Audit', description: 'Can access the Fake Lead Audit panel (audit-only review of leads marked Fake 404)' },
+    { key: 'leads-archive', label: 'Leads data (archive)', description: 'Can view and restore lost, archived and closed leads — the management record of every lead ever received. Admin and super admin always have this; anyone else needs this grant.' },
     { key: 'lead-routing', label: 'Lead Routing & Distribution', description: 'Can configure how Google/Facebook/mixed leads are distributed to teams based on conversion performance thresholds' },
     { key: 'live-tracking', label: 'Live Tracking', description: 'Business hours 09:00–18:00 · Mon–Fri · flagged after 30m of no note or call' },
   ],
