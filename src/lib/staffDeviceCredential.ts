@@ -13,7 +13,7 @@ export function staffDeviceCredential(): string {
 export function withStaffDeviceHeader(input: RequestInfo | URL, init?: RequestInit): RequestInit | undefined {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
   const parsed = new URL(url, window.location.origin);
-  if (parsed.hostname !== 'mzlpuxzwyrcyrgrongeb.supabase.co' || parsed.pathname.startsWith('/auth/')) return init;
+  if (parsed.hostname !== 'mzlpuxzwyrcyrgrongeb.supabase.co' || (!parsed.pathname.startsWith('/rest/v1/') && parsed.pathname !== '/functions/v1/staff-device-access')) return init;
   const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
   headers.set('x-staff-device', staffDeviceCredential());
   return { ...init, headers };

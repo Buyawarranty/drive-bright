@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
+import { staffDeviceRequest } from '@/lib/staffDeviceAccess';
 
 const bounded = async <T,>(promise: PromiseLike<T>, ms: number): Promise<T | 'timeout'> => {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -18,7 +19,7 @@ const bounded = async <T,>(promise: PromiseLike<T>, ms: number): Promise<T | 'ti
 };
 
 export function StaffPasswordGate({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<'loading' | 'ready' | 'expired' | 'error'>('loading');
+  const [state, setState] = useState<'loading' | 'ready' | 'expired' | 'error' | 'device'>('loading');
   const [currentPassword, setCurrentPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -32,6 +33,10 @@ export function StaffPasswordGate({ children }: { children: React.ReactNode }) {
       if (sessionResult === 'timeout') { setState('error'); return; }
       const session = sessionResult.data.session;
       if (!session) { setState('ready'); return; }
+      try {
+        const device = await staffDeviceRequest('request');
+        if (!device.allowed) { setState('device'); return; }
+      } catch { setState('device'); return; }
       const result = await bounded(supabase.functions.invoke('staff-password', {
         body: { action: 'status' },
         headers: { Authorization: `Bearer ${session.access_token}` },
@@ -67,7 +72,8 @@ export function StaffPasswordGate({ children }: { children: React.ReactNode }) {
   return <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
     <section className="w-full max-w-md space-y-5">
       <KeyRound className="h-8 w-8 text-primary" />
-      <h1 className="text-2xl font-semibold">{state === 'expired' ? 'Renew your staff password' : state === 'error' ? 'Password check unavailable' : 'Checking staff access…'}</h1>
+      <h1 className="text-2xl font-semibold">{state === 'device' ? 'Device approval required' : state === 'expired' ? 'Renew your staff password' : state === 'error' ? 'Password check unavailable' : 'Checking staff access…'}</h1>
+      {state === 'device' && <><p className="text-muted-foreground">Ask your administrator to approve this browser. If the check is temporarily unavailable, retry; passwords alone do not establish device approval.</p><Button onClick={check}>Retry device check</Button></>}
       {state === 'expired' && <><p className="text-muted-foreground">Your personal password needs updating every three months. Your gateway password is separate.</p>
         <form onSubmit={save} className="space-y-4">
           <div><Label htmlFor="renew-current">Current personal password</Label><Input id="renew-current" type="password" autoComplete="current-password" required value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} /></div>

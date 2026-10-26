@@ -14,6 +14,7 @@ import StaffLocationPanel from './hr/StaffLocationPanel';
 import AdminAccessLogPanel from './AdminAccessLogPanel';
 import StaffSigninAudit from './StaffSigninAudit';
 import { useAuth } from '@/hooks/useAuth';
+import StaffDeviceSecurityPanel from './StaffDeviceSecurityPanel';
 
 interface Staff { id: string; email: string; first_name: string | null; last_name: string | null; role: string }
 interface AttendanceDay { admin_user_id: string; day: string; active_seconds: number; first_activity_at: string | null; last_activity_at: string | null }
@@ -43,7 +44,7 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
   const generation = useRef(0);
   const range = period === 'custom' ? customRange : periodToRange(period);
   const from = range?.from ? ukDate(range.from) : period === 'all' ? ukDate(new Date(Date.now() - 366 * 86400000)) : ukDate(new Date());
-  const to = range?.to ? ukDate(range.to) : from;
+  const to = range?.to ? ukDate(range.to) : period === 'all' ? ukDate(new Date()) : from;
   const today = ukDate(new Date());
   const live = from <= today && to >= today;
   const load = useCallback(async () => {
@@ -90,11 +91,12 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
   const selected = rows.find(row => row.staff.id === selectedStaff);
   return <section className="space-y-6 p-4 sm:p-6">
     <header className="flex flex-wrap items-start justify-between gap-3">
-      <div><h1 className="text-2xl font-bold flex items-center gap-2"><Activity className="h-6 w-6 text-primary" />{period === 'today' ? 'Live time on CRM today' : 'CRM attendance'}</h1>
+      <div><h1 className="text-2xl font-bold flex items-center gap-2"><Activity className="h-6 w-6 text-primary" />Staff access &amp; security log</h1>
         <p className="text-sm text-muted-foreground mt-1">All staff, including offline accounts · {zone === 'UTC' ? 'GMT / UTC' : 'UK local time (GMT / BST)'}{report ? ` · Updated ${time(report.measured_at)}` : ''}</p></div>
       <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}><RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Refresh</Button>
     </header>
-    {!filterRoles && <Tabs value={view} onValueChange={setView}><TabsList className="h-auto flex flex-wrap justify-start"><TabsTrigger value="attendance">Live attendance</TabsTrigger><TabsTrigger value="locations">Work locations</TabsTrigger>{canSeeAudit && <><TabsTrigger value="signins">Sign-in history</TabsTrigger><TabsTrigger value="access">Account access history</TabsTrigger></>}</TabsList></Tabs>}
+    {canSeeAudit && <StaffDeviceSecurityPanel from={today} to={today} alertsOnly />}
+    {!filterRoles && <Tabs value={view} onValueChange={setView}><TabsList className="h-auto flex flex-wrap justify-start"><TabsTrigger value="attendance">Live attendance</TabsTrigger><TabsTrigger value="locations">Work locations</TabsTrigger>{canSeeAudit && <><TabsTrigger value="devices">Devices &amp; login attempts</TabsTrigger><TabsTrigger value="signins">Sign-in history</TabsTrigger><TabsTrigger value="access">Account access history</TabsTrigger></>}</TabsList></Tabs>}
     <Tabs value={zone} onValueChange={value => setZone(value as CrmAuditZone)}><TabsList><TabsTrigger value="UTC">GMT / UTC</TabsTrigger><TabsTrigger value="Europe/London">UK local time</TabsTrigger></TabsList></Tabs>
     {view === 'attendance' && <>
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 border-y py-4">
@@ -123,5 +125,6 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
     {view === 'locations' && <StaffLocationPanel zone={zone} />}
     {canSeeAudit && view === 'signins' && <><UnifiedDateFilter scope="signup" period={period} customRange={customRange} availableScopes={['signup']} onChange={next => { setPeriod(next.period); setCustomRange(next.customRange); }} showLabel={false} /><StaffSigninAudit from={from} to={to} zone={zone} /></>}
     {canSeeAudit && view === 'access' && <AdminAccessLogPanel zone={zone} />}
+    {canSeeAudit && view === 'devices' && <><UnifiedDateFilter scope="signup" period={period} customRange={customRange} availableScopes={['signup']} onChange={next => { setPeriod(next.period); setCustomRange(next.customRange); }} showLabel={false} /><StaffDeviceSecurityPanel from={from} to={to} zone={zone} /></>}
   </section>;
 }

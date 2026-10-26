@@ -12,6 +12,7 @@ import { useGatewayUnlock } from '@/lib/loginGateway';
 import { withTimeout } from '@/lib/withTimeout';
 import { logLoginAttempt } from '@/lib/loginActivityLogger';
 import { checkLoginLockout, lockoutMessage } from '@/lib/loginLockout';
+import { staffDeviceSignIn, staffDeviceRequest } from '@/lib/staffDeviceAccess';
 
 const SalesLogin = () => {
   const [email, setEmail] = useState('');
@@ -31,6 +32,8 @@ const SalesLogin = () => {
         const { data: { session } } = await withTimeout(supabase.auth.getSession(), 10000, 'Session check');
 
         if (session?.user) {
+          const device = await staffDeviceRequest('request');
+          if (!device.allowed) throw new Error('Device approval required');
           const renewal = await withTimeout(supabase.functions.invoke('staff-password', { body: { action: 'status' }, headers: { Authorization: `Bearer ${session.access_token}` } }), 15000, 'Staff access check');
           if (renewal.data?.must_change) { navigate('/staff-password-renewal/', { replace: true }); return; }
           // Check if user has sales or admin role
@@ -76,10 +79,7 @@ const SalesLogin = () => {
       }
 
       // Sign in with email and password
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
-      });
+      const { data: authData, error: authError } = await staffDeviceSignIn(normalizedEmail, password);
 
       if (authError) {
         logLoginAttempt({
