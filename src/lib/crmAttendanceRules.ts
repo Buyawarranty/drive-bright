@@ -14,3 +14,7 @@ export function crmAttendanceStatus(session: { ended_at: string | null; last_see
 export function canViewCrmAttendance(role: string | null | undefined): boolean {
   return role === 'admin' || role === 'super_admin' || role === 'sales_manager';
 }
+
+export function canViewStaffSigninAudit(role: string | null | undefined): boolean {
+  return role === 'admin' || role === 'super_admin';
+}

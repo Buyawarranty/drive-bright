@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from './UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
-import { crmAttendanceStatus } from '@/lib/crmAttendanceRules';
+import { canViewStaffSigninAudit, crmAttendanceStatus } from '@/lib/crmAttendanceRules';
 import { withTimeout } from '@/lib/withTimeout';
 import { formatCrmAuditTime, type CrmAuditZone } from '@/lib/crmAuditTime';
 import StaffLocationPanel from './hr/StaffLocationPanel';
@@ -26,7 +26,7 @@ const staffName = (staff: Staff) => `${staff.first_name || ''} ${staff.last_name
 
 export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: string[] }) {
   const { userRole } = useAuth();
-  const canSeeAudit = userRole === 'admin' || userRole === 'super_admin';
+  const canSeeAudit = canViewStaffSigninAudit(userRole);
   const [view, setView] = useState('attendance');
   const [zone, setZone] = useState<CrmAuditZone>('UTC');
   const time = (iso: string | null | undefined) => formatCrmAuditTime(iso, zone);

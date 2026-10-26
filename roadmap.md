@@ -1,8 +1,9 @@
 # Roadmap
 
 ## CRM attendance and access history
-- [ ] Bring attendance, recorded locations and protected sign-in/access records together in Attendance; include inactive staff history and explicit GMT timestamps.
-- [ ] Verify read-only access restrictions and time formatting; preserve login and allocation behaviour. Authenticated UI verification is unavailable for external unmanaged Supabase.
+- [x] Bring attendance, recorded locations and protected sign-in/access records together in Attendance; include inactive staff history and explicit GMT timestamps. Sign-in audit is admin/super-admin only; service-only RPC omits raw auth payloads.
+- [x] Timestamp/activity tests passed, preview build OK; signed-out Attendance redirects to /auth without runtime errors. Function privileges verified service-only; login and allocation behaviour unchanged.
+- [ ] Authenticated report/UI read-back unavailable for external unmanaged Supabase. Anonymous/failed attempts are not in the historical staff audit source; exact individuals behind shared accounts and hacking cannot be established from these records.
 
 ## Visible pricing editor and live comparison
 - [x] Saved-plan Open and Load into editor now open the full named editor immediately, including grid, vehicle variables and website difference.
