@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { History, Rocket, Check, StickyNote, Loader2, BarChart3, Trophy, Radio } from 'lucide-react';
+import { History, Rocket, Check, StickyNote, Loader2, BarChart3, Trophy, Radio, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -132,12 +132,15 @@ export default function PriceUpdateLogPanel({
   busy,
   onPushLive,
   onSaveNote,
+  onView,
 }: {
   versions: PricingVersion[];
   busy?: boolean;
   onPushLive: (v: PricingVersion) => void;
   /** Save the performance note against this price model. */
   onSaveNote?: (id: string, notes: string) => Promise<void>;
+  /** Open the full detail pop-up for this price model (view, compare, copy & edit). */
+  onView?: (v: PricingVersion) => void;
 }) {
   const [showAll, setShowAll] = useState(false);
   const [sort, setSort] = useState<'newest' | 'best' | 'worst' | 'shortest' | 'longest' | 'revenue'>('newest');
@@ -444,7 +447,17 @@ export default function PriceUpdateLogPanel({
                   )}
                 </div>
 
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onView?.(v)}
+                    title="Open the full detail view: every price, comparison with the current live model, and edit options"
+                  >
+                    <Eye className="mr-1 h-4 w-4" />
+                    View / edit
+                  </Button>
                   <Button
                     type="button"
                     size="sm"
