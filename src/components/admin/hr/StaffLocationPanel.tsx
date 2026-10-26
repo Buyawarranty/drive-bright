@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Loader2, ShieldAlert, Laptop, Globe2, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatCrmAuditTime, type CrmAuditZone } from '@/lib/crmAuditTime';
+import { staffLocationReview } from '@/lib/staffLocationReview';
 
 interface LocationRow {
   id: string;
@@ -41,37 +42,49 @@ const RANGES = [
   { label: 'Last 30 days', days: 30 },
 ];
 
-export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone }> = ({ zone = 'UTC' }) => {
+export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone; from?: string; to?: string; staffIds?: string[] }> = ({ zone = 'UTC', from: selectedFrom, to: selectedTo, staffIds }) => {
   const [rows, setRows] = useState<LocationRow[]>([]);
   const [staff, setStaff] = useState<Record<string, StaffName>>({});
   const [loading, setLoading] = useState(true);
   const [rangeDays, setRangeDays] = useState(0);
   const [query, setQuery] = useState('');
+  const [error, setError] = useState('');
+  const [reviewOnly, setReviewOnly] = useState(false);
+  const staffKey = staffIds?.join(',');
 
   const load = async () => {
     setLoading(true);
     const from = new Date();
     from.setDate(from.getDate() - rangeDays);
-    const fromDate = from.toISOString().slice(0, 10);
-
-    const [{ data: locs }, { data: users }] = await Promise.all([
-      supabase
-        .from('staff_work_locations')
-        .select('*')
-        .gte('session_date', fromDate)
-        .order('last_seen_at', { ascending: false })
-        .limit(1000),
-      supabase.from('admin_users').select('id, first_name, last_name, role'),
-    ]);
-
-    setRows((locs || []) as LocationRow[]);
-    const map: Record<string, StaffName> = {};
-    (users || []).forEach((u: any) => { map[u.id] = u; });
-    setStaff(map);
-    setLoading(false);
+    const fromDate = selectedFrom || from.toISOString().slice(0, 10);
+    const toDate = selectedTo || new Date().toISOString().slice(0, 10);
+    try {
+      const all: LocationRow[] = [];
+      if (staffIds?.length === 0) { setRows([]); return; }
+      for (let offset = 0; ; offset += 500) {
+        let request = supabase.from('staff_work_locations').select('*').gte('session_date', fromDate).lte('session_date', toDate).order('last_seen_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + 499);
+        if (staffIds) request = request.in('admin_user_id', staffIds);
+        const { data, error: requestError } = await request;
+        if (requestError) throw requestError;
+        all.push(...(data || []) as LocationRow[]);
+        if ((data?.length || 0) < 500) break;
+      }
+      const { data: users, error: staffError } = await supabase.from('admin_users').select('id, first_name, last_name, role');
+      if (staffError) throw staffError;
+      setRows(all);
+      const map: Record<string, StaffName> = {};
+      (users || []).forEach(u => { map[u.id] = u; });
+      setStaff(map); setError('');
+    } catch { setError('Locations could not refresh. Previous records may be out of date.'); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [rangeDays]);
+  useEffect(() => {
+    setRows([]); void load();
+    const timer = setInterval(() => { if (!document.hidden) void load(); }, 30000);
+    return () => clearInterval(timer);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [rangeDays, selectedFrom, selectedTo, staffKey]);
 
   const name = (row: LocationRow) => {
     const u = staff[row.admin_user_id];
@@ -79,10 +92,12 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone }> = ({ zone = '
     return full || row.email;
   };
 
+  const reviews = useMemo(() => staffLocationReview(rows), [rows]);
   const filtered = useMemo(() => {
-    if (!query.trim()) return rows;
+    const candidates = reviewOnly ? rows.filter(row => reviews.get(row.admin_user_id)?.review) : rows;
+    if (!query.trim()) return candidates;
     const q = query.toLowerCase();
-    return rows.filter((r) =>
+    return candidates.filter((r) =>
       name(r).toLowerCase().includes(q) ||
       r.email.toLowerCase().includes(q) ||
       (r.city || '').toLowerCase().includes(q) ||
@@ -90,11 +105,11 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone }> = ({ zone = '
       (r.isp || '').toLowerCase().includes(q) ||
       r.ip_address.includes(q)
     );
-  }, [rows, query, staff]);
+  }, [rows, query, staff, reviewOnly, reviews]);
 
   const stats = useMemo(() => {
     const people = new Set(filtered.map((r) => r.admin_user_id));
-    const places = new Set(filtered.map((r) => `${r.city || '?'}-${r.country || '?'}`));
+    const places = new Set(filtered.filter(r => r.city || r.country).map((r) => `${r.city || ''}-${r.country || ''}`));
     const outsideUk = filtered.filter((r) => r.country_code && r.country_code !== 'GB').length;
     const flagged = filtered.filter((r) => r.is_vpn).length;
     return { people: people.size, places: places.size, outsideUk, flagged };
@@ -107,6 +122,8 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone }> = ({ zone = '
 
   return (
     <div className="space-y-4">
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      <div className="flex flex-wrap items-center gap-3 border-l-4 border-destructive pl-3"><span className="font-semibold">{[...reviews.values()].filter(value => value.review).length} accounts with multiple recorded networks, locations or device types</span><Button size="sm" variant={reviewOnly ? 'default' : 'outline'} onClick={() => setReviewOnly(value => !value)} aria-pressed={reviewOnly}>Review flagged accounts</Button></div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card><CardContent className="p-4">
           <p className="text-xs text-muted-foreground">Staff seen</p>
@@ -140,7 +157,7 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone }> = ({ zone = '
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              {RANGES.map((r) => (
+              {!selectedFrom && RANGES.map((r) => (
                 <Button
                   key={r.label}
                   size="sm"
@@ -157,10 +174,12 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone }> = ({ zone = '
           </div>
           <Input
             className="max-w-sm mt-3"
+            aria-label="Search staff locations"
             placeholder="Search staff, city, country, network or IP"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
+          <p className="text-sm text-muted-foreground mt-3">A changed IP, VPN or device type does not prove a different computer or person. These are recorded work-location observations, not exact locations for every sign-in. Blocking duplicate access is not active yet.</p>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -193,6 +212,7 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone }> = ({ zone = '
                       <TableCell>
                         <div className="font-medium">{name(r)}</div>
                         <div className="text-xs text-muted-foreground">{r.email}</div>
+                        {reviews.get(r.admin_user_id)?.review && <Badge variant="destructive" className="mt-1">Multiple destinations · review</Badge>}
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
                         {format(new Date(r.session_date), 'dd MMM yyyy')}
