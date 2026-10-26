@@ -62,6 +62,7 @@ import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
 import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
 import { LostLeadsAuditPanel } from './LostLeadsAuditPanel';
 import { LeadFullExportDialog } from './LeadFullExportDialog';
+import { canAccessLeadsArchive } from '@/lib/tabAccess';
 import { TeamChangeNoticeDialog } from './TeamChangeNoticeDialog';
 import { TeamFilterChips } from './TeamFilterChips';
 import { TeamSourceBreakdown } from './TeamSourceBreakdown';
