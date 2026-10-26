@@ -1,5 +1,10 @@
 # Roadmap
 
+## Individual agent activity view
+- [x] Daily staff activity defaults to one block per agent: their name as a heading with their own day bars, range totals and session counts beneath, ordered by recorded active time; "By day" keeps the combined day-by-day view.
+- [x] Twenty tests pass; isolated browser confirms each agent heading appears once, per-agent day rows and totals, session detail from an agent's own day, timeline and by-day views, and phone layout scrolls without page overflow. Preview build OK; nothing published.
+
+
 ## Graphical daily active and idle review
 - [x] Add all-staff daily comparison bars above attendance table and session timelines with recoverable final-interaction idle windows, explicit session start/end details and honest historical data gaps; recording and permissions unchanged.
 - [x] Twenty-three tests pass; isolated browser verifies daily active/idle totals, offline staff, repeated sessions, idle window, sign-out details and date controls without runtime errors or mobile overflow. Preview build OK; nothing published.
