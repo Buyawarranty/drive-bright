@@ -3,10 +3,11 @@
 // a ready-to-return Response on failure.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { staffDeviceAllowed } from './staff-device.ts';
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-staff-device",
 };
 
 const ADMIN_ROLES = new Set([
@@ -117,6 +118,9 @@ export async function requireAdmin(req: Request, options: RequireAdminOptions = 
   }
 
   const { data: renewal, error: renewalError } = await supabase.rpc('staff_password_status', { p_user_id: userData.user.id });
+  if (!await staffDeviceAllowed(supabase, req, userData.user.id)) {
+    return { ok: false as const, response: new Response(JSON.stringify({ error: 'STAFF_DEVICE_APPROVAL_REQUIRED' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
+  }
   if (renewalError || renewal?.must_change) {
     return { ok: false as const, response: new Response(JSON.stringify({ error: renewalError ? 'Unable to check password renewal' : 'STAFF_PASSWORD_RENEWAL_REQUIRED', message: 'Please change your personal password in Account settings to continue.' }), { status: renewalError ? 503 : 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
   }
