@@ -1,5 +1,10 @@
 # Roadmap
 
+## Daily staff session timelines
+- [ ] Show every recorded session split by day, a per-agent daily timeline and searchable session history with quick/custom date filters.
+- [ ] Verify saved-login connection tracking, distinguish actual sign-out from estimated disconnection and unavailable computer-lock evidence, and test day boundaries.
+- [ ] Validate available preview flows; signed-in report verification remains blocked by external unmanaged Supabase.
+
 ## Approved-device staff access
 - [x] Added private approved-browser records, admin-only approval/revocation, password-verified Sales login attempt logging, requested device registration and staged shared-guard checks. No device auto-approved; restrictions remain OFF.
 - [x] Staff access & security log combines device requests, successful/failed/blocked attempts through the new sales sign-in service, recent CRM online state, in-page admin alerts, available IP locations and GMT times alongside attendance/history.
