@@ -48,7 +48,7 @@ const statusBadge = (s: Status) => {
 };
 
 /**
- * Management-only panel to control which agents can work Goldmine Leads.
+ * Management-only panel to control which agents can work Recontact Leads.
  * By default no agents are listed — managers explicitly add agents via the
  * "Add agent" picker. Added agents can then be set Active (receiving work)
  * or Paused (kept on team but excluded from recontact assignment).
@@ -184,8 +184,8 @@ const RecontactAccessPanelInner: React.FC = () => {
         if (capError) throw capError;
         toast.success(`${row.name} recontact access ${on ? 'On' : 'Off'}`, {
           description: on
-            ? 'They can now claim goldmine leads and be allocated them.'
-            : 'They will not be able to claim goldmine leads until turned back On.',
+            ? 'They can now claim recontact leads and be allocated them.'
+            : 'They will not be able to claim recontact leads until turned back On.',
         });
       }
       await load();
@@ -198,7 +198,7 @@ const RecontactAccessPanelInner: React.FC = () => {
 
   /**
    * Per-agent recontact permissions:
-   *  - can_self_assign: agent may claim goldmine leads to themselves
+   *  - can_self_assign: agent may claim recontact leads to themselves
    *  - can_reassign: agent may change who a recontact lead is assigned to
    * Self-assign also flips skip_batch_check so they aren't blocked by the
    * "finish your batch first" guard, and mirrors the reassign right onto
@@ -228,7 +228,7 @@ const RecontactAccessPanelInner: React.FC = () => {
 
       toast.success(
         field === 'can_self_assign'
-          ? `${row.name} can ${value ? 'now' : 'no longer'} assign goldmine leads to themselves`
+          ? `${row.name} can ${value ? 'now' : 'no longer'} assign recontact leads to themselves`
           : `${row.name} can ${value ? 'now' : 'no longer'} change who a recontact lead is assigned to`,
       );
       await load();
@@ -255,7 +255,7 @@ const RecontactAccessPanelInner: React.FC = () => {
           workstream_recontact: true,
         }, { onConflict: 'admin_user_id' });
       if (error) throw error;
-      toast.success('Agent added to Goldmine Leads');
+      toast.success('Agent added to Recontact Leads');
       setAddAgentId('');
       setAddTeamId('');
       await load();
@@ -282,7 +282,7 @@ const RecontactAccessPanelInner: React.FC = () => {
       if (reason === 'agent_inactive') { toast.error(`${row.name} is inactive`); return; }
       if (reason === 'agent_not_on_recontact') { toast.error(`${row.name} isn't set to Active on Recontact`); return; }
       if (assigned === 0) {
-        toast.info('No unassigned goldmine leads (30+ days old) available');
+        toast.info('No unassigned recontact leads (30+ days old) available');
       } else {
         toast.success(`Allocated ${assigned} lead${assigned === 1 ? '' : 's'} to ${row.name}`, {
           description: `${remaining} still in the recontact pool`,
@@ -322,9 +322,9 @@ const RecontactAccessPanelInner: React.FC = () => {
         <div className="flex items-center gap-2 min-w-0">
           <UserRoundCog className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="min-w-0">
-            <div className="text-base font-semibold text-foreground">Agent access to Goldmine Leads</div>
+            <div className="text-base font-semibold text-foreground">Agent access to Recontact Leads</div>
             <div className="text-xs text-muted-foreground mt-0.5">
-              Add the agents who should work goldmine leads. Pause to hold, remove to take off entirely.
+              Add the agents who should work recontact leads. Pause to hold, remove to take off entirely.
             </div>
           </div>
         </div>
@@ -397,7 +397,7 @@ const RecontactAccessPanelInner: React.FC = () => {
 
               {visibleRows.length === 0 ? (
                 <div className="text-sm text-muted-foreground py-6 text-center border rounded-md bg-muted/20">
-                  No agents added yet. Use the picker above to add agents to Goldmine Leads.
+                  No agents added yet. Use the picker above to add agents to Recontact Leads.
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -407,7 +407,7 @@ const RecontactAccessPanelInner: React.FC = () => {
                         <th className="py-2 pr-3 font-medium">Agent</th>
                         <th className="py-2 pr-3 font-medium">Role</th>
                         <th className="py-2 pr-3 font-medium">Team</th>
-                        <th className="py-2 pr-3 font-medium">Goldmine on/off</th>
+                        <th className="py-2 pr-3 font-medium">Recontact on/off</th>
                         <th className="py-2 pr-3 font-medium">Self-assign</th>
                         <th className="py-2 pr-3 font-medium">Can reassign</th>
                         <th className="py-2 pr-3 font-medium">Assigned</th>
@@ -465,7 +465,7 @@ const RecontactAccessPanelInner: React.FC = () => {
                                 <Switch
                                   checked={status === 'active'}
                                   disabled={disabled}
-                                  aria-label={`Goldmine access for ${r.name}`}
+                                  aria-label={`Recontact access for ${r.name}`}
                                   onCheckedChange={(v) => setStatus(r, v ? 'active' : 'paused')}
                                 />
                                 <span className={`text-[11px] font-semibold ${status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>
@@ -479,7 +479,7 @@ const RecontactAccessPanelInner: React.FC = () => {
                                 <Switch
                                   checked={r.can_self_assign}
                                   disabled={disabled}
-                                  aria-label={`Allow ${r.name} to assign goldmine leads to themselves`}
+                                  aria-label={`Allow ${r.name} to assign recontact leads to themselves`}
                                   onCheckedChange={(v) => setCapFlag(r, 'can_self_assign', v)}
                                 />
                                 <span className={`text-[11px] font-semibold ${r.can_self_assign ? 'text-green-700' : 'text-muted-foreground'}`}>
@@ -521,8 +521,8 @@ const RecontactAccessPanelInner: React.FC = () => {
                                   onClick={() => setConfirmFor({ row: r, count: draftNum })}
                                   title={
                                     status !== 'active' ? 'Agent must be Active on Recontact'
-                                    : (poolRemaining ?? 0) < 1 ? 'Goldmine pool is empty'
-                                    : `Allocate ${draftNum || 25} goldmine leads to ${r.name}`
+                                    : (poolRemaining ?? 0) < 1 ? 'Recontact pool is empty'
+                                    : `Allocate ${draftNum || 25} recontact leads to ${r.name}`
                                   }
                                 >
                                   <Send className="h-3.5 w-3.5 mr-1" />
@@ -537,7 +537,7 @@ const RecontactAccessPanelInner: React.FC = () => {
                                 className="h-8 text-destructive hover:text-destructive"
                                 disabled={disabled}
                                 onClick={() => setStatus(r, 'removed')}
-                                title="Remove from Goldmine Leads entirely"
+                                title="Remove from Recontact Leads entirely"
                               >
                                 {disabled ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                               </Button>
@@ -557,7 +557,7 @@ const RecontactAccessPanelInner: React.FC = () => {
       <AlertDialog open={!!confirmFor} onOpenChange={(o) => { if (!o) setConfirmFor(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Allocate goldmine leads?</AlertDialogTitle>
+            <AlertDialogTitle>Allocate recontact leads?</AlertDialogTitle>
             <AlertDialogDescription>
               {confirmFor && (
                 <>

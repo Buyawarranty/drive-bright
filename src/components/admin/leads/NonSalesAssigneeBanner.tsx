@@ -28,7 +28,7 @@ type MisassignedLead = {
 };
 
 interface Props {
-  /** Sales agents eligible to receive goldmine leads (from LeadRecoveryTab). */
+  /** Sales agents eligible to receive recontact leads (from LeadRecoveryTab). */
   agents: SalesAgent[];
   /** Role of the currently signed-in admin. Banner only renders for management. */
   currentRole: string | null;
@@ -191,7 +191,7 @@ export const NonSalesAssigneeBanner: React.FC<Props> = ({ agents, currentRole, o
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold text-red-900">
-                {loading ? 'Scanning…' : `${count} goldmine lead${count === 1 ? '' : 's'} assigned to a non-sales account`}
+                {loading ? 'Scanning…' : `${count} recontact lead${count === 1 ? '' : 's'} assigned to a non-sales account`}
               </span>
               {!loading && count > 0 && (
                 <span className="text-[11px] font-medium uppercase tracking-wide bg-red-200 text-red-900 rounded px-1.5 py-0.5">
@@ -245,7 +245,7 @@ export const NonSalesAssigneeBanner: React.FC<Props> = ({ agents, currentRole, o
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-600" />
-              Reassign {count} goldmine lead{count === 1 ? '' : 's'}
+              Reassign {count} recontact lead{count === 1 ? '' : 's'}
             </DialogTitle>
             <DialogDescription>
               These leads are currently sitting on non-sales accounts. Pick a sales

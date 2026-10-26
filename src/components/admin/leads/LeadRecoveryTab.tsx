@@ -40,7 +40,7 @@ type SegmentId =
 
 const SEGMENTS: { id: SegmentId; label: string; description: string }[] = [
   { id: 'due_today',          label: 'Due Today',          description: 'Callbacks scheduled for today — work these first.' },
-  { id: 'new_to_recontact',   label: 'New to Goldmine',   description: 'Old enquiries (over 2 months) that have never been worked.' },
+  { id: 'new_to_recontact',   label: 'New to Recontact',   description: 'Old enquiries (over 2 months) that have never been worked.' },
   { id: 'no_answer',          label: 'No Answer',          description: 'Previously called but no response yet.' },
   { id: 'interested',         label: 'Interested',         description: 'Customer showed interest — needs follow-up.' },
   { id: 'quote_sent',         label: 'Quote Sent',         description: 'Price/quote already sent — needs chasing.' },
@@ -1443,7 +1443,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               <Badge
                 variant="secondary"
                 className="text-base px-2.5 py-0.5 font-bold tabular-nums"
-                title="Total goldmine leads in this view"
+                title="Total recontact leads in this view"
               >
                 {totalCount.toLocaleString()}
               </Badge>
@@ -1622,7 +1622,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 size="sm"
                 onClick={() => setWorkloadOpen(true)}
                 className="shrink-0"
-                title="See every agent's goldmine lead pipeline at a glance"
+                title="See every agent's recontact lead pipeline at a glance"
               >
                 <Network className="h-4 w-4 mr-1" /> Agent workload
               </Button>
@@ -1647,7 +1647,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 size="sm"
                 onClick={() => onNavigateToTab('lead-teams')}
                 className="shrink-0 font-semibold"
-                title="Assign agents to teams and pick the queues they work — New Leads, Goldmine, Renewals"
+                title="Assign agents to teams and pick the queues they work — New Leads, Recontact, Renewals"
               >
                 <Network className="h-4 w-4 mr-1" /> Allocate Agents
               </Button>
@@ -1777,7 +1777,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
           {loading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading goldmine leads…
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading recontact leads…
             </div>
           ) : filteredLeads.length === 0 ? (
             <Card>
@@ -1933,7 +1933,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Network className="h-5 w-5 text-primary" /> Agent workload — Goldmine leads
+              <Network className="h-5 w-5 text-primary" /> Agent workload — Recontact leads
             </DialogTitle>
           </DialogHeader>
           <p className="text-xs text-muted-foreground mb-3">
