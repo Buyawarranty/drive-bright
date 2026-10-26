@@ -117,6 +117,33 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     return out;
   }, []);
 
+  // Own-lead search for sales roles: RPC first (server-side ownership scope +
+  // normalised phone/reg matching), direct table query only as a fallback.
+  const ownSearch = React.useCallback(async (term: string) => {
+    if (!adminId || !role) return [];
+    const raw = term.trim();
+    if (raw) {
+      const rpcRows = await rpcSearch(raw);
+      if (rpcRows) return rpcRows.filter(lead => canSelectQuoteLead(role, adminId, lead));
+    }
+    let query = supabase.from('sales_leads')
+      .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to')
+      .eq('assigned_to', adminId).order('created_at', { ascending: false }).limit(50);
+    if (raw) {
+      const quote = (value: string) => `"%${value.replace(/["\\,()]/g, ' ').trim()}%"`;
+      const compact = raw.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      const spaced = compact.length >= 5 ? `${compact.slice(0, -3)} ${compact.slice(-3)}` : compact;
+      const clauses = ['first_name', 'last_name', 'email', 'phone'].map(col => `${col}.ilike.${quote(raw)}`);
+      if (compact) clauses.push(`vehicle_reg.ilike.${quote(compact)}`, `vehicle_reg.ilike.${quote(spaced)}`);
+      const digits = raw.replace(/\D/g, '');
+      if (digits.length >= 7) clauses.push(`phone.ilike.${quote(digits.slice(-9))}`);
+      query = query.or(clauses.join(','));
+    } else query = query.eq('is_paid', false);
+    const { data, error } = await query.abortSignal(AbortSignal.timeout(12000));
+    if (error) throw error;
+    return (data ?? []).filter(lead => canSelectQuoteLead(role, adminId, lead));
+  }, [adminId, role, rpcSearch]);
+
   /**
    * Backup of the backup: when the normal (and already-fallback) lead search
    * still fails or comes back empty for an agent, this runs the simplest
