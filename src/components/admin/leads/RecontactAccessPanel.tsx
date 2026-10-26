@@ -248,12 +248,24 @@ const RecontactAccessPanelInner: React.FC = () => {
     }
     setAdding(true);
     try {
-      const { error } = await (supabase.from('lead_team_members') as any)
-        .upsert({
-          admin_user_id: addAgentId,
-          team_id: addTeamId,
-          workstream_recontact: true,
-        }, { onConflict: 'admin_user_id' });
+      // lead_team_members has no unique key on admin_user_id alone (the unique
+      // is team_id + admin_user_id), so an upsert onConflict admin_user_id
+      // fails. Update the existing membership if there is one, else insert.
+      const { data: existing, error: lookupError } = await (supabase.from('lead_team_members') as any)
+        .select('id')
+        .eq('admin_user_id', addAgentId)
+        .maybeSingle();
+      if (lookupError) throw lookupError;
+      const { error } = existing
+        ? await (supabase.from('lead_team_members') as any)
+            .update({ team_id: addTeamId, workstream_recontact: true })
+            .eq('id', existing.id)
+        : await (supabase.from('lead_team_members') as any)
+            .insert({
+              admin_user_id: addAgentId,
+              team_id: addTeamId,
+              workstream_recontact: true,
+            });
       if (error) throw error;
       toast.success('Agent added to Recontact Leads');
       setAddAgentId('');
