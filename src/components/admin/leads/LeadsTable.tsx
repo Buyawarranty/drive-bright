@@ -16,6 +16,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { LeadTableRow } from './LeadTableRow';
 import { useConfirmConverted } from './ConfirmConvertedDialog';
+import { useLeadViewReceipts } from '@/hooks/useLeadViewReceipts';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 import { TableCell } from '@/components/ui/table';
 import { LeadsMobileCards } from './LeadsMobileCards';
