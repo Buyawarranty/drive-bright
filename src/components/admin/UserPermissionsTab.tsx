@@ -133,7 +133,6 @@ const ADMIN_TABS = [
   { id: 'non-claim-complaints', label: 'Non claims complaints', description: 'Complaints not related to a claim' },
   { id: 'lead-teams', label: 'Lead Teams', description: 'Team allocation, workstreams and Open Round Robin' },
   { id: 'attendance', label: 'Attendance & Rota', description: 'Working days rota and weekend shift sign-ups' },
-  { id: 'goldmine-leads', label: 'Goldmine Leads', description: 'High-intent leads flagged for priority follow-up' },
   { id: 'call-stats', label: 'Call Stats', description: 'Detailed call statistics and speed-to-dial (merged into Live Calls Data)' },
   { id: 'chatbot-popup', label: 'Chatbot Pop-up', description: 'See the ringing "Customer waiting for a specialist" website chat pop-up (admin, super admin and claims by default)' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
@@ -145,7 +144,7 @@ const ADMIN_TABS = [
 // Also auto-drop any section that has been removed from the sidebar, so the
 // permissions list always mirrors the live menu. Only non-menu feature
 // permissions listed below are kept even though they have no sidebar entry.
-const PERMISSION_ONLY_KEYS = new Set(['chatbot-popup', 'security', 'goldmine-leads']);
+const PERMISSION_ONLY_KEYS = new Set(['chatbot-popup', 'security']);
 (() => {
   const existing = new Set(ADMIN_TABS.map(t => t.id));
   SIDEBAR_TABS.forEach(t => {
