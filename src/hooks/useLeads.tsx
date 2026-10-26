@@ -154,6 +154,7 @@ export interface Lead {
   converted_at: string | null;
   lost_at: string | null;
   lost_reason: string | null;
+  management_hold?: boolean | null;
   abandoned_cart_id: string | null;
   created_at: string;
   updated_at: string;
@@ -516,7 +517,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
         created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
         call_count, is_callback, resubmission_count, last_resubmitted_at, hidden_from_agent_ids,
-        no_callback_until, inbound_spoken_at,
+        no_callback_until, inbound_spoken_at, management_hold,
         save_cancellation, save_reward_amount, save_reason
 
       `;
@@ -752,6 +753,9 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
                   .or(`assigned_to.eq.${currentAdmin.id},assigned_to.is.null`)
+                  // Management-held leads (restored lost/archived) are never
+                  // visible to sales agents or sales leads.
+                  .or('management_hold.is.null,management_hold.eq.false')
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
@@ -863,6 +867,9 @@ export const useLeads = (options?: UseLeadsOptions) => {
         const searchRole = impersonationRef.current.effectiveRole?.trim().toLowerCase();
         if (searchRole === 'sales' || searchRole === 'sales_lead') {
           query = query.not('status', 'in', '(converted,upgraded)');
+          // Management-held leads (restored lost/archived) must never reach
+          // a sales agent's or sales lead's browser, even as search hits.
+          query = query.or('management_hold.is.null,management_hold.eq.false');
         }
         return await applyServerSearchFilter(query);
       };

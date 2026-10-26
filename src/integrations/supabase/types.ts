@@ -12171,6 +12171,7 @@ export type Database = {
           locked_by: string | null
           lost_at: string | null
           lost_reason: string | null
+          management_hold: boolean
           manual_call_adjustment: number
           manual_entry: boolean
           mileage: string | null
@@ -12315,6 +12316,7 @@ export type Database = {
           locked_by?: string | null
           lost_at?: string | null
           lost_reason?: string | null
+          management_hold?: boolean
           manual_call_adjustment?: number
           manual_entry?: boolean
           mileage?: string | null
@@ -12459,6 +12461,7 @@ export type Database = {
           locked_by?: string | null
           lost_at?: string | null
           lost_reason?: string | null
+          management_hold?: boolean
           manual_call_adjustment?: number
           manual_entry?: boolean
           mileage?: string | null

@@ -119,6 +119,12 @@ export const LostLeadsAuditPanel: React.FC<Props> = ({ currentAdminId }) => {
           fake_reason: null,
           fake_reason_note: null,
           pool_status: 'new',
+          // Restored leads go to a management-only hold: unassigned and
+          // hidden from sales agents / sales leads until a manager assigns
+          // them (assigning releases the hold automatically).
+          management_hold: true,
+          assigned_to: null,
+          assigned_at: null,
         } as any)
         .in('id', ids);
       if (error) throw error;
@@ -132,7 +138,7 @@ export const LostLeadsAuditPanel: React.FC<Props> = ({ currentAdminId }) => {
       const { error: actErr } = await supabase.from('lead_activities').insert(activities);
       if (actErr) console.error('Restore audit log failed', actErr);
 
-      toast.success(`${ids.length} lead${ids.length === 1 ? '' : 's'} restored to New`);
+      toast.success(`${ids.length} lead${ids.length === 1 ? '' : 's'} restored — held for management until assigned`);
       await fetchData();
     } catch (e: any) {
       toast.error(`Restore failed: ${e?.message || 'unknown error'}`);
@@ -225,7 +231,7 @@ export const LostLeadsAuditPanel: React.FC<Props> = ({ currentAdminId }) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Restore {confirmIds?.length} lead{confirmIds?.length === 1 ? '' : 's'} to New?</AlertDialogTitle>
             <AlertDialogDescription>
-              They go back into New Leads with their lost and fake markings cleared. Each restore is recorded in the lead's history.
+              They go back into New Leads with their lost and fake markings cleared, but held for management only — sales agents and sales leads cannot see or claim them until a manager assigns the lead, which releases the hold. Each restore is recorded in the lead's history.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
