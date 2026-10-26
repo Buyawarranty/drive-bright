@@ -8,7 +8,7 @@ Deno.test('device IDs are not approval proof and invalid credentials are rejecte
 Deno.test('staff approval fails closed on an unavailable or denied server check', async () => {
   const request = new Request('https://example.com', { headers: { 'x-staff-device': 'a'.repeat(64) } });
   for (const result of [{ data: { allowed: false }, error: null }, { data: { allowed: true }, error: new Error('unavailable') }]) {
-    const db = { rpc: async () => result } as Parameters<typeof staffDeviceAllowed>[0];
+    const db = { rpc: async () => result } as unknown as Parameters<typeof staffDeviceAllowed>[0];
     assertEquals(await staffDeviceAllowed(db, request, 'user'), false);
   }
 });
