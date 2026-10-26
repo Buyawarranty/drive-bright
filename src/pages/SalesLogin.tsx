@@ -101,19 +101,24 @@ const SalesLogin = () => {
       if (renewal.data?.must_change) { navigate('/staff-password-renewal/', { replace: true }); return; }
 
       // Check if user has sales, admin, or member role
-      let rolesResult: { data: { role: string }[] | null; error: any };
-      try {
-        rolesResult = await withTimeout(
-          supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', authData.user.id),
-          10000,
-          'Role check'
-        );
-      } catch (roleErr) {
-        console.error('Role check timed out or failed:', roleErr);
-        await supabase.auth.signOut();
+      let rolesResult: { data: { role: string }[] | null; error: any } | null = null;
+      for (let attempt = 0; attempt < 3 && !rolesResult; attempt++) {
+        try {
+          rolesResult = await withTimeout(
+            supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', authData.user.id),
+            12000,
+            'Role check'
+          );
+        } catch (roleErr) {
+          console.error(`Role check attempt ${attempt + 1} failed:`, roleErr);
+          await new Promise(r => setTimeout(r, 800));
+        }
+      }
+      if (!rolesResult) {
+        await supabase.auth.signOut({ scope: 'local' });
         throw new Error('Signed in, but verifying your access timed out — please try again.');
       }
       const { data: roles, error: rolesError } = rolesResult;
