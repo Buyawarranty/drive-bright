@@ -17110,6 +17110,7 @@ export type Database = {
         Args: { admin_uuid: string; customer_uuid: string }
         Returns: undefined
       }
+      staff_access_lockout: { Args: { p_email: string }; Returns: boolean }
       staff_access_log_attempt: {
         Args: {
           p_email: string
