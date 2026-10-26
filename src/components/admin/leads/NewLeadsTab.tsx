@@ -762,6 +762,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       // can never browse or look up a sold customer. Management keeps full
       // visibility.
       if (isSalesFeedUser && (s === 'converted' || s === 'upgraded')) return false;
+      // Management-held leads (restored lost/archived awaiting management
+      // review) are hidden from sales agents and sales leads until a manager
+      // assigns them, which releases the hold automatically.
+      if (isSalesFeedUser && (lead as any).management_hold === true) return false;
       return true;
     }),
     [leads, isSalesFeedUser]

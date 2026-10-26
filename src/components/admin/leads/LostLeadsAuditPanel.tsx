@@ -119,6 +119,12 @@ export const LostLeadsAuditPanel: React.FC<Props> = ({ currentAdminId }) => {
           fake_reason: null,
           fake_reason_note: null,
           pool_status: 'new',
+          // Restored leads go to a management-only hold: unassigned and
+          // hidden from sales agents / sales leads until a manager assigns
+          // them (assigning releases the hold automatically).
+          management_hold: true,
+          assigned_to: null,
+          assigned_at: null,
         } as any)
         .in('id', ids);
       if (error) throw error;
