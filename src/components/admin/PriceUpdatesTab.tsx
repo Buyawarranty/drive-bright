@@ -1520,7 +1520,32 @@ export default function PriceUpdatesTab() {
 
           {previewVersion && (
             <div className="space-y-3">
+              {/* The one number everyone asks for: how far the website sits from Quotes & Orders on THIS plan, next to the current live plan. */}
+              <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 text-sm">
+                <p className="font-semibold text-foreground">
+                  Quotes &amp; Orders vs website on this plan: website prices are{' '}
+                  {Math.abs(normalizeWebsiteDiscount(previewVersion.step3_discount_pct))}%{' '}
+                  {normalizeWebsiteDiscount(previewVersion.step3_discount_pct) < 0 ? 'above' : 'below'} Quotes &amp; Orders
+                  (before minimums).
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Current live plan ({liveVersion?.label ?? 'Built-in code pricing'}): website is{' '}
+                  {Math.abs(normalizeWebsiteDiscount(liveVersion?.step3_discount_pct ?? 10))}% below Quotes &amp; Orders.
+                </p>
+              </div>
+
               <PlanLiveComparison matrix={previewVersion.admin_matrix} discountPct={normalizeWebsiteDiscount(previewVersion.step3_discount_pct)} liveMatrix={liveVersion?.admin_matrix ?? codeMatrix} liveDiscountPct={normalizeWebsiteDiscount(liveVersion?.step3_discount_pct ?? 10)} liveLabel={liveVersion?.label ?? 'Built-in code pricing'} />
+
+              {/* Straight into the part of the full editor you want to change. */}
+              <div className="rounded-md border bg-muted/30 p-3">
+                <p className="mb-2 text-xs font-semibold text-foreground">Edit this plan — opens the full editor at that section (you can also save it as a copy from there):</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => openSavedPlan(previewVersion, 'plan-price-grid')}>Price grid</Button>
+                  <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => openSavedPlan(previewVersion, 'plan-vehicle-variables')}>Vehicle variables</Button>
+                  <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => openSavedPlan(previewVersion, 'website-discount')}>Website price difference</Button>
+                </div>
+              </div>
+
               {previewVersion.notes && (
                 <p className="text-xs text-muted-foreground">{previewVersion.notes}</p>
               )}
@@ -1536,7 +1561,7 @@ export default function PriceUpdatesTab() {
                 if (previewVersion) openSavedPlan(previewVersion);
               }}
             >
-              Load into editor
+              Open full editor — view, copy &amp; edit
             </Button>
             {previewVersion && previewVersion.status !== 'live' && (
               <Button size="sm" disabled={busy} onClick={() => { if (previewVersion) handleRestoreVersion(previewVersion); }}>
