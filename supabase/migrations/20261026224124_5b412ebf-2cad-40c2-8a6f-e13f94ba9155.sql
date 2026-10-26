@@ -1,0 +1,3 @@
+CREATE OR REPLACE FUNCTION public.staff_access_lockout(p_email text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT count(*)>=5 FROM public.staff_access_attempts WHERE attempted_email=lower(btrim(p_email)) AND outcome='invalid_credentials' AND created_at>now()-interval '15 minutes' AND created_at>COALESCE((SELECT max(created_at) FROM public.staff_access_attempts WHERE attempted_email=lower(btrim(p_email)) AND outcome='signin_allowed'),'-infinity'::timestamptz) $$;
+REVOKE ALL ON FUNCTION public.staff_access_lockout(text) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_access_lockout(text) TO service_role;

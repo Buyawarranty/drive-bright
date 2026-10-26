@@ -27,6 +27,7 @@
 
 import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
 import { isHeavyTabBusy } from '@/lib/heavyTabBusy';
+import { withStaffDeviceHeader } from '@/lib/staffDeviceCredential';
 
 const MAX_CONCURRENT = 8;
 const MAX_BACKGROUND_CONCURRENT = 2;
@@ -197,6 +198,7 @@ function readDedupeKey(
 
 /** Drop-in `fetch` that paces Supabase data requests. */
 export const queuedFetch: typeof fetch = async (input, init) => {
+  init = withStaffDeviceHeader(input, init);
   const url =
     typeof input === 'string'
       ? input

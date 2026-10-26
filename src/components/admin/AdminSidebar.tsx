@@ -496,7 +496,7 @@ export const defaultTabs: Tab[] = [
   },
   {
     id: 'attendance',
-    label: 'Attendance',
+    label: 'Staff access & security log',
     icon: Wifi,
     description: 'See who is live in the CRM, idle, or offline (managers)'
   },

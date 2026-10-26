@@ -1,0 +1,36 @@
+CREATE TABLE public.staff_device_settings (id boolean PRIMARY KEY DEFAULT true, enabled boolean NOT NULL DEFAULT false, updated_at timestamptz NOT NULL DEFAULT now());
+GRANT ALL ON public.staff_device_settings TO service_role;
+ALTER TABLE public.staff_device_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Service manages device enforcement" ON public.staff_device_settings TO service_role USING(true) WITH CHECK(true);
+INSERT INTO public.staff_device_settings(id,enabled) VALUES(true,false);
+CREATE TABLE public.staff_approved_devices (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL, credential_hash text NOT NULL, device_label text NOT NULL, status text NOT NULL DEFAULT 'pending', requested_at timestamptz NOT NULL DEFAULT now(), approved_at timestamptz, approved_by uuid, revoked_at timestamptz, last_seen_at timestamptz, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), UNIQUE(user_id,credential_hash));
+GRANT ALL ON public.staff_approved_devices TO service_role;
+ALTER TABLE public.staff_approved_devices ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Service manages approved devices" ON public.staff_approved_devices TO service_role USING(true) WITH CHECK(true);
+CREATE TABLE public.staff_access_attempts (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid, attempted_email text NOT NULL, device_id uuid, outcome text NOT NULL, ip_address text, city text, country text, device_label text, account_online boolean NOT NULL DEFAULT false, acknowledged_at timestamptz, acknowledged_by uuid, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now());
+GRANT ALL ON public.staff_access_attempts TO service_role;
+ALTER TABLE public.staff_access_attempts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Service manages access attempts" ON public.staff_access_attempts TO service_role USING(true) WITH CHECK(true);
+CREATE INDEX staff_access_attempts_time_idx ON public.staff_access_attempts(created_at DESC,id DESC);
+CREATE INDEX staff_access_attempts_user_idx ON public.staff_access_attempts(user_id,created_at DESC);
+CREATE OR REPLACE FUNCTION public.staff_device_updated_at() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$ BEGIN NEW.updated_at=now(); RETURN NEW; END $$;
+CREATE TRIGGER staff_device_settings_updated BEFORE UPDATE ON public.staff_device_settings FOR EACH ROW EXECUTE FUNCTION public.staff_device_updated_at();
+CREATE TRIGGER staff_approved_devices_updated BEFORE UPDATE ON public.staff_approved_devices FOR EACH ROW EXECUTE FUNCTION public.staff_device_updated_at();
+CREATE TRIGGER staff_access_attempts_updated BEFORE UPDATE ON public.staff_access_attempts FOR EACH ROW EXECUTE FUNCTION public.staff_device_updated_at();
+CREATE OR REPLACE FUNCTION public.staff_device_access(p_user_id uuid,p_hash text) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE v_enabled boolean; v_approved boolean; v_staff boolean; BEGIN
+SELECT EXISTS(SELECT 1 FROM public.admin_users WHERE user_id=p_user_id) INTO v_staff;
+IF NOT v_staff THEN RETURN jsonb_build_object('is_staff',false,'allowed',true); END IF;
+IF NOT EXISTS(SELECT 1 FROM public.admin_users WHERE user_id=p_user_id AND is_active=true AND archived_at IS NULL AND (access_expires_at IS NULL OR access_expires_at>now())) THEN RETURN jsonb_build_object('is_staff',true,'allowed',false,'reason','inactive'); END IF;
+SELECT enabled INTO v_enabled FROM public.staff_device_settings WHERE id=true;
+SELECT EXISTS(SELECT 1 FROM public.staff_approved_devices WHERE user_id=p_user_id AND credential_hash=p_hash AND status='approved' AND revoked_at IS NULL) INTO v_approved;
+RETURN jsonb_build_object('is_staff',true,'enabled',COALESCE(v_enabled,true),'approved',v_approved,'allowed',NOT COALESCE(v_enabled,true) OR v_approved,'reason',CASE WHEN v_approved THEN 'approved' ELSE 'approval_required' END);
+END $$;
+REVOKE ALL ON FUNCTION public.staff_device_access(uuid,text) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_device_access(uuid,text) TO service_role;
+CREATE OR REPLACE FUNCTION public.staff_device_decide(p_caller uuid,p_device uuid,p_approve boolean) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN
+IF NOT public.is_active_admin_user(p_caller) OR NOT EXISTS(SELECT 1 FROM public.user_roles WHERE user_id=p_caller AND role::text IN ('admin','super_admin')) THEN RAISE EXCEPTION 'Administrator access required' USING ERRCODE='42501'; END IF;
+UPDATE public.staff_approved_devices SET status=CASE WHEN p_approve THEN 'approved' ELSE 'revoked' END,approved_at=CASE WHEN p_approve THEN now() ELSE approved_at END,approved_by=CASE WHEN p_approve THEN p_caller ELSE approved_by END,revoked_at=CASE WHEN p_approve THEN NULL ELSE now() END WHERE id=p_device;
+IF NOT FOUND THEN RAISE EXCEPTION 'Device not found'; END IF;
+END $$;
+REVOKE ALL ON FUNCTION public.staff_device_decide(uuid,uuid,boolean) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_device_decide(uuid,uuid,boolean) TO service_role;

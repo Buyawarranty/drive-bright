@@ -19,6 +19,7 @@ import { useGatewayUnlock } from '@/lib/loginGateway';
 import { logLoginAttempt } from '@/lib/loginActivityLogger';
 import { checkLoginLockout, lockoutMessage } from '@/lib/loginLockout';
 import { withTimeout } from '@/lib/withTimeout';
+import { staffDeviceRequest } from '@/lib/staffDeviceAccess';
 
 const Auth = () => {
   // ALL HOOKS MUST BE CALLED UNCONDITIONALLY AT THE TOP
@@ -138,6 +139,14 @@ const Auth = () => {
           // Never await Supabase while its auth-state callback holds the lock.
           setTimeout(() => { void (async () => {
           console.log('Auth page: User signed in, checking role and navigating');
+
+          try {
+            const device = await staffDeviceRequest('request');
+            if (!device.allowed) throw new Error('Device approval required');
+          } catch (deviceError) {
+            toast({ title: 'Device access check', description: deviceError instanceof Error ? deviceError.message : 'Device approval required', variant: 'destructive' });
+            return;
+          }
 
           toast({
             title: "Success",
