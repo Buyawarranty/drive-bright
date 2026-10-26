@@ -1,5 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import { isAnalyticsBlocked, canAccessSeoAudit, canAccessCallData } from './tabAccess';
+import { isAnalyticsBlocked, canAccessSeoAudit, canAccessCallData, canAccessLeadsArchive } from './tabAccess';
+
+describe('Leads data (archive) permission', () => {
+  it('is always on for admin and super admin', () => {
+    expect(canAccessLeadsArchive('admin', undefined)).toBe(true);
+    expect(canAccessLeadsArchive('super_admin', false)).toBe(true);
+  });
+  it('is off by default for every other role', () => {
+    for (const role of ['sales', 'sales_lead', 'sales_manager', 'performance_manager', 'lead_gen', 'accounts_manager']) {
+      expect(canAccessLeadsArchive(role, undefined)).toBe(false);
+      expect(canAccessLeadsArchive(role, false)).toBe(false);
+    }
+  });
+  it('can be granted explicitly to any role', () => {
+    expect(canAccessLeadsArchive('sales', true)).toBe(true);
+    expect(canAccessLeadsArchive('sales_lead', true)).toBe(true);
+    expect(canAccessLeadsArchive('performance_manager', true)).toBe(true);
+  });
+});
 
 describe('Call data permission', () => {
   it('defaults off for every sales agent', () => {
