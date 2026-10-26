@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Graphical daily active and idle review
-- [ ] Add all-staff daily comparison bars and session timelines with available idle windows, explicit session start/end details and honest historical data gaps.
-- [ ] Test overlap-safe durations and idle evidence; verify chart interactions and existing protected access. Real signed-in read-back remains blocked by external unmanaged Supabase.
+- [x] Add all-staff daily comparison bars above attendance table and session timelines with recoverable final-interaction idle windows, explicit session start/end details and honest historical data gaps; recording and permissions unchanged.
+- [x] Twenty-three tests pass; isolated browser verifies daily active/idle totals, offline staff, repeated sessions, idle window, sign-out details and date controls without runtime errors or mobile overflow. Preview build OK; nothing published.
+- [ ] Full historical idle transitions cannot be reconstructed from stored endpoints; complete future active/idle interval recording requires a separately scoped server-ledger change. Real signed-in read-back remains blocked by external unmanaged Supabase.
 
 ## Clear earliest CRM presence
 - [x] Primary first-presence column combines existing session starts and paginated RLS-protected location observations, labels source and separates first/last recorded interactions. Observation failures explicitly warn that earlier presence is unavailable; no active-time or historical-gap invention.
