@@ -1,5 +1,10 @@
 # Roadmap
 
+## Yesterday attendance loading and history
+- [ ] Fix date-change loading races and test Today → Yesterday while the first report is pending.
+- [ ] Verify saved daily/session history and explain any unrecorded prior days without inventing attendance.
+- [ ] Validate preview and preserve server records; publication stays on hold.
+
 ## Staff location and multiple-destination review
 - [x] Include recorded work locations/IP/device types and GMT first/last seen within live attendance; share selected dates and staff filter with paginated RLS-protected reads.
 - [x] Highlight accounts with multiple recorded networks/places/device types, provide flagged-account filter and location search; do not infer physical computers or auto-block IP changes. Restricted device decisions and access scopes unchanged.
