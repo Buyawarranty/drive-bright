@@ -216,7 +216,7 @@ const Auth = () => {
               if (expired) {
                 await supabase.from('admin_users').update({ is_active: false }).eq('user_id', session.user.id);
               }
-              await supabase.auth.signOut();
+              await supabase.auth.signOut({ scope: 'local' });
               toast({
                 title: 'Access blocked',
                 description: expired

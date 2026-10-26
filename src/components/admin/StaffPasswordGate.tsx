@@ -76,7 +76,7 @@ export function StaffPasswordGate({ children }: { children: React.ReactNode }) {
           <Button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save new password'}</Button>
         </form></>}
       {state === 'error' && <Button onClick={check}>Retry access check</Button>}
-      <Button variant="outline" onClick={async () => { await supabase.auth.signOut(); window.location.assign('/auth'); }}>Sign out</Button>
+      <Button variant="outline" onClick={async () => { await supabase.auth.signOut({ scope: 'local' }); window.location.assign('/auth'); }}>Sign out</Button>
     </section>
   </main>;
 }
