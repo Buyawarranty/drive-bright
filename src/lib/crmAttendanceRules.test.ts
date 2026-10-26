@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { canViewCrmAttendance, canViewStaffSigninAudit, crmAttendanceStatus, isMeaningfulCrmEvent } from './crmAttendanceRules';
+import { canViewCrmAttendance, canViewStaffSigninAudit, crmAttendanceStatus, isMeaningfulCrmEvent, needsNewCrmSession } from './crmAttendanceRules';
 
 describe('meaningful CRM attendance', () => {
+  it('starts a fresh recorded visit when a saved-login connection resumes after a pause', () => {
+    expect(needsNewCrmSession(1000, 91000)).toBe(true);
+    expect(needsNewCrmSession(1000, 90999)).toBe(false);
+    expect(needsNewCrmSession(0, 91000)).toBe(false);
+  });
   it('restricts staff sign-in audit to administrators', () => {
     for (const role of ['sales', 'sales_lead', 'sales_manager', 'accounts', null]) expect(canViewStaffSigninAudit(role)).toBe(false);
     for (const role of ['admin', 'super_admin']) expect(canViewStaffSigninAudit(role)).toBe(true);

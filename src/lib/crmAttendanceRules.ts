@@ -1,6 +1,10 @@
 export const CRM_ACTIVE_WINDOW_MS = 60_000;
 export const CRM_CONNECTION_WINDOW_MS = 90_000;
 
+export function needsNewCrmSession(lastSuccessfulConnection: number, now: number): boolean {
+  return lastSuccessfulConnection > 0 && now - lastSuccessfulConnection >= CRM_CONNECTION_WINDOW_MS;
+}
+
 export function isMeaningfulCrmEvent(type: string, trusted: boolean, visible: boolean, relevantTarget: boolean): boolean {
   return trusted && visible && relevantTarget && ['click', 'input', 'change', 'paste', 'scroll'].includes(type);
 }

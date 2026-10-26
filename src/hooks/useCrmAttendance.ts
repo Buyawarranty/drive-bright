@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { CRM_CONNECTION_WINDOW_MS, isMeaningfulCrmEvent } from '@/lib/crmAttendanceRules';
+import { needsNewCrmSession, isMeaningfulCrmEvent } from '@/lib/crmAttendanceRules';
 import { recordCrmAttendance, registerAttendanceLogout } from '@/lib/crmAttendanceClient';
 
 export function useCrmAttendance(currentTab?: string) {
@@ -18,7 +18,7 @@ export function useCrmAttendance(currentTab?: string) {
       if (busy && !['left_crm', 'logout', 'hidden'].includes(kind)) return;
       // Saved authentication can outlast the CRM connection. Resume as a new
       // attendance session rather than making an overnight/sleep gap look online.
-      if (lastSent && Date.now() - lastSent >= CRM_CONNECTION_WINDOW_MS && ['ping', 'activity'].includes(kind)) sessionId = crypto.randomUUID();
+      if (needsNewCrmSession(lastSent, Date.now()) && ['ping', 'activity'].includes(kind)) sessionId = crypto.randomUUID();
       busy = true;
       try {
         await recordCrmAttendance(sessionId, kind, tab.current);
