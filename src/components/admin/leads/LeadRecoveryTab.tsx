@@ -1,5 +1,5 @@
-import { useCustomerDataExportAccess } from '@/hooks/useCustomerDataExportAccess';
-import { requireCustomerDataExport } from '@/lib/customerDataExport';
+import { useExportPermissions } from '@/hooks/useExportPermissions';
+import { requireNewLeadsExport } from '@/lib/customerDataExport';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Lead, AdminUser, LeadTag, LeadPriority } from '@/hooks/useLeads';
@@ -1379,15 +1379,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     }
   }, [currentUserId, currentRole, filteredLeads, claimSourceLeads, leads, agents, customerEmails, customerRegs, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, myOnly]);
 
-  const exportFilesAllowed = useCustomerDataExportAccess();
+  const { canExportNewLeads: exportFilesAllowed, canSeeLeadSource } = useExportPermissions();
   const exportCsv = useCallback(async () => {
-    if (!await requireCustomerDataExport()) return;
+    if (!await requireNewLeadsExport()) return;
     if (!filteredLeads.length) {
       toast.error('Nothing to export', { description: 'There are no leads in the current view.' });
       return;
     }
+    // Source column only leaves the database when the person has the
+    // "See lead source" grant — it is hidden on this page for all roles.
     const headers = [
-      'First name','Last name','Email','Phone','Status','Source','Plan interest',
+      'First name','Last name','Email','Phone','Status',...(canSeeLeadSource ? ['Source'] : []),'Plan interest',
       'Vehicle reg','Vehicle make','Vehicle model','Vehicle year','Mileage',
       'Cart value','Quote amount','Calls','Last contacted','Last worked','Recovery outcome',
       'Assigned to','Assigned at','Date added','Created at',
