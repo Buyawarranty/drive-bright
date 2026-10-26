@@ -332,10 +332,10 @@ export default function PriceUpdatesTab() {
     setEditorOpen(true);
   }
 
-  function openSavedPlan(v: PricingVersion) {
+  function openSavedPlan(v: PricingVersion, section = 'plan-live-comparison') {
     loadIntoEditor(v);
     setPreviewVersion(null);
-    setEditorSection('plan-live-comparison');
+    setEditorSection(section);
     setEditorOpen(true);
   }
 
@@ -1143,6 +1143,7 @@ export default function PriceUpdatesTab() {
           busy={busy}
           onPushLive={handleRestoreVersion}
           onSaveNote={async (id, notes) => { await saveVersion(id, { notes }); }}
+          onView={setPreviewVersion}
         />
 
       </div>
