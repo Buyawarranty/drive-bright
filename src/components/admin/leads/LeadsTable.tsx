@@ -331,6 +331,11 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     });
   }, [markLeadSeen, currentAdminId]);
 
+  // Auto-expanded rows (e.g. Open Pool reservations) count as seen too.
+  useEffect(() => {
+    if (expandedLead) void markLeadSeen(expandedLead, currentAdminId);
+  }, [expandedLead, markLeadSeen, currentAdminId]);
+
   // "Converted" always asks the agent to confirm the payment first.
   const { guardStatusChange, convertedConfirmDialog } = useConfirmConverted(onUpdateStatus);
 
