@@ -181,7 +181,7 @@ const SalesLogin = () => {
         if (expired) {
           await supabase.from('admin_users').update({ is_active: false }).eq('user_id', authData.user.id);
         }
-        await supabase.auth.signOut();
+        await supabase.auth.signOut({ scope: 'local' });
         throw new Error(expired
           ? 'This temporary login has expired. Ask a manager to extend it.'
           : 'This login has been deactivated. Please contact a manager.');

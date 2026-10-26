@@ -19,5 +19,5 @@ export async function recordCrmAttendance(sessionId: string, kind: AttendanceKin
 export async function signOutWithAttendance() {
   // Attendance must not trap someone in their account during an outage.
   await endSession?.().catch(() => undefined);
-  return supabase.auth.signOut();
+  return supabase.auth.signOut({ scope: 'local' });
 }
