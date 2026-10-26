@@ -1,5 +1,9 @@
 # Roadmap
 
+## Clear earliest CRM presence
+- [ ] Show earliest observed CRM presence using session and recorded location evidence, with source labels separate from actual interactions.
+- [ ] Test James's 09:06 observation versus 11:47 session and verify the display; no fabricated earlier work or continuous attendance.
+
 ## Yesterday attendance loading and history
 - [x] Fixed shared busy/date-change race: independent date requests load immediately and stale results cannot overwrite the selection. Two dedicated regressions and 13 attendance tests pass.
 - [x] Database counts confirm 11 daily records and 160 sessions on 26 October, zero overlapping sessions for 25 October. Source has no attendance pruning and no matching scheduled cleanup found; stored history is not deleted by date selection. Prior unrecorded activity cannot be reconstructed.
