@@ -1364,7 +1364,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
               Each new lead is sent instantly to the next available Round Robin agent — one each, in order. Open Round Robin agents don't get leads sent to them; they grab from the pool themselves.
             </p>
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mt-2 inline-block">
-              <strong>Note:</strong> Daily cap here applies to <strong>New Leads only</strong>. Recontact access &amp; caps are managed in the <em>Agent access to Recontact Leads</em> section above. Renewals are picked from lists by the agent.
+              <strong>Note:</strong> Daily cap here applies to <strong>New Leads only</strong>. Recontact access &amp; caps are managed in the <em>Agent access to Goldmine Leads</em> section above. Renewals are picked from lists by the agent.
             </p>
           </div>
           <div className="text-right">
@@ -1446,7 +1446,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       <ul className="text-[11px] text-emerald-700/90 space-y-0.5 list-disc pl-4">
                         <li><strong>Round Robin agents</strong> ({rotationAgents.length}) get leads sent to them automatically.</li>
                         <li><strong>Open Round Robin agents</strong> are never auto-assigned — their leads wait in the Open Pool until they press “Take next lead”.</li>
-                        <li>Only brand-new, never-contacted, unowned leads from the last 7 days. Older or contacted leads stay in Recontact / Shark Tank.</li>
+                        <li>Only brand-new, never-contacted, unowned leads from the last 7 days. Older or contacted leads stay in Goldmine / Shark Tank.</li>
                       </ul>
                       {strictEnabled && (
                         <p className="text-[11px] text-emerald-700">
@@ -1631,7 +1631,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div>Agent</div>
           <div>Team</div>
           <div>Getting leads?</div>
-          <div title="Daily cap applies to NEW leads only. Recontact & Renewals are pulled from lists by the agent, so they're never capped.">Daily cap (new leads)</div>
+          <div title="Daily cap applies to NEW leads only. Goldmine & Renewals are pulled from lists by the agent, so they're never capped.">Daily cap (new leads)</div>
           <div>New leads today</div>
           <div title="Leads assigned to this agent since 6:00 pm yesterday (London time). Helps managers see who has been fed leads recently so they can distribute the overnight batch fairly.">Since 6pm <span className="normal-case text-[10px] opacity-70">yesterday</span></div>
           <div>Lead Types</div>
@@ -1925,7 +1925,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                           onChange={(e) => setPendingCap(s => ({ ...s, [a.id]: e.target.value }))}
                           onBlur={(e) => commitDailyCap(a.id, e.target.value)}
                           onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                          title={isUnlimited ? 'No cap on NEW leads (unlimited). Recontact & Renewals are picked from lists and never capped.' : `Stops receiving NEW leads after ${displayValue} today. Recontact & Renewals are unaffected — agents pull those from lists themselves.`}
+                          title={isUnlimited ? 'No cap on NEW leads (unlimited). Goldmine & Renewals are picked from lists and never capped.' : `Stops receiving NEW leads after ${displayValue} today. Goldmine & Renewals are unaffected — agents pull those from lists themselves.`}
                           className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground placeholder:text-muted-foreground/60 placeholder:text-base"
                         />
                         {isUnlimited && <InfinityIcon className="h-3.5 w-3.5 text-muted-foreground" />}
@@ -2036,7 +2036,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                           !m
                             ? 'Pick a team first'
                             : managedElsewhere
-                              ? `${w.label} access is managed in the "${w.key === 'recontact' ? 'Agent access to Recontact Leads' : 'Renewals'}" section above`
+                              ? `${w.label} access is managed in the "${w.key === 'recontact' ? 'Agent access to Goldmine Leads' : 'Renewals'}" section above`
                               : (on ? 'Selected' : 'Not selected')
                         }
                         className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md border transition-colors ${
