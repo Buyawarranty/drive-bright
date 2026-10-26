@@ -13540,6 +13540,120 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_access_attempts: {
+        Row: {
+          account_online: boolean
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          attempted_email: string
+          city: string | null
+          country: string | null
+          created_at: string
+          device_id: string | null
+          device_label: string | null
+          id: string
+          ip_address: string | null
+          outcome: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          account_online?: boolean
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          attempted_email: string
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_id?: string | null
+          device_label?: string | null
+          id?: string
+          ip_address?: string | null
+          outcome: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          account_online?: boolean
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          attempted_email?: string
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_id?: string | null
+          device_label?: string | null
+          id?: string
+          ip_address?: string | null
+          outcome?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      staff_approved_devices: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          credential_hash: string
+          device_label: string
+          id: string
+          last_seen_at: string | null
+          requested_at: string
+          revoked_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          credential_hash: string
+          device_label: string
+          id?: string
+          last_seen_at?: string | null
+          requested_at?: string
+          revoked_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          credential_hash?: string
+          device_label?: string
+          id?: string
+          last_seen_at?: string | null
+          requested_at?: string
+          revoked_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      staff_device_settings: {
+        Row: {
+          enabled: boolean
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       staff_export_grants: {
         Row: {
           admin_user_id: string
@@ -16993,6 +17107,14 @@ export type Database = {
       }
       soft_delete_customer: {
         Args: { admin_uuid: string; customer_uuid: string }
+        Returns: undefined
+      }
+      staff_device_access: {
+        Args: { p_hash: string; p_user_id: string }
+        Returns: Json
+      }
+      staff_device_decide: {
+        Args: { p_approve: boolean; p_caller: string; p_device: string }
         Returns: undefined
       }
       staff_password_record_change: {
