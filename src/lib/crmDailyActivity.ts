@@ -55,3 +55,21 @@ export function activityDuration(seconds: number): string {
   const value = Math.floor(Math.max(0, seconds));
   return `${Math.floor(value / 3600)}h ${Math.floor(value % 3600 / 60)}m ${value % 60}s`;
 }
+export interface AgentActivity { staffId: string; days: StaffActivityDay[]; activeSeconds: number; idleSeconds: number; sessionCount: number }
+// Each staff member is reviewed individually: their recorded days sit together
+// under one heading so one person's pattern is readable on its own.
+export function groupActivityByAgent(rows: StaffActivityDay[]): AgentActivity[] {
+  const byAgent = new Map<string, StaffActivityDay[]>();
+  for (const row of rows) {
+    const list = byAgent.get(row.staffId) ?? [];
+    list.push(row);
+    byAgent.set(row.staffId, list);
+  }
+  return [...byAgent.entries()].map(([staffId, days]) => ({
+    staffId,
+    days: [...days].sort((a, b) => b.day.localeCompare(a.day)),
+    activeSeconds: days.reduce((sum, day) => sum + day.activeSeconds, 0),
+    idleSeconds: days.reduce((sum, day) => sum + day.idleSeconds, 0),
+    sessionCount: days.reduce((sum, day) => sum + day.sessions.length, 0),
+  })).sort((a, b) => b.activeSeconds - a.activeSeconds || a.staffId.localeCompare(b.staffId));
+}

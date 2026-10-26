@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dailyStaffActivity, observedIdleSpans } from './crmDailyActivity';
+import { dailyStaffActivity, groupActivityByAgent, observedIdleSpans } from './crmDailyActivity';
 import { splitDailySessions, type CrmSession } from './crmSessionTimeline';
 const session: CrmSession = { id: 'a', admin_user_id: 'staff', started_at: '2026-10-26T09:00:00Z', last_seen_at: '2026-10-26T10:00:00Z', first_activity_at: '2026-10-26T09:01:00Z', last_activity_at: '2026-10-26T09:20:00Z', ended_at: null, end_reason: null, visible: true, current_tab: null };
 const now = Date.parse('2026-10-26T12:00:00Z');
@@ -24,5 +24,22 @@ describe('daily recorded active and available idle evidence', () => {
     const rows = dailyStaffActivity(['staff', 'other'], [session], [], '2026-10-25', '2026-10-26', now, 'UTC');
     expect(rows).toHaveLength(4);
     expect(rows.find(row => row.staffId === 'other' && row.day === '2026-10-25')?.sessions).toEqual([]);
+  });
+});
+describe('individual agent review', () => {
+  const person = { ...session, admin_user_id: 'a' };
+  const totals: ActivityDay[] = [{ admin_user_id: 'a', day: '2026-10-26', active_seconds: 600 }, { admin_user_id: 'b', day: '2026-10-26', active_seconds: 120 }];
+  it('keeps every recorded day for one agent together under that agent', () => {
+    const agents = groupActivityByAgent(dailyStaffActivity(['a', 'b'], [person], totals, '2026-10-25', '2026-10-26', now, 'UTC'));
+    expect(agents.map(agent => agent.staffId)).toEqual(['a', 'b']);
+    expect(agents[0].days.map(day => day.day)).toEqual(['2026-10-26', '2026-10-25']);
+    expect(agents[0].activeSeconds).toBe(600);
+    expect(agents[1].activeSeconds).toBe(120);
+  });
+  it('lists an agent with no recorded activity individually rather than hiding them', () => {
+    const agents = groupActivityByAgent(dailyStaffActivity(['a', 'quiet'], [person], [], '2026-10-26', '2026-10-26', now, 'UTC'));
+    expect(agents.map(agent => agent.staffId)).toEqual(['a', 'quiet']);
+    expect(agents[0].sessionCount).toBe(1);
+    expect(agents[1].sessionCount).toBe(0);
   });
 });
