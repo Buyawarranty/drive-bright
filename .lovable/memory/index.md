@@ -205,3 +205,4 @@ Updated: just now
 - [Analytics Visibility](mem://admin/analytics/visibility-limited-to-management) — sales, sales_lead and sales_manager never see Analytics (menu + direct link); management/accounts/lead_gen only
 - [Expired warranties](mem://features/expired-warranties) — Policies auto-expire on end date (nightly job); Expired status filter in Customer Management; clean expired customers still feed Renewals
 - [Sold leads hidden from sales](mem://admin/leads/sold-leads-hidden-from-sales) — Converted/upgraded leads vanish for sales/sales_lead in New Leads list, counts and search; management keeps full view
+- [Lead seen receipts](mem://admin/leads/lead-seen-receipts) — WhatsApp-style seen tick for management; server-checked own-view writes, sales never see receipts

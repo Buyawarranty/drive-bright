@@ -9240,6 +9240,45 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_view_receipts: {
+        Row: {
+          first_viewed_at: string
+          id: string
+          last_viewed_at: string
+          lead_id: string
+          viewer_id: string
+        }
+        Insert: {
+          first_viewed_at?: string
+          id?: string
+          last_viewed_at?: string
+          lead_id: string
+          viewer_id: string
+        }
+        Update: {
+          first_viewed_at?: string
+          id?: string
+          last_viewed_at?: string
+          lead_id?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_view_receipts_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_view_receipts_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_quotes: {
         Row: {
           access_token: string
@@ -16241,6 +16280,10 @@ export type Database = {
       mark_claim_misrepresented: {
         Args: { p_claim_id: string; p_reason?: string }
         Returns: number
+      }
+      mark_lead_seen: {
+        Args: { _lead_id: string; _viewer_id: string }
+        Returns: undefined
       }
       marketing_customer_state: { Args: { _email: string }; Returns: string }
       match_repeat_customers: {
