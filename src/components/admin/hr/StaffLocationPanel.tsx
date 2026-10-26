@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin, Loader2, ShieldAlert, Laptop, Globe2, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatCrmAuditTime, type CrmAuditZone } from '@/lib/crmAuditTime';
 
 interface LocationRow {
   id: string;
@@ -40,7 +41,7 @@ const RANGES = [
   { label: 'Last 30 days', days: 30 },
 ];
 
-export const StaffLocationPanel: React.FC = () => {
+export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone }> = ({ zone = 'UTC' }) => {
   const [rows, setRows] = useState<LocationRow[]>([]);
   const [staff, setStaff] = useState<Record<string, StaffName>>({});
   const [loading, setLoading] = useState(true);
@@ -135,6 +136,7 @@ export const StaffLocationPanel: React.FC = () => {
               <CardDescription>
                 Approximate location from the network each staff member signs in on. City-level only — no precise
                 GPS tracking.
+                {' '}Times: {zone === 'UTC' ? 'GMT / UTC' : 'UK local time (GMT / BST)'}. Locations are recorded on opening the CRM and every 30 minutes, not a live location tracker. VPN or outside-UK flags are review signals, not proof of hacking.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -225,10 +227,10 @@ export const StaffLocationPanel: React.FC = () => {
                       </TableCell>
                       <TableCell className="font-mono text-xs">{r.ip_address}</TableCell>
                       <TableCell className="whitespace-nowrap text-sm">
-                        {format(new Date(r.first_seen_at), 'HH:mm')}
+                        {formatCrmAuditTime(r.first_seen_at, zone)}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm">
-                        {format(new Date(r.last_seen_at), 'dd MMM HH:mm')}
+                        {formatCrmAuditTime(r.last_seen_at, zone)}
                       </TableCell>
                     </TableRow>
                   ))}

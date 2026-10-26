@@ -1,6 +1,7 @@
 # Project architecture rules
 - Customer/lead pop-ups and notification bells share a fail-closed current-assignee check for sales and sales leads, including WhatsApp replies and policy-linked authorisation results; unscoped/unassigned alerts cannot be enabled for them, and recent alerts recheck lead IDs rather than trusting recipient history. Keep management visibility and allocation unchanged.
 - CRM attendance uses a dedicated session ledger and per-user serialized server clock, separate from allocation presence; JWT-checked service-only recording owns timestamps and totals, while management-only reporting separates meaningful use from open-session time.
+- Attendance composes existing RLS-protected location and lifecycle logs; staff authentication history uses a service-only allowlisted RPC with protected admin-role checks and bounded pagination, never raw authentication payloads or inferred identities.
 - Call data bookmarks share the existing tab_overview permission through one helper used by sidebar and render guards; preserve underlying call scopes, collection and attribution.
 - Linked renewals reuse the New Leads call counter, dial/email/reminder controls and full notes panel keyed by the existing lead ID; preserve policy outcomes and routing so activity stays with the same lead across views.
 - Cyber security is read-only and admin/super-admin-only; a service-only summary RPC checks protected roles and returns counts, while a JWT-checked endpoint inspects only fixed published URLs, so no secrets or customer records enter reports.
