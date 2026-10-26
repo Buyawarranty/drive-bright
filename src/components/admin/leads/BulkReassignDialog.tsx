@@ -812,8 +812,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {([
-                  { id: 'new', label: 'New leads only', hint: 'Never claimed from goldmine pool' },
-                  { id: 'recontact', label: 'Goldmine only', hint: 'Claimed 60-day pool leads' },
+                  { id: 'new', label: 'New leads only', hint: 'Never claimed from recontact pool' },
+                  { id: 'recontact', label: 'Recontact only', hint: 'Claimed 60-day pool leads' },
                   { id: 'both', label: 'Both (advanced)', hint: 'Mixes workstreams — use with care' },
                 ] as { id: Workstream; label: string; hint: string }[]).map(opt => (
                   <button
@@ -848,7 +848,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
             <AgentMultiPicker
               label="From agents"
-              hint={`Counts show ACTIVE ${workstream === 'new' ? 'NEW' : workstream === 'recontact' ? 'GOLDMINE' : 'new + goldmine'} leads only — dead, fake, converted, dormant, archived and already-paid leads are excluded and never moved.`}
+              hint={`Counts show ACTIVE ${workstream === 'new' ? 'NEW' : workstream === 'recontact' ? 'RECONTACT' : 'new + recontact'} leads only — dead, fake, converted, dormant, archived and already-paid leads are excluded and never moved.`}
               users={fromPool}
               selectedIds={fromAgentIds}
               onToggle={toggleFromAgent}

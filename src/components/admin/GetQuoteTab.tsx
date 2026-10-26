@@ -4625,7 +4625,7 @@ Questions? Call 0330 229 5040`;
                               onClick={() => onNavigateToTab?.('recontact-leads')}
                               className="gap-1 px-0 h-auto"
                             >
-                              Goldmine Leads <ArrowRight className="h-4 w-4" />
+                              Recontact Leads <ArrowRight className="h-4 w-4" />
                             </Button>
                           )}
                           {canAccessTab('renewals') && (

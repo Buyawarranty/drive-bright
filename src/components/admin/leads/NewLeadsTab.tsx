@@ -2094,7 +2094,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               size="sm"
               onClick={() => onNavigateToTab?.('lead-teams')}
               className="h-7 px-2.5 text-[11px] gap-1 rounded-md font-semibold shadow-sm"
-              title="Assign agents to teams (Red / Blue / Green) and pick the queues they work — New Leads, Goldmine, Renewals"
+              title="Assign agents to teams (Red / Blue / Green) and pick the queues they work — New Leads, Recontact, Renewals"
             >
               <Network className="h-3 w-3" /> Allocate Agents
             </Button>
@@ -2347,7 +2347,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     <button
                       type="button"
                       onClick={() => setIncludeWorkedInPeriod(v => !v)}
-                      title="Also show older leads that were contacted inside this date window. Turn this on when you called goldmine or renewal customers today — their leads came in weeks ago, so the created-date filter hides them."
+                      title="Also show older leads that were contacted inside this date window. Turn this on when you called recontact or renewal customers today — their leads came in weeks ago, so the created-date filter hides them."
                       className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-md border text-xs font-semibold transition-colors ${
                         includeWorkedInPeriod
                           ? 'bg-emerald-600 text-white border-emerald-600'

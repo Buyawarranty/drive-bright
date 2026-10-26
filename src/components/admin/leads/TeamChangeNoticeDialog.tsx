@@ -91,7 +91,7 @@ export const TeamChangeNoticeDialog = ({ adminUserId }: Props) => {
               {fromName && toName && fromName !== toName
                 ? <>You've been moved from <strong>{fromName}</strong> to <strong>{toName}</strong>.</>
                 : toName
-                  ? <>Your allocation in <strong>{toName}</strong> has been updated — you may now have different queues (New Leads, Goldmine or Renewals) assigned to you.</>
+                  ? <>Your allocation in <strong>{toName}</strong> has been updated — you may now have different queues (New Leads, Recontact or Renewals) assigned to you.</>
                   : <>Your queue allocation has been updated.</>}
             </span>
             <span className="block">
