@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Staff location and multiple-destination review
-- [ ] Include recorded staff locations/IP/device evidence within live attendance and use the same selected dates and staff filter.
-- [ ] Highlight accounts with multiple recorded destinations without claiming IP changes prove another computer; preserve restricted device decisions and existing access scopes.
-- [ ] Verify location grouping/date rules and preview; do not activate incomplete device enforcement or claim the same-login restriction is live.
+- [x] Include recorded work locations/IP/device types and GMT first/last seen within live attendance; share selected dates and staff filter with paginated RLS-protected reads.
+- [x] Highlight accounts with multiple recorded networks/places/device types, provide flagged-account filter and location search; do not infer physical computers or auto-block IP changes. Restricted device decisions and access scopes unchanged.
+- [x] Seventeen location/attendance tests pass; preview build OK. Isolated sample verified locations, IP/device/times, flags, search and date/staff scope with no runtime errors; public route remains protected. Nothing published or activated.
+- [ ] Same-login blocking remains unavailable until trusted administrator enrolment, full access-path enforcement and authenticated verification are complete; browser credentials do not establish hardware identity. Real location report read-back unavailable with external unmanaged Supabase.
 
 ## Daily staff session timelines
 - [x] Show every recorded session split by day, a per-agent daily timeline, click-through session details and staff search with existing customer-style quick/custom date filters; honour ltPeriod links.
