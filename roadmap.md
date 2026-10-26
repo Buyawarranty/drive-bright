@@ -1,5 +1,10 @@
 # Roadmap
 
+## Staff location and multiple-destination review
+- [ ] Include recorded staff locations/IP/device evidence within live attendance and use the same selected dates and staff filter.
+- [ ] Highlight accounts with multiple recorded destinations without claiming IP changes prove another computer; preserve restricted device decisions and existing access scopes.
+- [ ] Verify location grouping/date rules and preview; do not activate incomplete device enforcement or claim the same-login restriction is live.
+
 ## Daily staff session timelines
 - [x] Show every recorded session split by day, a per-agent daily timeline, click-through session details and staff search with existing customer-style quick/custom date filters; honour ltPeriod links.
 - [x] Saved-login connections resume with a fresh session after a stale heartbeat; distinguish actual sign-out from last-seen disconnection and unavailable computer-lock evidence. Fifteen tests pass including repeat sessions and the 25-hour UK clock-change day; preview build OK.
