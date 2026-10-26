@@ -31,8 +31,9 @@ Deno.serve(async req => {
     if (body.action === 'signin') {
       // Bound automated attempts before verifying a password. Unknown account responses remain generic.
       const { data: locked, error: lockError } = await db.rpc('check_login_lockout', { p_email: email });
-      if (lockError) return json({ error: 'Sign-in check temporarily unavailable' }, 503);
-      if (locked?.locked) return json({ error: 'Account temporarily locked. Please try again later.' }, 429);
+      const { data: staffLocked, error: staffLockError } = await db.rpc('staff_access_lockout', { p_email: email });
+      if (staffLockError) return json({ error: 'Sign-in check temporarily unavailable' }, 503);
+      if ((!lockError && locked?.locked) || staffLocked) return json({ error: 'Account temporarily locked. Please try again later.' }, 429);
       const anon = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_ANON_KEY') ?? '', { auth: { persistSession: false } });
       const signed = await anon.auth.signInWithPassword({ email: email || '', password: body.password });
       userId = signed.data.user?.id;
