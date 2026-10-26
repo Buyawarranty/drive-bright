@@ -520,6 +520,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   sentQuotes,
   onSelect,
   onToggleExpand,
+  seenReceipts,
   onUpdateStatus,
   onAssign,
   onAutoAssign,
@@ -764,6 +765,25 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                            </span>
                          )}
                          <TeamBadge userId={lead.assigned_to} className="flex-shrink-0" />
+                         {isManagement === true && (() => {
+                           // WhatsApp-style seen tick: blue once the assigned
+                           // agent has opened the lead, grey until then.
+                           const receipt = seenReceipts?.find(r => r.viewer_id === lead.assigned_to);
+                           return (
+                             <Tooltip delayDuration={100}>
+                               <TooltipTrigger asChild>
+                                 <span className="inline-flex flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                   <CheckCheck className={cn('h-3.5 w-3.5', receipt ? 'text-sky-600' : 'text-slate-300')} />
+                                 </span>
+                               </TooltipTrigger>
+                               <TooltipContent side="top" className="text-xs">
+                                 {receipt
+                                   ? `Seen by ${displayName} · ${format(new Date(receipt.first_viewed_at), 'd MMM, HH:mm')}`
+                                   : `${displayName} hasn't opened this lead yet`}
+                               </TooltipContent>
+                             </Tooltip>
+                           );
+                         })()}
                        </>
                      );
                    })()
