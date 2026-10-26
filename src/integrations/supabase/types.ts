@@ -13504,18 +13504,27 @@ export type Database = {
       staff_export_grants: {
         Row: {
           admin_user_id: string
+          can_export_customers: boolean
+          can_export_new_leads: boolean
+          can_see_lead_source: boolean
           created_at: string
           granted_by: string
           updated_at: string
         }
         Insert: {
           admin_user_id: string
+          can_export_customers?: boolean
+          can_export_new_leads?: boolean
+          can_see_lead_source?: boolean
           created_at?: string
           granted_by?: string
           updated_at?: string
         }
         Update: {
           admin_user_id?: string
+          can_export_customers?: boolean
+          can_export_new_leads?: boolean
+          can_see_lead_source?: boolean
           created_at?: string
           granted_by?: string
           updated_at?: string
@@ -15690,6 +15699,8 @@ export type Database = {
         Returns: string
       }
       can_export_customer_data: { Args: never; Returns: boolean }
+      can_export_customers: { Args: never; Returns: boolean }
+      can_export_new_leads: { Args: never; Returns: boolean }
       can_import_quote_lead: {
         Args: { p_lead_id: string; p_viewer_admin_id?: string }
         Returns: boolean
@@ -15698,6 +15709,7 @@ export type Database = {
       can_manage_lead_routing: { Args: { _user_id: string }; Returns: boolean }
       can_manage_reporting: { Args: { _uid?: string }; Returns: boolean }
       can_review_seo: { Args: { p_user: string }; Returns: boolean }
+      can_see_lead_source: { Args: never; Returns: boolean }
       can_use_growth_agent: { Args: { _user_id: string }; Returns: boolean }
       can_view_chatbot_data: { Args: { _user_id: string }; Returns: boolean }
       can_view_lead_count: { Args: { _uid: string }; Returns: boolean }
@@ -16026,6 +16038,7 @@ export type Database = {
           lead_count: number
         }[]
       }
+      get_my_export_permissions: { Args: never; Returns: Json }
       get_next_eligible_agent:
         | { Args: { p_distribution_mode?: string }; Returns: string }
         | { Args: { p_exclude_agent_id?: string }; Returns: string }
