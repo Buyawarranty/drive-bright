@@ -72,7 +72,7 @@ const QUICK_LINKS = [
   { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
   { id: 'own-attendance-bar', label: 'Own attendance bar', className: 'bg-muted text-foreground border-border hover:bg-accent' },
   { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
-  { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-300/50 text-rose-900 border-rose-200/50 hover:bg-rose-400/50' },
+  { id: 'recontact-leads', label: 'Goldmine leads', className: 'bg-rose-300/50 text-rose-900 border-rose-200/50 hover:bg-rose-400/50' },
   { id: 'recovery-audit', label: 'Recover leads', className: 'bg-cyan-300/50 text-cyan-900 border-cyan-200/50 hover:bg-cyan-400/50' },
 ];
 
@@ -454,9 +454,9 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       {isManagement && (
         <div id="recontact-leads" className="space-y-4">
           <div className="border-l-4 border-primary/60 pl-3">
-            <h2 className="text-lg font-semibold text-foreground">Recontact Leads</h2>
+            <h2 className="text-lg font-semibold text-foreground">Goldmine Leads</h2>
             <p className="text-xs text-muted-foreground">
-              Who can work recontact leads and how many they can pick up per day.
+              Who can work goldmine leads and how many they can pick up per day.
             </p>
           </div>
           <RecontactAccessPanel />

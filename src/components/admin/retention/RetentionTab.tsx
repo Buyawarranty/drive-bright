@@ -494,7 +494,7 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
                 size="sm"
                 onClick={() => onNavigateToTab('lead-teams')}
                 className="shrink-0 font-semibold gap-1"
-                title="Assign agents to teams and pick the queues they work — New Leads, Recontact, Renewals"
+                title="Assign agents to teams and pick the queues they work — New Leads, Goldmine, Renewals"
               >
                 <Network className="h-4 w-4" /> Allocate Agents
               </Button>

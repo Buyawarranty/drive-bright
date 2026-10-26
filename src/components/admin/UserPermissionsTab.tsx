@@ -39,7 +39,7 @@ type WorkstreamKey = 'new_leads' | 'recontact' | 'renewals';
 
 const WORKSTREAM_DEFS: { key: WorkstreamKey; col: string; label: string; tabId: string; hint: string }[] = [
   { key: 'new_leads', col: 'workstream_new_leads', label: 'New Leads', tabId: 'new-leads', hint: 'Brand-new website leads in rotation' },
-  { key: 'recontact', col: 'workstream_recontact', label: 'Recontact Leads', tabId: 'recontact-leads', hint: 'Older leads being worked again' },
+  { key: 'recontact', col: 'workstream_recontact', label: 'Goldmine Leads', tabId: 'recontact-leads', hint: 'Older leads being worked again' },
   { key: 'renewals', col: 'workstream_renewals', label: 'Renewals', tabId: 'renewals', hint: 'Customers coming up for renewal' },
 ];
 
@@ -73,7 +73,7 @@ interface Permission {
 // Define all admin tabs that can be granted as permissions
 const ADMIN_TABS = [
   { id: 'new-leads', label: 'New Leads', description: 'Manage sales pipeline and lead assignments', hasGranular: true },
-  { id: 'recontact-leads', label: 'Recontact Leads', description: 'Past enquiries ready for follow-up' },
+  { id: 'recontact-leads', label: 'Goldmine Leads', description: 'Past enquiries ready for follow-up' },
   { id: 'renewals', label: 'Renewals', description: 'Renewals and upsells for active customers' },
   { id: 'get-quote', label: 'Quotes & Orders', description: 'Generate quotes and process manual orders' },
   { id: 'selling-tips', label: 'Sales Script', description: 'Sales script, tips and customer feedback' },
@@ -133,7 +133,6 @@ const ADMIN_TABS = [
   { id: 'non-claim-complaints', label: 'Non claims complaints', description: 'Complaints not related to a claim' },
   { id: 'lead-teams', label: 'Lead Teams', description: 'Team allocation, workstreams and Open Round Robin' },
   { id: 'attendance', label: 'Attendance & Rota', description: 'Working days rota and weekend shift sign-ups' },
-  { id: 'goldmine-leads', label: 'Goldmine Leads', description: 'High-intent leads flagged for priority follow-up' },
   { id: 'call-stats', label: 'Call Stats', description: 'Detailed call statistics and speed-to-dial (merged into Live Calls Data)' },
   { id: 'chatbot-popup', label: 'Chatbot Pop-up', description: 'See the ringing "Customer waiting for a specialist" website chat pop-up (admin, super admin and claims by default)' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
@@ -145,7 +144,7 @@ const ADMIN_TABS = [
 // Also auto-drop any section that has been removed from the sidebar, so the
 // permissions list always mirrors the live menu. Only non-menu feature
 // permissions listed below are kept even though they have no sidebar entry.
-const PERMISSION_ONLY_KEYS = new Set(['chatbot-popup', 'security', 'goldmine-leads']);
+const PERMISSION_ONLY_KEYS = new Set(['chatbot-popup', 'security']);
 (() => {
   const existing = new Set(ADMIN_TABS.map(t => t.id));
   SIDEBAR_TABS.forEach(t => {

@@ -181,7 +181,7 @@ export const defaultTabs: Tab[] = [
   },
   {
     id: 'recontact-leads',
-    label: 'Recontact Leads',
+    label: 'Goldmine Leads',
     icon: Gem,
     description: 'Past enquiries ready for follow-up'
   },
