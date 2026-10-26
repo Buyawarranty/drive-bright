@@ -1,5 +1,9 @@
 # Roadmap
 
+## CRM attendance and access history
+- [ ] Bring attendance, recorded locations and protected sign-in/access records together in Attendance; include inactive staff history and explicit GMT timestamps.
+- [ ] Verify read-only access restrictions and time formatting; preserve login and allocation behaviour. Authenticated UI verification is unavailable for external unmanaged Supabase.
+
 ## Visible pricing editor and live comparison
 - [x] Saved-plan Open and Load into editor now open the full named editor immediately, including grid, vehicle variables and website difference.
 - [x] Shared read-only comparison shows matching live/plan Q&O and Step 3 totals, pound/percentage changes and Q&O versus Step 3; grid live labels now use the published matrix rather than code defaults. No pricing or publication changes.
