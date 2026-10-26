@@ -16120,6 +16120,15 @@ export type Database = {
           visits: number
         }[]
       }
+      get_staff_signin_audit: {
+        Args: {
+          p_from: string
+          p_offset?: number
+          p_to: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       get_team_scoreboard: {
         Args: { p_end: string; p_start: string }
         Returns: {

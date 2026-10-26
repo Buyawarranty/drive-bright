@@ -4,6 +4,7 @@ import { z } from 'https://esm.sh/zod@3.25.76';
 const schema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('record'), sessionId: z.string().uuid(), kind: z.enum(['open', 'activity', 'ping', 'hidden', 'left_crm', 'logout']), tab: z.string().max(80).nullable().optional() }).strict(),
   z.object({ action: z.literal('report'), from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).strict(),
+  z.object({ action: z.literal('audit'), from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), offset: z.number().int().min(0).max(100000).default(0) }).strict(),
 ]);
 const staffRoles = ['admin', 'super_admin', 'sales_manager', 'performance_manager', 'sales_lead', 'sales', 'lead_gen', 'accounts', 'accounts_manager', 'accounts_payroll', 'claims_agent', 'claims_manager', 'blog_writer', 'dev_tester', 'member', 'viewer', 'guest', 'trader'];
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
@@ -17,6 +18,10 @@ Deno.serve(async req => {
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) return json({ error: 'Invalid attendance request' }, 400);
     const request = parsed.data;
+    if (request.action === 'audit') {
+      const { data, error } = await auth.supabase.rpc('get_staff_signin_audit', { p_user_id: auth.user.id, p_from: request.from, p_to: request.to, p_offset: request.offset });
+      return error ? json({ error: 'Sign-in history unavailable' }, error.code === '42501' ? 403 : 400) : json(data);
+    }
     if (request.action === 'report') {
       const { data, error } = await auth.supabase.rpc('get_crm_attendance', { p_user_id: auth.user.id, p_from: request.from, p_to: request.to });
       return error ? json({ error: 'Attendance report unavailable' }, error.code === '42501' ? 403 : 400) : json(data);

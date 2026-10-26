@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { canViewCrmAttendance, crmAttendanceStatus, isMeaningfulCrmEvent } from './crmAttendanceRules';
+import { canViewCrmAttendance, canViewStaffSigninAudit, crmAttendanceStatus, isMeaningfulCrmEvent } from './crmAttendanceRules';
 
 describe('meaningful CRM attendance', () => {
+  it('restricts staff sign-in audit to administrators', () => {
+    for (const role of ['sales', 'sales_lead', 'sales_manager', 'accounts', null]) expect(canViewStaffSigninAudit(role)).toBe(false);
+    for (const role of ['admin', 'super_admin']) expect(canViewStaffSigninAudit(role)).toBe(true);
+  });
   it('never counts mouse movement, focus or opening a tab as work', () => {
     for (const type of ['mousemove', 'pointermove', 'focus', 'visibilitychange']) expect(isMeaningfulCrmEvent(type, true, true, true)).toBe(false);
   });

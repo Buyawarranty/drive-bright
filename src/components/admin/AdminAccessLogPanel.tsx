@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { History, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatCrmAuditTime, type CrmAuditZone } from '@/lib/crmAuditTime';
 
 interface AccessPeriod {
   id: string;
@@ -18,7 +18,6 @@ interface AccessPeriod {
   reason: string | null;
 }
 
-const fmt = (d: string | null) => (d ? format(new Date(d), 'dd MMM yyyy HH:mm') : '—');
 
 const durationDays = (start: string, end: string | null) => {
   const s = new Date(start).getTime();
@@ -27,7 +26,8 @@ const durationDays = (start: string, end: string | null) => {
   return `${days} day${days === 1 ? '' : 's'}`;
 };
 
-export const AdminAccessLogPanel: React.FC = () => {
+export const AdminAccessLogPanel: React.FC<{ zone?: CrmAuditZone }> = ({ zone = 'UTC' }) => {
+  const fmt = (date: string | null) => formatCrmAuditTime(date, zone);
   const [rows, setRows] = useState<AccessPeriod[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
@@ -73,6 +73,7 @@ export const AdminAccessLogPanel: React.FC = () => {
         <p className="text-sm text-muted-foreground mt-2">
           Every time a user is created, deactivated, reactivated, or their role changes, a new
           period is opened or closed automatically.
+          {' '}Times: {zone === 'UTC' ? 'GMT / UTC' : 'UK local time (GMT / BST)'}. Account access periods are separate from sign-in events.
         </p>
       </CardHeader>
       <CardContent>
