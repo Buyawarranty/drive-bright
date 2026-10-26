@@ -15,6 +15,7 @@ import AdminAccessLogPanel from './AdminAccessLogPanel';
 import StaffSigninAudit from './StaffSigninAudit';
 import { useAuth } from '@/hooks/useAuth';
 import StaffDeviceSecurityPanel from './StaffDeviceSecurityPanel';
+import CrmDailySessions from './CrmDailySessions';
 
 interface Staff { id: string; email: string; first_name: string | null; last_name: string | null; role: string }
 interface AttendanceDay { admin_user_id: string; day: string; active_seconds: number; first_activity_at: string | null; last_activity_at: string | null }
@@ -31,7 +32,10 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
   const [view, setView] = useState('attendance');
   const [zone, setZone] = useState<CrmAuditZone>('UTC');
   const time = (iso: string | null | undefined) => formatCrmAuditTime(iso, zone);
-  const [period, setPeriod] = useState<PeriodKey>('today');
+  const [period, setPeriod] = useState<PeriodKey>(() => {
+    const value = new URLSearchParams(window.location.search).get('ltPeriod');
+    return ['all', 'today', 'yesterday', 'this_week', '7days', 'last_week', '14days', 'this_month', '30days', 'last_month'].includes(value || '') ? value as PeriodKey : 'today';
+  });
   const [customRange, setCustomRange] = useState<DateRange>();
   const [team, setTeam] = useState('all');
   const [search, setSearch] = useState('');
@@ -104,14 +108,15 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
     </div>
     <div className="flex flex-wrap items-center gap-3">
       {!filterRoles && <Tabs value={team} onValueChange={setTeam}><TabsList><TabsTrigger value="all">All staff</TabsTrigger><TabsTrigger value="sales">Sales team</TabsTrigger></TabsList></Tabs>}
-      <UnifiedDateFilter scope="signup" period={period} customRange={customRange} availableScopes={['signup']} onChange={next => { setPeriod(next.period); setCustomRange(next.customRange); }} showLabel={false} />
+      <UnifiedDateFilter className="flex-wrap" scope="signup" period={period} customRange={customRange} availableScopes={['signup']} onChange={next => { setPeriod(next.period); setCustomRange(next.customRange); }} showLabel={false} />
       <div className="relative ml-auto w-full sm:w-64"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input aria-label="Search staff" placeholder="Search staff" value={search} onChange={event => setSearch(event.target.value)} className="pl-9" /></div>
     </div>
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+    <p className="text-sm text-muted-foreground">Saved sign-in is not continuous attendance. Online means a recent CRM connection; idle means connected without recent real use. Computer locks are not recorded — paused or missing connections show last seen, not a confirmed sign-out.</p>
     <div className="overflow-x-auto"><table className="w-full min-w-[1050px] text-sm"><thead className="border-b text-muted-foreground text-left"><tr>{['Staff member', 'Status', 'Real CRM time', 'CRM opened', 'First real use', 'Last real use', 'Signed out / last seen', 'Current section', 'Sessions'].map(label => <th key={label} className="py-3 px-2 font-medium">{label}</th>)}</tr></thead>
       <tbody>{rows.map(row => <tr key={row.staff.id} className="border-b hover:bg-muted/40">
         <td className="p-2 py-4"><div className="font-medium">{staffName(row.staff)}</div><div className="text-xs text-muted-foreground">{row.staff.email}</div><div className="text-xs text-muted-foreground">{row.staff.role.replaceAll('_', ' ')}</div></td>
-        <td className="p-2"><Badge variant={row.status === 'active' ? 'default' : 'secondary'}>{row.status === 'active' ? 'Active' : row.status === 'idle' ? 'Idle' : 'Offline'}</Badge></td>
+        <td className="p-2"><Badge variant={row.status === 'active' ? 'default' : 'secondary'}>{!live ? 'Historical' : row.status === 'active' ? 'Online · active' : row.status === 'idle' ? 'Online · idle' : 'Offline'}</Badge></td>
         <td className="p-2 font-semibold tabular-nums">{duration(row.active)}</td>
         <td className="p-2 tabular-nums">{time([...row.sessions].sort((a, b) => a.started_at.localeCompare(b.started_at))[0]?.started_at)}</td>
         <td className="p-2 tabular-nums">{time(row.first)}</td><td className="p-2 tabular-nums">{time(row.last)}</td>
@@ -120,6 +125,7 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
         <td className="p-2"><Button variant="ghost" size="sm" disabled={!row.sessions.length} onClick={() => setSelectedStaff(selectedStaff === row.staff.id ? null : row.staff.id)} aria-expanded={selectedStaff === row.staff.id}>{row.sessions.length}<LogIn className="ml-2 h-4 w-4" /></Button></td>
       </tr>)}{!rows.length && <tr><td colSpan={9} className="py-12 text-center text-muted-foreground">{loading ? 'Loading staff attendance…' : error ? 'Attendance unavailable.' : 'No staff match this filter.'}</td></tr>}</tbody></table></div>
     {selected && <section className="space-y-3 border-t pt-5"><h2 className="font-semibold flex items-center gap-2"><LogOut className="h-4 w-4" />{staffName(selected.staff)} · session log</h2><div className="overflow-x-auto"><table className="w-full min-w-[650px] text-sm"><thead><tr className="text-left text-muted-foreground">{['Date', 'CRM opened', 'First real use', 'Last real use', 'Session ended', 'Outcome'].map(label => <th className="py-2 font-medium" key={label}>{label}</th>)}</tr></thead><tbody>{selected.sessions.map(session => <tr className="border-t" key={session.id}><td className="py-3">{ukDate(new Date(session.started_at))}</td><td>{time(session.started_at)}</td><td>{time(session.first_activity_at)}</td><td>{time(session.last_activity_at)}</td><td>{time(session.ended_at || (crmAttendanceStatus(session, now) === 'offline' ? session.last_seen_at : null))}</td><td>{session.end_reason === 'logout' ? 'Signed out' : session.ended_at ? 'Left CRM' : crmAttendanceStatus(session, now) === 'offline' ? 'Connection ended (estimated)' : session.visible ? 'Connected' : 'Tab hidden'}</td></tr>)}</tbody></table></div></section>}
+    <CrmDailySessions staff={rows.map(row => row.staff)} sessions={report?.sessions || []} from={from} to={to} now={now} zone={zone} />
     {period === 'all' && <p className="text-sm text-muted-foreground">Attendance covers the last 366 days. Choose a custom period for older records, up to one year at a time.</p>}
     </>}
     {view === 'locations' && <StaffLocationPanel zone={zone} />}
