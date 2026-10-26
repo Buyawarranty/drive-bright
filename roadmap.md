@@ -1,5 +1,11 @@
 # Roadmap
 
+## Yesterday attendance loading and history
+- [x] Fixed shared busy/date-change race: independent date requests load immediately and stale results cannot overwrite the selection. Two dedicated regressions and 13 attendance tests pass.
+- [x] Database counts confirm 11 daily records and 160 sessions on 26 October, zero overlapping sessions for 25 October. Source has no attendance pruning and no matching scheduled cleanup found; stored history is not deleted by date selection. Prior unrecorded activity cannot be reconstructed.
+- [x] Isolated browser verified delayed Today → immediate Yesterday, correct historical result after Today completed and staff search; no runtime errors, preview build OK, public route protected. Nothing published.
+- [ ] Real authenticated UI read-back unavailable with external unmanaged Supabase; changes remain preview-only and cannot recover missing 25 October session records.
+
 ## Staff location and multiple-destination review
 - [x] Include recorded work locations/IP/device types and GMT first/last seen within live attendance; share selected dates and staff filter with paginated RLS-protected reads.
 - [x] Highlight accounts with multiple recorded networks/places/device types, provide flagged-account filter and location search; do not infer physical computers or auto-block IP changes. Restricted device decisions and access scopes unchanged.

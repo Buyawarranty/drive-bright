@@ -16,6 +16,7 @@ import StaffSigninAudit from './StaffSigninAudit';
 import { useAuth } from '@/hooks/useAuth';
 import StaffDeviceSecurityPanel from './StaffDeviceSecurityPanel';
 import CrmDailySessions from './CrmDailySessions';
+import { AttendanceReportRequests } from '@/lib/attendanceReportRequests';
 
 interface Staff { id: string; email: string; first_name: string | null; last_name: string | null; role: string }
 interface AttendanceDay { admin_user_id: string; day: string; active_seconds: number; first_activity_at: string | null; last_activity_at: string | null }
@@ -44,34 +45,38 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
   const [loading, setLoading] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
-  const busy = useRef(false);
-  const generation = useRef(0);
+  const requests = useRef(new AttendanceReportRequests());
   const range = period === 'custom' ? customRange : periodToRange(period);
   const from = range?.from ? ukDate(range.from) : period === 'all' ? ukDate(new Date(Date.now() - 366 * 86400000)) : ukDate(new Date());
   const to = range?.to ? ukDate(range.to) : period === 'all' ? ukDate(new Date()) : from;
   const today = ukDate(new Date());
   const live = from <= today && to >= today;
+  const requestKey = `${from}:${to}`;
+  requests.current.select(requestKey);
   const load = useCallback(async () => {
-    if (busy.current || document.hidden) return;
-    busy.current = true;
-    const current = generation.current;
+    if (document.hidden) return;
+    const ticket = requests.current.begin(requestKey);
+    if (!ticket) return;
     setLoading(true);
     try {
       const { data, error: requestError } = await withTimeout(supabase.functions.invoke('crm-attendance', { body: { action: 'report', from, to } }), 12000, 'Attendance report');
       if (requestError || data?.error) throw new Error(data?.error || 'Unable to load attendance');
-      if (current === generation.current) { setReport(data as Report); setError(''); setNow(Date.now()); }
+      if (requests.current.isCurrent(requestKey, ticket)) { setReport(data as Report); setError(''); setNow(Date.now()); }
     } catch {
-      if (current === generation.current) setError('Attendance could not refresh. The last successful figures are kept.');
-    } finally { busy.current = false; setLoading(false); }
-  }, [from, to]);
+      if (requests.current.isCurrent(requestKey, ticket)) setError('Attendance could not refresh. The last successful figures are kept.');
+    } finally {
+      if (requests.current.isCurrent(requestKey, ticket)) setLoading(false);
+      requests.current.finish(requestKey, ticket);
+    }
+  }, [from, to, requestKey]);
   useEffect(() => {
-    generation.current += 1;
     setReport(undefined);
+    setError('');
     void load();
     const timer = setInterval(() => { if (!document.hidden) { setNow(Date.now()); void load(); } }, 15000);
     const refresh = () => { if (!document.hidden) void load(); };
     document.addEventListener('visibilitychange', refresh);
-    return () => { generation.current += 1; clearInterval(timer); document.removeEventListener('visibilitychange', refresh); };
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', refresh); };
   }, [load]);
 
   const rows = useMemo(() => (report?.staff || []).filter(staff => {
