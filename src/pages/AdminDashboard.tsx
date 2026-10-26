@@ -758,6 +758,13 @@ const AdminDashboard = () => {
       }
 
       if (userAdminRoles.length === 0) {
+        // An empty read straight after sign-in usually means the request went
+        // out before the new session token was attached (common when several
+        // people share one login). Retry a few times before bouncing.
+        if (attempt < 3) {
+          scheduleAccessRetry(attempt);
+          return;
+        }
         hasCheckedAccessRef.current = true;
         setIsCheckingRole(false);
         setAccessFromCache(false);
