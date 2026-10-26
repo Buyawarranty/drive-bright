@@ -231,7 +231,7 @@ export const LostLeadsAuditPanel: React.FC<Props> = ({ currentAdminId }) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Restore {confirmIds?.length} lead{confirmIds?.length === 1 ? '' : 's'} to New?</AlertDialogTitle>
             <AlertDialogDescription>
-              They go back into New Leads with their lost and fake markings cleared. Each restore is recorded in the lead's history.
+              They go back into New Leads with their lost and fake markings cleared, but held for management only — sales agents and sales leads cannot see or claim them until a manager assigns the lead, which releases the hold. Each restore is recorded in the lead's history.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
