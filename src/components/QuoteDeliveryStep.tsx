@@ -57,7 +57,7 @@ const QuoteStepHeading = ({ onBack }: { onBack: () => void }) => (
       🚀
     </span>
     <h1 className="mx-auto max-w-[280px] text-[22px] font-bold leading-tight text-foreground sm:-mx-16 sm:max-w-none sm:text-[28px]">
-      Only <span className="text-brand-orange">3</span> quick details for your best price
+      Only 3 quick details for your best price
     </h1>
     <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
       <Zap aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-orange" fill="currentColor" />
