@@ -13,6 +13,7 @@ import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import { SALES_PHONE, SALES_PHONE_TEL } from '@/constants/contact';
 import { isValidUkMobile, UK_PHONE_EXAMPLE, UK_PHONE_HINT } from '../../supabase/functions/_shared/ukCheckoutPhone';
+import { firstNameLiveError } from '@/lib/firstNameRule';
 
 import trustpilotLogo from '/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -545,7 +546,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
                 className={`mq-input w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
-                  hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
+                  firstNameError || firstNameLiveError(firstName) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
               {firstName && isValidFirstName && (
@@ -554,7 +555,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 </div>
               )}
             </div>
-            {firstNameError && <p className="text-red-500 text-sm mt-1.5">{firstNameError}</p>}
+            {(firstNameError || firstNameLiveError(firstName)) && (
+              <p className="text-red-500 text-sm mt-1.5">{firstNameError || firstNameLiveError(firstName)}</p>
+            )}
           </div>
 
           {/* Email */}
@@ -775,7 +778,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
                 className={`mq-input w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
-                  hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
+                  firstNameError || firstNameLiveError(firstName) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
               {firstName && isValidFirstName && (
@@ -784,10 +787,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 </div>
               )}
             </div>
-            {firstNameError && (
+            {(firstNameError || firstNameLiveError(firstName)) && (
               <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
                 <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
-                {firstNameError}
+                {firstNameError || firstNameLiveError(firstName)}
               </p>
             )}
           </div>
