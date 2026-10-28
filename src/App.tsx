@@ -203,6 +203,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const QuickPasswordReset = lazy(() => import("./pages/QuickPasswordReset"));
 const QuickResetTest = lazy(() => import("./pages/QuickResetTest"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const StepTest = lazy(() => import("./pages/StepTest"));
 const SetupAdmin = lazy(() => import("./pages/SetupAdmin"));
 const UpdateAdminCredentials = lazy(() => import("./pages/UpdateAdminCredentials"));
 const RequestAccess = lazy(() => import("./pages/RequestAccess"));
@@ -473,6 +474,8 @@ const App = () => {
                     <Route path="/independent-inspection/:token" element={<IndependentInspection />} />
 <Route path="/inspection-payment-received" element={<InspectionThankYou />} />
                     <Route path="/inspection-payment-received/" element={<InspectionThankYou />} />
+                    <Route path="/steptest" element={<StepTest />} />
+
                     
                     {/* Dealer Portal */}
                     <Route path="/dealer-portal" element={<DealerHome />} />

@@ -1427,6 +1427,13 @@ const Index = () => {
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(formData));
     };
     
+    // Payment Assist test plates - redirect to /steptest
+    const normalizedReg = (vehicleData?.regNumber || '').replace(/\s/g, '').toUpperCase();
+    if (['S17DRW', 'RV19OWW'].includes(normalizedReg)) {
+      saveNewPlanToLocalStorage(4);
+      window.location.href = '/steptest';
+      return;
+    }
     
     setCurrentStep(4); // Go to step 4 for customer details/checkout
     updateStepInUrl(4);

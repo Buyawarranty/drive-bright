@@ -145,13 +145,6 @@ const StepTest = () => {
         />
       </PerformanceOptimizedSuspense>
 
-      {/* Test mode marker — this page is never the live checkout */}
-      <div className="bg-purple-100 border-y border-purple-300 py-2 text-center">
-        <span className="text-xs font-bold uppercase tracking-wide text-purple-800">
-          Test mode — monthly payments run through Payment Assist
-        </span>
-      </div>
-
       {/* The real checkout, with Payment Assist as the monthly provider */}
       <div className="bg-[#e8f4fb]">
         <PerformanceOptimizedSuspense height="60vh">
