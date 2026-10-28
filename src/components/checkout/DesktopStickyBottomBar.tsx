@@ -45,8 +45,8 @@ const DesktopStickyBottomBar: React.FC<DesktopStickyBottomBarProps> = ({
                   const totalIfMonthly = monthlyPrice * 12;
                   const saved = Math.max(0, totalIfMonthly - fullPrice);
                   return saved >= Math.floor(totalIfMonthly * 0.10)
-                    ? <span className="text-xs text-[#0BA360] font-medium">10% savings</span>
-                    : <span className="text-xs text-[#0BA360] font-medium">Save £{saved}</span>;
+                    ? <span className="text-xs text-success-ink font-medium">10% savings</span>
+                    : <span className="text-xs text-success-ink font-medium">Save £{saved}</span>;
                 })()}
               </div>
             ) : (

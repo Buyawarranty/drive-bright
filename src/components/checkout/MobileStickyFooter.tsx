@@ -141,7 +141,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                 <span className="text-2xl font-extrabold text-foreground tracking-tight leading-tight">£{activePrice}</span>
                 <span className="text-[12px] text-muted-foreground">{activePriceLabel}</span>
                 {displaySavings >= MIN_DISPLAYED_SAVING && (
-                  <span className="text-[11px] font-semibold text-success ml-1 whitespace-nowrap">
+                  <span className="text-[11px] font-semibold text-success-ink ml-1 whitespace-nowrap">
                     Save £{displaySavings}/yr
                   </span>
                 )}
@@ -219,11 +219,11 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
               <div className="flex gap-2">
                 <OptionCard type="full" title="Pay In Full">
                   <div className="mt-1.5">
-                    <span className="text-2xl font-extrabold text-success">£{discountedFull}</span>
+                    <span className="text-2xl font-extrabold text-success-ink">£{discountedFull}</span>
                   </div>
                   <p className="text-[11px] font-semibold text-foreground mt-1.5">One simple payment</p>
                   {displaySavings >= MIN_DISPLAYED_SAVING && (
-                    <p className="text-[10px] text-success font-bold flex items-center gap-1 mt-0.5">
+                    <p className="text-[10px] text-success-ink font-bold flex items-center gap-1 mt-0.5">
                       <Tag className="w-3 h-3" />
                       Save £{displaySavings}
                     </p>

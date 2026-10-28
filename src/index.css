@@ -392,6 +392,8 @@ html, body {
     /* Highlight Color (Green for savings/benefits) */
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
+    /* Darker forest green for small green text (saving labels) so it stays readable */
+    --success-ink: 142 65% 26%;
 
     /* WhatsApp actions and reply alerts */
     --whatsapp: 158 94% 25%;
@@ -462,6 +464,7 @@ html, body {
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --whatsapp: 158 82% 28%;
+    --success-ink: 142 45% 62%;
     --whatsapp-foreground: 0 0% 100%;
     --analytics-revenue: 168 64% 44%;
     --analytics-revenue-strong: 168 72% 51%;
