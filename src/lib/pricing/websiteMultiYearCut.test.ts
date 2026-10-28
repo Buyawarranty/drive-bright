@@ -83,7 +83,7 @@ describe('pay in full is a true 10% off the 12 payments (2/3-year)', () => {
     const stripe = Math.max(payInFullFloorFromTermFloor(termFloor, '36months'), 1080 - Math.floor(1080 * 0.1));
     expect(stripe).toBe(972);
   });
-  it('1-year keeps the full £399 minimum', () => {
-    expect(payInFullFloorFromTermFloor(399, '12months')).toBe(399);
+  it('1-year pay-in-full also keeps the full 10% saving (£400 total pays £360, never £399)', () => {
+    expect(payInFullFloorFromTermFloor(399, '12months')).toBe(360);
   });
 });
