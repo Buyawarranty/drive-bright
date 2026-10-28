@@ -1,0 +1,20 @@
+import { z } from 'zod';
+
+export const UK_PHONE_EXAMPLE = '07960 123 456';
+
+export function normalizeCheckoutPhone(raw: unknown): string {
+  const parsed = z.string().trim().max(40).safeParse(raw);
+  if (!parsed.success || !/^[+\d\s().-]+$/.test(parsed.data)) return '';
+  let value = parsed.data.replace(/[\s().-]/g, '');
+  if (value.startsWith('+44')) value = '0' + value.slice(3);
+  else if (value.startsWith('0044')) value = '0' + value.slice(4);
+  else if (value.startsWith('44') && value.length === 12) value = '0' + value.slice(2);
+  if (/^[1-9]\d{9}$/.test(value)) value = '0' + value;
+  return value;
+}
+
+export function isValidCheckoutPhone(raw: unknown): boolean {
+  const value = normalizeCheckoutPhone(raw);
+  // A UK mobile must include all 11 digits; do not invent a missing digit.
+  return value.startsWith('07') ? /^07\d{9}$/.test(value) : /^0[1-9]\d{8,9}$/.test(value);
+}
