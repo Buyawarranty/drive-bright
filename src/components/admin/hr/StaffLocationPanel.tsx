@@ -179,7 +179,7 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone; from?: string; 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <p className="text-sm text-muted-foreground mt-3">A changed IP, VPN or device type does not prove a different computer or person. These are recorded work-location observations, not exact locations for every sign-in. Blocking duplicate access is not active yet.</p>
+          <p className="text-sm text-muted-foreground mt-3">A changed IP, VPN or device type does not prove a different computer or person. These are recorded work-location observations, not exact locations for every sign-in. Each staff account allows one active login: signing in elsewhere signs out the previous session.</p>
         </CardHeader>
         <CardContent>
           {loading ? (
