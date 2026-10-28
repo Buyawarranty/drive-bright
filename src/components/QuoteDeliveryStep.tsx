@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User, Car, Rocket, PhoneCall, Gauge, ChevronDown, ChevronUp, Info, ShieldCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
@@ -110,6 +110,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const [firstNameError, setFirstNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [attentionOn, setAttentionOn] = useState(false);
+  const attentionTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => () => {
+    if (attentionTimer.current) clearTimeout(attentionTimer.current);
+  }, []);
 
   // Restore form fields from localStorage on mount
   useEffect(() => {
@@ -136,6 +142,25 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     ? (phone.trim() === '' || isValidPhone)
     : isValidPhone;
   const isFormValid = isValidFirstName && isValidEmail && phoneOkForSubmit;
+
+  // Pressing "Show my price now" with something still wrong gives every box
+  // that needs fixing one short red pulse and moves the caret to the first one,
+  // so the click always reads as registered rather than the page sitting still.
+  const nudgeInvalidFields = () => {
+    if (attentionTimer.current) clearTimeout(attentionTimer.current);
+    setAttentionOn(false);
+    requestAnimationFrame(() => requestAnimationFrame(() => setAttentionOn(true)));
+    attentionTimer.current = setTimeout(() => setAttentionOn(false), 1000);
+
+    const event = !isValidFirstName
+      ? 'step2_firstname_input'
+      : !isValidEmail
+        ? 'step2_email_input'
+        : 'step2_phone_input';
+    const box = document.querySelector<HTMLInputElement>(`input[data-ga4-event="${event}"]`);
+    box?.focus({ preventScroll: true });
+    box?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
 
   const handleSkipClick = async () => {
     try {
@@ -203,7 +228,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       setPhoneError(UK_PHONE_HINT);
     }
     
-    if (!isFormValid) return;
+    if (!isFormValid) {
+      nudgeInvalidFields();
+      return;
+    }
     
     setSendingEmail(true);
 
@@ -548,7 +576,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 data-ga4-event="step2_firstname_input"
                 className={`mq-input w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   firstNameError || firstNameLiveError(firstName) ? 'border-red-500' : 'border-gray-300'
-                }`}
+                } ${attentionOn && (firstNameError || firstNameLiveError(firstName)) ? 'mq-attention' : ''}`}
               />
               {firstName && isValidFirstName && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
@@ -574,7 +602,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 data-ga4-event="step2_email_input"
                 className={`mq-input w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
-                }`}
+                } ${attentionOn && (emailError || (email && !isValidEmail)) ? 'mq-attention' : ''}`}
               />
               {email && isValidEmail && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
@@ -603,7 +631,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 data-ga4-event="step2_phone_input"
                 className={`mq-input w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
-                }`}
+                } ${attentionOn && (phoneError || (phone && !isValidPhone)) ? 'mq-attention' : ''}`}
               />
               {phone && isValidPhone && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
@@ -754,7 +782,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 data-ga4-event="step2_firstname_input"
                 className={`mq-input w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   firstNameError || firstNameLiveError(firstName) ? 'border-red-500' : 'border-gray-300'
-                }`}
+                } ${attentionOn && (firstNameError || firstNameLiveError(firstName)) ? 'mq-attention' : ''}`}
               />
               {firstName && isValidFirstName && (
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
@@ -788,7 +816,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 data-ga4-event="step2_email_input"
                 className={`mq-input w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
-                }`}
+                } ${attentionOn && (emailError || (email && !isValidEmail)) ? 'mq-attention' : ''}`}
               />
               {email && isValidEmail && (
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
@@ -828,7 +856,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 data-ga4-event="step2_phone_input"
                 className={`mq-input w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
-                }`}
+                } ${attentionOn && (phoneError || (phone && !isValidPhone)) ? 'mq-attention' : ''}`}
               />
               {phone && isValidPhone && (
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
