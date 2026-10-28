@@ -3,6 +3,19 @@ export const UK_PHONE_EXAMPLE = '07960 123 456';
 /** One short wording for every phone field: UK mobile, with the example. */
 export const UK_PHONE_HINT = `Enter a UK mobile number, e.g. ${UK_PHONE_EXAMPLE}`;
 
+/**
+ * Phone boxes only ever take digits (plus spaces and a leading + for +44).
+ * Letters and stray punctuation can never be typed in.
+ */
+export function sanitizePhoneInput(raw: unknown): string {
+  if (typeof raw !== 'string') return '';
+  const keepPlus = raw.trimStart().startsWith('+');
+  let out = raw.replace(/[^\d\s]/g, '').replace(/\s+/g, ' ');
+  if (keepPlus) out = '+' + out.trimStart();
+  return out.slice(0, 15);
+}
+
+
 export function normalizeCheckoutPhone(raw: unknown): string {
   if (typeof raw !== 'string' || raw.length > 40 || !/^[+\d\s().-]+$/.test(raw.trim())) return '';
   let value = raw.trim().replace(/[\s().-]/g, '');

@@ -51,7 +51,7 @@ import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { minimumPriceForCodes } from '@/lib/testPromoBypass';
 import { getWebsiteNetFloor, payInFullFloorFromTermFloor } from "@/lib/pricing/netFloor";
 import { toIsoDob } from '@/lib/customerDob';
-import { isValidCheckoutPhone, UK_PHONE_EXAMPLE, UK_PHONE_HINT } from '../../../supabase/functions/_shared/ukCheckoutPhone';
+import { isValidCheckoutPhone, sanitizePhoneInput, UK_PHONE_EXAMPLE, UK_PHONE_HINT } from '../../../supabase/functions/_shared/ukCheckoutPhone';
 
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -2825,7 +2825,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     type="tel"
                     placeholder={UK_PHONE_EXAMPLE}
                     value={customerData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onChange={(e) => handleInputChange('phone', sanitizePhoneInput(e.target.value))}
                     onBlur={() => handleFieldBlur('phone')}
                     required
                     className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('phone')}`}

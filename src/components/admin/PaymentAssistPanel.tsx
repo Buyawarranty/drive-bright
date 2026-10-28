@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { CreditCard, Send, Copy, Loader2, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { invokeWithFreshSession } from '@/lib/invokeWithFreshSession';
+import { sanitizePhoneInput } from '../../../supabase/functions/_shared/ukCheckoutPhone';
 import { useToast } from '@/hooks/use-toast';
 
 interface Props {
@@ -223,7 +224,7 @@ export default function PaymentAssistPanel({
           <Input
             type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))}
             placeholder="e.g. 07700 900123"
             className="bg-white"
           />

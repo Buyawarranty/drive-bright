@@ -38,3 +38,25 @@ describe('Step 2 mobile rule', () => {
     expect(isValidUkMobile('079601234567')).toBe(false);
   });
 });
+import { sanitizePhoneInput } from '../../../supabase/functions/_shared/ukCheckoutPhone';
+describe('phone box typing rule', () => {
+  it('never lets letters through', () => {
+    expect(sanitizePhoneInput('wwwwww')).toBe('');
+    expect(sanitizePhoneInput('abc07960def123456')).toBe('07960123456');
+    expect(sanitizePhoneInput('ph07960 123 456')).toBe('07960 123 456');
+  });
+  it('keeps digits, single spaces and a leading plus', () => {
+    expect(sanitizePhoneInput('07960 123 456')).toBe('07960 123 456');
+    expect(sanitizePhoneInput('+44 7960 123456')).toBe('+44 7960 123456');
+    expect(sanitizePhoneInput('07960  123   456')).toBe('07960 123 456');
+  });
+  it('drops stray punctuation and caps length', () => {
+    expect(sanitizePhoneInput('07960-123-456')).toBe('07960123456');
+    expect(sanitizePhoneInput('(079) 6012-3456')).toBe('079 60123456');
+    expect(sanitizePhoneInput('0796012345678901234')).toBe('079601234567890');
+  });
+  it('only keeps a plus when it starts the number', () => {
+    expect(sanitizePhoneInput('07960+123')).toBe('07960123');
+    expect(sanitizePhoneInput(null)).toBe('');
+  });
+});
