@@ -7,6 +7,7 @@ import { StaffDirectoryPanel } from '@/components/admin/hr/StaffDirectoryPanel';
 import { ServicePerformancePanel } from '@/components/admin/hr/ServicePerformancePanel';
 import AdminAccessLogPanel from '@/components/admin/AdminAccessLogPanel';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { canViewStaffSigninAudit } from '@/lib/crmAttendanceRules';
 
 const TimesheetsTab = lazy(() =>
   import('@/components/admin/timesheets/TimesheetsTab').then((m) => ({ default: m.TimesheetsTab }))
@@ -71,7 +72,7 @@ export const HRTab: React.FC<HRTabProps> = ({ userRole }) => {
         </TabsList>
 
         <TabsContent value="locations" className="mt-4">
-          <StaffLocationPanel />
+          {canViewStaffSigninAudit(userRole) ? <StaffLocationPanel /> : <p className="text-sm text-muted-foreground">Staff sign-in locations are visible to admins and super admins only.</p>}
         </TabsContent>
         <TabsContent value="directory" className="mt-4">
           <StaffDirectoryPanel />

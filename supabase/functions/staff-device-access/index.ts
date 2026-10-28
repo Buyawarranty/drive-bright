@@ -72,6 +72,13 @@ Deno.serve(async req => {
       const { error: logError } = await db.rpc('staff_access_log_attempt', { p_user_id: userId, p_email: staff.email, p_hash: hash, p_outcome: outcome, p_ip: ip, p_label: body.label });
       if (logError) return json({ error: 'Unable to record access attempt' }, 503);
       if (!access.allowed) return json({ error: 'This device needs administrator approval before accessing the CRM.', approval_required: true }, 403);
+      if (body.action === 'signin') {
+        // Single session per staff account: keep only this new login, sign out every other session.
+        const token = (session as { access_token?: string } | null)?.access_token;
+        if (!token) return json({ error: 'Unable to start session' }, 503);
+        const { error: revokeError } = await db.auth.admin.signOut(token, 'others');
+        if (revokeError) return json({ error: 'Unable to secure session' }, 503);
+      }
       return json({ ...access, session: body.action === 'signin' ? session : undefined });
     }
     if (body.action === 'check') {
