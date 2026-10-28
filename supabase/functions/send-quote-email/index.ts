@@ -163,7 +163,7 @@ const handler = async (req: Request): Promise<Response> => {
       quoteLink: `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(data.email)}&step=3`,
       senderName: null,
       customerEmail: data.email,
-      attachmentsNote: "I've also attached our latest Terms &amp; Conditions and the full Platinum plan document so you have everything in one place &mdash; feel free to have a read whenever suits you.",
+      attachmentsNote: "Your Terms &amp; Conditions and full Platinum plan document are attached for you to review.",
     });
     // Subject line optimized for Primary inbox - conversational, no promotional language
     const customerName = data.firstName && data.firstName.trim() ? data.firstName.trim() : '';
@@ -173,14 +173,14 @@ const handler = async (req: Request): Promise<Response> => {
     const textContent = [
       customerName ? `Hi ${customerName},` : 'Hi,',
       '',
+      `View and continue your quote: ${quoteLink}`,
+      '',
       `Thanks for the details on your ${vehicleDisplay}${data.vehicleData.regNumber ? ` (${data.vehicleData.regNumber})` : ''}. I have included the summary for your records.`,
       data.selectedPlan?.price ? `From £${Number(data.selectedPlan.price).toFixed(2)} ${formatPaymentType(data.selectedPlan.paymentType || '').toLowerCase()}.` : '',
       '',
-      "I've also attached our latest Terms & Conditions and the full Platinum plan document so you have everything in one place — feel free to have a read whenever suits you.",
+      "Your Terms & Conditions and full Platinum plan document are attached for you to review.",
       '',
-      `Details link: ${quoteLink}`,
-      '',
-      "If anything doesn't look right, reply to this email. You can also call us on 0330 229 5040 (Mon-Fri).",
+      "Have a question? Reply to this email or call 0330 229 5040. Our sales team is available Monday to Friday, 9am to 6pm, and Saturday, 12pm to 4pm.",
       '',
       'Kind regards,',
       'Buyawarranty Customer Care',

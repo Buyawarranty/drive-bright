@@ -1,5 +1,9 @@
 # Roadmap
 
+## Concise customer quote email
+- [ ] Remove inaccurate claims hours and dash punctuation; shorten cover copy, move clickable quote link and CTA above details, preserve sender and delivery logic.
+- [ ] Check mobile and desktop email rendering and existing regression tests; verify available delivery evidence without promising inbox placement. No publication or customer test send.
+
 ## Checkout town and apartment search
 - [x] Corrected Postcoder autocomplete URLs and town/street drill-down. Four regressions pass; live checkout finds Wembley, narrows to streets and confirms Flat 7, Silchester Apartments with town and postcode. Address service deployed; website not published.
 
