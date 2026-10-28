@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Loader2, ShieldAlert, Laptop, Globe2, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatCrmAuditTime, type CrmAuditZone } from '@/lib/crmAuditTime';
-import { staffLocationReview } from '@/lib/staffLocationReview';
+import { staffLocationReview, computersByEmail } from '@/lib/staffLocationReview';
 
 interface LocationRow {
   id: string;
@@ -50,6 +50,7 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone; from?: string; 
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
   const [reviewOnly, setReviewOnly] = useState(false);
+  const [computers, setComputers] = useState<Map<string, number>>(new Map());
   const staffKey = staffIds?.join(',');
 
   const load = async () => {
@@ -72,6 +73,10 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone; from?: string; 
       const { data: users, error: staffError } = await supabase.from('admin_users').select('id, first_name, last_name, role');
       if (staffError) throw staffError;
       setRows(all);
+      try {
+        const { data: report } = await supabase.functions.invoke('staff-device-access', { body: { action: 'report', from: fromDate, to: toDate, offset: 0 } });
+        if (Array.isArray(report?.devices)) setComputers(computersByEmail(report.devices));
+      } catch { /* computer counts are optional evidence */ }
       const map: Record<string, StaffName> = {};
       (users || []).forEach(u => { map[u.id] = u; });
       setStaff(map); setError('');
@@ -124,6 +129,47 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone; from?: string; 
     <div className="space-y-4">
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       <div className="flex flex-wrap items-center gap-3 border-l-4 border-destructive pl-3"><span className="font-semibold">{[...reviews.values()].filter(value => value.review).length} accounts with multiple recorded networks, locations or device types</span><Button size="sm" variant={reviewOnly ? 'default' : 'outline'} onClick={() => setReviewOnly(value => !value)} aria-pressed={reviewOnly}>Review flagged accounts</Button></div>
+      {(() => {
+        const people = [...new Set(rows.map(r => r.admin_user_id))].map(id => ({ id, row: rows.find(r => r.admin_user_id === id)!, review: reviews.get(id)! }))
+          .map(p => ({ ...p, pcs: computers.get(p.row.email.toLowerCase()) || 0 }))
+          .filter(p => p.review.review || p.pcs > 1)
+          .sort((a, b) => b.review.simultaneous.length - a.review.simultaneous.length || b.pcs - a.pcs);
+        if (!people.length) return null;
+        return (
+          <Card>
+            <CardHeader><CardTitle className="text-base">Why these accounts are flagged</CardTitle>
+              <CardDescription>Each place the login was used from, whether it looked like a VPN, and whether two places were in use at the same time.</CardDescription></CardHeader>
+            <CardContent className="space-y-4">
+              {people.map(({ id, row, review, pcs }) => {
+                const unique = [...new Map(review.destinations.map(d => [`${d.ip}|${d.location}`, d])).values()];
+                return (
+                  <div key={id} className="border rounded-lg p-3 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold">{name(row)}</span>
+                      {review.simultaneous.length > 0 && <Badge variant="destructive">Used from 2 places at the same time</Badge>}
+                      {pcs > 1 && <Badge variant="destructive">{pcs} computers / browsers</Badge>}
+                      <Badge variant="outline">{review.vpnDestinations ? `${review.vpnDestinations} looked like a VPN` : 'No VPN detected'}</Badge>
+                    </div>
+                    <ul className="text-sm space-y-1">
+                      {unique.map(d => (
+                        <li key={`${d.ip}|${d.location}`}>
+                          <strong>{d.location}</strong> · {d.isp || 'Unknown network'} · <span className="font-mono text-xs">{d.ip}</span> · {d.deviceType || 'Unknown device'} · {d.vpn ? 'VPN / hosting network' : 'Normal network'}
+                        </li>
+                      ))}
+                    </ul>
+                    {review.simultaneous.slice(0, 5).map((s, i) => (
+                      <p key={i} className="text-sm text-destructive">
+                        Overlap {formatCrmAuditTime(s.overlapStart, zone)} – {formatCrmAuditTime(s.overlapEnd, zone)}: {s.a.location} ({s.a.ip}) and {s.b.location} ({s.b.ip})
+                      </p>
+                    ))}
+                  </div>
+                );
+              })}
+              <p className="text-xs text-muted-foreground">"Same time" means both places were seen within the same window; records are taken on opening the CRM and every 30 minutes, so a quick move between Wi-Fi and mobile data can also overlap. A second browser on the same computer counts as another computer.</p>
+            </CardContent>
+          </Card>
+        );
+      })()}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card><CardContent className="p-4">
           <p className="text-xs text-muted-foreground">Staff seen</p>
