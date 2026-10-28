@@ -40,6 +40,7 @@ Updated: just now
 - The recontact queue is displayed as "Recontact Leads" — never "Goldmine" and never "Recontacted"; internal ids and the goldmine/golden URL redirects stay. See mem://admin/leads/recontact-tab-name
 
 ## Memories
+- [Letters-only name boxes](mem://design/letters-only-name-boxes) — Customer name boxes strip digits as you type so a first name can never be "222"; phone boxes strip letters
 - [Test Phone Visible, Never Blocked](mem://admin/leads/test-phone-visible-not-blocked) — 07960 111131 works across website/chat and shows TEST in New Leads without disabled actions
 - [ORR Column Parity](mem://admin/leads/orr-column-parity-time-to-lead) — RR and ORR share identical columns; ORR only adds the Time to Lead countdown column; distribution rule is a separate functional difference
 - [ORR Has Distribution Rule](mem://admin/leads/orr-has-distribution-rule) — ORR uses its own distribution rule (furthest behind → longest waiting → caps-page order); RR does not
