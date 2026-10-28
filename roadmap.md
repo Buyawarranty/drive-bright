@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Failed-payment panel owner and admins only
-- [ ] Restrict red panel, sounds and underlying checkout-alert access to assigned sales/sales_lead or admin/super_admin; preserve allocation.
-- [ ] Test role and ownership rules; do not publish or activate ORR. Authenticated screen verification unavailable on external unmanaged Supabase.
+- [x] Red panel blocks other staff before requests/subscriptions; assigned agents require fresh verified ownership for rows, sounds and claims. Checkout-alert RLS now denies blanket sales-manager/other-staff access; admin/super_admin retained. Claims reject zero-row results and delayed requests cannot restore prior ownership maps. Allocation unchanged.
+- [x] 22 focused frontend tests and deployed database role/contact checks pass; preview build OK, nothing published or ORR activated. No new security warnings; prior findings remain separate.
+- [ ] Authenticated on-screen verification unavailable on external unmanaged Supabase.
 
 ## Close sales lead and checkout-alert data-access gap
 - [x] Added five restrictive lead read/update/delete and checkout-alert read/update policies with private current-owner predicates; contact-owner RPC now respects RLS. Existing permissive staff policies and public/system capture unchanged.
