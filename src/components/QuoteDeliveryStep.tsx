@@ -14,6 +14,7 @@ import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import { SALES_PHONE, SALES_PHONE_TEL } from '@/constants/contact';
 import { isValidUkMobile, sanitizePhoneInput, UK_PHONE_EXAMPLE, UK_PHONE_HINT } from '../../supabase/functions/_shared/ukCheckoutPhone';
 import { firstNameLiveError } from '@/lib/firstNameRule';
+import { isValidPersonName, sanitizeNameInput } from '../../supabase/functions/_shared/ukPersonName';
 import { Button } from '@/components/ui/button';
 
 import trustpilotLogo from '/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png';
@@ -123,7 +124,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       const savedCustomerData = localStorage.getItem('buyawarranty_customerData');
       if (savedCustomerData) {
         const parsed = JSON.parse(savedCustomerData);
-        if (parsed.first_name) setFirstName(parsed.first_name);
+        if (parsed.first_name) setFirstName(sanitizeNameInput(parsed.first_name));
         if (parsed.email) setEmail(parsed.email);
         if (parsed.phone) setPhone(parsed.phone);
         console.log('✅ Restored Step 2 form data from localStorage');
@@ -133,7 +134,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     }
   }, []);
 
-  const isValidFirstName = firstName.trim().length >= 2;
+  const isValidFirstName = isValidPersonName(firstName);
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const isValidPhone = isValidUkMobile(phone);
   // A/B variant — in "B" the phone field is optional.
@@ -571,7 +572,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 type="text"
                 placeholder="e.g. John"
                 value={firstName}
-                onChange={(e) => { setFirstName(e.target.value); setFirstNameError(''); }}
+                onChange={(e) => { setFirstName(sanitizeNameInput(e.target.value)); setFirstNameError(''); }}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
                 className={`mq-input w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
@@ -775,7 +776,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 placeholder="e.g. John"
                 value={firstName}
                 onChange={(e) => {
-                  setFirstName(e.target.value);
+                  setFirstName(sanitizeNameInput(e.target.value));
                   setFirstNameError('');
                 }}
                 autoComplete="given-name"

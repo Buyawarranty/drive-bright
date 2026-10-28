@@ -7,6 +7,7 @@ import { ArrowRightLeft, Shield, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import Footer from '@/components/Footer';
+import { sanitizeNameInput } from '../../supabase/functions/_shared/ukPersonName';
 
 const TRANSFER_FEE = 19.95;
 
@@ -37,6 +38,9 @@ const WarrantyTransfer = () => {
       setFormData(prev => ({ ...prev, [name]: value.toUpperCase().replace(/[^A-Z0-9 ]/g, '') }));
     } else if (name === 'currentMileage') {
       setFormData(prev => ({ ...prev, [name]: value.replace(/[^0-9]/g, '') }));
+    } else if (name === 'firstName' || name === 'lastName' || name === 'currentOwnerName') {
+      // Name boxes take letters only — digits are stripped as the person types.
+      setFormData(prev => ({ ...prev, [name]: sanitizeNameInput(value) }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }

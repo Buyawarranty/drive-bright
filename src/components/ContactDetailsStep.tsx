@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { trackFormSubmission, trackStepCompletion } from '@/utils/analytics';
+import { isValidPersonName, sanitizeNameInput } from '../../supabase/functions/_shared/ukPersonName';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 
 interface ContactDetailsStepProps {
@@ -95,14 +96,14 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
               <input
                 type="text"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={(e) => setFirstName(sanitizeNameInput(e.target.value))}
                 placeholder="Enter your first name"
                 className="w-full border-2 border-gray-300 rounded-[6px] px-[16px] py-[12px] pr-[50px] focus:outline-none transition-all duration-200"
                 onFocus={(e) => e.target.style.borderColor = '#224380'}
                 onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 required
               />
-              {firstName.trim() && (
+              {isValidPersonName(firstName) && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                   <Check className="w-4 h-4 text-white" />
                 </div>

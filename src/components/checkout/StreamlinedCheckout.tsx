@@ -52,6 +52,7 @@ import { minimumPriceForCodes } from '@/lib/testPromoBypass';
 import { getWebsiteNetFloor, payInFullFloorFromTermFloor } from "@/lib/pricing/netFloor";
 import { toIsoDob } from '@/lib/customerDob';
 import { isValidCheckoutPhone, sanitizePhoneInput, UK_PHONE_EXAMPLE, UK_PHONE_HINT } from '../../../supabase/functions/_shared/ukCheckoutPhone';
+import { isValidPersonName, sanitizeNameInput } from '../../../supabase/functions/_shared/ukPersonName';
 
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -1125,10 +1126,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Check section completion status - now includes address fields
   const personalDetailsComplete = useMemo(() => {
     return !!(
-      customerData.first_name?.trim() &&
-      customerData.first_name.trim().length >= 2 &&
-      customerData.last_name?.trim() &&
-      customerData.last_name.trim().length >= 2 &&
+      isValidPersonName(customerData.first_name) &&
+      isValidPersonName(customerData.last_name) &&
       customerData.email?.trim() &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email) &&
       customerData.phone?.trim() &&
@@ -1162,8 +1161,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Count missing fields
   const personalDetailsMissing = useMemo(() => {
     let count = 0;
-    if (!customerData.first_name?.trim() || customerData.first_name.trim().length < 2) count++;
-    if (!customerData.last_name?.trim() || customerData.last_name.trim().length < 2) count++;
+    if (!isValidPersonName(customerData.first_name)) count++;
+    if (!isValidPersonName(customerData.last_name)) count++;
     if (!customerData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) count++;
     if (!customerData.phone?.trim()) count++;
     if (!mileageValueValid) count++;
@@ -1619,12 +1618,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   }, [addressData]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    setCustomerData((prev: typeof customerData) => ({ ...prev, [field]: value }));
+    // Name boxes take letters only — digits are stripped as the person types,
+    // exactly the way the mobile box strips letters.
+    const nextValue =
+      typeof value === 'string' && (field === 'first_name' || field === 'last_name')
+        ? sanitizeNameInput(value)
+        : value;
+    setCustomerData((prev: typeof customerData) => ({ ...prev, [field]: nextValue }));
     if (paymentError) setPaymentError('');
     
     // Live validate immediately with the NEW value (not stale state)
-    if (typeof value === 'string') {
-      validateField(field, value, { onBlur: false });
+    if (typeof nextValue === 'string') {
+      validateField(field, nextValue, { onBlur: false });
     }
   };
 
@@ -1655,6 +1660,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         } else if (val.trim().length < 2) {
           error = 'First name must be at least 2 characters';
           isValid = false;
+        } else if (!isValidPersonName(val)) {
+          error = 'First name must use letters only';
+          isValid = false;
         }
         break;
       }
@@ -1665,6 +1673,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           isValid = false;
         } else if (val.trim().length < 2) {
           error = 'Last name must be at least 2 characters';
+          isValid = false;
+        } else if (!isValidPersonName(val)) {
+          error = 'Last name must use letters only';
           isValid = false;
         }
         break;
@@ -2083,8 +2094,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       // missing mileage whenever personal details were incomplete, so a customer
       // who had already confirmed their mileage was told to check it again.
       const missing: string[] = [];
-      if (!customerData.first_name?.trim() || customerData.first_name.trim().length < 2) missing.push('first name');
-      if (!customerData.last_name?.trim() || customerData.last_name.trim().length < 2) missing.push('last name');
+      if (!isValidPersonName(customerData.first_name)) missing.push('first name');
+      if (!isValidPersonName(customerData.last_name)) missing.push('last name');
       if (!customerData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) missing.push('email');
       if (!isValidCheckoutPhone(customerData.phone)) missing.push('phone number');
       if (!mileageValueValid) missing.push('mileage');
@@ -2857,7 +2868,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       required
                       className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('first_name')}`}
                     />
-                    {validatedFields.first_name && customerData.first_name?.trim()?.length >= 2 && !fieldErrors.first_name && (
+                    {validatedFields.first_name && isValidPersonName(customerData.first_name) && !fieldErrors.first_name && (
                       <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                     )}
                   </div>
@@ -2882,7 +2893,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       required
                       className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('last_name')}`}
                     />
-                    {validatedFields.last_name && customerData.last_name?.trim()?.length >= 2 && !fieldErrors.last_name && (
+                    {validatedFields.last_name && isValidPersonName(customerData.last_name) && !fieldErrors.last_name && (
                       <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                     )}
                   </div>
