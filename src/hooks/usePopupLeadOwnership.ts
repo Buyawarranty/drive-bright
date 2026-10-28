@@ -5,6 +5,7 @@ import { useViewAs } from '@/contexts/ViewAsContext';
 import { canSeeLeadPopup, canSeeVerifiedLeadNotification, isSalesPopupRole } from '@/lib/popupAccess';
 import { fetchByIdsInBatches } from '@/utils/batchedIn';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
+import { createPopupOwnershipRequests } from '@/lib/popupOwnershipRequests';
 
 /** Current ownership, never an old recipient or historical seller. */
 export function usePopupLeadOwnership(leadIds: string[]) {
@@ -16,14 +17,17 @@ export function usePopupLeadOwnership(leadIds: string[]) {
   useEffect(() => {
     if (!isSalesPopupRole(role) || !viewerId || !ids.length) return;
     let cancelled = false;
+    const requests = createPopupOwnershipRequests();
     const load = async () => {
+      const request = requests.begin();
+      setVerified(null);
       try {
         const rows = await fetchByIdsInBatches<{ id: string; assigned_to: string | null }>(ids, batch =>
           supabase.from('sales_leads').select('id, assigned_to').in('id', batch).eq('assigned_to', viewerId),
           { label: 'pop-up lead ownership' });
-        if (!cancelled) setVerified({ key, viewerId, ids: new Set(rows.filter(r => canSeeLeadPopup(role, viewerId, r.assigned_to)).map(r => r.id)) });
+        if (!cancelled && requests.isCurrent(request)) setVerified({ key, viewerId, ids: new Set(rows.filter(r => canSeeLeadPopup(role, viewerId, r.assigned_to)).map(r => r.id)) });
       } catch {
-        if (!cancelled) setVerified(null);
+        if (!cancelled && requests.isCurrent(request)) setVerified(null);
       }
     };
     void load();
@@ -36,8 +40,26 @@ export function usePopupLeadOwnership(leadIds: string[]) {
           setVerified(null);
           void load();
         }
-      }).subscribe();
-    return () => { cancelled = true; stop(); void supabase.removeChannel(channel); };
+      }).subscribe(status => {
+        requests.invalidate();
+        setVerified(null);
+        if (status === 'SUBSCRIBED') void load();
+      });
+    const wake = () => {
+      if (!document.hidden) void load();
+    };
+    window.addEventListener('focus', wake);
+    window.addEventListener('online', wake);
+    document.addEventListener('visibilitychange', wake);
+    return () => {
+      cancelled = true;
+      requests.invalidate();
+      stop();
+      window.removeEventListener('focus', wake);
+      window.removeEventListener('online', wake);
+      document.removeEventListener('visibilitychange', wake);
+      void supabase.removeChannel(channel);
+    };
   }, [role, viewerId, key, ids]);
   return (leadId?: string | null) => canSeeVerifiedLeadNotification(role, leadId,
     !!leadId && verified?.key === key && verified.viewerId === viewerId && verified.ids.has(leadId));
