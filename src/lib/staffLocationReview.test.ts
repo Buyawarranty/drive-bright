@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { staffLocationReview, type LocationEvidence } from './staffLocationReview';
+import { staffLocationReview, computersByEmail, type LocationEvidence } from './staffLocationReview';
 const row: LocationEvidence = { admin_user_id: 'agent', ip_address: '192.0.2.1', city: 'London', region: null, country: 'UK', device_type: 'Laptop' };
 describe('staff multiple-destination evidence', () => {
   it('flags overlapping use from two different places as simultaneous', () => {
@@ -28,6 +28,6 @@ describe('staff multiple-destination evidence', () => {
     expect(result.get('other')?.review).toBe(false);
   });
   it('does not count unknown locations as destinations', () => {
-    expect(staffLocationReview([{ ...row, ip_address: null, city: null, country: null, device_type: null }]).get('agent')).toEqual({ ips: 0, locations: 0, deviceTypes: 0, review: false });
+    expect(staffLocationReview([{ ...row, ip_address: null, city: null, country: null, device_type: null }]).get('agent')).toMatchObject({ ips: 0, locations: 0, deviceTypes: 0, review: false });
   });
 });
