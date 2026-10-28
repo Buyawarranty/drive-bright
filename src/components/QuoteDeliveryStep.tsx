@@ -12,7 +12,7 @@ import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import { SALES_PHONE, SALES_PHONE_TEL } from '@/constants/contact';
-import { isValidUkMobile, UK_PHONE_EXAMPLE, UK_PHONE_HINT } from '../../supabase/functions/_shared/ukCheckoutPhone';
+import { isValidUkMobile, sanitizePhoneInput, UK_PHONE_EXAMPLE, UK_PHONE_HINT } from '../../supabase/functions/_shared/ukCheckoutPhone';
 import { firstNameLiveError } from '@/lib/firstNameRule';
 import { Button } from '@/components/ui/button';
 
@@ -599,7 +599,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 type="tel"
                 placeholder={UK_PHONE_EXAMPLE}
                 value={phone}
-                onChange={(e) => { setPhone(e.target.value); if (phoneError) setPhoneError(''); }}
+                onChange={(e) => { setPhone(sanitizePhoneInput(e.target.value)); if (phoneError) setPhoneError(''); }}
                 data-ga4-event="step2_phone_input"
                 className={`mq-input w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
@@ -822,7 +822,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 placeholder={UK_PHONE_EXAMPLE}
                 value={phone}
                 onChange={(e) => {
-                  setPhone(e.target.value);
+                  setPhone(sanitizePhoneInput(e.target.value));
                   if (phoneError) setPhoneError('');
                 }}
                 data-ga4-event="step2_phone_input"
