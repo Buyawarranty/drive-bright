@@ -15851,14 +15851,6 @@ export type Database = {
         Args: { payment_type: string; start_date: string }
         Returns: string
       }
-      can_access_assigned_sales_lead: {
-        Args: { _assigned_to: string; _management_hold?: boolean }
-        Returns: boolean
-      }
-      can_access_checkout_alert: {
-        Args: { _email: string; _phone: string }
-        Returns: boolean
-      }
       can_export_customer_data: { Args: never; Returns: boolean }
       can_export_customers: { Args: never; Returns: boolean }
       can_export_new_leads: { Args: never; Returns: boolean }
