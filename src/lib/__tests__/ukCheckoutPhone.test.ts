@@ -21,6 +21,11 @@ describe('checkout phone validation', () => {
       expect(isValidCheckoutPhone(phone)).toBe(false);
     }
   });
+  it('rejects UK landlines and other non-mobile numbers — mobiles only', () => {
+    for (const phone of ['020 7946 0958', '0161 496 0000', '08900000000', '0800 111 1111', '0345 600 0000']) {
+      expect(isValidCheckoutPhone(phone)).toBe(false);
+    }
+  });
 });
 import { isValidUkMobile } from '../../../supabase/functions/_shared/ukCheckoutPhone';
 describe('Step 2 mobile rule', () => {

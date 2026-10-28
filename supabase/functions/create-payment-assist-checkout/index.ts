@@ -322,14 +322,14 @@ serve(async (req) => {
     }
 
 
-    // Normalise the phone number to the 11-digit UK format Payment Assist expects.
+    // Normalise the phone number to the 11-digit UK mobile format Payment Assist expects.
     // PA rejects "+44...", spaces, and short/long numbers with "invalid telephone".
     const telephone = normalizeCheckoutPhone(customerData?.phone || customerData?.mobile || '');
     const validUkPhone = isValidCheckoutPhone(telephone);
     if (!validUkPhone) {
       logStep("Invalid telephone for Payment Assist", { digitCount: telephone.replace(/\D/g, '').length });
       return new Response(JSON.stringify({
-        error: `Please enter a valid UK phone number (for example ${UK_PHONE_EXAMPLE}) to pay monthly.`,
+        error: `Please enter a UK mobile number starting 07 with 11 digits (for example ${UK_PHONE_EXAMPLE}) to pay monthly.`,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
