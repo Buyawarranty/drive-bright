@@ -1687,7 +1687,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           error = 'Phone number is required';
           isValid = false;
         } else if (!isValidCheckoutPhone(val)) {
-          error = `Please enter a valid UK phone number, for example ${UK_PHONE_EXAMPLE}`;
+          error = `Please enter a UK mobile number starting 07 with 11 digits, for example ${UK_PHONE_EXAMPLE}`;
           isValid = false;
         }
         break;
@@ -2837,7 +2837,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {(fieldErrors.phone || (customerData.phone?.trim() && !isValidCheckoutPhone(customerData.phone))) && (
                   <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    {fieldErrors.phone || `This number looks one digit short — UK mobiles have 11 digits, for example ${UK_PHONE_EXAMPLE}`}
+                    {fieldErrors.phone || `Please enter a UK mobile number starting 07 with 11 digits, for example ${UK_PHONE_EXAMPLE}`}
                   </p>
                 )}
               </div>
