@@ -200,8 +200,13 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                   <span className="text-gray-500">Parts covered</span>
                   <span className="font-semibold text-[#1a1a1a]">Comprehensive cover</span>
                 </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">No. of claims</span>
+                  <span className="font-semibold text-[#1a1a1a]">Unlimited</span>
+                </div>
               </div>
             </div>
+
 
             {/* Payment Toggle Tabs */}
             {onPaymentChange && (
