@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { notifyDueReminders, requestNotificationPermission } from '@/lib/reminderAlerts';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { canSeeLeadPopup, isSalesPopupRole } from '@/lib/popupAccess';
+import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
+import { createPopupOwnershipRequests } from '@/lib/popupOwnershipRequests';
 
 
 export interface DueReminder {
@@ -23,9 +25,13 @@ export interface DueReminder {
 export const useDueReminders = () => {
   const [dueReminders, setDueReminders] = useState<DueReminder[]>([]);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const requests = useRef(createPopupOwnershipRequests());
+  const canShow = usePopupLeadOwnership(dueReminders.filter(r => !r.lead_id.startsWith('personal_')).map(r => r.lead_id));
+  const visibleReminders = dueReminders.filter(r => r.lead_id.startsWith('personal_') || canShow(r.lead_id));
 
   const fetchDueReminders = useCallback(async () => {
+    const request = requests.current.begin();
+    setDueReminders([]);
     try {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) return;
@@ -106,26 +112,20 @@ export const useDueReminders = () => {
         return { ...r, lead } as DueReminder;
       });
 
-      setDueReminders(mapped);
-
-      // Fire desktop notification + chime for any newly-due reminders we
-      // haven't already alerted on this session.
-      notifyDueReminders(
-        mapped.map((r: DueReminder) => {
-          const first = r.lead?.first_name || '';
-          const last = r.lead?.last_name || '';
-          const nameLine = `${first} ${last}`.trim() || r.lead?.vehicle_reg || r.lead?.email || 'Reminder';
-          return {
-            id: r.id,
-            title: `⏰ ${r.label || 'Follow up'}`,
-            body: nameLine,
-          };
-        }),
-      );
+      if (requests.current.isCurrent(request)) setDueReminders(mapped);
     } catch (err) {
+      if (requests.current.isCurrent(request)) setDueReminders([]);
       console.error('Error fetching due reminders:', err);
     }
   }, [dismissedIds]);
+
+  useEffect(() => {
+    notifyDueReminders(visibleReminders.map(r => ({
+      id: r.id,
+      title: `⏰ ${r.label || 'Follow up'}`,
+      body: `${r.lead?.first_name || ''} ${r.lead?.last_name || ''}`.trim() || r.lead?.vehicle_reg || r.lead?.email || 'Reminder',
+    })));
+  }, [visibleReminders]);
 
   // Dismiss only hides the popup locally — it does NOT mark the reminder
   // as completed. The reminder stays pending so it remains visible in the
@@ -141,9 +141,9 @@ export const useDueReminders = () => {
     fetchDueReminders();
     // Poll every 20s so newly-due reminders fire promptly.
     const stop = setVisibleInterval(fetchDueReminders, 20000);
-    return () => stop();
+    return () => { requests.current.invalidate(); stop(); };
   }, [fetchDueReminders]);
 
 
-  return { dueReminders, dismissReminder, refetch: fetchDueReminders };
+  return { dueReminders: visibleReminders, dismissReminder, refetch: fetchDueReminders };
 };

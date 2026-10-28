@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { withBackgroundPriority } from '@/lib/requestQueue';
 import { canSeeLeadPopup, isSalesPopupRole } from '@/lib/popupAccess';
 import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
+import { createPopupOwnershipRequests } from '@/lib/popupOwnershipRequests';
 
 export interface AdminNotification {
   id: string;
@@ -201,6 +202,8 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
     fetchNotifications();
 
     const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
+    const ownershipRequests = new Map<string, ReturnType<typeof createPopupOwnershipRequests>>();
+    let disposed = false;
 
     const contactChannel = supabase
       .channel(`admin-contacts-${Math.random().toString(36).slice(2)}`)
@@ -288,7 +291,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
         event: 'UPDATE',
         schema: 'public',
         table: 'sales_leads',
-      }, (payload) => {
+      }, async (payload) => {
         scheduleRefetch(); // Assignment changes must also remove old-recipient notices.
         const oldData = payload.old as { resubmission_count?: number };
         const newData = payload.new as { 
@@ -303,6 +306,13 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
         };
         
         const newCount = newData.resubmission_count || 0;
+        let ownershipRequest: number | undefined;
+        let ownershipTracker: ReturnType<typeof createPopupOwnershipRequests> | undefined;
+        if (newData.id) {
+          ownershipTracker = ownershipRequests.get(newData.id) || createPopupOwnershipRequests();
+          ownershipRequests.set(newData.id, ownershipTracker);
+          ownershipRequest = ownershipTracker.begin();
+        }
         const previousCount = typeof oldData.resubmission_count === 'number'
           ? oldData.resubmission_count
           : newData.id
@@ -326,6 +336,14 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
           if (!isManagement && !ownsLead) {
             scheduleRefetch();
             return;
+          }
+          if (isSalesPopupRole(userRole)) {
+            if (!newData.id || !adminId) return;
+            const { data: currentLead, error } = await supabase.from('sales_leads')
+              .select('assigned_to').eq('id', newData.id).maybeSingle();
+            if (disposed || error || ownershipRequest === undefined ||
+              !ownershipTracker?.isCurrent(ownershipRequest) ||
+              !canSeeLeadPopup(userRole, adminId, currentLead?.assigned_to)) return;
           }
 
           const toastKey = `${newData.id || newData.email || 'lead'}-${newData.resubmission_count || 0}`;
@@ -351,6 +369,8 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
       .subscribe();
 
     return () => {
+      disposed = true;
+      ownershipRequests.forEach(requests => requests.invalidate());
       if (refetchTimerRef.current) {
         clearTimeout(refetchTimerRef.current);
         refetchTimerRef.current = null;
