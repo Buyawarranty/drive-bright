@@ -2,7 +2,7 @@
 
 ## Checkout phone validation
 - [x] Confirmed two 19:24 Payment Assist attempts had ten-digit UK mobiles; shared Step 2/Step 4/server validation now rejects incomplete mobiles consistently, retaining valid saved numbers and the optional Step 2 variant. Example is 07960 123 456; prices and routing unchanged.
-- [ ] Verify focused rules and preview phone field; live paid completion is not tested.
+- [x] Four shared-validator tests pass; isolated checkout preserves the saved valid number, rejects a ten-digit mobile inline and clears the error when corrected. Preview build OK. No real payment submitted or site publication; live completion remains unverified.
 
 ## Excess display wording
 - [x] Website checkout summaries and chat cover summary use Excess and amount only; pricing, policy explanations and claim limits unchanged. Nothing published.
