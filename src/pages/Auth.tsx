@@ -152,7 +152,7 @@ const Auth = () => {
               await secureStaffSignIn(session.access_token);
               return true;
             } catch {
-              await supabase.auth.signOut({ scope: 'local' });
+              try { await supabase.auth.signOut({ scope: 'local' }); } catch { /* Stay on /auth even if local cleanup fails. */ }
               toast({ title: 'Staff sign-in incomplete', description: 'Unable to secure your staff session. Please sign in again.', variant: 'destructive' });
               return false;
             }

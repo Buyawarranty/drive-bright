@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Real /auth staff single-session enforcement
-- [ ] Add a token-validated staff-only revoke-others action, independent of device approval, and await it in /auth staff password sign-in before dashboard navigation.
-- [ ] Verify staff/customer separation, failures, real route reachability and clean preview build; report any authenticated verification limitation.
+- [x] Add a token-validated active-staff-only revoke-others action, independent of device approval, and await it in /auth staff password sign-in before dashboard/renewal navigation. Existing device flow unchanged; restored/refocused sessions do not revoke.
+- [x] Eighteen focused frontend/edge tests pass; browser fixture submits real /auth form and verifies normal staff and role-error fallback revoke once, customers skip revocation, and failure stays on /auth. Preview build OK; not published.
+- [ ] Real two-browser authenticated revocation read-back unavailable with external unmanaged Supabase; existing access tokens remain valid until expiry even after refresh sessions are revoked.
 
 ## Individual agent activity view
 - [x] Daily staff activity defaults to one block per agent: their name as a heading with their own day bars, range totals and session counts beneath, ordered by recorded active time; "By day" keeps the combined day-by-day view.
