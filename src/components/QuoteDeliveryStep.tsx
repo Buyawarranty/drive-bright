@@ -772,7 +772,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
           {/* Email Input - Shown by default */}
           <div>
-            <label className="block text-sm sm:text-base font-semibold text-gray-800 mb-1">
+            <label className="block text-sm sm:text-base font-semibold text-gray-800 mb-1.5">
               Your email address
             </label>
             <div className="relative">
@@ -812,7 +812,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           
           {/* Phone Input - Always visible */}
           <div>
-            <label className="block text-sm sm:text-base font-semibold text-gray-800 mb-1">
+            <label className="block text-sm sm:text-base font-semibold text-gray-800 mb-1.5">
               Your mobile number{isVariantB && <span className="text-sm font-normal text-gray-500 ml-2">(optional)</span>}
             </label>
             <div className="relative">
