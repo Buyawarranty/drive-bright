@@ -22,3 +22,14 @@ describe('checkout phone validation', () => {
     }
   });
 });
+import { isValidUkMobile } from '../../../supabase/functions/_shared/ukCheckoutPhone';
+describe('Step 2 mobile rule', () => {
+  it('accepts only 11-digit 07 mobiles', () => {
+    expect(isValidUkMobile('07960 123 456')).toBe(true);
+    expect(isValidUkMobile('+44 7960 123456')).toBe(true);
+    expect(isValidUkMobile('0790000000')).toBe(false);
+    expect(isValidUkMobile('08900000000')).toBe(false);
+    expect(isValidUkMobile('0890000000')).toBe(false);
+    expect(isValidUkMobile('079601234567')).toBe(false);
+  });
+});
