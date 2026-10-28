@@ -315,6 +315,23 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     })();
   }, []);
 
+  // Managers for the "Manager" filter (management roles only).
+  const [managers, setManagers] = useState<Agent[]>([]);
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase.from('admin_users') as any)
+        .select('id, user_id, first_name, last_name, email, role, is_active')
+        .in('role', ['admin', 'super_admin', 'sales_manager'])
+        .eq('is_active', true)
+        .order('first_name');
+      setManagers((data as Agent[]) || []);
+    })();
+  }, []);
+  const filterPeople = useMemo(
+    () => [...agents, ...managers.filter(m => !agents.some(a => a.id === m.id))],
+    [agents, managers],
+  );
+
 
   // Map admin_users.id <-> user_id (auth) for assignment writes / leaderboard reads
   const agentByAuthId = useMemo(() => {
@@ -328,9 +345,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   // Managers and office staff always pass; sales/sales_lead pass when their cap
   // flag is on.
   const { canReassign: canReassignAny, scope: reassignScope, teammateAdminUserIds } = useLeadRoutingPermission();
+  // Recontact downloads: admin and super admin only (no grants, no sales managers).
   const canExportCsv =
-    (currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager') &&
-    (userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager');
+    (currentRole === 'admin' || currentRole === 'super_admin') &&
+    (userRole === 'admin' || userRole === 'super_admin');
 
   const buildBaseQuery = useCallback(() => {
     const select =
@@ -639,7 +657,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       if (agentFilter === '__unassigned__') {
         list = list.filter((l) => !l.assigned_to);
       } else {
-        const a = agents.find(x => x.id === agentFilter);
+        const a = filterPeople.find(x => x.id === agentFilter);
         const authId = a?.user_id ?? null;
         list = list.filter((l) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
       }
@@ -713,7 +731,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
     });
     return list;
-  }, [leads, search, myOnly, currentUserId, currentAuthUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, statusPillSet, tags, leadTagMap]);
+  }, [leads, search, myOnly, currentUserId, currentAuthUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, filterPeople, statusPillSet, tags, leadTagMap]);
 
   const claimSourceLeads = useMemo(() => {
     let list = leads;
@@ -730,7 +748,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       if (agentFilter === '__unassigned__') {
         list = list.filter((l) => !l.assigned_to);
       } else {
-        const a = agents.find(x => x.id === agentFilter);
+        const a = filterPeople.find(x => x.id === agentFilter);
         const authId = a?.user_id ?? null;
         list = list.filter((l) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
       }
@@ -798,7 +816,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       }
     }
     return list;
-  }, [leads, search, agents, statusFilter, customerEmails, customerRegs, datePeriod, dateCustomRange, agentFilter, statusPillSet, tags, leadTagMap]);
+  }, [leads, search, agents, statusFilter, customerEmails, customerRegs, datePeriod, dateCustomRange, agentFilter, filterPeople, statusPillSet, tags, leadTagMap]);
 
   // When an agent actively works a recontact lead (calls, logs an outcome, sets
   // a callback, changes status, adds a note), auto-file it under their "My leads
@@ -1140,7 +1158,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     if (agentFilter !== 'all') {
       if (agentFilter === '__unassigned__') base = base.filter((l: any) => !l.assigned_to);
       else {
-        const a = agents.find(x => x.id === agentFilter);
+        const a = filterPeople.find(x => x.id === agentFilter);
         const authId = a?.user_id ?? null;
         base = base.filter((l: any) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
       }
@@ -1381,6 +1399,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
   const { canExportNewLeads: exportFilesAllowed, canSeeLeadSource } = useExportPermissions();
   const exportCsv = useCallback(async () => {
+    if (!canExportCsv) { toast.error('Only admins and super admins can download Recontact Leads.'); return; }
     if (!await requireNewLeadsExport()) return;
     if (!filteredLeads.length) {
       toast.error('Nothing to export', { description: 'There are no leads in the current view.' });
@@ -1456,7 +1475,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             {agentFilter !== 'all' && (
               <div className="pt-1">
                 <Badge className="bg-primary/10 text-primary border-primary/20 gap-1.5">
-                  Filtered to: {agentFilter === '__unassigned__' ? 'Unassigned' : agentLabel(agents.find(a => a.id === agentFilter))}
+                  Filtered to: {agentFilter === '__unassigned__' ? 'Unassigned' : agentLabel(filterPeople.find(a => a.id === agentFilter))}
                   <button
                     type="button"
                     className="ml-1 text-primary hover:text-primary/70"
@@ -1482,6 +1501,39 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               <Switch checked={myOnly} onCheckedChange={setMyOnly} />
               <span className="text-sm whitespace-nowrap">My leads only</span>
             </label>
+            {isManager && (
+              <>
+                <Select
+                  value={agents.some(a => a.id === agentFilter) || agentFilter === '__unassigned__' ? agentFilter : 'all'}
+                  onValueChange={setAgentFilter}
+                >
+                  <SelectTrigger className="h-9 w-[160px] text-sm" title="Show leads for one agent">
+                    <SelectValue placeholder="All agents" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All agents</SelectItem>
+                    <SelectItem value="__unassigned__">Unassigned</SelectItem>
+                    {agents.filter(a => a.role === 'sales' || a.role === 'sales_lead').map(a => (
+                      <SelectItem key={a.id} value={a.id}>{agentLabel(a)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={managers.some(m => m.id === agentFilter) ? agentFilter : 'all'}
+                  onValueChange={setAgentFilter}
+                >
+                  <SelectTrigger className="h-9 w-[160px] text-sm" title="Show leads held by one manager">
+                    <SelectValue placeholder="All managers" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All managers</SelectItem>
+                    {managers.map(m => (
+                      <SelectItem key={m.id} value={m.id}>{agentLabel(m)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </>
+            )}
             <div className="flex items-center gap-1.5">
               <UnifiedDateFilter
                 scope="signup"
@@ -1639,7 +1691,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 onClick={exportCsv}
                 className="shrink-0"
                 title="Download the current segment as a CSV file"
-               disabled={!exportFilesAllowed}>
+               disabled={!exportFilesAllowed || !canExportCsv}>
                 <Download className="h-4 w-4 mr-1" /> Export CSV
               </Button>
             )}
