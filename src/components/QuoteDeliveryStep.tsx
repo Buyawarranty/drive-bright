@@ -83,7 +83,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const [firstNameError, setFirstNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
-  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
   // Restore form fields from localStorage on mount
   useEffect(() => {
@@ -153,7 +152,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   };
 
   const handleSubmit = async () => {
-    setHasAttemptedSubmit(true);
     setFirstNameError('');
     setEmailError('');
     setPhoneError('');
