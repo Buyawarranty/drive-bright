@@ -1154,7 +1154,7 @@ html, body {
    ============================ */
 .mobile-quote-page {
   min-height: 100dvh;
-  padding-top: clamp(8px, 1.5dvh, 20px);
+  padding-top: clamp(16px, 2.5dvh, 28px);
   padding-bottom: calc(clamp(16px, 3dvh, 32px) + env(safe-area-inset-bottom));
 }
 
@@ -1182,7 +1182,7 @@ html, body {
 
 .mq-cta {
   min-height: clamp(52px, 7dvh, 64px);
-  margin-top: clamp(8px, 1.5dvh, 16px);
+  margin-top: clamp(14px, 2.2dvh, 22px);
 }
 
 .mq-trust-row {
@@ -1195,7 +1195,7 @@ html, body {
 
 /* Short devices: tighten everything, hide optional helpers */
 @media (max-height: 700px) {
-  .mobile-quote-page { padding-top: 6px; }
+  .mobile-quote-page { padding-top: 10px; }
   .mobile-quote-card { padding-top: 8px; padding-bottom: 12px; }
   .mq-stack { gap: 10px; }
   .mq-input { min-height: 48px; }
