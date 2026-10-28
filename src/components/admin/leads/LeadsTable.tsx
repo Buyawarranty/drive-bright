@@ -326,7 +326,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const handleToggleExpand = useCallback((leadId: string) => {
     setExpandedLead(prev => {
       const next = prev === leadId ? null : leadId;
-      if (next) void markLeadSeen(next, currentAdminId);
       return next;
     });
   }, [markLeadSeen, currentAdminId]);

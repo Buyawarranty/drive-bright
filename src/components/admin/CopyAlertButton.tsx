@@ -1,7 +1,9 @@
 import React from 'react';
 import { Copy, Check } from 'lucide-react';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 
 interface Props {
+  leadIds?: string[];
   /** Plain text placed on the clipboard. */
   text: string;
   /** Accessible label, e.g. "Copy stuck checkout alert". */
@@ -32,7 +34,7 @@ export const frameAlertText = (text: string, emoji?: string): string =>
  * text (name, reg, plan, price, phone — not just the number) so it can be
  * pasted straight into WhatsApp or any other message to the sales team.
  */
-export const CopyAlertButton: React.FC<Props> = ({ text, label, caption, className, emoji }) => {
+export const CopyAlertButton: React.FC<Props> = ({ text, label, caption, className, emoji, leadIds = [] }) => {
   const [copied, setCopied] = React.useState(false);
 
   const payload = frameAlertText(text, emoji);
@@ -47,9 +49,10 @@ export const CopyAlertButton: React.FC<Props> = ({ text, label, caption, classNa
       ta.value = payload;
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand('copy'); } catch { /* ignore */ }
+      try { if (!document.execCommand('copy')) { ta.remove(); return; } } catch { ta.remove(); return; }
       ta.remove();
     }
+    for (const id of new Set(leadIds)) void recordLeadAccess(id, 'phone_copy', 'alert_text');
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
   };

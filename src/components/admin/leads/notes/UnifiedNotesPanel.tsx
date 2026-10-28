@@ -27,6 +27,7 @@ import {
   useReservationCountdown,
 } from '@/hooks/useOpenLeadPoolReservation';
 import { Clock } from 'lucide-react';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 
 const NOTE_DRAFT_STORAGE_KEY_PREFIX = 'lead-quick-note-draft:';
 
@@ -75,6 +76,7 @@ const ReservationTimerBadge: React.FC<{ leadId: string }> = ({ leadId }) => {
 
 interface UnifiedNotesPanelProps {
   leadId: string;
+  auditOpen?: boolean;
   className?: string;
   compact?: boolean;
   /**
@@ -92,7 +94,9 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   className,
   compact = false,
   hidePoolOutcome: hidePoolOutcomeProp,
+  auditOpen = true,
 }) => {
+  useEffect(() => { if (auditOpen) void recordLeadAccess(leadId, 'lead_open', 'full_notes'); }, [leadId,auditOpen]);
   const { notes, loading, loadFailed, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart, isSaving: hookIsSaving } = useLeadQuickNotes(leadId);
   const draftStorageKey = `${NOTE_DRAFT_STORAGE_KEY_PREFIX}${leadId}`;
   const { isImpersonating, viewAsAgent } = useViewAs();

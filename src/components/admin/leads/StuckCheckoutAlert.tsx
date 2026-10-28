@@ -12,6 +12,7 @@ import { useIsManagement } from '@/hooks/useIsManagement';
 import { Button } from '@/components/ui/button';
 import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
 import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 
 const DISMISSED_IDS_KEY = 'stuck-checkout-alert-dismissed-ids';
 
@@ -384,6 +385,7 @@ export const StuckCheckoutAlert: React.FC = () => {
           <div className="flex items-center gap-1 shrink-0">
             <CopyAlertButton
               text={allText}
+              leadIds={live.flatMap(g => leadIds[g.head.id] ? [leadIds[g.head.id]] : [])}
               label="Copy all stuck checkout alerts"
               caption="Copy all"
               emoji="🔒"
@@ -488,7 +490,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                     )}
                     {phone && (
                       <button
-                        onClick={() => navigator.clipboard.writeText(phone).catch(() => {})}
+                        onClick={() => navigator.clipboard.writeText(phone).then(() => recordLeadAccess(leadIds[r.id], 'phone_copy', 'checkout_alert')).catch(() => {})}
                         className="p-1 rounded border border-red-200 bg-white hover:bg-red-50"
                         title="Copy phone number"
                         aria-label="Copy phone number"
@@ -498,6 +500,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                     )}
                     <CopyAlertButton
                       text={rowText(g)}
+                      leadIds={leadIds[r.id] ? [leadIds[r.id]] : []}
                       label="Copy this alert as text"
                       caption="Copy"
                       emoji="🔒"

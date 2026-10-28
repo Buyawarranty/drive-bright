@@ -8324,6 +8324,48 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_access_events: {
+        Row: {
+          action: string
+          actor_id: string
+          id: string
+          lead_id: string
+          occurred_at: string
+          source: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          id?: string
+          lead_id: string
+          occurred_at?: string
+          source: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          id?: string
+          lead_id?: string
+          occurred_at?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_access_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_access_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_access_requests: {
         Row: {
           approved_by: string | null

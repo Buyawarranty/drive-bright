@@ -4,6 +4,7 @@ import { X, VolumeX, Phone, Copy, Check, MessageCircle, UserCheck, Car } from 'l
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import type { NewLeadAlertData } from '@/hooks/useNewLeadAlert';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 
 /**
  * Purple bottom-left pop-up for freshly assigned leads. Sits beside the Live
@@ -83,7 +84,7 @@ const useMyName = () => {
   return name;
 };
 
-const CopyBtn: React.FC<{ value: string; label: string }> = ({ value, label }) => {
+const CopyBtn: React.FC<{ value: string; label: string; leadId?: string }> = ({ value, label, leadId }) => {
   const [done, setDone] = useState(false);
   return (
     <button
@@ -91,6 +92,7 @@ const CopyBtn: React.FC<{ value: string; label: string }> = ({ value, label }) =
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(value);
+          if (leadId) void recordLeadAccess(leadId, 'phone_copy', 'corner_popup');
           setDone(true);
           toast.success(`${label} copied`, { duration: 1500 });
           setTimeout(() => setDone(false), 1500);
@@ -171,7 +173,7 @@ const Card: React.FC<{ lead: NewLeadAlertData; owner: string; onClose: () => voi
             <a href={`tel:${phone}`} className={`flex-1 inline-flex items-center gap-1.5 rounded-md bg-white ${phoneTheme} font-bold px-2.5 py-1.5 tabular-nums underline-offset-2 hover:underline min-w-0`}>
               <Phone className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{phone}</span>
             </a>
-            <CopyBtn value={phone} label="Phone number" />
+            <CopyBtn value={phone} label="Phone number" leadId={lead.id} />
             <a
               href={`https://wa.me/${toWhatsApp(phone)}`}
               target="_blank"
@@ -201,7 +203,7 @@ const Card: React.FC<{ lead: NewLeadAlertData; owner: string; onClose: () => voi
           <button
             type="button"
             onClick={async () => {
-              try { await navigator.clipboard.writeText(copyAll); toast.success('Lead details copied', { duration: 1500 }); }
+              try { await navigator.clipboard.writeText(copyAll); if (phone) void recordLeadAccess(lead.id, 'phone_copy', 'corner_popup_all'); toast.success('Lead details copied', { duration: 1500 }); }
               catch { toast.error('Failed to copy'); }
             }}
             className="text-xs font-semibold rounded-md bg-white/15 hover:bg-white/25 px-2 py-1 shrink-0"

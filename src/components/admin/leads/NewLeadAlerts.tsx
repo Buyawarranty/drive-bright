@@ -11,6 +11,7 @@ import { useIsRepeatCustomer } from '@/hooks/useRepeatCustomers';
 import { toast } from 'sonner';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { NewLeadCornerPopup } from './NewLeadCornerPopup';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 
 const formatUKPhoneShort = (p: string) => {
   const d = p.replace(/[^\d+]/g, '');
@@ -389,7 +390,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
     e.stopPropagation();
     if (!lead.phone) return;
     dialWithZoiper(lead.phone, { leadId: lead.id, leadType: 'sales_lead' });
-    navigator.clipboard?.writeText(lead.phone.replace(/[^\d+]/g, '')).catch(() => {});
+    navigator.clipboard?.writeText(lead.phone.replace(/[^\d+]/g, '')).then(() => recordLeadAccess(lead.id, 'phone_copy', 'alert_dial_clipboard')).catch(() => {});
     toast.success('Dialling via Zoiper', {
       duration: 2500,
       description: "If Zoiper didn't open, the number is on your clipboard.",
@@ -401,6 +402,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
     if (!lead.phone) return;
     try {
       await navigator.clipboard.writeText(lead.phone);
+      void recordLeadAccess(lead.id, 'phone_copy', 'new_lead_alert');
       setCopiedPhone(true);
       toast.success('Phone number copied', { duration: 1500 });
       setTimeout(() => setCopiedPhone(false), 2000);
@@ -423,6 +425,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
     const text = detailRows.map(([k, v]) => `${k}\t${v}`).join('\n');
     try {
       await navigator.clipboard.writeText(text);
+      if (lead.phone) void recordLeadAccess(lead.id, 'phone_copy', 'new_lead_alert_all');
       setCopiedAll(true);
       toast.success('Lead details copied', { duration: 1500 });
       setTimeout(() => setCopiedAll(false), 2000);

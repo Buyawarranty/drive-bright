@@ -1,5 +1,6 @@
 import React, { memo, useState, useCallback, useMemo, useEffect } from 'react';
 import { PaidLeadLockOverlay } from './PaidLeadLockOverlay';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 import { formatLeadDateUK } from '@/lib/leadFeedDate';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { CommissionClaimDialog } from './CommissionClaimDialog';
@@ -337,16 +338,17 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null; disabled?: b
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(phone);
+      void recordLeadAccess(leadId, 'phone_copy', 'lead_row');
       setCopied(true);
       toast.success('Phone number copied', { duration: 1500 });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('Failed to copy');
     }
-  }, [phone, disabled]);
+  }, [phone, leadId, disabled]);
 
   return (
-    <span className={cn("inline-flex items-center gap-1 whitespace-nowrap", disabled && "pointer-events-none opacity-50")}>
+    <span onCopy={() => { void recordLeadAccess(leadId, 'phone_copy', 'lead_row_selection'); }} className={cn("inline-flex items-center gap-1 whitespace-nowrap", disabled && "pointer-events-none opacity-50")}>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
           <button
