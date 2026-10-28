@@ -2,7 +2,7 @@
 
 ## Step 3 sticky pay-in-full saving
 - [x] Show genuine savings below the old £30 display threshold, including £25; guard sticky labels against £1 without changing payable prices.
-- [ ] Verify focused saving tests and the customer journey comparison.
+- [x] Nineteen pricing checks pass; real quote journey shows £468 monthly total, £422 in full and £46 saving in Step 3 and Step 4. Phone sticky saving visible without overflow; preview build OK, nothing published.
 
 ## Checkout phone validation
 - [x] Confirmed two 19:24 Payment Assist attempts had ten-digit UK mobiles; shared Step 2/Step 4/server validation now rejects incomplete mobiles consistently, retaining valid saved numbers and the optional Step 2 variant. Example is 07960 123 456; prices and routing unchanged.
