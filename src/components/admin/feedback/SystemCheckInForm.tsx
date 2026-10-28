@@ -25,7 +25,7 @@ export const SCREEN_OPTIONS = [
   'Quotes & Orders',
   'Customers',
   'Sales Scoreboard',
-  'Recontact Leads',
+  'Recontacted Leads',
   'Timesheets',
   'Claims',
   'Other screen',

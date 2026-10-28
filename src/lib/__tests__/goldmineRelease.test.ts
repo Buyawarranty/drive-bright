@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { canReleaseGoldmineLeads, isValidGoldmineRelease } from '../goldmineRelease';
 
-describe('Goldmine releases', () => {
+describe('Recontacted lead releases', () => {
   it('limits each release to 100, not 101 or fractional leads', () => {
     expect(isValidGoldmineRelease(100)).toBe(true);
     expect(isValidGoldmineRelease(101)).toBe(false);

@@ -57,7 +57,7 @@ export function buildRecommendations(s: SalesSnapshot): Recommendation[] {
     recs.push({
       priority: 'high',
       title: `Behind target pace by ${gbp(g.gap)}`,
-      detail: `You need about ${gbp(g.neededPerDay)} a day for the remaining ${g.daysLeft} days${g.salesNeeded ? ` (around ${g.salesNeeded} more sales at the current ${gbp(g.avgSale)} average)` : ''}. Focus agents on callbacks, warm recontact leads and abandoned carts first.`,
+      detail: `You need about ${gbp(g.neededPerDay)} a day for the remaining ${g.daysLeft} days${g.salesNeeded ? ` (around ${g.salesNeeded} more sales at the current ${gbp(g.avgSale)} average)` : ''}. Focus agents on callbacks, warm recontacted leads and abandoned carts first.`,
     });
   } else {
     recs.push({ priority: 'low', title: `Ahead of target pace by ${gbp(-g.gap)}`, detail: `Projected month: ${gbp(g.projected)}. Keep the current lead flow and consider stretching the goal.` });

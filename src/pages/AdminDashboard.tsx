@@ -426,6 +426,7 @@ const AdminDashboard = () => {
   const TAB_ALIASES: Record<string, string> = {
     'golden-leads': 'recontact-leads',
     'goldmine-leads': 'recontact-leads',
+    'recontacted-leads': 'recontact-leads',
     'retention': 'renewals',
     'renewals-sandbox': 'renewals',
     'leads-per-agent': 'new-leads',
@@ -1207,7 +1208,7 @@ const AdminDashboard = () => {
         if (!['admin', 'super_admin', 'sales_manager'].includes(effectiveUserRole || '')) {
           return (
             <div className="p-6 text-sm text-muted-foreground">
-              Recontact Leads is for management only.
+              Recontacted Leads is for management only.
             </div>
           );
         }

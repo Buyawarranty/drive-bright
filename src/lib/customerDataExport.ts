@@ -18,7 +18,7 @@ export async function requireCustomerDataExport(): Promise<boolean> {
   return false;
 }
 
-/** New Leads / Recontact Leads exports need the dedicated new-leads export grant. */
+/** New Leads / Recontacted Leads exports need the dedicated new-leads export grant. */
 export async function requireNewLeadsExport(): Promise<boolean> {
   if (await checkRpc('can_export_new_leads')) return true;
   toast.error('New leads export access is required. Ask an admin or super admin.');
