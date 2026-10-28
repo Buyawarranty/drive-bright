@@ -1,5 +1,6 @@
 import { useExportPermissions } from '@/hooks/useExportPermissions';
 import { requireNewLeadsExport } from '@/lib/customerDataExport';
+import { canReleaseGoldmineLeads } from '@/lib/goldmineRelease';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Lead, AdminUser, LeadTag, LeadPriority } from '@/hooks/useLeads';
@@ -1245,6 +1246,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   }, [currentUserId, reassignFromId, reassignToId, agents]);
 
   const claimBulk = useCallback(async () => {
+    if (!canReleaseGoldmineLeads(currentRole) || !canReleaseGoldmineLeads(userRole)) { toast.error('Only admins can release Goldmine leads'); return; }
     if (!currentUserId) { toast.error('Not signed in'); return; }
     if (!assignTargetAdminId) { toast.error('Pick an agent to assign to'); return; }
     if (isBlocked) {
@@ -1258,144 +1260,26 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       toast.error('Claim limit reached', { description: reason });
       return;
     }
-    // Candidate pool:
-    //  - Self-claim normally honours the current view (filteredLeads), including
-    //    the 48h collision safeguard so two agents don't fight over the same lead.
-    //  - Sales agents are loaded with "My leads only" on by default. That view
-    //    intentionally contains only leads they already own, and the claim step
-    //    skips already-owned leads. When that switch is on, ignore only that
-    //    display restriction for claiming so Freddie / sales@ can still take
-    //    unassigned recontact leads from the shared pool.
-    //  - Manager assigning to another agent: this IS an explicit override, so
-    //    we pull from the raw `leads` list with only the customer-exclusion
-    //    filter applied. Otherwise the collision safeguard silently hides
-    //    leads that were touched recently and the agent gets far fewer than
-    //    the requested batch (e.g. "Assign 100" only assigning 38).
-    const targetAuthId = agents.find(a => a.id === assignTargetAdminId)?.user_id ?? null;
-    const shouldIgnoreMyOnlyForClaim = assigningToSelf && myOnly && currentRole === 'sales';
-    const basePool = assigningToSelf
-      ? (shouldIgnoreMyOnlyForClaim ? claimSourceLeads : filteredLeads)
-      : leads.filter((l: any) => {
-          const e = (l.email || '').trim().toLowerCase();
-          const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
-          if (e && customerEmails.has(e)) return false;
-          if (r && customerRegs.has(r)) return false;
-          return true;
-        });
-    const candidates = [...basePool]
-      .filter(l => l.assigned_to !== assignTargetAdminId && (!targetAuthId || l.assigned_to !== targetAuthId))
-      .sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime())
-      .slice(0, Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday));
-    if (!candidates.length) {
-      toast.error('Nothing to claim', { description: 'No claimable leads available to assign.' });
-      return;
-    }
     setClaiming(true);
     try {
-      const now = new Date().toISOString();
-      let claimedIds: string[] = [];
-
-      if (assigningToSelf) {
-        // Server-side atomic self-claim. Avoids the fragile multi-request client
-        // update loop that was intermittently failing with "Failed to fetch"
-        // for sales agents (sales@, freddie). Runs one round-trip, writes audit
-        // rows server-side with the correct columns.
-        //
-        // Batched into chunks of 25 with a retry — some sales users (freddie)
-        // were still hitting a browser-level "TypeError: Failed to fetch" when
-        // the single request took too long or was cut off by a flaky
-        // connection. Small chunks + retry recovers cleanly.
-        const ids = candidates.map(l => l.id);
-        const chunks: string[][] = [];
-        for (let i = 0; i < ids.length; i += 25) chunks.push(ids.slice(i, i + 25));
-
-        const callRpc = async (chunk: string[]) => {
-          let lastErr: any = null;
-          for (let attempt = 0; attempt < 3; attempt++) {
-            try {
-              const { data: rows, error } = await (supabase.rpc as any)(
-                'claim_recontact_leads_self',
-                { _lead_ids: chunk },
-              );
-              if (error) throw error;
-              return ((rows as any[]) || []).map(r => r.claimed_id).filter(Boolean);
-            } catch (err: any) {
-              lastErr = err;
-              const msg = String(err?.message || '');
-              // Only retry on transient network failures.
-              if (!/Failed to fetch|NetworkError|network|timeout/i.test(msg)) throw err;
-              await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
-            }
-          }
-          throw lastErr;
-        };
-
-        for (const chunk of chunks) {
-          const got = await callRpc(chunk);
-          claimedIds.push(...got);
-        }
-      } else {
-        // Manager assigning to another agent — keep the existing per-owner
-        // optimistic path so we don't overwrite leads that changed hands.
-        const groups = new Map<string | null, string[]>();
-        candidates.forEach(l => {
-          const key = l.assigned_to ?? null;
-          const arr = groups.get(key) || [];
-          arr.push(l.id);
-          groups.set(key, arr);
-        });
-        for (const [prevOwner, ids] of groups.entries()) {
-          let q = (supabase.from('sales_leads') as any)
-            // Reset status to 'new' (displayed as "Not spoken to") so the new
-            // agent starts on a clean slate rather than inheriting a stale
-            // status the previous owner left weeks/months ago. Stamp
-            // last_claimed_at so the lead stays visible in Recontact (the
-            // base query keeps status='new' leads that have last_claimed_at).
-            .update({ assigned_to: assignTargetAdminId, assigned_at: now, status: 'new', last_claimed_at: now })
-            .in('id', ids);
-          q = prevOwner == null ? q.is('assigned_to', null) : q.eq('assigned_to', prevOwner);
-          const { data: updated, error } = await q.select('id');
-          if (error) throw error;
-          (updated || []).forEach((r: any) => claimedIds.push(r.id));
-        }
-        const claimedSet = new Set(claimedIds);
-        const claimedCandidates = candidates.filter(l => claimedSet.has(l.id));
-        const auditRows = claimedCandidates.map(l => ({
-          lead_id: l.id,
-          assigned_to_id: assignTargetAdminId,
-          assigned_by: currentUserId,
-          assignment_type: 'recontact_bulk_assign',
-          reason: `Bulk assign to ${targetLabel}`,
-        }));
-        await (supabase.from('lead_assignment_audit') as any).insert(auditRows).then(() => {}, () => {});
-      }
-
-      const stolenCount = candidates.length - claimedIds.length;
-      if (!claimedIds.length) {
-        toast.error('Nothing claimed', {
-          description: 'Another agent claimed these leads just now. Refresh to see the latest.',
-        });
+      const { data, error } = await (supabase.rpc as any)('assign_recontact_leads_to_agent', {
+        _agent_id: assignTargetAdminId,
+        _batch_size: Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday),
+      });
+      if (error) throw error;
+      const result = Array.isArray(data) ? data[0] : data;
+      if (result?.blocked_reason) {
+        toast.error('Release refused', { description: result.blocked_reason });
         return;
       }
-
-      const claimedSet = new Set(claimedIds);
-      setLeads(prev => prev.map(l => claimedSet.has(l.id) ? ({ ...l, assigned_to: assignTargetAdminId, assigned_at: now, status: 'new' } as any) : l));
-      if (assigningToSelf) setClaimedToday(c => c + claimedIds.length);
-      const descParts: string[] = [];
-      if (assigningToSelf) descParts.push(`${Math.max(0, remainingToday - claimedIds.length)} remaining today.`);
-      if (stolenCount > 0) descParts.unshift(`${stolenCount} skipped (claimed by another agent).`);
-      toast.success(
-        assigningToSelf
-          ? `Claimed ${claimedIds.length} lead${claimedIds.length === 1 ? '' : 's'}`
-          : `Assigned ${claimedIds.length} lead${claimedIds.length === 1 ? '' : 's'} to ${targetLabel}`,
-        { description: descParts.join(' ') || undefined },
-      );
+      toast.success(`Released ${result?.assigned_count ?? 0} Goldmine leads to ${targetLabel}`);
+      await load();
     } catch (e: any) {
-      toast.error('Bulk claim failed', { description: e.message });
+      toast.error('Release failed', { description: e.message });
     } finally {
       setClaiming(false);
     }
-  }, [currentUserId, currentRole, filteredLeads, claimSourceLeads, leads, agents, customerEmails, customerRegs, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, myOnly]);
+  }, [currentRole, userRole, currentUserId, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, load]);
 
   const { canExportNewLeads: exportFilesAllowed, canSeeLeadSource } = useExportPermissions();
   const exportCsv = useCallback(async () => {
@@ -1626,7 +1510,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 </div>
               ))}
             </div>
-            {isManager && (
+            {canReleaseGoldmineLeads(currentRole) && canReleaseGoldmineLeads(userRole) && (
               <Select value={assignTargetId} onValueChange={setAssignTargetId}>
                 <SelectTrigger className="h-9 w-[170px] text-sm shrink-0" title="Assign the claimed leads to this agent">
                   <SelectValue />
@@ -1641,24 +1525,24 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 </SelectContent>
               </Select>
             )}
-            <Button
+            {canReleaseGoldmineLeads(currentRole) && canReleaseGoldmineLeads(userRole) && <Button
               variant="secondary"
               size="sm"
               onClick={claimBulk}
               disabled={claiming || remainingToday <= 0 || !assignTargetAdminId}
               className="shrink-0"
               title={assigningToSelf
-                ? `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the oldest leads in this view to yourself. Daily cap ${BULK_CLAIM_MAX_PER_DAY}.`
-                : `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the oldest leads in this view to ${targetLabel}.`}
+                ? `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the newest eligible Goldmine leads to yourself. Daily cap ${BULK_CLAIM_MAX_PER_DAY}.`
+                : `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the newest eligible Goldmine leads to ${targetLabel}.`}
             >
               {claiming
                 ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                 : <HandCoins className="h-4 w-4 mr-1" />}
-              {assigningToSelf ? 'Claim' : 'Assign'} {Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday)}
+              Release {Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday)}
               {assigningToSelf && (
                 <span className="ml-1 text-xs text-muted-foreground">({remainingToday} left today)</span>
               )}
-            </Button>
+            </Button>}
             {isManager && (
               <Button
                 variant="outline"
