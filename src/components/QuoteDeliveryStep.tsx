@@ -56,7 +56,7 @@ const QuoteStepHeading = ({ onBack }: { onBack: () => void }) => (
     <span aria-hidden="true" className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-brand-orange/10 text-3xl sm:mb-3 sm:h-14 sm:w-14">
       🚀
     </span>
-    <h1 className="text-[22px] font-bold leading-tight text-foreground sm:text-[28px]">
+    <h1 className="mx-auto max-w-[280px] text-[22px] font-bold leading-tight text-foreground sm:-mx-16 sm:max-w-none sm:text-[28px]">
       Only 3 quick details for your best price
     </h1>
     <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
