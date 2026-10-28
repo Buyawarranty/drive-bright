@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Lock, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MIN_DISPLAYED_SAVING } from '@/lib/pricing/payInFull';
 
 interface DesktopStickyBarProps {
   selectedPayment: 'monthly' | 'full';
@@ -153,7 +154,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
               <span className="block text-[15px] text-[#3e3e3e] font-semibold">
                 Pay in full <strong className="text-[#161616] text-[16px]">£{fullPrice}</strong>
               </span>
-              {savings > 0 && (
+              {savings >= MIN_DISPLAYED_SAVING && (
                 <span className="block text-[14px] text-[#1ca36f] font-bold mt-0.5">Save £{savings} vs monthly</span>
               )}
             </span>

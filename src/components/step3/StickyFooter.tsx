@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowRight, Lock, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { payInFullSaving, payInFullTotal, twelvePaymentTotal } from '@/lib/pricing/payInFull';
+import { MIN_DISPLAYED_SAVING, payInFullTotal, twelvePaymentTotal } from '@/lib/pricing/payInFull';
 import { WEBSITE_NET_FLOOR_BY_PERIOD, payInFullFloorFromTermFloor } from '@/lib/pricing/netFloor';
 import type { PaymentPeriod } from '@/lib/pricingMatrix';
 
@@ -128,7 +128,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               <span className="text-2xl md:text-3xl font-extrabold text-[#0BA360]">£{payInFullDiscounted}</span>
             </div>
             <p className="text-[13px] md:text-sm font-semibold text-gray-900 mt-1">Pay in full</p>
-            {stripeSavings > 0 && (
+            {stripeSavings >= MIN_DISPLAYED_SAVING && (
               <p className="text-[11px] md:text-xs text-gray-700 flex items-center gap-1 mt-0.5">
                 <Tag className="w-3 h-3" />
                 Save £{stripeSavings}
