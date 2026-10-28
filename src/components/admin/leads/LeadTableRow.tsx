@@ -348,7 +348,7 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null; disabled?: b
   }, [phone, leadId, disabled]);
 
   return (
-    <span className={cn("inline-flex items-center gap-1 whitespace-nowrap", disabled && "pointer-events-none opacity-50")}>
+    <span onCopy={() => { void recordLeadAccess(leadId, 'phone_copy', 'lead_row_selection'); }} className={cn("inline-flex items-center gap-1 whitespace-nowrap", disabled && "pointer-events-none opacity-50")}>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
           <button

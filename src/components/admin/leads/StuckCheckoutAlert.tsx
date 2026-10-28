@@ -385,6 +385,7 @@ export const StuckCheckoutAlert: React.FC = () => {
           <div className="flex items-center gap-1 shrink-0">
             <CopyAlertButton
               text={allText}
+              leadIds={live.flatMap(g => leadIds[g.head.id] ? [leadIds[g.head.id]] : [])}
               label="Copy all stuck checkout alerts"
               caption="Copy all"
               emoji="🔒"
@@ -499,6 +500,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                     )}
                     <CopyAlertButton
                       text={rowText(g)}
+                      leadIds={leadIds[r.id] ? [leadIds[r.id]] : []}
                       label="Copy this alert as text"
                       caption="Copy"
                       emoji="🔒"

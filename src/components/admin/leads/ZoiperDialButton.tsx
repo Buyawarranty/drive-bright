@@ -5,6 +5,7 @@ import { Phone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { dialWithZoiper, normalizeDialNumber, type DialWithZoiperOptions } from '@/utils/zoiperDial';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 
 interface ZoiperDialButtonProps extends DialWithZoiperOptions {
   phone: string;
@@ -52,7 +53,7 @@ export const ZoiperDialButton: React.FC<ZoiperDialButtonProps> = ({
     dialWithZoiper(phone, opts);
     // Copy to clipboard as a safety net in case Zoiper isn't installed / registered.
     let copied = false;
-    try { await navigator.clipboard.writeText(number); copied = true; } catch { /* noop */ }
+    try { await navigator.clipboard.writeText(number); copied = true; void recordLeadAccess(opts.leadId, 'phone_copy', 'dial_clipboard'); } catch { /* noop */ }
     toast.success(`Dialling ${number} via Zoiper`, {
       duration: 3500,
       description: copied

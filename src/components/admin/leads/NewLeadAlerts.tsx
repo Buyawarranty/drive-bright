@@ -390,7 +390,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
     e.stopPropagation();
     if (!lead.phone) return;
     dialWithZoiper(lead.phone, { leadId: lead.id, leadType: 'sales_lead' });
-    navigator.clipboard?.writeText(lead.phone.replace(/[^\d+]/g, '')).catch(() => {});
+    navigator.clipboard?.writeText(lead.phone.replace(/[^\d+]/g, '')).then(() => recordLeadAccess(lead.id, 'phone_copy', 'alert_dial_clipboard')).catch(() => {});
     toast.success('Dialling via Zoiper', {
       duration: 2500,
       description: "If Zoiper didn't open, the number is on your clipboard.",
