@@ -844,6 +844,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         && (r === 'admin' || r === 'super_admin' || (userPermissions as any)?.['tab_lead-count'] === true);
       if (!ok) base = base.filter(t => t.id !== 'lead-count');
     }
+    // Recontact Leads: management only (admin, super_admin, sales_manager).
+    if (!['admin', 'super_admin', 'sales_manager'].includes(userRole || '')) base = base.filter(t => t.id !== 'recontact-leads');
     base = base.filter(t => !['growth-sales', 'growth-leads', 'growth-marketing', 'growth-branding'].includes(t.id));
     if (!workstreamFlags) return base;
     return base.filter(t => {
