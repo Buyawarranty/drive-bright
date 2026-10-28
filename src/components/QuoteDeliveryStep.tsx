@@ -41,7 +41,7 @@ interface QuoteDeliveryStepProps {
 }
 
 const QuoteStepHeading = ({ onBack }: { onBack: () => void }) => (
-  <header className="relative mb-4 pt-3 text-center sm:mb-5 sm:pt-4">
+  <header className="relative mb-4 pt-0 text-center sm:mb-5 sm:pt-1">
     <Button
       type="button"
       variant="ghost"

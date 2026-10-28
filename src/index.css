@@ -1154,7 +1154,7 @@ html, body {
    ============================ */
 .mobile-quote-page {
   min-height: 100dvh;
-  padding-top: clamp(16px, 2.5dvh, 28px);
+  padding-top: clamp(8px, 1.2dvh, 16px);
   padding-bottom: calc(clamp(16px, 3dvh, 32px) + env(safe-area-inset-bottom));
 }
 
