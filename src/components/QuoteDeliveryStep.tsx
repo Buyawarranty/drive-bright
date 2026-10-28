@@ -859,7 +859,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               )}
             </div>
             {(phoneError || (phone && !isValidPhone)) ? (
-              <p className="text-red-500 text-xs mt-1.5">
+              <p className="text-red-500 text-xs font-bold mt-1.5">
                 {phoneError || UK_PHONE_HINT}
               </p>
             ) : (

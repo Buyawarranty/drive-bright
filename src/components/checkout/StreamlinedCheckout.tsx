@@ -2835,7 +2835,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   )}
                 </div>
                 {(fieldErrors.phone || (customerData.phone?.trim() && !isValidCheckoutPhone(customerData.phone))) && (
-                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                  <p className="text-destructive text-sm font-bold mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {fieldErrors.phone || UK_PHONE_HINT}
                   </p>
