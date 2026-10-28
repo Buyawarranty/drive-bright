@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { withBackgroundPriority } from '@/lib/requestQueue';
 import { consumeAlertSound } from '@/lib/alertSoundBudget';
+import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
+import { canOpenFailedPaymentPanel, canSeeFailedPaymentAlert } from '@/lib/failedPaymentAccess';
 
 interface StruggleAlert {
   id: string;
@@ -147,8 +149,15 @@ const playAlertBeep = () => {
 };
 
 export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
+  if (!canOpenFailedPaymentPanel(userRole)) return null;
+  return <OwnedPaymentFailedLeadsPanel key={userRole} userRole={userRole} />;
+};
+
+const OwnedPaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
   const isSuperAdmin = userRole === 'super_admin';
   const [alerts, setAlerts] = useState<StruggleAlert[]>([]);
+  const [leadIds, setLeadIds] = useState<Record<string, string>>({});
+  const canShowLead = usePopupLeadOwnership(Object.values(leadIds));
   const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [muted, setMuted] = useState<boolean>(() => {
@@ -203,11 +212,24 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       return data;
     });
     const rows = (data as StruggleAlert[]) || [];
+    const resolved = await Promise.all(rows.map(async row => {
+      const { data, error } = await supabase.rpc('find_lead_owner_by_contact', {
+        _email: row.customer_email || null,
+        _phone9: (row.customer_phone || '').replace(/\D/g, '').slice(-9) || null,
+      });
+      return !error && data?.[0]?.id ? [row.id, data[0].id] : null;
+    }));
+    setLeadIds(Object.fromEntries(resolved.filter((entry): entry is string[] => entry !== null)));
+    setAlerts(rows);
+  }, []);
+
+  const visibleAlerts = alerts.filter(a => canSeeFailedPaymentAlert(userRole, canShowLead(leadIds[a.id])));
+  useEffect(() => {
     // Beep once per customer per dedupe window — never again for the same person
     // signalling repeatedly minutes apart.
     let hasNew = false;
     const now = Date.now();
-    for (const g of groupAlerts(rows)) {
+    for (const g of groupAlerts(visibleAlerts)) {
       if (g.ids.every((id) => hiddenIds.has(id))) continue;
       const key = customerKey(g.primary);
       const last = seenKeysRef.current.get(key);
@@ -215,8 +237,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       seenKeysRef.current.set(key, now);
     }
     if (hasNew && !muted) playAlertBeep();
-    setAlerts(rows);
-  }, [muted, hiddenIds]);
+  }, [visibleAlerts, muted, hiddenIds]);
 
 
   useEffect(() => {
@@ -250,6 +271,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
   }, [fetchActive]);
 
   const claim = async (ids: string[]) => {
+    if (!ids.every(id => visibleAlerts.some(a => a.id === id))) return;
     if (!currentAdminId) {
       toast.error('Unable to identify you — please refresh and try again');
       return;
@@ -281,7 +303,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     );
   };
 
-  const groups = groupAlerts(alerts.filter((a) => !hiddenIds.has(a.id)));
+  const groups = groupAlerts(visibleAlerts.filter((a) => !hiddenIds.has(a.id)));
   if (groups.length === 0) return null;
 
 
