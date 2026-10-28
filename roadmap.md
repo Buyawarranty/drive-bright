@@ -135,3 +135,6 @@
 - [x] Customer Management: "Expired" status filter; hidden from default view; grey badge
 - [x] Renewals queue includes expired policies in recently_expired / all_renewals segments
 - [x] Build OK; memory saved
+
+## Step 4 cover summary rows
+- [x] Review & Pay summary now lists Cover duration, Claim limit, Excess, Labour rate, Parts covered and No. of claims (Unlimited) on both phone and desktop layouts; prices, cover terms, claim limits and routing unchanged. Verified live on 1280px and 390px viewports. Nothing published.
