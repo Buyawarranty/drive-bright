@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { normalizeCheckoutPhone } from "../_shared/ukCheckoutPhone.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -334,6 +335,10 @@ serve(async (req) => {
       hasOriginalStreet: !!(customerData.address_line_1 || customerData.street)
     });
 
+    // Send Bumper a clean 11-digit UK number (e.g. 07960123456); same value in signature and request
+    const rawBumperMobile = String(customerData.phone || customerData.mobile || "");
+    const bumperMobile = normalizeCheckoutPhone(rawBumperMobile) || rawBumperMobile;
+
     // Create payload for signature generation (with simple URLs)
     const signaturePayload = {
       amount: totalAmount.toString(),
@@ -344,7 +349,7 @@ serve(async (req) => {
       first_name: customerData.first_name || "",
       last_name: customerData.last_name || "",
       email: customerData.email || "",
-      mobile: customerData.phone || customerData.mobile || "",
+      mobile: bumperMobile,
       vehicle_reg: customerData.vehicle_reg || vehicleData.regNumber || "",
       flat_number: customerFlatNumber,
       building_name: customerBuildingName,
@@ -371,7 +376,7 @@ serve(async (req) => {
       first_name: customerData.first_name || "",
       last_name: customerData.last_name || "",
       email: customerData.email || "",
-      mobile: customerData.phone || customerData.mobile || "",
+      mobile: bumperMobile,
       vehicle_reg: customerData.vehicle_reg || vehicleData.regNumber || "",
       // Address fields with proper defaults (Bumper requires non-empty town)
       flat_number: customerFlatNumber,

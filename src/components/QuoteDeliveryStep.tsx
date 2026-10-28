@@ -174,7 +174,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       // In variant B the phone is optional, so don't block submission.
       if (!isVariantB) setPhoneError('Please enter your phone number');
     } else if (!isValidPhone) {
-      setPhoneError('Please enter a valid UK phone number');
+      setPhoneError(`Please enter a full UK phone number — mobiles have 11 digits, for example ${UK_PHONE_EXAMPLE}`);
     }
     
     if (!isFormValid) return;
@@ -860,7 +860,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </div>
             {(phoneError || (phone && !isValidPhone)) ? (
               <p className="text-red-500 text-xs mt-1.5">
-                {phoneError || 'Please enter a valid UK phone number'}
+                {phoneError || `Please enter a full UK phone number — mobiles have 11 digits, for example ${UK_PHONE_EXAMPLE}`}
               </p>
             ) : (
               <p className="hidden sm:block text-gray-500 mt-1.5 text-sm">
