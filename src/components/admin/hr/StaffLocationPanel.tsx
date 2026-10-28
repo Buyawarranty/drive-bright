@@ -50,6 +50,7 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone; from?: string; 
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
   const [reviewOnly, setReviewOnly] = useState(false);
+  const [fullHistory, setFullHistory] = useState(false);
   const [computers, setComputers] = useState<Map<string, number>>(new Map());
   const staffKey = staffIds?.join(',');
 
@@ -57,8 +58,8 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone; from?: string; 
     setLoading(true);
     const from = new Date();
     from.setDate(from.getDate() - rangeDays);
-    const fromDate = selectedFrom || from.toISOString().slice(0, 10);
-    const toDate = selectedTo || new Date().toISOString().slice(0, 10);
+    const fromDate = fullHistory ? '2000-01-01' : selectedFrom || from.toISOString().slice(0, 10);
+    const toDate = fullHistory ? new Date().toISOString().slice(0, 10) : selectedTo || new Date().toISOString().slice(0, 10);
     try {
       const all: LocationRow[] = [];
       if (staffIds?.length === 0) { setRows([]); return; }
@@ -89,7 +90,7 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone; from?: string; 
     const timer = setInterval(() => { if (!document.hidden) void load(); }, 30000);
     return () => clearInterval(timer);
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [rangeDays, selectedFrom, selectedTo, staffKey]);
+  }, [rangeDays, selectedFrom, selectedTo, staffKey, fullHistory]);
 
   const name = (row: LocationRow) => {
     const u = staff[row.admin_user_id];
@@ -128,7 +129,7 @@ export const StaffLocationPanel: React.FC<{ zone?: CrmAuditZone; from?: string; 
   return (
     <div className="space-y-4">
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-      <div className="flex flex-wrap items-center gap-3 border-l-4 border-destructive pl-3"><span className="font-semibold">{[...reviews.values()].filter(value => value.review).length} accounts with multiple recorded networks, locations or device types</span><Button size="sm" variant={reviewOnly ? 'default' : 'outline'} onClick={() => setReviewOnly(value => !value)} aria-pressed={reviewOnly}>Review flagged accounts</Button></div>
+      <div className="flex flex-wrap items-center gap-3 border-l-4 border-destructive pl-3"><span className="font-semibold">{[...reviews.values()].filter(value => value.review).length} accounts with multiple recorded networks, locations or device types</span><Button size="sm" variant={reviewOnly ? 'default' : 'outline'} onClick={() => setReviewOnly(value => !value)} aria-pressed={reviewOnly}>Review flagged accounts</Button><Button size="sm" variant={fullHistory ? 'default' : 'outline'} onClick={() => setFullHistory(value => !value)} aria-pressed={fullHistory}>{fullHistory ? 'Showing all history' : 'Show all history'}</Button></div>
       {(() => {
         const people = [...new Set(rows.map(r => r.admin_user_id))].map(id => ({ id, row: rows.find(r => r.admin_user_id === id)!, review: reviews.get(id)! }))
           .map(p => ({ ...p, pcs: computers.get(p.row.email.toLowerCase()) || 0 }))
