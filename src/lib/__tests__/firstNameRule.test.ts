@@ -32,7 +32,7 @@ describe('name boxes never take digits', () => {
   });
   it('keeps the letters and drops the digits from a mixed entry', () => {
     expect(sanitizeNameInput('Jo2')).toBe('Jo');
-    expect(sanitizeNameInput('J0hn Sm1th')).toBe('John Smith');
+    expect(sanitizeNameInput('J0hn Sm1th')).toBe('Jhn Smth');
   });
   it('keeps the punctuation and accents real names use', () => {
     expect(sanitizeNameInput("O'Brien")).toBe("O'Brien");
