@@ -25,7 +25,8 @@
 - Published document blogs may supply exact article HTML and schema through route metadata so crawler output preserves the same approved content as the database article without altering existing page schemas.
 - Reuse CallMeBackPanel/sandbox-callback-request for callback leads. Gate live offers/requests on server config plus fresh presence; management changes it via the availability endpoint. Pair question replies to their turn; drafts need explicit approval.
 - Use the shared sale-subject formatter for manager direct-sale email source labels in both subject and body; keep existing attribution and delivery logic unchanged to avoid affecting payment flows.
-- ORR uses one sandbox, with a page-level practice-view switch hiding manager controls, not changing permissions; Lead Allocation mirrors read-only.
+- ORR shares one sandbox; practice view hides controls without changing permissions; Lead Allocation mirrors read-only.
+- Goldmine releases share a guarded allocation RPC and role/count validation; legacy self-claim fails closed to prevent bypasses.
 
 - Analytics goals stay separate in `monthly_revenue_targets`; shared month selector/bar shape preserve maths. Daily seller grouping is presentation-only, never changes sale credit.
 - Multi-year quotes offer 12 instalments or BAW PayLater. Shared yearlySaleRevenue avoids double division; paginated paid anniversaries use collection date and sale owner, never new-deal credit; future money is not revenue.
