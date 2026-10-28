@@ -93,8 +93,8 @@ export function summariseOpenings(
         (dial) =>
           dial.at >= event.occurredAt - DIAL_LEAD_MS &&
           dial.at <= event.occurredAt + DIAL_FOLLOW_MS &&
-          (!!event.leadId && dial.leadId === event.leadId) ||
-          (!!tail && phoneTail(dial.phone) === tail),
+          ((!!event.leadId && dial.leadId === event.leadId) ||
+            (!!tail && phoneTail(dial.phone) === tail)),
       );
       if (hit) {
         withDial += 1;

@@ -87,7 +87,7 @@ describe('rapid lead-opening alert', () => {
   it('keeps the phone tail rule honest', () => {
     expect(phoneTail('07960 123 456')).toBe('960123456');
     expect(phoneTail('+44 7960 123456')).toBe('960123456');
-    expect(phoneTail('020 7946 0958')).toBe('79460958');
+    expect(phoneTail('020 7946 0958')).toBe('079460958');
     expect(phoneTail(null)).toBe('');
     expect(phoneTail('12345')).toBe('');
   });
