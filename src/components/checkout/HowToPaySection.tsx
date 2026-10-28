@@ -3,7 +3,7 @@ import { Lock, Check, Tag, X, Shield, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
-import { MIN_DISPLAYED_SAVING } from '@/lib/pricing/payInFull';
+import { hasFullTenPercentSaving } from '@/lib/pricing/payInFull';
 
 interface HowToPaySectionProps {
   selectedPayment: 'monthly' | 'full' | null;
@@ -69,10 +69,8 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   // Per-day pricing - MUST derive from monthlyPrice * 12 (actual paid amount) divided by total cover days
   const totalCoverDays = Math.round((planDurationMonths / 12) * 365);
   const monthlyPaidTotal = monthlyPrice * 12;
-  // Only claim the 10% offer when the pay-in-full saving really reaches it —
-  // when the website minimum clamps the final price the saving is smaller,
-  // so we show only the £ amount (never an over-claimed percentage).
-  const isFullTenPercent = savings >= Math.floor((originalPrice > 0 ? originalPrice : monthlyPaidTotal) * 0.10);
+  const displayedSaving = Math.max(0, monthlyPaidTotal - fullPrice);
+  const isFullTenPercent = hasFullTenPercentSaving(monthlyPaidTotal, fullPrice);
   const monthlyPencePerDay = monthlyPaidTotal > 0 && totalCoverDays > 0 ? Math.round((monthlyPaidTotal * 100) / totalCoverDays) : 0;
   const fullPencePerDay = fullPrice > 0 && totalCoverDays > 0 ? Math.round((fullPrice * 100) / totalCoverDays) : 0;
 
@@ -113,7 +111,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           }`}
         >
           {/* Title row with radio */}
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex min-h-12 items-center justify-between gap-2">
             <div className="flex items-center gap-2 flex-wrap">
               {/* Radio indicator */}
               <div
@@ -124,30 +122,29 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 {selectedPayment === 'full' && <span className="w-2.5 h-2.5 rounded-full bg-[#0BA360]" />}
               </div>
               <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Pay in full</h3>
-              {isFullTenPercent && (
-                <span className="bg-[#0BA360] text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">
-                  Save 10%
-                </span>
-              )}
             </div>
+            {displayedSaving > 0 && (
+              <span className="flex-shrink-0 rounded bg-success px-2 py-1 text-xs font-bold text-success-foreground">
+                {isFullTenPercent ? 'Save 10%' : `Save £${displayedSaving}`}
+              </span>
+            )}
           </div>
 
           {/* Price + benefits row */}
           <div className="mt-4 flex flex-col gap-4">
             <div className="pl-7">
+              <p className="text-xs font-semibold text-muted-foreground">Total payable</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-extrabold text-[#0BA360] leading-none tracking-tight">
+                <span className="text-3xl sm:text-4xl font-extrabold text-success leading-none">
                   £{fullPrice}
                 </span>
-                <span className="text-sm text-[#1a1a1a] font-medium">today</span>
               </div>
-              {savings >= MIN_DISPLAYED_SAVING && (
-                <p className="text-sm text-[#0BA360] font-semibold mt-1">
-                  Save £{Math.max(0, savings)} vs monthly payments
-                </p>
-              )}
-              <p className="text-sm text-[#0BA360] font-semibold mt-0.5">
-                = {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day over your full cover term
+              <p className="text-base text-success font-bold mt-2">
+                {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day
+              </p>
+              <p className="text-xs text-muted-foreground">Over your full cover term</p>
+              <p className="mt-3 text-sm font-semibold text-foreground">
+                £{fullPrice} today
               </p>
             </div>
 
@@ -204,7 +201,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           }`}
         >
           {/* Title row with radio */}
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex min-h-12 items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2 flex-wrap">
               {/* Radio indicator */}
               <div
@@ -220,14 +217,19 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           </div>
 
           {/* Price + benefits row */}
-          <div className="mt-4 flex flex-col gap-4 sm:pl-7">
+          <div className="mt-4 flex flex-col gap-4 pl-7">
             <div>
+              <p className="text-xs font-semibold text-muted-foreground">Total payable</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-extrabold text-primary leading-none tracking-tight">
-                  £{monthlyPrice}
+                <span className="text-3xl sm:text-4xl font-extrabold text-primary leading-none">
+                  £{monthlyPaidTotal}
                 </span>
-                <span className="text-sm text-foreground font-medium">today</span>
               </div>
+              <p className="text-base text-primary font-bold mt-2">
+                {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day
+              </p>
+              <p className="text-xs text-muted-foreground">Over your full cover term</p>
+              <p className="mt-3 text-sm font-semibold text-foreground">£{monthlyPrice} today</p>
             </div>
 
             <div className="border-t border-border pt-3">
@@ -253,10 +255,6 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" strokeWidth={3} />
                 <span>Soft check 0% APR</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-foreground">
-                <Check className="w-4 h-4 text-primary flex-shrink-0" strokeWidth={3} />
-                <span>£{monthlyPaidTotal} total payable</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" strokeWidth={3} />
