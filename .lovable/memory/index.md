@@ -207,3 +207,4 @@ Updated: just now
 - [Expired warranties](mem://features/expired-warranties) — Policies auto-expire on end date (nightly job); Expired status filter in Customer Management; clean expired customers still feed Renewals
 - [Sold leads hidden from sales](mem://admin/leads/sold-leads-hidden-from-sales) — Converted/upgraded leads vanish for sales/sales_lead in New Leads list, counts and search; management keeps full view
 - [Lead seen receipts](mem://admin/leads/lead-seen-receipts) — WhatsApp-style seen tick for management; server-checked own-view writes, sales never see receipts
+- [Payment Assist is staff-side only](mem://admin/payment-assist-staff-only) — Customer checkout never uses Payment Assist (monthly via Bumper); /steptest rehearsal page kept for test plates S17DRW/RV19OWW with no TEST MODE banner
