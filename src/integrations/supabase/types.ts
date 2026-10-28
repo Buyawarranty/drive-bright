@@ -8828,6 +8828,56 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_opening_rate_settings: {
+        Row: {
+          alert_emails: string[]
+          enabled: boolean
+          id: boolean
+          threshold: number
+          updated_at: string
+          window_minutes: number
+        }
+        Insert: {
+          alert_emails?: string[]
+          enabled?: boolean
+          id?: boolean
+          threshold?: number
+          updated_at?: string
+          window_minutes?: number
+        }
+        Update: {
+          alert_emails?: string[]
+          enabled?: boolean
+          id?: boolean
+          threshold?: number
+          updated_at?: string
+          window_minutes?: number
+        }
+        Relationships: []
+      }
+      lead_opening_rate_wakes: {
+        Row: {
+          actor_id: string
+          woken_at: string
+        }
+        Insert: {
+          actor_id: string
+          woken_at?: string
+        }
+        Update: {
+          actor_id?: string
+          woken_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_opening_rate_wakes_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_quick_notes: {
         Row: {
           author_name: string | null
@@ -13001,6 +13051,50 @@ export type Database = {
           vehicle_model?: string | null
         }
         Relationships: []
+      }
+      security_alerts: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          detail: Json
+          dismissed_at: string | null
+          id: string
+          kind: string
+          message: string
+          read_at: string | null
+          title: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json
+          dismissed_at?: string | null
+          id?: string
+          kind: string
+          message?: string
+          read_at?: string | null
+          title: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json
+          dismissed_at?: string | null
+          id?: string
+          kind?: string
+          message?: string
+          read_at?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_alerts_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       selling_tips: {
         Row: {

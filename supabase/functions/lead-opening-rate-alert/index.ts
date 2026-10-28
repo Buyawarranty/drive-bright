@@ -36,13 +36,19 @@ type Client = ReturnType<typeof createClient>;
 
 const bearer = (req: Request) => (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
 
-/** Only the scheduler (anon key) or a service call may run this. */
+/**
+ * Only the database trigger (which presents the project anon key) or a service
+ * call may run this. A staff or customer session token always arrives as a
+ * bearer token of its own, so it is refused outright.
+ */
 const isTrustedCaller = (req: Request) => {
-  const token = bearer(req);
-  if (!token) return false;
+  const auth = bearer(req);
+  const apikey = req.headers.get('apikey') || '';
   const anon = Deno.env.get('SUPABASE_ANON_KEY') || '';
   const service = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-  return token === anon || (!!service && token === service);
+  if (auth && auth !== anon && auth !== service) return false;
+  const presented = auth || apikey;
+  return !!presented && (presented === anon || presented === service);
 };
 
 const chunk = <T>(items: T[], size = 400): T[][] => {
