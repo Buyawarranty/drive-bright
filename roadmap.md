@@ -2,7 +2,8 @@
 
 ## Trace future lead access
 - [x] Append-only lead open/phone copy history stamps real actor and time server-side with current lead RLS; admins/super_admin read per-lead history with GMT timestamps and pagination. Main detail/full-notes views and row/banner/corner/new-lead/checkout/failed-payment/missed-call/lost-lead copy controls wired.
-- [ ] Verify audit identity/timestamp restrictions and frontend tests; authenticated end-to-end unavailable on external unmanaged Supabase. Existing published client does not emit new events until explicit publication; no past copy reconstruction.
+- [x] Server test confirms alternate actor/time ignored and append-only privileges; inherited privileges removed. Four audit tests plus eleven privacy/request tests pass; preview build checked. Admin lead detail contains paginated GMT access history.
+- [ ] Authenticated path: UNVERIFIED on external unmanaged Supabase. Guest events intentionally denied. Existing published client does not emit new events until explicit publication; browser failures/direct manual access cannot be guaranteed recorded, and past copies cannot be reconstructed.
 
 ## Failed-payment panel owner and admins only
 - [x] Red panel blocks other staff before requests/subscriptions; assigned agents require fresh verified ownership for rows, sounds and claims. Checkout-alert RLS now denies blanket sales-manager/other-staff access; admin/super_admin retained. Claims reject zero-row results and delayed requests cannot restore prior ownership maps. Allocation unchanged.
