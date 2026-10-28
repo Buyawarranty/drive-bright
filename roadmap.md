@@ -1,5 +1,9 @@
 # Roadmap
 
+## Goldmine administrator releases
+- [ ] Limit every release to 100 leads and admin/super_admin only; disable self-claim and preserve newest-first eligibility and existing list visibility.
+- [ ] Update release controls and verify role/limit rules; do not publish or enable ORR.
+
 ## Trace future lead access
 - [x] Append-only lead open/phone copy history stamps real actor and time server-side with current lead RLS; admins/super_admin read per-lead history with GMT timestamps and pagination. Main detail/full-notes views and row/banner/corner/new-lead/checkout/failed-payment/missed-call/lost-lead copy controls wired.
 - [x] Server test confirms alternate actor/time ignored and append-only privileges; inherited privileges removed. Four audit tests plus eleven privacy/request tests pass; preview build checked. Admin lead detail contains paginated GMT access history.
