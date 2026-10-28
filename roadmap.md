@@ -142,3 +142,6 @@
 
 ## Step 4 cover summary rows
 - [x] Review & Pay summary now lists Cover duration, Claim limit, Excess, Labour rate, Parts covered and No. of claims (Unlimited) on both phone and desktop layouts; prices, cover terms, claim limits and routing unchanged. Verified live on 1280px and 390px viewports. Nothing published.
+
+## Step 2 live field warnings
+- [x] First-name box warns while typing (a single letter shows the red message straight away), matching the email and mobile boxes; an empty box stays quiet until the button. Shared pure helper plus three tests pass; preview build OK and verified live in the browser after a real registration lookup. Nothing published.
