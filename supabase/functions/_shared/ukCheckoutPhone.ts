@@ -15,3 +15,7 @@ export function isValidCheckoutPhone(raw: unknown): boolean {
   // A UK mobile must include all 11 digits; do not invent a missing digit.
   return value.startsWith('07') ? /^07\d{9}$/.test(value) : /^0[1-9]\d{8,9}$/.test(value);
 }
+/** Step 2 "Your mobile number": UK mobile only — 07 followed by 9 digits (11 total), as Bumper expects. */
+export function isValidUkMobile(raw: unknown): boolean {
+  return /^07\d{9}$/.test(normalizeCheckoutPhone(raw));
+}

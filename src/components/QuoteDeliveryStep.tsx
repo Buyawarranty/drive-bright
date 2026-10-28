@@ -12,7 +12,7 @@ import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import { SALES_PHONE, SALES_PHONE_TEL } from '@/constants/contact';
-import { isValidCheckoutPhone, UK_PHONE_EXAMPLE } from '../../supabase/functions/_shared/ukCheckoutPhone';
+import { isValidUkMobile, UK_PHONE_EXAMPLE } from '../../supabase/functions/_shared/ukCheckoutPhone';
 
 import trustpilotLogo from '/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -102,7 +102,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
   const isValidFirstName = firstName.trim().length >= 2;
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  const isValidPhone = isValidCheckoutPhone(phone);
+  const isValidPhone = isValidUkMobile(phone);
   // A/B variant — in "B" the phone field is optional.
   const isVariantB = getAbVariant() === 'b';
   const phoneOkForSubmit = isVariantB
@@ -174,7 +174,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       // In variant B the phone is optional, so don't block submission.
       if (!isVariantB) setPhoneError('Please enter your phone number');
     } else if (!isValidPhone) {
-      setPhoneError(`Please enter a full UK phone number — mobiles have 11 digits, for example ${UK_PHONE_EXAMPLE}`);
+      setPhoneError(`Please enter a UK mobile number starting 07 with 11 digits, for example ${UK_PHONE_EXAMPLE}`);
     }
     
     if (!isFormValid) return;
@@ -860,7 +860,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </div>
             {(phoneError || (phone && !isValidPhone)) ? (
               <p className="text-red-500 text-xs mt-1.5">
-                {phoneError || `Please enter a full UK phone number — mobiles have 11 digits, for example ${UK_PHONE_EXAMPLE}`}
+                {phoneError || `Please enter a UK mobile number starting 07 with 11 digits, for example ${UK_PHONE_EXAMPLE}`}
               </p>
             ) : (
               <p className="hidden sm:block text-gray-500 mt-1.5 text-sm">
