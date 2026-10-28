@@ -1185,6 +1185,32 @@ html, body {
   margin-top: clamp(14px, 2.2dvh, 22px);
 }
 
+/* Step 2: when the button is pressed with a problem still in the form,
+   every box that needs fixing gives one short red pulse so the click is
+   obviously registered. */
+@keyframes mq-attention {
+  0% {
+    border-color: #d94343;
+    box-shadow: 0 0 0 0 rgba(217, 67, 67, 0);
+  }
+  35% {
+    border-color: #d94343;
+    box-shadow: 0 0 0 7px rgba(217, 67, 67, 0.30);
+  }
+  100% {
+    border-color: #d94343;
+    box-shadow: 0 0 0 0 rgba(217, 67, 67, 0);
+  }
+}
+
+.mq-attention {
+  animation: mq-attention 900ms ease-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mq-attention { animation: none; }
+}
+
 .mq-trust-row {
   margin-top: clamp(8px, 1.5dvh, 14px);
 }
