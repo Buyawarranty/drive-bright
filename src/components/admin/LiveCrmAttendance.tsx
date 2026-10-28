@@ -121,7 +121,7 @@ export default function LiveCrmAttendance({ filterRoles }: { filterRoles?: strin
       <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}><RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Refresh</Button>
     </header>
     {canSeeAudit && <StaffDeviceSecurityPanel from={today} to={today} alertsOnly />}
-    {!filterRoles && <Tabs value={view} onValueChange={setView}><TabsList className="h-auto flex flex-wrap justify-start"><TabsTrigger value="attendance">Live attendance</TabsTrigger><TabsTrigger value="locations">Work locations</TabsTrigger>{canSeeAudit && <><TabsTrigger value="devices">Devices &amp; login attempts</TabsTrigger><TabsTrigger value="signins">Sign-in history</TabsTrigger><TabsTrigger value="access">Account access history</TabsTrigger></>}</TabsList></Tabs>}
+    {!filterRoles && <Tabs value={view} onValueChange={setView}><TabsList className="h-auto flex flex-wrap justify-start"><TabsTrigger value="attendance">Live attendance</TabsTrigger>{canSeeAudit && <TabsTrigger value="locations">Work locations</TabsTrigger>}{canSeeAudit && <><TabsTrigger value="devices">Devices &amp; login attempts</TabsTrigger><TabsTrigger value="signins">Sign-in history</TabsTrigger><TabsTrigger value="access">Account access history</TabsTrigger></>}</TabsList></Tabs>}
     <Tabs value={zone} onValueChange={value => setZone(value as CrmAuditZone)}><TabsList><TabsTrigger value="UTC">GMT / UTC</TabsTrigger><TabsTrigger value="Europe/London">UK local time</TabsTrigger></TabsList></Tabs>
     {view === 'attendance' && <>
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 border-y py-4">
