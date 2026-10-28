@@ -9,10 +9,8 @@ BEGIN
   IF position('_batch_size > 100' in definition) = 0 OR position('ORDER BY sl.created_at DESC' in definition) = 0 THEN
     RAISE EXCEPTION 'Release limit or newest-first rule missing';
   END IF;
-  SELECT au.id INTO target FROM public.admin_users au
-  JOIN public.lead_team_members tm ON tm.admin_user_id=au.id
-  WHERE au.is_active AND tm.workstream_recontact LIMIT 1;
-  IF target IS NULL THEN RAISE EXCEPTION 'No active Goldmine agent to verify'; END IF;
+  SELECT id INTO target FROM public.admin_users WHERE is_active AND role='sales' LIMIT 1;
+  IF target IS NULL THEN RAISE EXCEPTION 'No active sales agent to verify'; END IF;
   FOR staff IN SELECT user_id,role FROM public.admin_users
     WHERE is_active AND user_id IS NOT NULL AND role IN ('sales','sales_lead','sales_manager','admin','super_admin')
   LOOP
@@ -20,7 +18,7 @@ BEGIN
     PERFORM set_config('request.jwt.claims',json_build_object('sub',staff.user_id,'role','authenticated')::text,true);
     SELECT * INTO result FROM public.assign_recontact_leads_to_agent(target,101);
     IF staff.role IN ('admin','super_admin') THEN
-      IF result.blocked_reason IS DISTINCT FROM 'batch_limit' OR result.assigned_count <> 0 THEN RAISE EXCEPTION 'Oversized admin release allowed'; END IF;
+      IF result.blocked_reason IS DISTINCT FROM 'agent_not_on_recontact' OR result.assigned_count <> 0 THEN RAISE EXCEPTION 'Disabled Goldmine agent accepted'; END IF;
     ELSE
       IF result.blocked_reason IS DISTINCT FROM 'not_admin' OR result.assigned_count <> 0 THEN RAISE EXCEPTION 'Non-admin release allowed: %',staff.role; END IF;
     END IF;

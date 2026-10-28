@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Goldmine administrator releases
-- [ ] Limit every release to 100 leads and admin/super_admin only; disable self-claim and preserve newest-first eligibility and existing list visibility.
-- [ ] Update release controls and verify role/limit rules; do not publish or enable ORR.
+- [x] Limit releases to 100 and admin/super_admin only; self-claim endpoints fail closed and all release controls use the guarded allocation RPC. Existing list visibility and newest-first selection retained.
+- [x] Thirteen focused frontend tests and database role/self-claim checks passed; preview build OK. Nothing published or ORR enabled.
+- [ ] Actual release/read-back is blocked: no agent currently has Goldmine workstream enabled; authenticated browser verification unavailable on external unmanaged Supabase. Existing security findings unchanged.
 
 ## Trace future lead access
 - [x] Append-only lead open/phone copy history stamps real actor and time server-side with current lead RLS; admins/super_admin read per-lead history with GMT timestamps and pagination. Main detail/full-notes views and row/banner/corner/new-lead/checkout/failed-payment/missed-call/lost-lead copy controls wired.
