@@ -479,7 +479,7 @@ const RecontactAccessPanelInner: React.FC = () => {
                                 <Switch
                                   checked={status === 'active'}
                                   disabled={disabled}
-                                  aria-label={`Recontact access for ${r.name}`}
+                                  aria-label={`Recontacted Leads access for ${r.name}`}
                                   onCheckedChange={(v) => setStatus(r, v ? 'active' : 'paused')}
                                 />
                                 <span className={`text-[11px] font-semibold ${status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>

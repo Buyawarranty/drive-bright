@@ -426,6 +426,7 @@ const AdminDashboard = () => {
   const TAB_ALIASES: Record<string, string> = {
     'golden-leads': 'recontact-leads',
     'goldmine-leads': 'recontact-leads',
+    'recontacted-leads': 'recontact-leads',
     'retention': 'renewals',
     'renewals-sandbox': 'renewals',
     'leads-per-agent': 'new-leads',
