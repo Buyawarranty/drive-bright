@@ -17,6 +17,11 @@ export const PAYMENTS_COUNT = 12;
  */
 export const MIN_DISPLAYED_SAVING = 30;
 
+/** Only label the offer as 10% when the actual displayed totals support it. */
+export function hasFullTenPercentSaving(instalmentTotal: number, fullTotal: number): boolean {
+  return instalmentTotal > 0 && instalmentTotal - fullTotal >= Math.floor(instalmentTotal * PAY_IN_FULL_DISCOUNT_PCT / 100);
+}
+
 /** Total of the 12 monthly payments. */
 export function twelvePaymentTotal(monthlyPrice: number): number {
   return Math.max(0, Math.round(monthlyPrice)) * PAYMENTS_COUNT;
