@@ -481,7 +481,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               if (s.line_1 || s.formatted_address) return normaliseAddr(s);
               // Autocomplete-style result: resolve it when the customer picks it
               if (s.id) {
-                const isGroup = s.type === 'group' || Number(s.count) > 1;
+                const isGroup = (s.type && !['ADD', 'address'].includes(s.type)) || Number(s.count) > 1;
                 return isGroup
                   ? { __container: true, label: s.address, count: s.count, retrieveId: s.id, searchTerm: query }
                   : { __lookupId: s.id, searchTerm: query, formatted_address: s.address };
@@ -547,6 +547,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         body: { action: 'get', id, term },
       });
       if (error || !data) return;
+      if (Array.isArray(data.suggestions)) {
+        setAddressSuggestions(data.suggestions.map((s: any) =>
+          s.type === 'ADD'
+            ? { __lookupId: s.id, searchTerm: term, formatted_address: s.address }
+            : { __container: true, label: s.address, count: s.count, retrieveId: s.id, searchTerm: term },
+        ));
+        setShowAddressDropdown(data.suggestions.length > 0);
+        return;
+      }
       if (Array.isArray(data.addresses) && data.addresses.length > 1) {
         setAddressSuggestions(data.addresses.map(normaliseAddr));
         setShowAddressDropdown(true);

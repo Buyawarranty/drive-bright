@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { autocompleteUrl } from './autocompleteUrl.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -156,7 +157,7 @@ serve(async (req) => {
       }
 
       // Preferred: Postcoder autocomplete (needs the autocomplete product on the key)
-      const url = `${base}/autocomplete/find?query=${encodeURIComponent(term)}&country=uk&format=json&maximumresults=25`;
+      const url = autocompleteUrl(apiKey, 'find', term);
       const res = await fetch(url);
       if (res.ok) {
         const rows = (await res.json()) as Array<Record<string, unknown>>;
@@ -181,7 +182,19 @@ serve(async (req) => {
 
     if (action === 'get') {
       if (!id) return json({ error: 'Address id is required' }, 400);
-      const url = `${base}/autocomplete/retrieve?id=${encodeURIComponent(id)}&query=${encodeURIComponent(term)}&country=uk&format=json&lines=2`;
+      // Only ADD suggestions are retrieved; town/street IDs drill down via find.
+      if (!/^\d+$/.test(id)) {
+        const res = await fetch(autocompleteUrl(apiKey, 'find', term, id));
+        if (!res.ok) return json({ error: 'Address search unavailable', status: res.status }, 502);
+        const rows = await res.json();
+        return json({ suggestions: (Array.isArray(rows) ? rows : []).map((r) => ({
+          id: String(r.id ?? ''),
+          address: [r.summaryline, r.locationsummary].filter(Boolean).join(', '),
+          count: Number(r.count ?? 1),
+          type: String(r.type ?? ''),
+        })) });
+      }
+      const url = autocompleteUrl(apiKey, 'retrieve', term, id);
       const res = await fetch(url);
       if (!res.ok) {
         const text = await res.text();

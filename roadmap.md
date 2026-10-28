@@ -1,5 +1,8 @@
 # Roadmap
 
+## Checkout town and apartment search
+- [x] Corrected Postcoder autocomplete URLs and town/street drill-down. Four regressions pass; live checkout finds Wembley, narrows to streets and confirms Flat 7, Silchester Apartments with town and postcode. Address service deployed; website not published.
+
 ## Step 3 sticky pay-in-full saving
 - [x] Show genuine savings below the old £30 display threshold, including £25; guard sticky labels against £1 without changing payable prices.
 - [x] Nineteen pricing checks pass; real quote journey shows £468 monthly total, £422 in full and £46 saving in Step 3 and Step 4. Phone sticky saving visible without overflow; preview build OK, nothing published.
