@@ -11,6 +11,7 @@ import { useIsRepeatCustomer } from '@/hooks/useRepeatCustomers';
 import { toast } from 'sonner';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { NewLeadCornerPopup } from './NewLeadCornerPopup';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 
 const formatUKPhoneShort = (p: string) => {
   const d = p.replace(/[^\d+]/g, '');

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -516,7 +517,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                           {lead.phone && (
                             <Tooltip delayDuration={100}>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { navigator.clipboard.writeText(lead.phone || ''); toast.success('Phone copied'); }}>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { navigator.clipboard.writeText(lead.phone || '').then(() => { void recordLeadAccess(lead.id, 'phone_copy', 'lost_leads'); toast.success('Phone copied'); }); }}>
                                   <Phone className="h-3.5 w-3.5 text-green-600" />
                                 </Button>
                               </TooltipTrigger>
