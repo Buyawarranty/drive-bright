@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +20,7 @@ import { logLoginAttempt } from '@/lib/loginActivityLogger';
 import { checkLoginLockout, lockoutMessage } from '@/lib/loginLockout';
 import { withTimeout } from '@/lib/withTimeout';
 import { staffDeviceRequest } from '@/lib/staffDeviceAccess';
+import { secureStaffSignIn } from '@/lib/staffSingleSession';
 
 const Auth = () => {
   // ALL HOOKS MUST BE CALLED UNCONDITIONALLY AT THE TOP
@@ -31,6 +32,7 @@ const Auth = () => {
   const { isUnlocked, setIsUnlocked } = useGatewayUnlock();
   
   const [loading, setLoading] = useState(false);
+  const passwordSignInPending = useRef(false);
   const [isAdminUser, setIsAdminUser] = useState(false);
 
   // Check if current user is super_admin or admin to show debug tools
@@ -136,9 +138,25 @@ const Auth = () => {
         console.log('Auth page: Auth state changed:', event, session?.user?.email);
         
         if (event === 'SIGNED_IN' && session) {
+          // Only a password submission on this page can revoke other sessions;
+          // restored sessions/refocus events must not kick out a newer login.
+          const securePasswordSignIn = passwordSignInPending.current;
+          passwordSignInPending.current = false;
           // Never await Supabase while its auth-state callback holds the lock.
           setTimeout(() => { void (async () => {
           console.log('Auth page: User signed in, checking role and navigating');
+
+          const secureStaffSession = async () => {
+            if (!securePasswordSignIn) return true;
+            try {
+              await secureStaffSignIn(session.access_token);
+              return true;
+            } catch {
+              await supabase.auth.signOut({ scope: 'local' });
+              toast({ title: 'Staff sign-in incomplete', description: 'Unable to secure your staff session. Please sign in again.', variant: 'destructive' });
+              return false;
+            }
+          };
 
           try {
             const device = await staffDeviceRequest('request');
@@ -155,7 +173,10 @@ const Auth = () => {
 
           // Check user role and navigate - fetch ALL roles for the user.
           const renewal = await withTimeout(supabase.functions.invoke('staff-password', { body: { action: 'status' }, headers: { Authorization: `Bearer ${session.access_token}` } }), 15000, 'Staff access check');
-          if (renewal.data?.must_change) { navigate('/staff-password-renewal/', { replace: true }); return; }
+          if (renewal.data?.must_change) {
+            if (!await secureStaffSession()) return;
+            navigate('/staff-password-renewal/', { replace: true }); return;
+          }
           // Timeout + try/catch so a stalled read can never strand the user.
           let roleData: { role: string }[] | null = null;
           let error: any = null;
@@ -195,6 +216,7 @@ const Auth = () => {
               variant: 'destructive',
             });
             const emailIsStaff = !!session.user.email?.endsWith('@buyawarranty.co.uk');
+            if (emailIsStaff && !await secureStaffSession()) return;
             navigate(emailIsStaff ? '/admin-dashboard/' : '/customer-dashboard/', { replace: true });
             return;
           }
@@ -237,6 +259,7 @@ const Auth = () => {
             }
 
             console.log("Auth page: staff user detected, redirecting to admin dashboard");
+            if (!await secureStaffSession()) return;
             navigate('/admin-dashboard', { replace: true });
           } else {
             console.log("Auth page: Customer detected, redirecting to customer dashboard");
@@ -276,6 +299,7 @@ const Auth = () => {
         return;
       }
 
+      passwordSignInPending.current = true;
       let { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -342,6 +366,7 @@ const Auth = () => {
         variant: "destructive",
       });
     } finally {
+      passwordSignInPending.current = false;
       setLoading(false);
     }
   };

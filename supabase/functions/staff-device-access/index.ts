@@ -2,10 +2,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { corsHeaders as sdkCorsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { z } from 'https://esm.sh/zod@3.25.76';
 import { hashStaffDevice, staffDeviceAllowed } from '../_shared/staff-device.ts';
+import { revokeOtherStaffSessions } from './revoke-others.ts';
 
 const headers = { ...sdkCorsHeaders, 'Access-Control-Allow-Headers': `${sdkCorsHeaders['Access-Control-Allow-Headers']}, x-staff-device`, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers });
 const schema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('revoke-others') }).strict(),
   z.object({ action: z.literal('request'), label: z.string().min(1).max(100) }).strict(),
   z.object({ action: z.literal('check') }).strict(),
   z.object({ action: z.literal('report'), from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), offset: z.number().int().min(0).max(100000).default(0) }).strict(),
@@ -22,6 +24,13 @@ Deno.serve(async req => {
     if (!parsed.success) return json({ error: 'Invalid access request' }, 400);
     const body = parsed.data;
     const db = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '', { auth: { persistSession: false } });
+    // This action must return before any device credential or approval check.
+    if (body.action === 'revoke-others') {
+      const bearer = req.headers.get('Authorization');
+      if (!bearer?.startsWith('Bearer ') || !bearer.slice(7).trim()) return json({ error: 'Sign in first' }, 401);
+      const result = await revokeOtherStaffSessions(db, bearer.slice(7));
+      return json(result.body, result.status);
+    }
     const hash = await hashStaffDevice(req.headers.get('x-staff-device') || '');
     if (!hash) return json({ error: 'This browser cannot store its device credential. Enable browser storage and retry.' }, 400);
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('cf-connecting-ip') || null;

@@ -1,5 +1,9 @@
 # Roadmap
 
+## Real /auth staff single-session enforcement
+- [ ] Add a token-validated staff-only revoke-others action, independent of device approval, and await it in /auth staff password sign-in before dashboard navigation.
+- [ ] Verify staff/customer separation, failures, real route reachability and clean preview build; report any authenticated verification limitation.
+
 ## Individual agent activity view
 - [x] Daily staff activity defaults to one block per agent: their name as a heading with their own day bars, range totals and session counts beneath, ordered by recorded active time; "By day" keeps the combined day-by-day view.
 - [x] Twenty tests pass; isolated browser confirms each agent heading appears once, per-agent day rows and totals, session detail from an agent's own day, timeline and by-day views, and phone layout scrolls without page overflow. Preview build OK; nothing published.
