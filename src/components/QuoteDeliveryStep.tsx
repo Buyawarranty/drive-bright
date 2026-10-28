@@ -12,6 +12,7 @@ import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import { SALES_PHONE, SALES_PHONE_TEL } from '@/constants/contact';
+import { isValidCheckoutPhone, UK_PHONE_EXAMPLE } from '../../supabase/functions/_shared/ukCheckoutPhone';
 
 import trustpilotLogo from '/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -101,7 +102,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
   const isValidFirstName = firstName.trim().length >= 2;
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  const isValidPhone = /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9}|\+91[6-9]\d{9})$/.test(phone.replace(/\s/g, ''));
+  const isValidPhone = isValidCheckoutPhone(phone);
   // A/B variant — in "B" the phone field is optional.
   const isVariantB = getAbVariant() === 'b';
   const phoneOkForSubmit = isVariantB
@@ -592,7 +593,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <Phone className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${phone && isValidPhone ? 'text-gray-700' : 'text-gray-500'}`} />
               <input
                 type="tel"
-                placeholder="UK mobile number"
+                placeholder={UK_PHONE_EXAMPLE}
                 value={phone}
                 onChange={(e) => { setPhone(e.target.value); if (phoneError) setPhoneError(''); }}
                 data-ga4-event="step2_phone_input"
@@ -840,7 +841,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <Phone className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${phone && isValidPhone ? 'text-gray-700' : 'text-gray-500'}`} />
               <input
                 type="tel"
-                placeholder="UK mobile number"
+                placeholder={UK_PHONE_EXAMPLE}
                 value={phone}
                 onChange={(e) => {
                   setPhone(e.target.value);

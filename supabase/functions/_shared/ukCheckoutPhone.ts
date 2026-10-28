@@ -1,11 +1,8 @@
-import { z } from 'zod';
-
 export const UK_PHONE_EXAMPLE = '07960 123 456';
 
 export function normalizeCheckoutPhone(raw: unknown): string {
-  const parsed = z.string().trim().max(40).safeParse(raw);
-  if (!parsed.success || !/^[+\d\s().-]+$/.test(parsed.data)) return '';
-  let value = parsed.data.replace(/[\s().-]/g, '');
+  if (typeof raw !== 'string' || raw.length > 40 || !/^[+\d\s().-]+$/.test(raw.trim())) return '';
+  let value = raw.trim().replace(/[\s().-]/g, '');
   if (value.startsWith('+44')) value = '0' + value.slice(3);
   else if (value.startsWith('0044')) value = '0' + value.slice(4);
   else if (value.startsWith('44') && value.length === 12) value = '0' + value.slice(2);
