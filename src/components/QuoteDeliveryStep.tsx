@@ -14,6 +14,7 @@ import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import { SALES_PHONE, SALES_PHONE_TEL } from '@/constants/contact';
 import { isValidUkMobile, UK_PHONE_EXAMPLE, UK_PHONE_HINT } from '../../supabase/functions/_shared/ukCheckoutPhone';
 import { firstNameLiveError } from '@/lib/firstNameRule';
+import { Button } from '@/components/ui/button';
 
 import trustpilotLogo from '/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -38,6 +39,32 @@ interface QuoteDeliveryStepProps {
   onSkip: () => void;
   onUpdateVehicle?: (partial: { mileage: string; motMileage: number }) => void;
 }
+
+const QuoteStepHeading = ({ onBack }: { onBack: () => void }) => (
+  <header className="relative mb-4 pt-3 text-center sm:mb-5 sm:pt-4">
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      onClick={onBack}
+      aria-label="Go back to the previous step"
+      className="absolute -left-2 top-0 gap-1.5 text-muted-foreground"
+    >
+      <ArrowLeft />
+      Back
+    </Button>
+    <span aria-hidden="true" className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-brand-orange/10 text-3xl sm:mb-3 sm:h-14 sm:w-14">
+      🚀
+    </span>
+    <h1 className="text-[22px] font-bold leading-tight text-foreground sm:text-[28px]">
+      Only 3 quick details for your best price
+    </h1>
+    <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
+      <Zap aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-orange" fill="currentColor" />
+      Your price is seconds away
+    </p>
+  </header>
+);
 
 const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNext, onBack, onSkip, onUpdateVehicle }) => {
   const MILEAGE_RANGES: { label: string; value: string; min: number; max: number; mid: number }[] = [
@@ -474,31 +501,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     return (
       <section className="bg-white min-h-[100dvh] pb-4 mobile-quote-page">
         <div className="max-w-xl mx-auto mobile-quote-card pt-3 sm:pt-8">
-          <div className="flex items-start gap-2.5 mb-2 sm:mb-1">
-            <button
-              type="button"
-              onClick={onBack}
-              aria-label="Go back to the previous step"
-              className="flex-shrink-0 inline-flex items-center gap-1.5 mt-1 text-sm font-semibold py-1.5 px-3 rounded-lg transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-            <div className="flex items-start gap-2.5 flex-1">
-              <span className="inline-flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
-                <Zap className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
-              </span>
-              <h1 className="mq-heading sm:!text-4xl font-extrabold text-gray-900 leading-tight">
-                Only 3 quick details to see your quote
-              </h1>
-            </div>
-          </div>
-          <div className="flex items-center justify-center gap-4 mb-3 sm:mb-5">
-            <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
-              <Zap className="w-4 h-4 text-brand-orange" fill="currentColor" />
-              Your price is seconds away
-            </p>
-          </div>
+          <QuoteStepHeading onBack={onBack} />
 
           {/* Vehicle summary card */}
           <div className="border border-gray-200 rounded-xl p-2.5 sm:p-4 mb-3 sm:mb-6 flex items-center gap-3 sm:gap-4">
@@ -687,33 +690,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   return (
     <section className="bg-white min-h-[100dvh] mobile-quote-page">
       <div className="max-w-xl mx-auto mobile-quote-card py-3 sm:py-4">
-        {/* Main Heading */}
-
-        <div className="mb-4 sm:mb-3">
-          <div className="flex items-start gap-2">
-            <button
-              type="button"
-              onClick={onBack}
-              aria-label="Go back to the previous step"
-              className="flex-shrink-0 inline-flex items-center gap-1.5 mt-1 text-sm font-semibold py-1.5 px-3 rounded-lg transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Back
-            </button>
-            <h1 className="flex-1 text-2xl sm:text-3xl font-bold text-gray-900 text-center">
-              <span className="inline-flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full mr-2">
-                <Rocket className="w-4 h-4" />
-              </span>
-              Only 3 quick details for your best price
-            </h1>
-          </div>
-          <div className="flex items-center justify-center gap-3 mt-1">
-            <p className="text-gray-700 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-brand-orange" />
-              Your price is seconds away
-            </p>
-          </div>
-        </div>
+        <QuoteStepHeading onBack={onBack} />
 
         {/* Combined Vehicle + Mileage Card */}
         <div className="bg-gray-50 border border-gray-200 rounded-xl mb-6 sm:mb-3 overflow-hidden">
