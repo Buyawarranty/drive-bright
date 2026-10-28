@@ -189,8 +189,8 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                   <span className="font-semibold text-[#1a1a1a]">{displayClaimLimit}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Your excess</span>
-                  <span className="font-semibold text-[#1a1a1a]">£{excess} per claim</span>
+                  <span className="text-gray-500">Excess</span>
+                  <span className="font-semibold text-[#1a1a1a]">£{excess}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-500">Labour rate</span>
