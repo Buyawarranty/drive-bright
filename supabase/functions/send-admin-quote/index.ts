@@ -248,7 +248,7 @@ const handler = async (req: Request): Promise<Response> => {
       quoteLink: safeQuoteLink,
       senderName: sanitizedAgentName || null,
       customerEmail: to,
-      attachmentsNote: "I've attached our latest Terms &amp; Conditions and the full Platinum plan document to this email so you have everything in one place &mdash; feel free to have a read whenever suits you.",
+      attachmentsNote: "Your Terms &amp; Conditions and full Platinum plan document are attached for you to review.",
     };
 
     // No unsubscribe link on 1:1 transactional quotes — it signals bulk mail
@@ -319,18 +319,18 @@ const handler = async (req: Request): Promise<Response> => {
     const plainText = [
       `Hi ${plainFirstName},`,
       ``,
+      `View and continue your quote: ${safeQuoteLink}`,
+      ``,
       `Here are the quote details for your ${plainVehicleDisplay} ${plainPlanDisplay} cover:`,
-      `- From £${monthlyPrice}/month (${coverPeriodDisplay})`,
-      `- Or ${payInFullLabel}`,
-      `- Vehicle: ${vehicleData.regNumber} · ${mileageDisplay.toLocaleString()} miles`,
-      `- Claim limit: £${claimLimitDisplay.toLocaleString()} per claim`,
-      `- Excess: £${excessAmountDisplay} · Labour up to £${labourRateDisplay}/hr`,
+      `Pay monthly: £${monthlyPrice} per month (${coverPeriodDisplay})`,
+      `Pay in full: ${payInFullLabel}`,
+      `Vehicle: ${vehicleData.regNumber} · ${mileageDisplay.toLocaleString()} miles`,
+      `Claim limit: £${claimLimitDisplay.toLocaleString()} per claim`,
+      `Excess: £${excessAmountDisplay} · Labour up to £${labourRateDisplay}/hr`,
       ``,
-      `I've attached our latest Terms & Conditions and the full Platinum plan document so you have everything in one place — feel free to have a read whenever suits you.`,
+      `Your Terms & Conditions and full Platinum plan document are attached for you to review.`,
       ``,
-      `Quote details link: ${safeQuoteLink}`,
-      ``,
-      `Need a hand? Call 0330 229 5040 (Mon–Fri) or reply to this email.`,
+      `Have a question? Reply to this email or call 0330 229 5040. Our sales team is available Monday to Friday, 9am to 6pm, and Saturday, 12pm to 4pm.`,
       ``,
       `Buyawarranty · https://buyawarranty.co.uk`,
     ].join('\n');

@@ -1,15 +1,9 @@
 // Shared quote email template.
 import { formatClaimLimit } from "./claim-limit-display.ts";
 //
-// Deliberately plain / letter-style so Gmail files it under Primary rather than
-// Promotions. It reads like a personal email from the agent who prepared it:
-//   - no hero images, mascots or logos
-//   - no big coloured CTA buttons
-//   - no discount pills, urgency wording or unsubscribe footer on 1:1 mail
-// All the information is preserved (both payment options, cover summary,
-// what's included, quote link, contact details) using plain text and simple
-// rows, which renders identically on Gmail, Outlook, Apple Mail, iOS and
-// Android.
+// Concise personal quote with an early action and a visible fallback link.
+// Keep requested quote delivery and sender attribution unchanged. Presentation
+// alone cannot guarantee inbox placement in any mail client.
 
 export interface BrandedQuoteTemplateData {
   firstName?: string | null;
@@ -70,6 +64,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
   const durationLabel = escapeHtml(deriveDurationLabel(coverPeriodRaw));
   const senderName = escapeHtml(cleanDeliverabilityText((data.senderName || '').trim() || 'Buyawarranty Customer Care'));
   const quoteLink = data.quoteLink;
+  const quoteHref = escapeHtml(quoteLink);
   const customerEmailRaw = (data.customerEmail || '').trim().toLowerCase();
   // Default: NO unsubscribe on 1:1 transactional quotes — it's a Promotions signal.
   const includeUnsubscribe = data.includeUnsubscribe === true;
@@ -91,7 +86,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
     priceLines.push(
       `<p style="margin:0 0 6px 0;font-size:16px;font-weight:600;color:#111827;">Pay monthly</p>` +
       `<p style="margin:0 0 10px 0;color:#111827;line-height:1.25;"><strong style="font-size:30px;">£${monthlyNum.toFixed(2)}</strong> <span style="font-size:15px;color:#4b5563;">per month</span></p>` +
-      `<p style="margin:0;font-size:14px;color:#4b5563;">12 interest-free payments</p>` +
+      `<p style="margin:0;font-size:14px;color:#4b5563;">12 interest free payments</p>` +
       (monthlyTotalNum ? `<p style="margin:10px 0 0 0;padding-top:10px;border-top:1px solid #e5e7eb;font-size:15px;color:#111827;">Total for ${durationLabel} of cover: <strong>£${monthlyTotalNum.toLocaleString()}</strong></p>` : '')
     );
   }
@@ -100,11 +95,11 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
       `<p style="margin:0 0 6px 0;font-size:16px;font-weight:600;color:#111827;">Pay in full</p>` +
       `<p style="margin:0 0 10px 0;color:#111827;line-height:1.25;"><strong style="font-size:30px;">£${payInFullNum.toLocaleString()}</strong> <span style="font-size:15px;color:#4b5563;">total</span></p>` +
       `<p style="margin:0;font-size:14px;color:#4b5563;">One payment for ${durationLabel} of cover</p>` +
-      (savingsNum && savingsNum > 0 ? `<p style="margin:10px 0 0 0;padding-top:10px;border-top:1px solid #e5e7eb;font-size:15px;color:#0b57d0;"><strong>Save £${savingsNum.toLocaleString()}</strong> compared with paying monthly</p>` : '')
+      (savingsNum && savingsNum >= 2 ? `<p style="margin:10px 0 0 0;padding-top:10px;border-top:1px solid #e5e7eb;font-size:15px;color:#0b57d0;"><strong>Save £${savingsNum.toLocaleString()}</strong> compared with paying monthly</p>` : '')
     );
   }
   const priceHtml = priceLines
-    .map((line) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin:0 0 12px 0;background:#f9fafb;border:1px solid #e5e7eb;border-left:3px solid #0b57d0;border-radius:4px;"><tr><td style="padding:18px 20px;">${line}</td></tr></table>`)
+    .map((line) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin:0 0 10px 0;background:#f9fafb;border:1px solid #e5e7eb;border-radius:4px;"><tr><td style="padding:14px 16px;">${line}</td></tr></table>`)
     .join('');
 
   const summaryLines: Array<[string, string]> = [
@@ -122,20 +117,6 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
       <td style="padding:5px 0;color:#111827;font-size:15px;line-height:1.55;">${escapeHtml(value)}</td>
     </tr>
   `).join('');
-
-  const included = [
-    'Engine, gearbox, clutch and drivetrain',
-    'Electrics, ECUs, sensors and diagnostics',
-    'Turbo, fuel and cooling systems',
-    'Air conditioning, steering and suspension',
-    'Any VAT-registered garage in the UK &mdash; or we can help you find one',
-    'Approved parts and labour paid directly to your garage',
-    'Claims support 7 days a week',
-    'Transferable if you sell your car',
-  ];
-  const includedHtml = included
-    .map((item) => `<p style="margin:0 0 7px 0;font-size:15px;line-height:1.5;"><span style="color:#0b57d0;font-weight:600;margin-right:6px;">✓</span>${item}</p>`)
-    .join('');
 
   const supabaseUrl = (typeof Deno !== 'undefined' ? Deno.env.get('SUPABASE_URL') : '') || 'https://mzlpuxzwyrcyrgrongeb.supabase.co';
   const unsubscribeHref = customerEmailRaw
@@ -164,26 +145,27 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
 
     <p style="margin:0 0 14px 0;">Thanks for getting in touch. I&rsquo;ve put together your <strong>${planName}</strong> warranty quote for your <strong>${vehicleDisplay}</strong>${vehicleReg ? ` (${vehicleReg})` : ''}, based on the details you provided.</p>
 
-    ${attachmentsLine}
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:20px 0 10px 0;"><tr><td bgcolor="#ff7a00" style="background:#ff7a00;border-radius:4px;text-align:center;">
+      <a href="${quoteHref}" style="display:inline-block;padding:14px 24px;border:1px solid #ff7a00;border-radius:4px;color:#1a1a1a;font-size:16px;font-weight:700;text-decoration:none;">View and continue your quote</a>
+    </td></tr></table>
+    <p style="margin:0 0 24px 0;font-size:13px;line-height:1.5;"><a href="${quoteHref}" style="color:#0b57d0;text-decoration:underline;overflow-wrap:anywhere;word-break:break-all;">${escapeHtml(quoteLink)}</a></p>
 
-    ${priceHtml ? `<p style="margin:0 0 12px 0;font-size:18px;"><strong>Your quote &mdash; ${durationLabel} of cover</strong></p>${priceLines.length > 1 ? '<p style="margin:0 0 12px 0;font-size:14px;color:#4b5563;">Same cover, two ways to pay.</p>' : ''}${priceHtml}` : ''}
+    ${priceHtml ? `<p style="margin:0 0 12px 0;font-size:18px;"><strong>Your quote for ${durationLabel} of cover</strong></p>${priceHtml}` : ''}
 
     <p style="margin:0 0 8px 0;"><strong>Your ${planName} cover</strong></p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 18px 0;">
       ${summaryHtml}
     </table>
 
-    <p style="margin:0 0 8px 0;"><strong>What&rsquo;s included with ${planName}</strong></p>
-    <p style="margin:0 0 8px 0;">Your ${planName} warranty covers thousands of mechanical and electrical parts, including:</p>
-    <div style="margin:0 0 14px 0;">${includedHtml}</div>
+    <p style="margin:0 0 8px 0;"><strong>About your cover</strong></p>
+    <p style="margin:0 0 14px 0;">${planName} covers thousands of mechanical and electrical parts, including the engine, gearbox, electrics, cooling, steering and suspension, subject to the plan terms.</p>
+    <p style="margin:0 0 14px 0;">Use any VAT registered UK garage, with approved parts and labour paid directly to your garage. Your warranty is transferable if you sell your car.</p>
+
+    ${attachmentsLine}
 
     <p style="margin:0 0 14px 0;">Rated Excellent on Trustpilot. You also have 14 days to cancel for a full refund.</p>
 
-    <p style="margin:0 0 14px 0;">You can review and continue with your quote here:<br>
-      <a href="${quoteLink}" style="color:#0b57d0;text-decoration:underline;word-break:break-all;">${escapeHtml(quoteLink)}</a>
-    </p>
-
-    <p style="margin:0 0 14px 0;">Prefer to talk it through? Call us on <a href="tel:03302295040" style="color:#0b57d0;text-decoration:underline;">0330 229 5040</a>${vehicleReg ? ` and quote <strong>${vehicleReg}</strong>` : ''} &mdash; we&rsquo;re happy to answer any questions about the cover before you decide. We&rsquo;re open Monday to Saturday, 9am&ndash;6pm.</p>
+    <p style="margin:0 0 14px 0;">Have a question? Reply to this email or call <a href="tel:03302295040" style="color:#0b57d0;text-decoration:underline;">0330 229 5040</a>${vehicleReg ? ` and quote <strong>${vehicleReg}</strong>` : ''}. Our sales team is available Monday to Friday, 9am to 6pm, and Saturday, 12pm to 4pm.</p>
 
     <p style="margin:0 0 4px 0;">Kind regards,</p>
     <p style="margin:0 0 18px 0;"><strong>${senderName}</strong><br>Buyawarranty</p>

@@ -1,5 +1,9 @@
 # Roadmap
 
+## Concise customer quote email
+- [x] Removed inaccurate claims hours and authored dash punctuation in shared HTML and both text alternatives; shortened cover copy, moved clickable quote link and CTA above details, preserved sender and delivery logic.
+- [x] Mobile and desktop email rendering checked: button within first 154px, two clickable quote links, no overflow. Three quote-edit persistence checks pass; preview build OK. Public SPF and DMARC records exist, but provider DKIM alignment and actual inbox delivery remain unverified. No publication, sender deployment or customer test send.
+
 ## Checkout town and apartment search
 - [x] Corrected Postcoder autocomplete URLs and town/street drill-down. Four regressions pass; live checkout finds Wembley, narrows to streets and confirms Flat 7, Silchester Apartments with town and postcode. Address service deployed; website not published.
 
