@@ -145,3 +145,12 @@
 
 ## Step 2 live field warnings
 - [x] First-name box warns while typing (a single letter shows the red message straight away), matching the email and mobile boxes; an empty box stays quiet until the button. Shared pure helper plus three tests pass; preview build OK and verified live in the browser after a real registration lookup. Nothing published.
+
+## Rapid lead-opening alert — built 28 Oct 2026
+- [x] Limit agreed: 30 lead openings or number copies in 10 minutes. Only openings with no call afterwards count — a dial that rings out or reaches voicemail is real phone work and never trips it.
+- [x] Database tables live: security_alerts, editable limit/window/mailboxes, and a trigger that wakes the check when someone passes the limit (no standing timer, so nothing runs when nobody is working).
+- [x] Edge check deployed: reads the last 10 minutes, matches each opening to a call by lead or by the number dialled, names the person, and emails info@ and support@ with opened / called / reached / no-call figures. Verified it runs and that it refuses calls without project keys.
+- [x] Admin-only Live Alerts card added showing the same figures with a link to the staff access log; 15 tests pass and the preview build is clean.
+- [ ] Nothing published: lead openings are recorded by the app itself, so the table is still empty until the site is published — no alert can fire before then.
+- [ ] A real test email has not been sent: it would read as a genuine incident in info@ and support@. Say the word and I'll fire a clearly-labelled one.
+- [ ] Second code at admin sign-in and new-place sign-in alerts still awaiting your decisions (who needs it, authenticator app or text, and where the alerts go).
