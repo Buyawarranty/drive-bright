@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Close sales lead and checkout-alert data-access gap
-- [ ] Restrict sales/sales_lead direct lead and checkout-alert reads and updates to current ownership; preserve management access and website/system capture.
-- [ ] Verify deployed policies with own/other/unassigned records and check related read paths; keep publication and ORR off.
+- [x] Added five restrictive lead read/update/delete and checkout-alert read/update policies with private current-owner predicates; contact-owner RPC now respects RLS. Existing permissive staff policies and public/system capture unchanged.
+- [x] Deployed database regressions exercise sales and temporarily rolled-back sales_lead identity against real own/other/unassigned/held lead reads, checkout ownership and contact lookup; management access retained. Thirteen popup tests pass; preview build OK, ORR off, no publication. No newly introduced security warnings; 607 pre-existing findings remain outside this fix.
+- [ ] Authenticated on-screen own/other-alert verification unavailable with external unmanaged Supabase. Existing already-delivered browser data cannot be recalled by RLS.
 
 ## Real /auth staff single-session enforcement
 - [x] Add a token-validated active-staff-only revoke-others action, independent of device approval, and await it in /auth staff password sign-in before dashboard/renewal navigation. Existing device flow unchanged; restored/refocused sessions do not revoke.
