@@ -51,7 +51,7 @@ import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { minimumPriceForCodes } from '@/lib/testPromoBypass';
 import { getWebsiteNetFloor, payInFullFloorFromTermFloor } from "@/lib/pricing/netFloor";
 import { toIsoDob } from '@/lib/customerDob';
-import { isValidCheckoutPhone, UK_PHONE_EXAMPLE } from '../../../supabase/functions/_shared/ukCheckoutPhone';
+import { isValidCheckoutPhone, UK_PHONE_EXAMPLE, UK_PHONE_HINT } from '../../../supabase/functions/_shared/ukCheckoutPhone';
 
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -1687,7 +1687,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           error = 'Phone number is required';
           isValid = false;
         } else if (!isValidCheckoutPhone(val)) {
-          error = `Please enter a UK mobile number starting 07 with 11 digits, for example ${UK_PHONE_EXAMPLE}`;
+          error = UK_PHONE_HINT;
           isValid = false;
         }
         break;
@@ -2837,7 +2837,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {(fieldErrors.phone || (customerData.phone?.trim() && !isValidCheckoutPhone(customerData.phone))) && (
                   <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    {fieldErrors.phone || `Please enter a UK mobile number starting 07 with 11 digits, for example ${UK_PHONE_EXAMPLE}`}
+                    {fieldErrors.phone || UK_PHONE_HINT}
                   </p>
                 )}
               </div>
