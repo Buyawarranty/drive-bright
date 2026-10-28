@@ -121,8 +121,8 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                     <span className="font-semibold text-[#1a1a1a]">{displayClaimLimitText}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500">Your excess</span>
-                    <span className="font-semibold text-[#1a1a1a]">£{excess} per claim</span>
+                    <span className="text-gray-500">Excess</span>
+                    <span className="font-semibold text-[#1a1a1a]">£{excess}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500">Labour rate</span>
@@ -174,7 +174,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
           <div className="space-y-2.5 text-sm">
             <div className="flex justify-between"><span className="text-gray-500">Cover duration</span><span className="font-semibold text-[#1a1a1a]">{duration}</span></div>
             <div className="flex justify-between"><span className="text-gray-500">Claim limit</span><span className="font-semibold text-[#1a1a1a]">{displayClaimLimitText}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Your excess</span><span className="font-semibold text-[#1a1a1a]">£{excess} per claim</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Excess</span><span className="font-semibold text-[#1a1a1a]">£{excess}</span></div>
             <div className="flex justify-between"><span className="text-gray-500">Labour rate</span><span className="font-semibold text-[#1a1a1a]">Up to £{labourRate}/hr</span></div>
             <div className="flex justify-between"><span className="text-gray-500">Parts covered</span><span className="font-semibold text-[#1a1a1a]">Comprehensive cover</span></div>
           </div>

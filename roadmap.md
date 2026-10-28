@@ -1,5 +1,8 @@
 # Roadmap
 
+## Excess display wording
+- [x] Website checkout summaries and chat cover summary use Excess and amount only; pricing, policy explanations and claim limits unchanged. Nothing published.
+
 ## Goldmine administrator releases
 - [x] Limit releases to 100 and admin/super_admin only; self-claim endpoints fail closed and all release controls use the guarded allocation RPC. Existing list visibility and newest-first selection retained.
 - [x] Visible name is now "Recontacted Leads" across sidebar, heading, permission tick-boxes, Lead Teams, allocation matrix, caps/access panels, toasts and tooltips; internal ids, tables, RPCs and URL aliases unchanged.
