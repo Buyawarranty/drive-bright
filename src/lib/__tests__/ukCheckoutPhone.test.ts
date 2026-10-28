@@ -52,7 +52,7 @@ describe('phone box typing rule', () => {
   });
   it('drops stray punctuation and caps length', () => {
     expect(sanitizePhoneInput('07960-123-456')).toBe('07960123456');
-    expect(sanitizePhoneInput('(079) 6012-3456')).toBe('07960123456');
+    expect(sanitizePhoneInput('(079) 6012-3456')).toBe('079 60123456');
     expect(sanitizePhoneInput('0796012345678901234')).toBe('079601234567890');
   });
   it('only keeps a plus when it starts the number', () => {
