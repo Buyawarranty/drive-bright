@@ -281,10 +281,10 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     stripeBeforePromo,
     Math.max(promoPriceFloor(appliedPromos, promoTermFloor), stripeBeforePromo - stripePromoAmt),
   );
-  const savings = Math.max(0, rawMonthlyTotal - payInFull);
   // What the customer actually pays across the 12 instalments — shown in the
   // sticky bar next to "Pay in full" so the two boxes can be compared directly.
   const monthlyPaymentsTotal = twelvePaymentTotal(displayedMonthlyPrice);
+  const savings = Math.max(0, monthlyPaymentsTotal - payInFull);
 
   const selectedTier = CLAIM_LIMIT_TIERS.find(t => t.value === selectedClaimLimit);
   const selectedLabour = LABOUR_OPTIONS.find(l => l.value === selectedLabourRate);

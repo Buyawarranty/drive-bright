@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { payInFullTotal, payInFullSaving, twelvePaymentTotal, hasFullTenPercentSaving } from '@/lib/pricing/payInFull';
+import { MIN_DISPLAYED_SAVING, payInFullTotal, payInFullSaving, twelvePaymentTotal, hasFullTenPercentSaving } from '@/lib/pricing/payInFull';
 
 describe('pay in full pricing', () => {
+  it('never displays a £1 saving', () => {
+    expect(1 >= MIN_DISPLAYED_SAVING).toBe(false);
+  });
+
+  it('allows the genuine £25 saving on £492 versus £467 to be shown', () => {
+    expect(492 - 467 >= MIN_DISPLAYED_SAVING).toBe(true);
+  });
+
   it('recognises the full 10% saving on a £492 instalment total', () => {
     expect(hasFullTenPercentSaving(492, 443)).toBe(true);
   });

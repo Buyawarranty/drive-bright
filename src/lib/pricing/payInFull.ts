@@ -15,7 +15,7 @@ export const PAYMENTS_COUNT = 12;
  * Below this saving, "Save £X" badges are hidden entirely — a tiny saving
  * (e.g. "Save £1" when a floor clamps the 10% discount) looks worse than none.
  */
-export const MIN_DISPLAYED_SAVING = 30;
+export const MIN_DISPLAYED_SAVING = 2;
 
 /** Only label the offer as 10% when the actual displayed totals support it. */
 export function hasFullTenPercentSaving(instalmentTotal: number, fullTotal: number): boolean {
