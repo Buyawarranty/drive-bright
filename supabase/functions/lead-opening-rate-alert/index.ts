@@ -36,19 +36,32 @@ type Client = ReturnType<typeof createClient>;
 
 const bearer = (req: Request) => (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
 
+/** The role claim of a Supabase key or session token, or null if unreadable. */
+const roleOf = (token: string): string | null => {
+  const part = token.split('.')[1];
+  if (!part) return null;
+  try {
+    const payload = JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof payload?.role === 'string' ? payload.role : null;
+  } catch {
+    return null;
+  }
+};
+
 /**
  * Only the database trigger (which presents the project anon key) or a service
- * call may run this. A staff or customer session token always arrives as a
- * bearer token of its own, so it is refused outright.
+ * call may run this. A staff or customer session carries a bearer token whose
+ * role is "authenticated", so it is refused outright.
  */
 const isTrustedCaller = (req: Request) => {
   const auth = bearer(req);
   const apikey = req.headers.get('apikey') || '';
-  const anon = Deno.env.get('SUPABASE_ANON_KEY') || '';
-  const service = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-  if (auth && auth !== anon && auth !== service) return false;
-  const presented = auth || apikey;
-  return !!presented && (presented === anon || presented === service);
+  const allowed = (token: string) => {
+    const role = roleOf(token);
+    return role === 'anon' || role === 'service_role';
+  };
+  if (auth && !allowed(auth)) return false;
+  return allowed(auth || apikey);
 };
 
 const chunk = <T>(items: T[], size = 400): T[][] => {
