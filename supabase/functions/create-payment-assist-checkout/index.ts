@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { crypto } from "https://deno.land/std@0.190.0/crypto/mod.ts";
 import { encode as hexEncode } from "https://deno.land/std@0.190.0/encoding/hex.ts";
+import { isValidCheckoutPhone, normalizeCheckoutPhone, UK_PHONE_EXAMPLE } from '../_shared/ukCheckoutPhone.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -323,23 +324,12 @@ serve(async (req) => {
 
     // Normalise the phone number to the 11-digit UK format Payment Assist expects.
     // PA rejects "+44...", spaces, and short/long numbers with "invalid telephone".
-    const normaliseUkPhone = (raw: string): string => {
-      let digits = String(raw || '').replace(/[^0-9+]/g, '');
-      if (digits.startsWith('+44')) digits = '0' + digits.slice(3);
-      else if (digits.startsWith('0044')) digits = '0' + digits.slice(4);
-      else if (digits.startsWith('44') && digits.length >= 12) digits = '0' + digits.slice(2);
-      digits = digits.replace(/[^0-9]/g, '');
-      if (digits.length === 10 && !digits.startsWith('0')) digits = '0' + digits;
-      return digits;
-    };
-    const telephone = normaliseUkPhone(customerData?.phone || '');
-    const validUkPhone = telephone.startsWith('07')
-      ? /^07\d{9}$/.test(telephone)   // mobiles are always 11 digits
-      : /^0\d{9,10}$/.test(telephone); // landlines 10-11 digits
+    const telephone = normalizeCheckoutPhone(customerData?.phone || customerData?.mobile || '');
+    const validUkPhone = isValidCheckoutPhone(telephone);
     if (!validUkPhone) {
-      logStep("Invalid telephone for Payment Assist", { provided: customerData?.phone, normalised: telephone });
+      logStep("Invalid telephone for Payment Assist", { digitCount: telephone.replace(/\D/g, '').length });
       return new Response(JSON.stringify({
-        error: 'Please enter a valid UK phone number (for example 07123 456789) to pay monthly.',
+        error: `Please enter a valid UK phone number (for example ${UK_PHONE_EXAMPLE}) to pay monthly.`,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,

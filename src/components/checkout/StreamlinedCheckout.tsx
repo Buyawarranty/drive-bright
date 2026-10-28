@@ -51,6 +51,7 @@ import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { minimumPriceForCodes } from '@/lib/testPromoBypass';
 import { getWebsiteNetFloor, payInFullFloorFromTermFloor } from "@/lib/pricing/netFloor";
 import { toIsoDob } from '@/lib/customerDob';
+import { isValidCheckoutPhone, UK_PHONE_EXAMPLE } from '../../../supabase/functions/_shared/ukCheckoutPhone';
 
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -1392,8 +1393,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
                 break;
               case 'phone':
-                const cleanedPhone = value.replace(/\s/g, '');
-                isValid = /^(?:(?:\+44)|(?:0))(?:\d{10}|\d{9})$/.test(cleanedPhone);
+                isValid = isValidCheckoutPhone(value);
                 break;
             }
             if (isValid) {
@@ -1683,13 +1683,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       }
       case 'phone': {
         const val = getValue('phone');
-        const cleanedPhone = val?.replace(/\s/g, '') || '';
-        const ukPhoneRegex = /^(?:(?:\+44)|(?:0))(?:\d{10}|\d{9})$/;
-        if (!cleanedPhone) {
+        if (!val?.trim()) {
           error = 'Phone number is required';
           isValid = false;
-        } else if (!ukPhoneRegex.test(cleanedPhone)) {
-          error = 'Please enter a valid UK phone number';
+        } else if (!isValidCheckoutPhone(val)) {
+          error = `Please enter a valid UK phone number, for example ${UK_PHONE_EXAMPLE}`;
           isValid = false;
         }
         break;
@@ -2088,7 +2086,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       if (!customerData.first_name?.trim() || customerData.first_name.trim().length < 2) missing.push('first name');
       if (!customerData.last_name?.trim() || customerData.last_name.trim().length < 2) missing.push('last name');
       if (!customerData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) missing.push('email');
-      if (!customerData.phone?.trim()) missing.push('phone number');
+      if (!isValidCheckoutPhone(customerData.phone)) missing.push('phone number');
       if (!mileageValueValid) missing.push('mileage');
       if (!addressComplete) missing.push('address');
 
@@ -2825,7 +2823,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="07123 456789"
+                    placeholder={UK_PHONE_EXAMPLE}
                     value={customerData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     onBlur={() => handleFieldBlur('phone')}
