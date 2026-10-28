@@ -35,6 +35,8 @@ export const ALERT_RAIL_ORDER = {
   // An agent's reply to a manager's authorisation decision — stays until they answer.
   saleAuthorisationResult: 9,
   careerApplicants: 15,
+  // Security notices — who opened leads without dialling, and similar.
+  leadOpeningRate: 16,
   // Everything else follows.
   incomingCall: 10,
   authorisationNeeded: 11,

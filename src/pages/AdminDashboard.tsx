@@ -45,6 +45,7 @@ import { SaleAuthorisationResultPopup } from '@/components/admin/SaleAuthorisati
 import { ChatAgentRequestAlert } from '@/components/admin/leads/ChatAgentRequestAlert';
 const NonClaimComplaintAlert = lazy(() => import('@/components/admin/NonClaimComplaintAlert').then(m => ({ default: m.NonClaimComplaintAlert })));
 const PriceBeatRequestAlert = lazy(() => import('@/components/admin/PriceBeatRequestAlert').then(m => ({ default: m.PriceBeatRequestAlert })));
+const LeadOpeningRateAlert = lazy(() => import('@/components/admin/security/LeadOpeningRateAlert').then(m => ({ default: m.LeadOpeningRateAlert })));
 
 
 
