@@ -1,6 +1,7 @@
 # Project architecture rules
-- Lead/checkout RLS enforces ownership; failed-payment rows/sounds/claims recheck it and lookups respect RLS. Access events stamp actor/server time; openings/copies log apart from seen receipts. Allocation stays separate.
-- Step 2/4 and Payment Assist share mobile validation; both Step 2 variants share a heading to keep presentation consistent.
+- Lead/checkout RLS enforces ownership, including failed-payment rows/sounds/claims and lookups. Access events stamp actor/server time; opens/copies log apart from seen receipts. Allocation stays separate.
+- Step 2/4 and Payment Assist share mobile validation; both Step 2 variants share a heading.
+- Postcoder autocomplete uses key-in-query URLs and town pathfilters, avoiding HTML responses.
 - Customer/lead pop-ups and notification bells share a fail-closed current-assignee check for sales and sales leads, including WhatsApp replies and policy-linked authorisation results; unscoped/unassigned alerts cannot be enabled and recent alerts recheck lead IDs, not recipient history. Ownership reads accept only the latest request and clear approval during revalidation, so delayed reads cannot restore a former owner's alerts. 
 - CRM attendance uses a dedicated session ledger and per-user serialized server clock, separate from allocation presence; JWT-checked service-only recording owns timestamps and totals, management-only reporting separates use from open-session time.
 - Attendance reports deduplicate requests per date range and accept only the currently selected range, so a pending live refresh cannot block or overwrite historical searches; date choice never mutates stored attendance. Daily timelines split sessions at the selected display-zone day boundary, preserve repeats and stop at observed last-seen times; a reconnect after a stale heartbeat opens a new attendance session, so saved authentication never implies continuous presence or a computer lock.
@@ -8,7 +9,7 @@
 - Attendance composes existing RLS-protected location and lifecycle logs; staff authentication history uses a service-only allowlisted RPC with protected admin-role checks and bounded pagination, never raw payloads.
 - Attendance location review reuses paginated RLS-protected work-location records with shared dates and staff scope; multiple network/place/device-type signals prompt review, never automatic denial or a physical-device identity claim.
 - Approved-browser access stores credential hashes and explicit admin decisions server-side; enforcement stays disabled until administrator enrolment and every data entry point are verified. Browser credentials are bearer proofs, not hardware identity; no automatic first-device approval.
-- Call data bookmarks share the existing tab_overview permission through one helper used by sidebar and render guards; preserve underlying call scopes, collection and attribution.
+- Call bookmarks share tab_overview via sidebar/render guards; preserve call scopes, collection and attribution.
 - Linked renewals reuse the New Leads call counter, dial/email/reminder controls and full notes panel keyed by the existing lead ID; preserve policy outcomes and routing so activity stays with the same lead across views.
 - Cyber security is read-only, admin/super-admin-only: a service-only summary RPC checks protected roles and returns counts, and a JWT-checked endpoint inspects only fixed published URLs, so no secrets or customer records enter reports.
 - Keep CLI asset pointers; portableAssetsPlugin resolves external-host URLs; mobile caps sit on wrappers.
