@@ -584,7 +584,7 @@ function PriceOptionsPanel({
               </li>
               <li className="flex items-start gap-2 text-sm text-muted-foreground">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0BA360]" />
-                <span><strong className="text-foreground">£{excess}</strong> excess per claim</span>
+                <span>Excess <strong className="text-foreground">£{excess}</strong></span>
               </li>
               <li className="flex items-start gap-2 text-sm text-muted-foreground">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0BA360]" />
