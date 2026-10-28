@@ -198,13 +198,12 @@ export function applyWebsiteSellFloor(total: number, params: Omit<NetFloorParams
  * meaningless "Save £1" (e.g. £708 total now pays £638, not £700).
  */
 /**
- * Pay-in-full floor from an already-computed website term floor. 2/3-year:
- * 90% of the term minimum, so the 10% discount always applies in full.
- * 1-year keeps the full £399 hard minimum.
+ * Pay-in-full floor from an already-computed website term floor: 90% of the
+ * term minimum for EVERY term (1, 2 and 3 years), so the 10% pay-in-full
+ * discount always applies in full and "Save £1" can never appear.
  */
-export function payInFullFloorFromTermFloor(termFloor: number, paymentPeriod: PaymentPeriod | string | null | undefined): number {
-  const multiYear = paymentPeriod === '24months' || paymentPeriod === '36months';
-  return Math.ceil(multiYear ? termFloor * 0.9 : termFloor);
+export function payInFullFloorFromTermFloor(termFloor: number, _paymentPeriod?: PaymentPeriod | string | null): number {
+  return Math.ceil(termFloor * 0.9);
 }
 
 export function applyWebsitePayInFullFloor(payInFull: number, params: Omit<NetFloorParams, 'surface'>): number {
