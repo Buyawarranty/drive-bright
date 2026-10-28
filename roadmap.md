@@ -1,5 +1,9 @@
 # Roadmap
 
+## Close sales lead and checkout-alert data-access gap
+- [ ] Restrict sales/sales_lead direct lead and checkout-alert reads and updates to current ownership; preserve management access and website/system capture.
+- [ ] Verify deployed policies with own/other/unassigned records and check related read paths; keep publication and ORR off.
+
 ## Real /auth staff single-session enforcement
 - [x] Add a token-validated active-staff-only revoke-others action, independent of device approval, and await it in /auth staff password sign-in before dashboard/renewal navigation. Existing device flow unchanged; restored/refocused sessions do not revoke.
 - [x] Eighteen focused frontend/edge tests pass; browser fixture submits real /auth form and verifies normal staff and role-error fallback revoke once, customers skip revocation, and failure stays on /auth. Preview build OK; not published.
