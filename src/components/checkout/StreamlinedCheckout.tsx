@@ -2830,14 +2830,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     required
                     className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('phone')}`}
                   />
-                  {validatedFields.phone && !fieldErrors.phone && (
+                  {isValidCheckoutPhone(customerData.phone) && (
                     <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                   )}
                 </div>
-                {fieldErrors.phone && (
+                {(fieldErrors.phone || (customerData.phone?.trim() && !isValidCheckoutPhone(customerData.phone))) && (
                   <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    {fieldErrors.phone}
+                    {fieldErrors.phone || `This number looks one digit short — UK mobiles have 11 digits, for example ${UK_PHONE_EXAMPLE}`}
                   </p>
                 )}
               </div>
