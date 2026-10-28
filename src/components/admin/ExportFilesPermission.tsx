@@ -19,9 +19,9 @@ const EMPTY: GrantFlags = {
 };
 
 const OPTIONS: { key: keyof GrantFlags; label: string; hint: string }[] = [
-  { key: 'can_export_new_leads', label: 'New leads export', hint: 'Download lead data from New Leads and Recontact Leads' },
+  { key: 'can_export_new_leads', label: 'New leads export', hint: 'Download lead data from New Leads and Recontacted Leads' },
   { key: 'can_export_customers', label: 'Customer management export', hint: 'Download customer data from Customer Management' },
-  { key: 'can_see_lead_source', label: 'See lead source', hint: 'See where a lead came from (Google/Facebook/Organic) in Customer Management, New Leads and Recontact Leads' },
+  { key: 'can_see_lead_source', label: 'See lead source', hint: 'See where a lead came from (Google/Facebook/Organic) in Customer Management, New Leads and Recontacted Leads' },
 ];
 
 export function ExportFilesPermission({ adminUserId, role, canManage }: { adminUserId: string; role: string; canManage: boolean }) {

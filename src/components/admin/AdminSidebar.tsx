@@ -181,7 +181,7 @@ export const defaultTabs: Tab[] = [
   },
   {
     id: 'recontact-leads',
-    label: 'Recontact Leads',
+    label: 'Recontacted Leads',
     icon: Gem,
     description: 'Past enquiries ready for follow-up'
   },
@@ -581,7 +581,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   const navigate = useNavigate();
 
   // Load the current user's workstream flags from lead_team_members so unticking
-  // "New Leads" / "Recontact Leads" / "Renewals" in the Lead Types column of the
+  // "New Leads" / "Recontacted Leads" / "Renewals" in the Lead Types column of the
   // Allocation Matrix actually hides the matching sidebar tab for that agent.
   const [workstreamFlags, setWorkstreamFlags] = useState<{
     new_leads: boolean;
@@ -844,7 +844,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         && (r === 'admin' || r === 'super_admin' || (userPermissions as any)?.['tab_lead-count'] === true);
       if (!ok) base = base.filter(t => t.id !== 'lead-count');
     }
-    // Recontact Leads: management only (admin, super_admin, sales_manager).
+    // Recontacted Leads: management only (admin, super_admin, sales_manager).
     if (!['admin', 'super_admin', 'sales_manager'].includes(userRole || '')) base = base.filter(t => t.id !== 'recontact-leads');
     base = base.filter(t => !['growth-sales', 'growth-leads', 'growth-marketing', 'growth-branding'].includes(t.id));
     if (!workstreamFlags) return base;

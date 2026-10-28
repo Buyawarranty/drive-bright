@@ -67,11 +67,11 @@ const OUTCOMES = [
 const PAGE_SIZE = 500;
 const UNASSIGNED = '__unassigned__';
 
-// Bulk self-claim guardrails for recontact leads.
+// Bulk self-claim guardrails for recontacted leads.
 // - Max per click: keeps agents from vacuuming the queue in one action.
 // - Max per day: spreads the pool across the sales floor.
 // - FIFO: oldest first so nothing rots at the bottom.
-// - Any lead (assigned or not) is claimable — recontact leads are shared,
+// - Any lead (assigned or not) is claimable — recontacted leads are shared,
 //   previously worked leads can move between agents. Terminal statuses and
 //   leads already owned by the current agent are skipped.
 const BULK_CLAIM_MAX_PER_CLICK = 100;
@@ -93,7 +93,7 @@ function daysSince(iso: string | null | undefined): number | null {
 }
 
 /**
- * Recontact leads must always be older than two months. Nothing fresher may
+ * Recontacted leads must always be older than two months. Nothing fresher may
  * ever appear on this page, whoever it is assigned to.
  */
 const RECONTACT_MIN_AGE_DAYS = 60;
@@ -341,7 +341,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     return m;
   }, [agents]);
 
-  // Recontact leads are worked by the whole sales floor — anyone granted lead
+  // Recontacted leads are worked by the whole sales floor — anyone granted lead
   // reassign access (per-agent "Staff Lead Access" control) can grab a lead.
   // Managers and office staff always pass; sales/sales_lead pass when their cap
   // flag is on.
@@ -526,7 +526,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         const tagData = await fetchByIdsInBatches<{ lead_id: string; tag_id: string }>(
           leadIds,
           (batch) => (supabase.from('lead_tag_assignments') as any).select('lead_id, tag_id').in('lead_id', batch),
-          { label: 'recontact lead tags' },
+          { label: 'recontacted lead tags' },
         );
         {
           const map: Record<string, string[]> = {};
@@ -540,7 +540,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         setLeadTagMap({});
       }
     } catch (e: any) {
-      toast.error('Failed to load recontact leads', { description: e.message });
+      toast.error('Failed to load recontacted leads', { description: e.message });
     } finally {
       clearTimeout(safetyTimer);
       setLoading(false);
@@ -819,7 +819,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     return list;
   }, [leads, search, agents, statusFilter, customerEmails, customerRegs, datePeriod, dateCustomRange, agentFilter, filterPeople, statusPillSet, tags, leadTagMap]);
 
-  // When an agent actively works a recontact lead (calls, logs an outcome, sets
+  // When an agent actively works a recontacted lead (calls, logs an outcome, sets
   // a callback, changes status, adds a note), auto-file it under their "My leads
   // only" bucket so they can find it again. Managers/admins spot-checking are
   // excluded so they don't accidentally steal leads from sales agents.
@@ -1087,7 +1087,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const targetAgent = agents.find(a => a.id === assignTargetAdminId);
   const targetLabel = assigningToSelf ? 'me' : (targetAgent ? agentLabel(targetAgent) : 'agent');
 
-  // Per-agent workload snapshot across the currently-loaded recontact leads
+  // Per-agent workload snapshot across the currently-loaded recontacted leads
   // (customers already excluded upstream). Used by the manager "Agent workload"
   // dialog so managers can see who has what and jump straight into an agent's
   // pipeline.
@@ -1246,7 +1246,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   }, [currentUserId, reassignFromId, reassignToId, agents]);
 
   const claimBulk = useCallback(async () => {
-    if (!canReleaseGoldmineLeads(currentRole) || !canReleaseGoldmineLeads(userRole)) { toast.error('Only admins can release Goldmine leads'); return; }
+    if (!canReleaseGoldmineLeads(currentRole) || !canReleaseGoldmineLeads(userRole)) { toast.error('Only admins can release Recontacted leads'); return; }
     if (!currentUserId) { toast.error('Not signed in'); return; }
     if (!assignTargetAdminId) { toast.error('Pick an agent to assign to'); return; }
     if (isBlocked) {
@@ -1272,7 +1272,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         toast.error('Release refused', { description: result.blocked_reason });
         return;
       }
-      toast.success(`Released ${result?.assigned_count ?? 0} Goldmine leads to ${targetLabel}`);
+      toast.success(`Released ${result?.assigned_count ?? 0} Recontacted leads to ${targetLabel}`);
       await fetchLeads();
     } catch (e: any) {
       toast.error('Release failed', { description: e.message });
@@ -1283,7 +1283,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
   const { canExportNewLeads: exportFilesAllowed, canSeeLeadSource } = useExportPermissions();
   const exportCsv = useCallback(async () => {
-    if (!canExportCsv) { toast.error('Only admins and super admins can download Recontact Leads.'); return; }
+    if (!canExportCsv) { toast.error('Only admins and super admins can download Recontacted Leads.'); return; }
     if (!await requireNewLeadsExport()) return;
     if (!filteredLeads.length) {
       toast.error('Nothing to export', { description: 'There are no leads in the current view.' });
@@ -1344,11 +1344,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           <div className="space-y-0.5 min-w-0">
             <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
               <RefreshCw className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-              Recontact Leads
+              Recontacted Leads
               <Badge
                 variant="secondary"
                 className="text-base px-2.5 py-0.5 font-bold tabular-nums"
-                title="Total recontact leads in this view"
+                title="Total recontacted leads in this view"
               >
                 {totalCount.toLocaleString()}
               </Badge>
@@ -1532,8 +1532,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               disabled={claiming || remainingToday <= 0 || !assignTargetAdminId}
               className="shrink-0"
               title={assigningToSelf
-                ? `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the newest eligible Goldmine leads to yourself. Daily cap ${BULK_CLAIM_MAX_PER_DAY}.`
-                : `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the newest eligible Goldmine leads to ${targetLabel}.`}
+                ? `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the newest eligible Recontacted leads to yourself. Daily cap ${BULK_CLAIM_MAX_PER_DAY}.`
+                : `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the newest eligible Recontacted leads to ${targetLabel}.`}
             >
               {claiming
                 ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
@@ -1560,7 +1560,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 size="sm"
                 onClick={() => setWorkloadOpen(true)}
                 className="shrink-0"
-                title="See every agent's recontact lead pipeline at a glance"
+                title="See every agent's recontacted lead pipeline at a glance"
               >
                 <Network className="h-4 w-4 mr-1" /> Agent workload
               </Button>
@@ -1585,7 +1585,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 size="sm"
                 onClick={() => onNavigateToTab('lead-teams')}
                 className="shrink-0 font-semibold"
-                title="Assign agents to teams and pick the queues they work — New Leads, Recontact, Renewals"
+                title="Assign agents to teams and pick the queues they work — New Leads, Recontacted Leads, Renewals"
               >
                 <Network className="h-4 w-4 mr-1" /> Allocate Agents
               </Button>
@@ -1701,7 +1701,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             </label>
           </div>
 
-          {/* Red warning — recontact leads stuck on non-sales accounts (management only) */}
+          {/* Red warning — recontacted leads stuck on non-sales accounts (management only) */}
           <NonSalesAssigneeBanner
             agents={agents}
             currentRole={currentRole}
@@ -1715,13 +1715,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
           {loading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading recontact leads…
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading recontacted leads…
             </div>
           ) : filteredLeads.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                No recontact leads match your filters. Try clearing your filters, or switch off &quot;My leads only&quot;.
+                No recontacted leads match your filters. Try clearing your filters, or switch off &quot;My leads only&quot;.
               </CardContent>
             </Card>
           ) : (
@@ -1804,7 +1804,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Move every lead currently owned by one agent to another. This runs across all recontact leads, not just the current filter.
+              Move every lead currently owned by one agent to another. This runs across all recontacted leads, not just the current filter.
             </p>
             <div className="space-y-2">
               <Label className="text-xs">From agent</Label>
@@ -1871,11 +1871,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Network className="h-5 w-5 text-primary" /> Agent workload — Recontact leads
+              <Network className="h-5 w-5 text-primary" /> Agent workload — Recontacted leads
             </DialogTitle>
           </DialogHeader>
           <p className="text-xs text-muted-foreground mb-3">
-            Snapshot across the currently loaded recontact leads. Click <strong>View leads</strong> to filter the table to that agent.
+            Snapshot across the currently loaded recontacted leads. Click <strong>View leads</strong> to filter the table to that agent.
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

@@ -39,7 +39,7 @@ type WorkstreamKey = 'new_leads' | 'recontact' | 'renewals';
 
 const WORKSTREAM_DEFS: { key: WorkstreamKey; col: string; label: string; tabId: string; hint: string }[] = [
   { key: 'new_leads', col: 'workstream_new_leads', label: 'New Leads', tabId: 'new-leads', hint: 'Brand-new website leads in rotation' },
-  { key: 'recontact', col: 'workstream_recontact', label: 'Recontact Leads', tabId: 'recontact-leads', hint: 'Older leads being worked again' },
+  { key: 'recontact', col: 'workstream_recontact', label: 'Recontacted Leads', tabId: 'recontact-leads', hint: 'Older leads being worked again' },
   { key: 'renewals', col: 'workstream_renewals', label: 'Renewals', tabId: 'renewals', hint: 'Customers coming up for renewal' },
 ];
 
@@ -73,7 +73,7 @@ interface Permission {
 // Define all admin tabs that can be granted as permissions
 const ADMIN_TABS = [
   { id: 'new-leads', label: 'New Leads', description: 'Manage sales pipeline and lead assignments', hasGranular: true },
-  { id: 'recontact-leads', label: 'Recontact Leads', description: 'Past enquiries ready for follow-up' },
+  { id: 'recontact-leads', label: 'Recontacted Leads', description: 'Past enquiries ready for follow-up' },
   { id: 'renewals', label: 'Renewals', description: 'Renewals and upsells for active customers' },
   { id: 'get-quote', label: 'Quotes & Orders', description: 'Generate quotes and process manual orders' },
   { id: 'selling-tips', label: 'Sales Script', description: 'Sales script, tips and customer feedback' },

@@ -199,7 +199,7 @@ export function RecontactAgentCapsPanel() {
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-base flex items-center gap-2">
             <PhoneCall className="h-4 w-4 text-blue-700" />
-            Recontact Leads — per-agent allowances
+            Recontacted Leads — per-agent allowances
             <Badge variant="outline" className="text-[10px]">{rows.length}</Badge>
           </CardTitle>
           <Button variant="outline" size="sm" onClick={load} disabled={loading} className="gap-2">
@@ -208,7 +208,7 @@ export function RecontactAgentCapsPanel() {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          Turn <strong>Recontact</strong> on for the agents who work this queue — they'll get a green
+          Turn <strong>Recontacted Leads</strong> on for the agents who work this queue — they'll get a green
           "On" tick. Off shows orange so it's obvious who isn't included. Add a daily or total cap next
           to control how many leads each on-agent can claim (blank = unlimited, standard 200/day guardrail still applies).
         </p>
@@ -230,7 +230,7 @@ export function RecontactAgentCapsPanel() {
                   <th className="py-2 pr-3">Last claimed</th>
                   <th className="py-2 pr-3">Daily cap</th>
                   <th className="py-2 pr-3">Total cap</th>
-                  <th className="py-2 pr-3">Recontact</th>
+                  <th className="py-2 pr-3">Recontacted</th>
                   <th className="py-2 pr-3"></th>
                 </tr>
               </thead>

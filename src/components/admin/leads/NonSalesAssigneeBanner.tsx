@@ -37,7 +37,7 @@ interface Props {
 }
 
 /**
- * Red warning banner shown at the top of the Recontact Leads tab whenever any
+ * Red warning banner shown at the top of the Recontacted Leads tab whenever any
  * recontact-eligible lead is currently assigned to a non-sales account (e.g.
  * info@ / support@ / claims@ / a super_admin who isn't actually selling). This
  * situation used to silently break agents (e.g. Freddie couldn't see leads

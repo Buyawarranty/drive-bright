@@ -1207,7 +1207,7 @@ const AdminDashboard = () => {
         if (!['admin', 'super_admin', 'sales_manager'].includes(effectiveUserRole || '')) {
           return (
             <div className="p-6 text-sm text-muted-foreground">
-              Recontact Leads is for management only.
+              Recontacted Leads is for management only.
             </div>
           );
         }
