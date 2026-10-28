@@ -125,7 +125,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
         <div className={cn('flex gap-2 md:gap-3 mb-3', isPulsing && 'animate-pulse')}>
           <Card type="full" title="Pay in Full">
             <div className="mt-1">
-              <span className="text-2xl md:text-3xl font-extrabold text-[#0BA360]">£{payInFullDiscounted}</span>
+              <span className="text-2xl md:text-3xl font-extrabold text-success-ink">£{payInFullDiscounted}</span>
             </div>
             <p className="text-[13px] md:text-sm font-semibold text-gray-900 mt-1">Pay in full</p>
             {stripeSavings >= MIN_DISPLAYED_SAVING && (

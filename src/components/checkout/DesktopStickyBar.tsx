@@ -155,7 +155,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
                 Pay in full <strong className="text-[#161616] text-[16px]">£{fullPrice}</strong>
               </span>
               {savings >= MIN_DISPLAYED_SAVING && (
-                <span className="block text-[14px] text-[#1ca36f] font-bold mt-0.5">Save £{savings} vs monthly</span>
+                <span className="block text-[14px] text-success-ink font-bold mt-0.5">Save £{savings} vs monthly</span>
               )}
             </span>
           </button>
