@@ -13,6 +13,7 @@ import { getAddOnInfo, isAddOnAutoIncluded, normalizePaymentType } from '@/lib/a
 import { getTrackingData } from '@/utils/gclidCapture';
 import { getUtmPayload } from '@/utils/utmCapture';
 import { getEntryPayload } from '@/utils/entryCapture';
+import { isValidPersonName, sanitizeNameInput } from '../../supabase/functions/_shared/ukPersonName';
 
 interface MultiWarrantyCheckoutProps {
   items: CartItem[];
@@ -303,7 +304,10 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
   // Total price calculation moved up
 
   const handleInputChange = (field: string, value: string) => {
-    setCustomerData(prev => ({ ...prev, [field]: value }));
+    // Name boxes take letters only — digits are stripped as the person types.
+    const nextValue =
+      field === 'first_name' || field === 'last_name' ? sanitizeNameInput(value) : value;
+    setCustomerData(prev => ({ ...prev, [field]: nextValue }));
     if (fieldErrors[field]) {
       setFieldErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -313,7 +317,9 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
     const errors: {[key: string]: string} = {};
     
     if (!customerData.first_name.trim()) errors.first_name = 'First name is required';
+    else if (!isValidPersonName(customerData.first_name)) errors.first_name = 'First name must use letters only';
     if (!customerData.last_name.trim()) errors.last_name = 'Last name is required';
+    else if (!isValidPersonName(customerData.last_name)) errors.last_name = 'Last name must use letters only';
     if (!customerData.email.trim()) errors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(customerData.email)) errors.email = 'Email format is invalid';
     if (!customerData.mobile.trim()) errors.mobile = 'Mobile number is required';

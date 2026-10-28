@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { sanitizeNameInput } from '../_shared/ukPersonName.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -240,6 +241,13 @@ const handler = async (req: Request): Promise<Response> => {
     // Normalize email to lowercase to prevent case-mismatch dedup issues
     if (cartData.email) {
       cartData.email = cartData.email.trim().toLowerCase();
+    }
+
+    // Names keep letters only — digits can never be stored as a customer name,
+    // even if the browser controls are bypassed.
+    if (typeof cartData.full_name === 'string') {
+      const cleanedName = sanitizeNameInput(cartData.full_name);
+      cartData.full_name = cleanedName === '' ? undefined : cleanedName;
     }
 
     // Normalize phone: never persist empty string (prevents wiping existing valid phones)
