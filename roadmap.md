@@ -2,6 +2,7 @@
 
 ## Goldmine administrator releases
 - [x] Limit releases to 100 and admin/super_admin only; self-claim endpoints fail closed and all release controls use the guarded allocation RPC. Existing list visibility and newest-first selection retained.
+- [x] Visible name is now "Recontacted Leads" across sidebar, heading, permission tick-boxes, Lead Teams, allocation matrix, caps/access panels, toasts and tooltips; internal ids, tables, RPCs and URL aliases unchanged.
 - [x] Thirteen focused frontend tests and database role/self-claim checks passed; preview build OK. Nothing published or ORR enabled.
 - [ ] Actual release/read-back is blocked: no agent currently has Goldmine workstream enabled; authenticated browser verification unavailable on external unmanaged Supabase. Existing security findings unchanged.
 
