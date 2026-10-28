@@ -8,14 +8,14 @@
  * Smith-Jones and J. R. Smith all still work.
  */
 
-/** Names are never longer than this; anything typed past it is dropped. */
-export const NAME_MAX_LENGTH = 60;
-
 /** Shortest acceptable name — the same floor every name box already used. */
 export const NAME_MIN_LENGTH = 2;
 
+/** Names are never longer than this; anything typed past it is dropped. */
+export const NAME_MAX_LENGTH = 60;
+
 /** Letters (any alphabet, accents included), spaces, apostrophes, hyphens, full stops. */
-const ALLOWED_NAME_CHARACTERS = /[^\p{L}\p{M}\s'’\-.]/gu;
+const FORBIDDEN_NAME_CHARACTERS = /[^\p{L}\p{M}\s'’\-.]/gu;
 
 /**
  * Strip anything that cannot belong in a name — digits, slashes, emoji,
@@ -23,7 +23,7 @@ const ALLOWED_NAME_CHARACTERS = /[^\p{L}\p{M}\s'’\-.]/gu;
  */
 export function sanitizeNameInput(raw: unknown): string {
   if (typeof raw !== 'string') return '';
-  const withoutForbidden = raw.replace(ALLOWED_NAME_CHARACTERS, '');
+  const withoutForbidden = raw.replace(FORBIDDEN_NAME_CHARACTERS, '');
   const singleSpaced = withoutForbidden.replace(/\s+/g, ' ');
   return singleSpaced.slice(0, NAME_MAX_LENGTH);
 }
