@@ -172,6 +172,7 @@ const OwnedPaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     }
   });
   const seenKeysRef = useRef<Map<string, number>>(new Map());
+  const fetchGeneration = useRef(0);
 
   const persistHidden = useCallback((next: Set<string>) => {
     try {
@@ -199,6 +200,8 @@ const OwnedPaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
 
 
   const fetchActive = useCallback(async () => {
+    const generation = ++fetchGeneration.current;
+    setLeadIds({});
     // Only ACTIVE alerts — once someone takes it, status flips to acknowledged
     // and it vanishes from everyone's panel automatically.
     const data = await withBackgroundPriority(async () => {
@@ -219,6 +222,7 @@ const OwnedPaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       });
       return !error && data?.[0]?.id ? [row.id, data[0].id] : null;
     }));
+    if (generation !== fetchGeneration.current) return;
     setLeadIds(Object.fromEntries(resolved.filter((entry): entry is string[] => entry !== null)));
     setAlerts(rows);
   }, []);
@@ -265,6 +269,7 @@ const OwnedPaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       .subscribe();
     const t = window.setInterval(() => { if (document.hidden) return; fetchActive(); }, 60_000);
     return () => {
+      fetchGeneration.current++;
       supabase.removeChannel(channel);
       window.clearInterval(t);
     };
@@ -278,7 +283,7 @@ const OwnedPaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     }
     setLoading(true);
     // Claim every signal from this customer in one go so the row can't reappear.
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('checkout_struggle_alerts')
       .update({
         status: 'acknowledged',
@@ -286,9 +291,10 @@ const OwnedPaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
         acknowledged_at: new Date().toISOString(),
       })
       .in('id', ids)
-      .is('acknowledged_by', null);
+      .is('acknowledged_by', null)
+      .select('id');
     setLoading(false);
-    if (error) {
+    if (error || !data?.length) {
       toast.error('Could not claim — someone may have grabbed it first');
     } else {
       toast.success('Lead claimed — call the customer now');
