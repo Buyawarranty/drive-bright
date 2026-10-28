@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { withBackgroundPriority } from '@/lib/requestQueue';
 import { consumeAlertSound } from '@/lib/alertSoundBudget';
+import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
+import { canOpenFailedPaymentPanel, canSeeFailedPaymentAlert } from '@/lib/failedPaymentAccess';
 
 interface StruggleAlert {
   id: string;
@@ -147,8 +149,15 @@ const playAlertBeep = () => {
 };
 
 export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
+  if (!canOpenFailedPaymentPanel(userRole)) return null;
+  return <OwnedPaymentFailedLeadsPanel key={userRole} userRole={userRole} />;
+};
+
+const OwnedPaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
   const isSuperAdmin = userRole === 'super_admin';
   const [alerts, setAlerts] = useState<StruggleAlert[]>([]);
+  const [leadIds, setLeadIds] = useState<Record<string, string>>({});
+  const canShowLead = usePopupLeadOwnership(Object.values(leadIds));
   const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [muted, setMuted] = useState<boolean>(() => {
@@ -163,6 +172,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     }
   });
   const seenKeysRef = useRef<Map<string, number>>(new Map());
+  const fetchGeneration = useRef(0);
 
   const persistHidden = useCallback((next: Set<string>) => {
     try {
@@ -190,6 +200,8 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
 
 
   const fetchActive = useCallback(async () => {
+    const generation = ++fetchGeneration.current;
+    setLeadIds({});
     // Only ACTIVE alerts — once someone takes it, status flips to acknowledged
     // and it vanishes from everyone's panel automatically.
     const data = await withBackgroundPriority(async () => {
@@ -203,11 +215,25 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       return data;
     });
     const rows = (data as StruggleAlert[]) || [];
+    const resolved = await Promise.all(rows.map(async row => {
+      const { data, error } = await supabase.rpc('find_lead_owner_by_contact', {
+        _email: row.customer_email || null,
+        _phone9: (row.customer_phone || '').replace(/\D/g, '').slice(-9) || null,
+      });
+      return !error && data?.[0]?.id ? [row.id, data[0].id] : null;
+    }));
+    if (generation !== fetchGeneration.current) return;
+    setLeadIds(Object.fromEntries(resolved.filter((entry): entry is string[] => entry !== null)));
+    setAlerts(rows);
+  }, []);
+
+  const visibleAlerts = alerts.filter(a => canSeeFailedPaymentAlert(userRole, canShowLead(leadIds[a.id])));
+  useEffect(() => {
     // Beep once per customer per dedupe window — never again for the same person
     // signalling repeatedly minutes apart.
     let hasNew = false;
     const now = Date.now();
-    for (const g of groupAlerts(rows)) {
+    for (const g of groupAlerts(visibleAlerts)) {
       if (g.ids.every((id) => hiddenIds.has(id))) continue;
       const key = customerKey(g.primary);
       const last = seenKeysRef.current.get(key);
@@ -215,8 +241,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       seenKeysRef.current.set(key, now);
     }
     if (hasNew && !muted) playAlertBeep();
-    setAlerts(rows);
-  }, [muted, hiddenIds]);
+  }, [visibleAlerts, muted, hiddenIds]);
 
 
   useEffect(() => {
@@ -244,19 +269,21 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       .subscribe();
     const t = window.setInterval(() => { if (document.hidden) return; fetchActive(); }, 60_000);
     return () => {
+      fetchGeneration.current++;
       supabase.removeChannel(channel);
       window.clearInterval(t);
     };
   }, [fetchActive]);
 
   const claim = async (ids: string[]) => {
+    if (!ids.every(id => visibleAlerts.some(a => a.id === id))) return;
     if (!currentAdminId) {
       toast.error('Unable to identify you — please refresh and try again');
       return;
     }
     setLoading(true);
     // Claim every signal from this customer in one go so the row can't reappear.
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('checkout_struggle_alerts')
       .update({
         status: 'acknowledged',
@@ -264,9 +291,10 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
         acknowledged_at: new Date().toISOString(),
       })
       .in('id', ids)
-      .is('acknowledged_by', null);
+      .is('acknowledged_by', null)
+      .select('id');
     setLoading(false);
-    if (error) {
+    if (error || !data?.length) {
       toast.error('Could not claim — someone may have grabbed it first');
     } else {
       toast.success('Lead claimed — call the customer now');
@@ -281,7 +309,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     );
   };
 
-  const groups = groupAlerts(alerts.filter((a) => !hiddenIds.has(a.id)));
+  const groups = groupAlerts(visibleAlerts.filter((a) => !hiddenIds.has(a.id)));
   if (groups.length === 0) return null;
 
 
