@@ -12,7 +12,7 @@ import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import { SALES_PHONE, SALES_PHONE_TEL } from '@/constants/contact';
-import { isValidUkMobile, UK_PHONE_EXAMPLE } from '../../supabase/functions/_shared/ukCheckoutPhone';
+import { isValidUkMobile, UK_PHONE_EXAMPLE, UK_PHONE_HINT } from '../../supabase/functions/_shared/ukCheckoutPhone';
 
 import trustpilotLogo from '/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -174,7 +174,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       // In variant B the phone is optional, so don't block submission.
       if (!isVariantB) setPhoneError('Please enter your phone number');
     } else if (!isValidPhone) {
-      setPhoneError(`Please enter a UK mobile number starting 07 with 11 digits, for example ${UK_PHONE_EXAMPLE}`);
+      setPhoneError(UK_PHONE_HINT);
     }
     
     if (!isFormValid) return;
@@ -860,7 +860,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </div>
             {(phoneError || (phone && !isValidPhone)) ? (
               <p className="text-red-500 text-xs mt-1.5">
-                {phoneError || `Please enter a UK mobile number starting 07 with 11 digits, for example ${UK_PHONE_EXAMPLE}`}
+                {phoneError || UK_PHONE_HINT}
               </p>
             ) : (
               <p className="hidden sm:block text-gray-500 mt-1.5 text-sm">

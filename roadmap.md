@@ -136,5 +136,9 @@
 - [x] Renewals queue includes expired policies in recently_expired / all_renewals segments
 - [x] Build OK; memory saved
 
+## Shorter phone-number error message — done 28 Oct 2026
+- [x] One shared short wording everywhere: "Enter a UK mobile number, e.g. 07960 123 456" (Step 2, Review & Pay, monthly-payment server check). Rule unchanged — 07 with 11 digits.
+- [x] 6 phone tests pass; verified live in preview: short message on one line, clears when a valid mobile is typed. Nothing published.
+
 ## Step 4 cover summary rows
 - [x] Review & Pay summary now lists Cover duration, Claim limit, Excess, Labour rate, Parts covered and No. of claims (Unlimited) on both phone and desktop layouts; prices, cover terms, claim limits and routing unchanged. Verified live on 1280px and 390px viewports. Nothing published.

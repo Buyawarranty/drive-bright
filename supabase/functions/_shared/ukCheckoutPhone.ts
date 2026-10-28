@@ -1,5 +1,8 @@
 export const UK_PHONE_EXAMPLE = '07960 123 456';
 
+/** One short wording for every phone field: UK mobile, with the example. */
+export const UK_PHONE_HINT = `Enter a UK mobile number, e.g. ${UK_PHONE_EXAMPLE}`;
+
 export function normalizeCheckoutPhone(raw: unknown): string {
   if (typeof raw !== 'string' || raw.length > 40 || !/^[+\d\s().-]+$/.test(raw.trim())) return '';
   let value = raw.trim().replace(/[\s().-]/g, '');
