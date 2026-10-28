@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { dialWithZoiper } from '@/utils/zoiperDial';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { consumeAlertSound } from '@/lib/alertSoundBudget';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 
 interface MissedCall {
   id: string;
@@ -416,9 +417,10 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   };
 
 
-  const copyNumber = async (phone: string) => {
+  const copyNumber = async (phone: string, leadId?: string | null) => {
     try {
       await navigator.clipboard.writeText(phone);
+      void recordLeadAccess(leadId, 'phone_copy', 'missed_call');
       toast({ title: 'Number copied', description: phone });
     } catch {
       toast({ title: 'Could not copy', variant: 'destructive' });
@@ -601,7 +603,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                 </button>
                 <button
                   type="button"
-                  onClick={() => copyNumber(top.caller_phone!)}
+                  onClick={() => { if (top.caller_phone) void copyNumber(top.caller_phone, top.matched_lead_id); }}
                   className="inline-flex items-center justify-center rounded p-0.5 hover:bg-white/20"
                   title="Copy number"
                 >

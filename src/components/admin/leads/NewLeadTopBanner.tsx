@@ -6,6 +6,7 @@ import { dialWithZoiper } from '@/utils/zoiperDial';
 import { isAgentOnCall, subscribeAgentOnCall } from '@/lib/agentCallState';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { toast } from 'sonner';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 
 
 const formatUKPhoneShort = (p: string) => {
@@ -55,6 +56,7 @@ export const NewLeadTopBanner: React.FC<Props> = ({ onGo }) => {
       document.body.removeChild(ta);
     }
     setCopiedId(leadId);
+    void recordLeadAccess(leadId, 'phone_copy', 'new_lead_banner');
     toast.success(`Copied ${num}`);
     setTimeout(() => setCopiedId((c) => (c === leadId ? null : c)), 1500);
   };

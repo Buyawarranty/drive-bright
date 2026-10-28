@@ -7,6 +7,7 @@ import { withBackgroundPriority } from '@/lib/requestQueue';
 import { consumeAlertSound } from '@/lib/alertSoundBudget';
 import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
 import { canOpenFailedPaymentPanel, canSeeFailedPaymentAlert } from '@/lib/failedPaymentAccess';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 
 interface StruggleAlert {
   id: string;
@@ -302,9 +303,9 @@ const OwnedPaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     }
   };
 
-  const copyPhone = (phone: string) => {
+  const copyPhone = (phone: string, alertId: string) => {
     navigator.clipboard.writeText(phone.replace(/\s/g, '')).then(
-      () => toast.success('Number copied'),
+      () => { void recordLeadAccess(leadIds[alertId], 'phone_copy', 'failed_payment'); toast.success('Number copied'); },
       () => toast.error('Copy failed')
     );
   };
@@ -421,7 +422,7 @@ const OwnedPaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
                       {phone}
                     </a>
                     <button
-                      onClick={() => copyPhone(phone)}
+                      onClick={() => copyPhone(phone, a.id)}
                       className="p-1 rounded hover:bg-red-800/70 shrink-0"
                       title="Copy number"
                       aria-label="Copy number"

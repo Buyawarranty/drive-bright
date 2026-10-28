@@ -401,6 +401,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
     if (!lead.phone) return;
     try {
       await navigator.clipboard.writeText(lead.phone);
+      void recordLeadAccess(lead.id, 'phone_copy', 'new_lead_alert');
       setCopiedPhone(true);
       toast.success('Phone number copied', { duration: 1500 });
       setTimeout(() => setCopiedPhone(false), 2000);
@@ -423,6 +424,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
     const text = detailRows.map(([k, v]) => `${k}\t${v}`).join('\n');
     try {
       await navigator.clipboard.writeText(text);
+      if (lead.phone) void recordLeadAccess(lead.id, 'phone_copy', 'new_lead_alert_all');
       setCopiedAll(true);
       toast.success('Lead details copied', { duration: 1500 });
       setTimeout(() => setCopiedAll(false), 2000);

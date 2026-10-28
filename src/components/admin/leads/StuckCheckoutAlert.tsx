@@ -12,6 +12,7 @@ import { useIsManagement } from '@/hooks/useIsManagement';
 import { Button } from '@/components/ui/button';
 import { CopyAlertButton } from '@/components/admin/CopyAlertButton';
 import { usePopupLeadOwnership } from '@/hooks/usePopupLeadOwnership';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
 
 const DISMISSED_IDS_KEY = 'stuck-checkout-alert-dismissed-ids';
 
@@ -488,7 +489,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                     )}
                     {phone && (
                       <button
-                        onClick={() => navigator.clipboard.writeText(phone).catch(() => {})}
+                        onClick={() => navigator.clipboard.writeText(phone).then(() => recordLeadAccess(leadIds[r.id], 'phone_copy', 'checkout_alert')).catch(() => {})}
                         className="p-1 rounded border border-red-200 bg-white hover:bg-red-50"
                         title="Copy phone number"
                         aria-label="Copy phone number"

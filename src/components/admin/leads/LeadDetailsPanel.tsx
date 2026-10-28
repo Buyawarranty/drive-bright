@@ -25,6 +25,8 @@ import { PrintableWarrantyLetter } from '../PrintableWarrantyLetter';
 import { LeadDuplicatesPanel } from './LeadDuplicatesPanel';
 import { EditLeadInfoDialog } from './EditLeadInfoDialog';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { recordLeadAccess } from '@/lib/leadAccessAudit';
+import { LeadAccessHistory } from './LeadAccessHistory';
 
 interface LeadDetailsPanelProps {
   lead: Lead;
@@ -55,6 +57,9 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   const { isManagement } = useIsManagement();
 
   const previousLeadIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!lead.is_from_abandoned_cart) void recordLeadAccess(lead.id, 'lead_open', 'lead_details');
+  }, [lead.id, lead.is_from_abandoned_cart]);
 
   // Reset state when switching leads
   useEffect(() => {
@@ -390,7 +395,8 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
 
           {/* Notes Content - Always mounted to preserve state, hidden when collapsed */}
           <div className={cn("p-4", !notesOpen && "hidden")}>
-            <UnifiedNotesPanel leadId={lead.id} hidePoolOutcome={hidePoolOutcome} />
+            <UnifiedNotesPanel leadId={lead.id} hidePoolOutcome={hidePoolOutcome} auditOpen={false} />
+            <LeadAccessHistory leadId={lead.id} />
           </div>
 
           {/* Full audit trail — calls, notes, status and owner changes with names */}
