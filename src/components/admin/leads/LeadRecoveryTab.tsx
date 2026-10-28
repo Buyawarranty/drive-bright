@@ -1273,13 +1273,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         return;
       }
       toast.success(`Released ${result?.assigned_count ?? 0} Goldmine leads to ${targetLabel}`);
-      await load();
+      await fetchLeads();
     } catch (e: any) {
       toast.error('Release failed', { description: e.message });
     } finally {
       setClaiming(false);
     }
-  }, [currentRole, userRole, currentUserId, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, load]);
+  }, [currentRole, userRole, currentUserId, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, fetchLeads]);
 
   const { canExportNewLeads: exportFilesAllowed, canSeeLeadSource } = useExportPermissions();
   const exportCsv = useCallback(async () => {
