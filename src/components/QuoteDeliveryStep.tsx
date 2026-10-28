@@ -828,7 +828,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 data-ga4-event="step2_phone_input"
                 className={`mq-input w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
-                }`}
+                } ${attentionOn && (phoneError || (phone && !isValidPhone)) ? 'mq-attention' : ''}`}
               />
               {phone && isValidPhone && (
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
