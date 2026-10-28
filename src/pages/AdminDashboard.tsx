@@ -1530,6 +1530,9 @@ const AdminDashboardInner: React.FC<{
                 <NonClaimComplaintAlert />
               </Suspense>
             )}
+            <Suspense fallback={null}>
+              <LeadOpeningRateAlert />
+            </Suspense>
             {show('chat_request') && <ChatAgentRequestAlert onOpenLead={goLead} />}
 
 
