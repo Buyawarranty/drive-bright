@@ -340,20 +340,10 @@ const Claims = () => {
   const validateStep = (step: number): boolean => {
     const newErrors: {[key: string]: string} = {};
     if (step === 1) {
-      if (!formData.name.trim()) newErrors.name = 'Could you let us know your name?';
-      if (!formData.email.trim()) newErrors.email = 'We just need an email so we can get back to you.';
-      else if (!validateEmail(formData.email)) newErrors.email = "That email doesn't look quite right - mind double-checking it?";
-      if (!formData.phone.trim()) newErrors.phone = 'A contact number helps us reach you faster.';
-      else if (!validatePhone(formData.phone)) newErrors.phone = "Please update to a UK number e.g 07123 456789.";
+      if (formData.email.trim() && !validateEmail(formData.email)) newErrors.email = "That email doesn't look quite right - mind double-checking it?";
     }
     if (step === 2) {
-      if (!formData.vehicleReg.trim()) newErrors.vehicleReg = 'Please pop in your vehicle registration.';
-      else if (!vehicleDetails || (!vehicleDetails.make && !vehicleDetails.model)) {
-        newErrors.vehicleReg = 'Please enter a valid UK registration we can verify.';
-      }
-    }
-    if (step === 3) {
-      if (!formData.faultDescription.trim()) newErrors.faultDescription = 'Please describe the fault or problem.';
+      if (formData.vehicleReg.replace(/\s/g, '').length < 2) newErrors.vehicleReg = 'Please pop in your vehicle registration.';
     }
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) {
@@ -454,32 +444,12 @@ const Claims = () => {
     // Validate all required fields together so every issue is shown at once
     const newErrors: {[key: string]: string} = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Could you let us know your name?';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'We just need an email so we can get back to you.';
-    } else if (!validateEmail(formData.email)) {
+    // Only the registration is required; it can be typed with or without a space.
+    if (formData.email.trim() && !validateEmail(formData.email)) {
       newErrors.email = 'That email doesn\'t look quite right - mind double-checking it?';
     }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'A contact number helps us reach you faster.';
-    } else if (!validatePhone(formData.phone)) {
-      newErrors.phone = 'Please update to a UK number e.g 07123 456789.';
-    }
-
-    if (!formData.vehicleReg.trim()) {
+    if (formData.vehicleReg.replace(/\s/g, '').length < 2) {
       newErrors.vehicleReg = 'Please pop in your vehicle registration.';
-    } else if (errors.vehicleReg) {
-      newErrors.vehicleReg = errors.vehicleReg;
-    } else if (!vehicleDetails || (!vehicleDetails.make && !vehicleDetails.model)) {
-      newErrors.vehicleReg = 'Please enter a valid UK registration we can verify.';
-    }
-
-    if (!formData.faultDescription.trim()) {
-      newErrors.faultDescription = 'Please describe the fault or problem.';
     }
 
     if (Object.keys(newErrors).length > 0) {
