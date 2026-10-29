@@ -523,7 +523,7 @@ const BlogArticle = () => {
       />
       {/* Article + FAQ schema lives in <head> so crawlers pick it up with the meta tags */}
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+        <script type="application/ld+json">{JSON.stringify(post.slug === 'bmw-x5-vs-bmw-5-series' ? post.structured_data : structuredData)}</script>
       </Helmet>
 
       {/* Editorial serif for headings */}
@@ -624,13 +624,13 @@ const BlogArticle = () => {
 
           {/* Hero Image */}
           <figure className="px-6 md:px-16 -mt-4">
-            <div className={`relative ${['mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes','bmw-x5-vs-audi-q7','bmw-x5-vs-mercedes-gle-maintenance-costs', 'used-bmw-x5-repair-costs'].includes(post.slug) ? 'aspect-[1376/768]' : 'aspect-[21/9]'} bg-muted rounded-xl overflow-hidden shadow-xl`}>
+            <div className={`relative ${['mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes','bmw-x5-vs-audi-q7','bmw-x5-vs-mercedes-gle-maintenance-costs', 'used-bmw-x5-repair-costs', 'bmw-x5-vs-bmw-5-series'].includes(post.slug) ? 'aspect-[1376/768]' : 'aspect-[21/9]'} bg-muted rounded-xl overflow-hidden shadow-xl`}>
               <img
                 src={heroImage}
                 alt={post.meta_tags?.featured_image_alt || `${post.title}: UK car warranty guide illustration`}
                 title={post.meta_tags?.featured_image_title || post.seo_title || post.title}
-                width={1600}
-                height={900}
+                width={post.slug === 'bmw-x5-vs-bmw-5-series' ? 1376 : 1600}
+                height={post.slug === 'bmw-x5-vs-bmw-5-series' ? 768 : 900}
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"

@@ -14,6 +14,7 @@ import blog15 from './blog15-content.json';
 import blog16 from './blog16-content.json';
 import blog17 from './blog17-content.json';
 import blog18 from './blog18-content.json';
+import blog19 from './blog19-content.json';
 import { SEO_AUDIT_ROUTE_ADDITIONS } from './seo-audit-route-additions';
 
 export interface RouteMeta {
@@ -114,6 +115,17 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
   },
 
   // ---------------- The Warranty Hub articles ----------------
+  {
+    path: `/thewarrantyhub/${blog19.slug}/`,
+    title: blog19.seo_title,
+    description: blog19.seo_description,
+    h1: blog19.title,
+    ogType: 'article',
+    ogImage: blog19.featured_image_url,
+    ogImageAlt: blog19.meta_tags.featured_image_alt,
+    articleHtml: blog19.html,
+    articleSchema: blog19.structured_data,
+  },
   {
     path: `/thewarrantyhub/${blog15.slug}/`,
     title: blog15.seo_title,
