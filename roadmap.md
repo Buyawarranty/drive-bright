@@ -1,9 +1,9 @@
 # Roadmap
 
 ## Blog 19 BMW family comparison
-- [ ] Preserve the supplied article structure, internal links and original image; make only verified generation-specific and BAW policy corrections.
-- [ ] Add article-only metadata, canonical, optimized descriptive image and matching structured data with crawler-readable content, without changing other pages.
-- [ ] Verify the article and clarify publication scope before shipping unrelated preview changes.
+- [x] Published Blog 19 only through the existing database-backed article route; all nine original internal links remain in order, all eight sections/two tables/five FAQs retained, original image compressed from 2.7 MB to 316 KB without crop or replacement. Corrected variant-specific boot figures and relevant BAW terms; no unsupported repair prices or reliability rates added.
+- [x] Live browser verifies search title/description, self-referencing canonical, followed links, original inline image, footer and five-question schema. Database HTML and schema exactly match staged article source. Seven targeted tests pass; preview build OK.
+- [ ] Crawler-readable static article, static metadata and sitemap remain staged: a website publish would also release unrelated held changes, which the user expressly declined. Live raw HTML still serves homepage fallback. Article-only hero uncropping/schema fidelity improvements also remain staged; original inline image is intact live. No whole-site publish requested.
 
 ## Concise customer quote email
 - [x] Removed inaccurate claims hours and authored dash punctuation in shared HTML and both text alternatives; shortened cover copy, moved clickable quote link and CTA above details, preserved sender and delivery logic.
