@@ -16,7 +16,7 @@ import type { OrrPracticeSettings } from './settings';
  *
  * The five stages management asked to keep separate are enforced here:
  * eligibility, assignment, first contact attempt, contact outcome and follow-up
- * scheduling are each their own step and no step dials anybody.
+ * scheduling are each their own step, and no step dials anybody.
  */
 
 const MINUTE = 60_000;
@@ -135,11 +135,38 @@ export const applyJourneyEvent = (
   }
 };
 
+/** Put an identifiable lead into the pool and arm the next review. */
+const releaseToPool = (
+  lead: PracticeLead,
+  at: number,
+  settings: OrrPracticeSettings,
+  text: string,
+): PracticeLead =>
+  withNote(
+    {
+      ...lead,
+      stage: 'queued',
+      activeSession: false,
+      lastStageChangeAt: at,
+      reReleaseDueAt: at + settings.reReleaseIntervalMinutes * MINUTE,
+    },
+    at,
+    text,
+  );
+
+/** How long the customer has been quiet, in milliseconds. */
+const quietFor = (lead: PracticeLead, at: number) => at - lead.lastActivityAt;
+
+/** The threshold that applies to this lead right now, in milliseconds. */
+const releaseThreshold = (lead: PracticeLead, settings: OrrPracticeSettings) =>
+  (hasEvent(lead, 'checkout_entered')
+    ? settings.checkoutAbandonmentMinutes
+    : settings.pricingInactivityMinutes) * MINUTE;
+
 /**
  * One clock tick. Moves leads between stages without ever dialling anybody:
- * an expired claim returns to the pool first, then quiet sessions become
- * release-ready, then ready leads are released, then unworked leads are
- * reviewed again on the manager's interval.
+ * an expired claim returns first, then quiet sessions are released, then
+ * waiting leads are released, then unworked leads are reviewed again.
  */
 export const evaluateStages = (
   leads: PracticeLead[],
@@ -170,38 +197,38 @@ export const evaluateStages = (
       );
     }
 
-    // A session that has gone quiet is ready for release review.
-    if (lead.stage === 'active_session' || lead.stage === 'anonymous') {
-      const inCheckout = hasEvent(lead, 'checkout_entered');
-      const threshold =
-        (inCheckout ? settings.checkoutAbandonmentMinutes : settings.pricingInactivityMinutes) * MINUTE;
-      const quietFor = at - lead.lastActivityAt;
-      if (lead.activeSession && quietFor >= threshold) {
-        const quietMinutes = Math.round(quietFor / MINUTE);
-        notes.push(`${lead.name}: quiet for ${quietMinutes} minutes, ready to release`);
-        return withNote(
-          { ...lead, activeSession: false, stage: 'awaiting_release', lastStageChangeAt: at },
+    // A customer who asked for a call-back waits for the time they asked for.
+    if (lead.stage === 'awaiting_release' && lead.callbackTime !== null && at < lead.callbackTime) {
+      return lead;
+    }
+
+    // A session that has gone quiet is released. Anonymous browsing is never
+    // turned into a telephone lead, so it stays where it is.
+    if (lead.stage === 'active_session' || lead.stage === 'awaiting_release') {
+      if (!lead.identified) return lead;
+      const threshold = releaseThreshold(lead, settings);
+      const quiet = quietFor(lead, at);
+      if (lead.activeSession && quiet >= threshold) {
+        const quietMinutes = Math.round(quiet / MINUTE);
+        notes.push(`${lead.name}: quiet for ${quietMinutes} minutes, released to the pool`);
+        return releaseToPool(
+          lead,
           at,
-          `Quiet for ${quietMinutes} minutes, so the lead is ready for release review`,
+          settings,
+          `Quiet for ${quietMinutes} minutes, so the lead was released into the pool`,
         );
+      }
+      // A lead that already waited for its call-back is released once due.
+      if (lead.stage === 'awaiting_release' && !lead.activeSession && quiet >= threshold) {
+        notes.push(`${lead.name}: released to the pool`);
+        return releaseToPool(lead, at, settings, 'Released into the Open Round Robin pool');
       }
       return lead;
     }
 
-    // A ready lead is released into the pool, except while waiting for its call-back.
-    if (lead.stage === 'awaiting_release') {
-      if (lead.callbackTime !== null && at < lead.callbackTime) return lead;
-      notes.push(`${lead.name}: released into the Open Round Robin pool`);
-      return withNote(
-        {
-          ...lead,
-          stage: 'queued',
-          lastStageChangeAt: at,
-          reReleaseDueAt: at + settings.reReleaseIntervalMinutes * MINUTE,
-        },
-        at,
-        'Released into the Open Round Robin pool',
-      );
+    if (lead.stage === 'anonymous') {
+      // Nobody has given details, so there is nothing to telephone.
+      return lead;
     }
 
     // An unworked lead in the pool is reviewed again. There is no attempt cap
@@ -283,7 +310,6 @@ export const claimLead = (
   const notes = [
     `${agent.name} is holding ${lead.name} for ${settings.claimExpiryMinutes} minutes`,
   ];
-
   return {
     leads: leads.map(l =>
       l.id === leadId
@@ -334,10 +360,6 @@ export const allocateQueued = (
     .filter(l => l.stage === 'queued')
     .sort((a, b) => a.createdAt - b.createdAt);
 
-  let working = leads;
-  let workingAgents = agents;
-  const notes: string[] = [];
-
   for (const lead of ordered) {
     // Walk the rotation until a seat with room is found, so one agent is never
     // fed ahead of the others and a full seat is simply stepped past.
@@ -360,7 +382,6 @@ export const allocateQueued = (
   }
 
   return { leads: working, agents: workingAgents, notes, nextIndex: cursor };
-
 };
 
 /**
@@ -386,7 +407,7 @@ export const recordContactOutcome = (
         : lead.firstAttemptLeadMinutes,
   };
 
-  const releasedBack = (text: string): PracticeLead =>
+  const backToPool = (text: string): PracticeLead =>
     withNote(
       {
         ...withOutcome,
@@ -427,7 +448,9 @@ export const recordContactOutcome = (
 
   if (outcome.result === 'voicemail') {
     return {
-      leads: leads.map(l => (l.id === leadId ? releasedBack('Voicemail left, which does not create ownership') : l)),
+      leads: leads.map(l =>
+        l.id === leadId ? backToPool('Voicemail left, which does not create ownership') : l,
+      ),
       notes: [`${lead.name}: voicemail disregarded for ownership`],
     };
   }
@@ -476,7 +499,9 @@ export const recordContactOutcome = (
   }
 
   return {
-    leads: leads.map(l => (l.id === leadId ? releasedBack('No conversation, so it went back to the pool') : l)),
+    leads: leads.map(l =>
+      l.id === leadId ? backToPool('No conversation, so it went back to the pool') : l,
+    ),
     notes: [`${lead.name}: no conversation, so it returned to the pool`],
   };
 };
