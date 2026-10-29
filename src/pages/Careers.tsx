@@ -159,7 +159,7 @@ const breadcrumbSchema = {
 const JOBS = [
   { id: 'sales', label: 'Vehicle Warranty Sales Executive' },
   { id: 'bdm', label: 'Business Development Manager' },
-  { id: 'sales-manager', label: 'Remote Telesales Team Manager' },
+  { id: 'sales-manager', label: 'Remote Telesales Manager' },
 ] as const;
 
 const JOB_ORDER_KEY = 'baw-careers-job-order';
