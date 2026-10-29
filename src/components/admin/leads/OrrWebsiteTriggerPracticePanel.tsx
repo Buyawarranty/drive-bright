@@ -42,6 +42,15 @@ import {
   unworkedHolds,
   type PracticeRole,
 } from '@/lib/orrPractice/openClaim';
+import {
+  PRESENCE_TTL_MINUTES,
+  eligibleMinutesBetween,
+  isPresent,
+  makeOvernightBatch,
+  queueViews,
+  runIntakeTick,
+  type PresenceMap,
+} from '@/lib/orrPractice/intake';
 
 import {
   DEFAULT_ORR_PRACTICE_SETTINGS,
@@ -157,6 +166,76 @@ const ToggleField = ({
     <Switch checked={checked} onCheckedChange={onChange} />
   </div>
 );
+
+const IntakeSection = ({
+  leads,
+  agents,
+  settings,
+  clock,
+  onLeads,
+}: {
+  leads: PracticeLead[];
+  agents: PracticeAgent[];
+  settings: OrrPracticeSettings;
+  clock: number;
+  onLeads: (leads: PracticeLead[], notes: string[]) => void;
+}) => {
+  const [presence, setPresence] = useState<PresenceMap>({});
+  const [lastTickAt, setLastTickAt] = useState(0);
+  const views = queueViews(leads, settings);
+  const lists: [string, PracticeLead[]][] = [
+    ['Waiting to go quiet', views.pending],
+    ['Call-backs booked', views.callbacks],
+    ['Overnight arrivals', views.overnight],
+    ['Back in the pool', views.recycled],
+  ];
+  return (
+    <Section
+      id="orr-intake"
+      title="Phase 2: Continuous intake and recycling"
+      subtitle={`Leads arrive 24/7; calls only in calling hours (UK time). Agents count as present for ${PRESENCE_TTL_MINUTES} minutes after each check-in.`}
+      icon={<Activity className="h-4 w-4 text-primary" />}
+    >
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" onClick={() => onLeads([...leads, ...makeOvernightBatch(50, clock, Date.now() % 100000)], ['Added 50 made-up overnight enquiries'])}>
+          <Plus className="h-3.5 w-3.5 mr-1" /> Add 50 overnight enquiries
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            const r = runIntakeTick(leads, settings, clock, { lastTickAt });
+            setLastTickAt(r.state.lastTickAt);
+            onLeads(r.leads, r.notes.length ? r.notes : ['Review pass ran; nothing changed (running it again at the same time is safe)']);
+          }}
+        >
+          <RotateCcw className="h-3.5 w-3.5 mr-1" /> Run review pass
+        </Button>
+      </div>
+      <div className="flex flex-wrap gap-2 mt-3">
+        {agents.map(a => (
+          <Button key={a.id} size="sm" variant={isPresent(presence, a.id, clock) ? 'default' : 'outline'} onClick={() => setPresence(p => ({ ...p, [a.id]: clock }))}>
+            {a.name}: {isPresent(presence, a.id, clock) ? 'present' : 'check in'}
+          </Button>
+        ))}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-4 mt-3">
+        {lists.map(([label, items]) => (
+          <div key={label} className="rounded-md border border-border p-3">
+            <p className="text-xs font-semibold text-foreground">{label}: {items.length}</p>
+            <ul className="mt-1 space-y-0.5 max-h-40 overflow-auto">
+              {items.slice(0, 20).map(l => (
+                <li key={l.id} className="text-xs text-muted-foreground">
+                  {l.name.split(' ')[0]}, {eligibleMinutesBetween(settings, l.lastStageChangeAt, clock)} calling-hour min
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+};
 
 const OpenClaimSection = ({
   leads,
@@ -423,6 +502,17 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
           on and watch the lead move through the stages.
         </p>
       </div>
+
+      <IntakeSection
+        leads={leads}
+        agents={agents}
+        settings={settings}
+        clock={clock}
+        onLeads={(l, n) => {
+          setLeads(l);
+          pushNotes(n);
+        }}
+      />
 
       <OpenClaimSection
         leads={leads}
