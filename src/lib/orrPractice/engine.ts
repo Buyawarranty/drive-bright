@@ -280,9 +280,10 @@ export const claimLead = (
   }
 
   const expiresAt = claimExpiryAt(at, settings);
-  notes_for_result: const notes = [
+  const notes = [
     `${agent.name} is holding ${lead.name} for ${settings.claimExpiryMinutes} minutes`,
   ];
+
   return {
     leads: leads.map(l =>
       l.id === leadId
@@ -333,32 +334,33 @@ export const allocateQueued = (
     .filter(l => l.stage === 'queued')
     .sort((a, b) => a.createdAt - b.createdAt);
 
+  let working = leads;
+  let workingAgents = agents;
+  const notes: string[] = [];
+
   for (const lead of ordered) {
-    const agent = eligibleAgents[cursor % eligibleAgents.length];
-    const result = claimLead(working, workingAgents, lead.id, agent.id, settings, at);
-    if (result.notes.length && result.notes[0].includes('stays in the pool')) {
-      // This seat filled up mid-pass; move on to the next one.
+    // Walk the rotation until a seat with room is found, so one agent is never
+    // fed ahead of the others and a full seat is simply stepped past.
+    let placed = false;
+    for (let step = 0; step < eligibleAgents.length; step += 1) {
+      const agent = eligibleAgents[cursor % eligibleAgents.length];
       cursor += 1;
-      const retry = claimLead(working, workingAgents, lead.id, eligibleAgents[cursor % eligibleAgents.length].id, settings, at);
-      if (retry.notes.length && retry.notes[0].includes('stays in the pool')) break;
-      working = retry.leads;
-      workingAgents = retry.agents;
-      notes.push(...retry.notes);
-      cursor += 1;
-      continue;
+      const fresh = workingAgents.find(a => a.id === agent.id);
+      if (!fresh || !hasCapacity(fresh)) continue;
+      const result = claimLead(working, workingAgents, lead.id, agent.id, settings, at);
+      working = result.leads;
+      workingAgents = result.agents;
+      notes.push(...result.notes);
+      placed = true;
+      break;
     }
-    working = result.leads;
-    workingAgents = result.agents;
-    notes.push(...result.notes);
-    cursor += 1;
-    // Refresh capacity view for this pass.
-    eligibleAgents.forEach((a, i) => {
-      const fresh = workingAgents.find(x => x.id === a.id);
-      if (fresh) eligibleAgents[i] = fresh;
-    });
+    // Every seat is full, so the rest wait for the next review rather than
+    // being pushed at somebody who cannot take them.
+    if (!placed) break;
   }
 
   return { leads: working, agents: workingAgents, notes, nextIndex: cursor };
+
 };
 
 /**
