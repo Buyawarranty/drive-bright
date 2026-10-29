@@ -8,6 +8,8 @@ import { OpenPoolManagerAlerts } from './OpenPoolManagerAlerts';
 import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
 import { OrrTeamSelectionPanel } from './OrrTeamSelectionPanel';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
+import { OrrWebsiteTriggerPracticePanel } from './OrrWebsiteTriggerPracticePanel';
+
 import { OrrGlanceStrip } from './OrrGlanceStrip';
 import { OrrAgentRotationPanel } from './OrrAgentRotationPanel';
 import { OrrQueuePanels } from './OrrQueuePanels';
@@ -19,6 +21,8 @@ import { useViewAs } from '@/contexts/ViewAsContext';
 
 const JUMP_LINKS = [
   { id: 'orr-practice', label: 'Practice lab', className: 'bg-primary/20 text-primary border-primary/20 hover:bg-primary/30' },
+  { id: 'orr-triggers', label: 'Website triggers', className: 'bg-sky-300/50 text-sky-900 border-sky-200/50 hover:bg-sky-400/50' },
+
   { id: 'orr-queue-capacity', label: 'Queue & capacity', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
   { id: 'orr-live-distribution', label: 'Live distribution', className: 'bg-teal-300/50 text-teal-900 border-teal-200/50 hover:bg-teal-400/50' },
   { id: 'orr-activity', label: 'Activity & alerts', className: 'bg-amber-200/50 text-amber-900 border-amber-100/50 hover:bg-amber-300/50' },
@@ -180,7 +184,15 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
       </WidgetErrorBoundary>
 
 
+      <div id="orr-triggers" />
+
+      <WidgetErrorBoundary label="Website lead triggers">
+        <OrrWebsiteTriggerPracticePanel />
+      </WidgetErrorBoundary>
+
+
       <OpenRoundRobinTestPanel />
+
 
 
       <div id="orr-queue-capacity" className="space-y-4">
