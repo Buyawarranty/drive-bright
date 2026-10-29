@@ -1,7 +1,7 @@
 # Roadmap
 
 ## ORR phased sandbox updates — 29 October 2026
-- [ ] Phase 0 only: inspect environment isolation, existing allocation architecture and dependencies; deliver risks, affected files/tables, migration proposal, rollback and phase tests without functional changes or database writes.
+- [x] Phase 0 source inspection: full guide reviewed; shared external Supabase client, operational controls and communication/job paths show no verified isolation. Safety report and phased plan prepared; documentation only, no database access/writes or functional changes.
 - [ ] Phase 1–5: blocked until positive isolation is verified and each preceding phase receives explicit approval. No production connection, communications, routing, deployment or publication.
 
 ## Blog 19 BMW family comparison
