@@ -1,5 +1,9 @@
 # Roadmap
 
+## ORR phased sandbox updates — 29 October 2026
+- [x] Phase 0 source inspection: full guide reviewed; shared external Supabase client, operational controls and communication/job paths show no verified isolation. Safety report and phased plan prepared; documentation only, no database access/writes or functional changes.
+- [ ] Phase 1–5: blocked until positive isolation is verified and each preceding phase receives explicit approval. No production connection, communications, routing, deployment or publication.
+
 ## Blog 19 BMW family comparison
 - [x] Published Blog 19 only through the existing database-backed article route; all nine original internal links remain in order, all eight sections/two tables/five FAQs retained, original image compressed from 2.7 MB to 316 KB without crop or replacement. Corrected variant-specific boot figures and relevant BAW terms; no unsupported repair prices or reliability rates added.
 - [x] Live browser verifies search title/description, self-referencing canonical, followed links, original inline image, footer and five-question schema. Database HTML and schema exactly match staged article source. Seven targeted tests pass; preview build OK.
