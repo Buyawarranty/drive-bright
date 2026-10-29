@@ -255,7 +255,8 @@ describe('Handing out queued leads', () => {
     ];
     const result = allocateQueued(leads, agents, S, T0 + 2 * MIN, 0);
     expect(result.leads[0].stage).toBe('queued');
-    expect(result.notes[0]).toContain('no spare capacity');
+    expect(result.notes[0]).toContain('No practice agent has spare capacity');
+
   });
 });
 

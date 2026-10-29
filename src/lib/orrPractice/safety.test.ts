@@ -188,11 +188,16 @@ describe('Isolation', () => {
     '../../components/admin/leads/OrrWebsiteTriggerPracticePanel.tsx',
   ];
 
+  /** Comments explain the rules in plain words, so they are removed before checking. */
+  const codeOnly = (text: string) =>
+    text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+
   it.each(files)('%s reaches no database, network or browser storage', file => {
-    const text = source(file);
+    const text = codeOnly(source(file));
     expect(text).not.toMatch(/supabase/i);
     expect(text).not.toMatch(/\bfetch\s*\(/);
     expect(text).not.toMatch(/XMLHttpRequest/);
     expect(text).not.toMatch(/localStorage|sessionStorage|indexedDB/);
   });
+
 });
