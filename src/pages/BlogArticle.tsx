@@ -526,7 +526,7 @@ const BlogArticle = () => {
       />
       {/* Article + FAQ schema lives in <head> so crawlers pick it up with the meta tags */}
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify(CUSTOM_SCHEMA_SLUGS.includes(post.slug) ? post.structured_data : structuredData)}</script>
+        <script type="application/ld+json">{JSON.stringify(CUSTOM_SCHEMA_SLUGS.includes(post.slug) && post.structured_data ? post.structured_data : structuredData)}</script>
       </Helmet>
 
       {/* Editorial serif for headings */}
