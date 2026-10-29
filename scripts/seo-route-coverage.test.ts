@@ -10,7 +10,7 @@ describe('Public SEO route coverage', () => {
   it('has one metadata entry per output path and keeps the existing effective cancellation metadata', () => {
     const paths = PRERENDER_ROUTES.map(route => route.path.replace(/\/+$/, '') || '/');
     expect(paths.length).toBe(new Set(paths).size);
-    expect(PRERENDER_ROUTES.find(route => route.path === '/cancel-warranty/')?.title).toBe('Cancel Your Warranty | BuyAWarranty');
+    expect(PRERENDER_ROUTES.find(route => route.path === '/cancel-warranty/')?.title).toBe('Cancel Your Car Warranty | Refunds Explained | Buy A Warranty');
   });
 
   it('provides build-time metadata for every non-homepage sitemap entry', () => {
@@ -18,9 +18,9 @@ describe('Public SEO route coverage', () => {
     expect(missing.map(url => url.pathname)).toEqual([]);
   });
 
-  it('includes all 42 articles, including Blog 19 and the four recovered gaps', () => {
+  it('includes all 43 articles, including Blog 19 and the four recovered gaps', () => {
     const articles = urls.filter(url => url.pathname.startsWith('/thewarrantyhub/') && url.pathname !== '/thewarrantyhub/');
-    expect(articles).toHaveLength(42);
+    expect(articles).toHaveLength(43);
     for (const slug of ['audi-a6-vs-bmw-5-series-uk-reliability-and-value-2026', 'motorcycle-extended-warranty-cost-uk-2026-prices-repair-costs', 'motorcycle-extended-warranty-uk-what-does-it-cover-how-does-it-work', 'land-rover-extended-warranty-uk-what-does-it-cover-how-does-it-work']) {
       expect(articles.some(url => url.pathname === `/thewarrantyhub/${slug}/`)).toBe(true);
     }

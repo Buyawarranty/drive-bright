@@ -52,67 +52,67 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     path: "/cancellation-policy/",
     title: "Cancellation Policy | Buy A Warranty",
     description:
-      "Read our cancellation policy. 14-day money back guarantee, refund eligibility and how to cancel your warranty plan.",
+      "Our warranty cancellation policy: a full refund within 14 days, pro-rata refunds after that, and how claims affect refunds. Clear steps to cancel your plan.",
   },
   {
     path: "/privacy/",
     title: "Privacy Policy | Buy A Warranty",
     description:
-      "How Buy A Warranty collects, uses and protects your personal data. GDPR-compliant privacy policy for UK customers.",
+      "How Buy A Warranty collects, uses, stores and protects your personal data under UK GDPR, how long we keep it, and how to request, change or delete your data.",
   },
   {
     path: "/terms/",
     title: "Terms & Conditions | Buy A Warranty",
     description:
-      "Terms and conditions for using buyawarranty.co.uk and purchasing a vehicle warranty plan.",
+      "The terms and conditions for using buyawarranty.co.uk and buying a vehicle warranty plan, including eligibility, payments, claims, cancellation and your rights.",
   },
   {
     path: "/cookies/",
     title: "Cookie Policy | Buy A Warranty",
     description:
-      "How we use cookies on buyawarranty.co.uk and how you can manage your cookie preferences.",
+      "How buyawarranty.co.uk uses cookies for essential site features, analytics and advertising, and how you can view, accept or change your cookie preferences.",
   },
   {
     path: "/complaints/",
     title: "Complaints Procedure | Buy A Warranty",
     description:
-      "How to raise a complaint with Buy A Warranty. Our resolution process, response times and escalation steps.",
+      "How to raise a complaint with Buy A Warranty, who reviews it, our response times and your escalation options, including the Financial Ombudsman Service.",
   },
   {
     path: "/contact-us/",
-    title: "Contact Us | Buy A Warranty",
+    title: "Contact Buy A Warranty | Phone, Email and WhatsApp",
     description:
-      "Get in touch with Buy A Warranty. Call 0330 229 5040, email support@buyawarranty.co.uk, or message us on WhatsApp.",
+      "Speak to Buy A Warranty on 0330 229 5040, Monday to Friday 9am to 6pm and Saturday 12pm to 4pm. Email support@buyawarranty.co.uk or message on WhatsApp.",
   },
   {
     path: "/faq/",
-    title: "Frequently Asked Questions | Buy A Warranty",
+    title: "Car Warranty FAQs UK | Claims, Cover and Prices",
     description:
-      "Answers to common questions about car, van, EV and motorbike warranties — claims, cover, pricing and more.",
+      "Clear answers to common car, van, EV and motorbike warranty questions: what is covered, how claims work, eligibility, prices, payments and cancellations.",
   },
   {
     path: "/make-a-claim/",
-    title: "Make a Claim | Buy A Warranty",
+    title: "Make a Warranty Claim Online | Buy A Warranty",
     description:
-      "Submit a warranty claim online. Fast claims process, dedicated claims line on 0330 229 5045.",
+      "Make a warranty claim online or call our claims line on 0330 229 5045. Get authorisation before repairs start, then use a VAT-registered garage of choice.",
   },
   {
     path: "/warranty-transfer/",
-    title: "Warranty Transfer | Buy A Warranty",
+    title: "Transfer Your Car Warranty to a New Owner | Buy A Warranty",
     description:
-      "Selling your vehicle? Transfer your warranty to the new owner quickly and add value to the sale.",
+      "Selling your car? Transfer your remaining warranty to the new owner and add value to the sale. See how the transfer works and what details you need.",
   },
   {
     path: "/discount-promo-offers/",
     title: "Car Warranty Discount Codes 2026 | Buy A Warranty",
     description:
-      "Latest discounts and promotional offers on car, van, EV and motorbike warranty plans.",
+      "The latest car warranty discount codes and offers for 2026 on car, van, EV and motorbike cover. Copy your code and apply it at checkout to save on your plan.",
   },
   {
     path: "/thewarrantyhub/",
-    title: "The Warranty Hub | Drive Smarter | Buy A Warranty",
+    title: "The Warranty Hub | UK Car Warranty Guides and Advice",
     description:
-      "Guides, tips and articles to help you drive smarter and protect your vehicle.",
+      "Practical UK guides on car warranties, claims, reliability and running costs. Expert advice from Buy A Warranty to help you buy, own and protect your car.",
   },
 
   // ---------------- The Warranty Hub articles ----------------
@@ -241,14 +241,14 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     path: "/thewarrantyhub/uk-car-theft-hotspots-2026-riskiest-areas-and-protection/",
     title: "UK Car Theft Hotspots 2026 | Riskiest Areas & Protection",
     description:
-      "The UK's riskiest areas for vehicle theft in 2026 and practical steps, devices and cover that protect your car.",
+      "The UK's riskiest areas for car theft in 2026, the models thieves target most, and practical steps, security devices and cover that help protect your car.",
     ogType: "article",
   },
   {
     path: "/thewarrantyhub/what-is-cat-n-car-uk-write-off-categories-guide-2026/",
     title: "What Is a Cat N Car? UK Write-Off Categories Guide 2026",
     description:
-      "Cat N, Cat S, Cat B and Cat A explained for UK buyers in 2026, what they mean for value, insurance and warranty cover.",
+      "Cat N, Cat S, Cat B and Cat A explained for UK buyers in 2026: what each means for value, insurance and warranty cover, and checks to make before buying.",
     ogType: "article",
   },
   {
@@ -304,7 +304,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     path: "/thewarrantyhub/auto-warranty-vs-extended-warranty-insurance-uk-2026/",
     title: "Auto Warranty vs Extended Warranty Insurance UK 2026",
     description:
-      "The real difference between an auto warranty and extended warranty insurance in the UK, and which protects you better.",
+      "The real difference between an auto warranty and extended warranty insurance in the UK, what each covers, typical costs and which suits your car best.",
     ogType: "article",
   },
   {
@@ -320,21 +320,21 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     path: "/thewarrantyhub/top-reasons-car-warranty-claims-rejected-uk-2026/",
     title: "Top 7 Reasons UK Warranty Claims Get Rejected (2026)",
     description:
-      "The most common reasons UK car warranty claims are rejected and the simple steps that keep your claim valid.",
+      "The 7 most common reasons UK car warranty claims are rejected, from missed servicing to unauthorised repairs, plus simple steps to keep your claim valid.",
     ogType: "article",
   },
   {
     path: "/thewarrantyhub/12-top-reliable-used-cars-under-15000-uk-2026/",
     title: "12 Reliable Used Cars Under £15,000 UK (2026)",
     description:
-      "Twelve dependable used cars under £15,000 in the UK for 2026, with known weak points and running-cost notes.",
+      "Twelve dependable used cars under £15,000 in the UK for 2026, with known weak points, running costs and what to check on each before you buy one.",
     ogType: "article",
   },
   {
     path: "/thewarrantyhub/is-maintenance-warranty-necessary-used-cars-uk-2026/",
     title: "Is a Maintenance Warranty Necessary for a Used Car? UK 2026",
     description:
-      "Whether a maintenance warranty is worth it on a UK used car, what it covers versus servicing, and who benefits most.",
+      "Is a maintenance warranty worth it on a UK used car? What it covers compared with servicing, typical costs, and which drivers benefit from it the most.",
     ogType: "article",
   },
   {
@@ -348,7 +348,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     path: "/thewarrantyhub/maintenance-warranty-vs-extended-warranty-uk-2026/",
     title: "Maintenance Warranty vs Extended Warranty UK 2026",
     description:
-      "Maintenance plan or extended warranty? What each covers in the UK, typical costs and which one suits your car.",
+      "Maintenance plan or extended warranty? What each covers in the UK, typical costs, how claims work and how to choose the right option for your car.",
     ogType: "article",
   },
   {
@@ -361,9 +361,9 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
   },
   {
     path: "/thewarrantyhub/tesla-car-price-extended-warranty-uk-2026-ownership-guide/",
-    title: "Tesla Car Price & Extended Warranty UK 2026 | Ownership Guide",
+    title: "Tesla Price & Extended Warranty UK 2026 | Ownership Guide",
     description:
-      "Tesla UK prices, EV road tax, Helvetia extended cover and independent warranty options for older Tesla models in 2026.",
+      "Tesla UK prices, EV road tax, Helvetia extended cover and independent warranty options for older Tesla models in 2026, plus battery and repair facts.",
     ogType: "article",
     ogImage: "https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/blog-images/tesla-car-price-extended-warranty-uk-2026.jpg",
   },
@@ -390,49 +390,49 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     path: "/buy-a-used-car-warranty-reliable-warranties/",
     title: "Buy a Car Warranty Online | Trusted UK Cover",
     description:
-      "Comprehensive used car warranty cover from 60p a day. Protect your car against unexpected repair bills.",
+      "Buy a used car warranty online in minutes from 60p a day. Mechanical and electrical cover, repairs at VAT-registered garages. Get your instant price.",
   },
   {
     path: "/van-warranty/",
-    title: "Van Warranty | UK Van Cover | Buy A Warranty",
+    title: "Van Warranty UK | Cover for Trade and Business Vans",
     description:
-      "Affordable van warranty cover for tradespeople and businesses. Instant quotes, flexible plans.",
+      "Van warranty for tradespeople and businesses, built to keep your van earning. Flexible 1, 2 or 3 year plans, monthly or in full. Get an instant quote.",
   },
   {
     path: "/ev-warranty/",
     title: "EV Warranty | Electric Vehicle Cover | Buy A Warranty",
     description:
-      "Specialist warranty cover for electric vehicles. Battery, motor and drivetrain protection.",
+      "Electric car warranty covering motor, drivetrain and key electrical parts, with battery cell cover. For EVs and hybrids up to 15 years old. Get a price.",
   },
   {
     path: "/motorcycle-warranty/",
     title: "Motorbike Warranty | UK Motorcycle Cover | Buy A Warranty",
     description:
-      "Reliable warranty cover for motorbikes. Protect against unexpected mechanical and electrical failures.",
+      "Motorbike warranty at half the price of car cover, protecting against mechanical and electrical failures. Flexible UK plans with an instant online quote.",
   },
   {
     path: "/car-extended-warranty/",
     title: "Extended Car Warranty UK | Buy A Warranty",
     description:
-      "Extend your car warranty with flexible UK plans. Instant quotes, no hidden fees.",
+      "Extended car warranty for UK drivers from 60p a day. Choose 1, 2 or 3 years, pay monthly or in full, and get an instant price for your car online.",
   },
   {
     path: "/warranty-types/",
-    title: "Warranty Types | Choose Your Plan | Buy A Warranty",
+    title: "Warranty Types UK | Car, Van, EV and Motorbike Plans",
     description:
-      "Compare warranty types and find the right plan for your car, van, EV or motorbike.",
+      "Compare warranty plans for cars, vans, electric vehicles and motorbikes. See what each covers, how long it lasts and what it costs, then get a price.",
   },
   {
     path: "/warranty-types/vans-warranty/",
-    title: "Vans Warranty | Buy A Warranty",
+    title: "Vans Warranty UK | Trade and Business Cover | Buy A Warranty",
     description:
-      "Specialist vans warranty plans designed for trade and business use.",
+      "Vans warranty plans designed for trade and business use. Cover for mechanical and electrical parts, flexible terms and repairs at VAT-registered garages.",
   },
   {
     path: "/used-car-warranty-uk/",
     title: "Used Car Warranty UK | Buy A Warranty",
     description:
-      "Trusted UK used car warranty provider. 5-star reviews, instant online quotes from 60p a day.",
+      "Used car warranty from 60p a day, rated 5 stars by UK drivers. Cover for cars up to 15 years and 150,000 miles. Get your instant online price today.",
   },
 
   // ---------------- Brand-specific PPC landing pages ----------------
@@ -482,9 +482,9 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
   // ---------------- Added Aug 2026: static canonical + meta for every sitemap route ----------------
   {
     path: "/cancel-warranty/",
-    title: "Cancel Your Warranty | BuyAWarranty",
+    title: "Cancel Your Car Warranty | Refunds Explained | Buy A Warranty",
     description:
-      "Cancel your used car warranty easily. Understand your cooling off rights, refund process and alternative options.",
+      "Cancel within 14 days for a full refund. After 14 days you receive a pro-rata refund, less fees. See how cancellation works and how to request it today.",
   },
   {
     path: "/car-extended-warranty/ford/",

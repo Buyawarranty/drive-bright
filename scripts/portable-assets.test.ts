@@ -10,9 +10,9 @@ function pointers(directory: string): string[] {
   });
 }
 describe('Portable uploaded assets', () => {
-  it('makes all 113 current pointers absolute without changing asset identity or filenames', () => {
+  it('makes all 118 current pointers absolute without changing asset identity or filenames', () => {
     const files = pointers('src/assets');
-    expect(files).toHaveLength(113);
+    expect(files).toHaveLength(118);
     for (const file of files) {
       const original = JSON.parse(readFileSync(file, 'utf8'));
       const result = portableAssetPointer(original);
