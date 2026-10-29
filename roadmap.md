@@ -2,6 +2,8 @@
 
 ## ORR phased sandbox updates — 29 October 2026
 - [x] Phase 0 source inspection: full guide reviewed; shared external Supabase client, operational controls and communication/job paths show no verified isolation. Safety report and phased plan prepared; documentation only, no database access/writes or functional changes.
+- [x] Website lead triggers and continuous re-release rehearsed in practice mode only: two-minute quiet release, three-minute claim hold, two-hourly round-the-clock review with no attempt cap, ownership only from a confirmed conversation with voicemails disregarded, permitted calling hours kept separate from intake, and a one/two/five-minute comparison table. Runs on invented customers and cannot reach the live system. Forty-two checks pass; preview build OK; nothing published.
+
 - [ ] Phase 1–5: blocked until positive isolation is verified and each preceding phase receives explicit approval. No production connection, communications, routing, deployment or publication.
 
 ## Blog 19 BMW family comparison

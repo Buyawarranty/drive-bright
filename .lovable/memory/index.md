@@ -46,6 +46,9 @@ Updated: just now
 - [ORR Has Distribution Rule](mem://admin/leads/orr-has-distribution-rule) — ORR uses its own distribution rule (furthest behind → longest waiting → caps-page order); RR does not
 - [ORR Merged Flow](mem://admin/leads/orr-merged-flow-both-lead-types) — ORR New Leads section is one list with both ORR and RR lead rows together
 - [ORR Reservation & Chase Rules](mem://admin/leads/orr-reservation-and-chase-rules) — Held-for-you reservations, No answer = 1 attempt, 7 contact days, 3h gaps, staggered release
+- [ORR Timers and Chase Cadence](mem://admin/leads/orr-timers-and-chase-cadence) — 2-min quiet release, 3-min claim hold, 2-hourly round-the-clock re-release with no attempt cap, ownership only from a confirmed conversation
+- [ORR practice uses made-up leads only](mem://admin/leads/orr-practice-synthetic-only) — Practice mode chosen: rehearsal runs on invented customers and cannot reach real customers, texts, WhatsApp or phone routing
+
 
 
 - [EV / Hybrid Category Price](mem://pricing/powertrain-category-pricing) — One uplift + 12-month minimum per powertrain (EV, PHEV, HEV) with exclusions, on top of risk bands
