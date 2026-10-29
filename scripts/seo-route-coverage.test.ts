@@ -18,9 +18,9 @@ describe('Public SEO route coverage', () => {
     expect(missing.map(url => url.pathname)).toEqual([]);
   });
 
-  it('includes all 41 currently published articles, including the four recovered gaps', () => {
+  it('includes all 42 articles, including Blog 19 and the four recovered gaps', () => {
     const articles = urls.filter(url => url.pathname.startsWith('/thewarrantyhub/') && url.pathname !== '/thewarrantyhub/');
-    expect(articles).toHaveLength(41);
+    expect(articles).toHaveLength(42);
     for (const slug of ['audi-a6-vs-bmw-5-series-uk-reliability-and-value-2026', 'motorcycle-extended-warranty-cost-uk-2026-prices-repair-costs', 'motorcycle-extended-warranty-uk-what-does-it-cover-how-does-it-work', 'land-rover-extended-warranty-uk-what-does-it-cover-how-does-it-work']) {
       expect(articles.some(url => url.pathname === `/thewarrantyhub/${slug}/`)).toBe(true);
     }
