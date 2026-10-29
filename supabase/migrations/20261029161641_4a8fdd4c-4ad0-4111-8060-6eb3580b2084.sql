@@ -1,0 +1,3 @@
+REVOKE ALL ON FUNCTION public.is_active_admin_or_super(uuid), public.is_two_month_sales_scope(uuid), public.sales_can_see_customer(uuid,uuid,uuid,timestamptz), public.staff_leaver_archive_on_change(), public.staff_leaver_archive_guard() FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.staff_leaver_archive_on_change(), public.staff_leaver_archive_guard() FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.is_active_admin_or_super(uuid), public.is_two_month_sales_scope(uuid), public.sales_can_see_customer(uuid,uuid,uuid,timestamptz) TO authenticated;
