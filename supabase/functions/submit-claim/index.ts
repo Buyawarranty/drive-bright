@@ -353,8 +353,8 @@ const handler = async (req: Request): Promise<Response> => {
       .from('claims_submissions')
       .insert([
         {
-          name,
-          email,
+          name: (name || '').trim() || 'Not provided',
+          email: (email || '').trim(),
           phone: phone || null,
           message: claimMessage || null,
           claim_reason: faultDescription || null,
@@ -715,6 +715,7 @@ const handler = async (req: Request): Promise<Response> => {
 </body>
 </html>`;
 
+    if ((email || '').trim()) {
     const customerPayload = routeClaimEmail({
       // Send from the verified notify subdomain for reliable delivery.
       // reply_to points to the claims mailbox so customer replies land there.
@@ -753,6 +754,7 @@ const handler = async (req: Request): Promise<Response> => {
         error: customerEmailResponse.ok ? undefined : customerEmailResponse.error,
       }
     });
+    }
 
     return new Response(
       JSON.stringify({ 

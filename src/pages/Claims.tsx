@@ -340,20 +340,10 @@ const Claims = () => {
   const validateStep = (step: number): boolean => {
     const newErrors: {[key: string]: string} = {};
     if (step === 1) {
-      if (!formData.name.trim()) newErrors.name = 'Could you let us know your name?';
-      if (!formData.email.trim()) newErrors.email = 'We just need an email so we can get back to you.';
-      else if (!validateEmail(formData.email)) newErrors.email = "That email doesn't look quite right - mind double-checking it?";
-      if (!formData.phone.trim()) newErrors.phone = 'A contact number helps us reach you faster.';
-      else if (!validatePhone(formData.phone)) newErrors.phone = "Please update to a UK number e.g 07123 456789.";
+      if (formData.email.trim() && !validateEmail(formData.email)) newErrors.email = "That email doesn't look quite right - mind double-checking it?";
     }
     if (step === 2) {
-      if (!formData.vehicleReg.trim()) newErrors.vehicleReg = 'Please pop in your vehicle registration.';
-      else if (!vehicleDetails || (!vehicleDetails.make && !vehicleDetails.model)) {
-        newErrors.vehicleReg = 'Please enter a valid UK registration we can verify.';
-      }
-    }
-    if (step === 3) {
-      if (!formData.faultDescription.trim()) newErrors.faultDescription = 'Please describe the fault or problem.';
+      if (formData.vehicleReg.replace(/\s/g, '').length < 2) newErrors.vehicleReg = 'Please pop in your vehicle registration.';
     }
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) {
@@ -382,9 +372,9 @@ const Claims = () => {
   // DVLA vehicle lookup function
   const lookupVehicle = async (regPlate: string) => {
     const cleanReg = regPlate.replace(/\s/g, '').toUpperCase();
-    if (cleanReg.length < 5) {
+    if (cleanReg.length < 2) {
       setVehicleDetails(null);
-      setErrors((prev) => ({ ...prev, vehicleReg: 'Please enter a valid UK registration plate.' }));
+      setErrors((prev) => ({ ...prev, vehicleReg: '' }));
       return;
     }
 
@@ -400,7 +390,7 @@ const Claims = () => {
       if (error) {
         console.error('Vehicle lookup error:', error);
         setVehicleDetails(null);
-        setErrors((prev) => ({ ...prev, vehicleReg: "We couldn't verify that registration. Please double-check it." }));
+        setErrors((prev) => ({ ...prev, vehicleReg: '' }));
         return;
       }
 
@@ -416,12 +406,12 @@ const Claims = () => {
         setErrors((prev) => ({ ...prev, vehicleReg: '' }));
       } else {
         setVehicleDetails(null);
-        setErrors((prev) => ({ ...prev, vehicleReg: 'No vehicle found for that registration. Please check and try again.' }));
+        setErrors((prev) => ({ ...prev, vehicleReg: '' }));
       }
     } catch (err) {
       console.error('Vehicle lookup failed:', err);
       setVehicleDetails(null);
-      setErrors((prev) => ({ ...prev, vehicleReg: "We couldn't verify that registration. Please try again." }));
+      setErrors((prev) => ({ ...prev, vehicleReg: '' }));
     } finally {
       setIsLookingUpVehicle(false);
     }
@@ -454,32 +444,12 @@ const Claims = () => {
     // Validate all required fields together so every issue is shown at once
     const newErrors: {[key: string]: string} = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Could you let us know your name?';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'We just need an email so we can get back to you.';
-    } else if (!validateEmail(formData.email)) {
+    // Only the registration is required; it can be typed with or without a space.
+    if (formData.email.trim() && !validateEmail(formData.email)) {
       newErrors.email = 'That email doesn\'t look quite right - mind double-checking it?';
     }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'A contact number helps us reach you faster.';
-    } else if (!validatePhone(formData.phone)) {
-      newErrors.phone = 'Please update to a UK number e.g 07123 456789.';
-    }
-
-    if (!formData.vehicleReg.trim()) {
+    if (formData.vehicleReg.replace(/\s/g, '').length < 2) {
       newErrors.vehicleReg = 'Please pop in your vehicle registration.';
-    } else if (errors.vehicleReg) {
-      newErrors.vehicleReg = errors.vehicleReg;
-    } else if (!vehicleDetails || (!vehicleDetails.make && !vehicleDetails.model)) {
-      newErrors.vehicleReg = 'Please enter a valid UK registration we can verify.';
-    }
-
-    if (!formData.faultDescription.trim()) {
-      newErrors.faultDescription = 'Please describe the fault or problem.';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -980,9 +950,9 @@ Additional Information: ${formData.additionalInfo}
                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div>
-                                    <Label htmlFor="name" className="text-gray-900 font-bold text-sm block text-left">Full name *</Label>
+                                    <Label htmlFor="name" className="text-gray-900 font-bold text-sm block text-left">Full name</Label>
                                     <div className="relative">
-                                      <Input id="name" name="name" type="text" placeholder="Jane Smith" value={formData.name} onChange={handleInputChange} required
+                                      <Input id="name" name="name" type="text" placeholder="Jane Smith" value={formData.name} onChange={handleInputChange}
                                         className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.name ? 'border-[#FF385C]' : ''}`} />
                                       {!errors.name && formData.name.trim().length >= 2 && (
                                         <Check className="w-5 h-5 text-green-600 absolute right-3 top-1/2 -translate-y-1/2 mt-[3px]" />
@@ -991,9 +961,9 @@ Additional Information: ${formData.additionalInfo}
                                     {errors.name && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.name}</p>}
                                   </div>
                                   <div>
-                                    <Label htmlFor="email" className="text-gray-900 font-bold text-sm block text-left">Email address *</Label>
+                                    <Label htmlFor="email" className="text-gray-900 font-bold text-sm block text-left">Email address</Label>
                                     <div className="relative">
-                                      <Input id="email" name="email" type="email" placeholder="you@email.com" value={formData.email} onChange={handleInputChange} required
+                                      <Input id="email" name="email" type="email" placeholder="you@email.com" value={formData.email} onChange={handleInputChange}
                                         className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.email ? 'border-[#FF385C]' : ''}`} />
                                       {!errors.email && validateEmail(formData.email) && (
                                         <Check className="w-5 h-5 text-green-600 absolute right-3 top-1/2 -translate-y-1/2 mt-[3px]" />
@@ -1002,7 +972,7 @@ Additional Information: ${formData.additionalInfo}
                                     {errors.email && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.email}</p>}
                                   </div>
                                   <div className="md:col-span-2">
-                                    <Label htmlFor="phone" className="text-gray-900 font-bold text-sm block text-left">Phone number *</Label>
+                                    <Label htmlFor="phone" className="text-gray-900 font-bold text-sm block text-left">Phone number</Label>
                                     <div className="relative">
                                       <Input id="phone" name="phone" type="tel" placeholder="07123 456 789" value={formData.phone} onChange={handleInputChange}
                                         className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.phone ? 'border-[#FF385C]' : ''}`} />
@@ -1108,10 +1078,10 @@ Additional Information: ${formData.additionalInfo}
                                </div>
 
                                <div>
-                                 <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-sm block text-left">Describe the fault / problem *</Label>
+                                 <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-sm block text-left">Describe the fault / problem</Label>
                                  <Textarea id="faultDescription" name="faultDescription"
                                    placeholder="Please explain what's wrong with the vehicle (e.g. strange noise from engine, gearbox slipping, warning lights on dashboard...)"
-                                   value={formData.faultDescription} onChange={handleInputChange} required rows={4}
+                                   value={formData.faultDescription} onChange={handleInputChange} rows={4}
                                    className={`mt-1.5 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.faultDescription ? 'border-[#FF385C]' : ''}`} />
                                  {errors.faultDescription && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.faultDescription}</p>}
                                </div>
