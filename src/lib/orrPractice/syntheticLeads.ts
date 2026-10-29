@@ -73,9 +73,11 @@ export const makeSyntheticLead = (at: number, seed = counter++): PracticeLead =>
     reservedAt: null,
     reservedExpiresAt: null,
     reReleaseDueAt: null,
-    releaseCount: 0,
-    firstAttemptLeadMinutes: null,
-    events: [],
+  releaseCount: 0,
+  firstAttemptLeadMinutes: null,
+  value: 0,
+  events: [],
+
     outcomes: [],
     history: [`Practice lead created for ${town} rehearsal (${email})`],
   };

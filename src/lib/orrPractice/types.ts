@@ -24,7 +24,10 @@ export interface JourneyEvent {
   note?: string;
   /** Money the practice customer paid, for the purchase_completed event only. */
   amount?: number;
+  /** When the customer asked to be called back, for the callback_requested event. */
+  callbackAt?: number;
 }
+
 
 
 /** Where a practice lead currently sits in the journey. */
