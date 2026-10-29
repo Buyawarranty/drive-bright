@@ -42,12 +42,33 @@ export default function StaffDayReportPanel({ staff, sessions, from, to, zone }:
     return { s, locs, sess, flags: travelFlags(locs), gaps: offlineGaps(sess), computers: computerCount(locs), networks: networkCount(locs) };
   }).filter(r => r.locs.length || r.sess.length).sort((a, b) => b.flags.length - a.flags.length), [staff, locations, sessions]);
 
+  const staffName = (id: string) => { const s = staff.find(x => x.id === id); return s ? name(s) : 'Former or unknown staff'; };
+  const countries = useMemo(() => {
+    const map = new Map<string, DayLocation[]>();
+    for (const l of locations) { const k = l.country || 'Unknown country'; map.set(k, [...(map.get(k) || []), l]); }
+    return [...map.entries()].map(([country, locs]) => ({ country, locs, people: [...new Set(locs.map(l => staffName(l.admin_user_id)))] }))
+      .sort((a, b) => b.locs.length - a.locs.length);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locations, staff]);
   return <section className="space-y-4 border-t pt-5">
     <div>
       <h2 className="font-semibold flex items-center gap-2"><MapPin className="h-4 w-4" />Daily sign-in report</h2>
       <p className="text-sm text-muted-foreground">Each person's sign-ins, sign-outs, time away, places, internet providers and computers. A red warning means two far-apart places at once or travel faster than a plane, which usually points to a VPN, a borrowed UK address or a shared login. "Not a VPN" only rules out well-known VPN companies. Identical computers with the same browser count as one.</p>
     </div>
     {failed && <p role="alert" className="text-sm text-destructive">Sign-in places could not load. Sessions are still shown.</p>}
+    {countries.length > 0 && <div className="rounded-md border p-3 space-y-2">
+      <h3 className="font-medium">Countries signed in from ({countries.length})</h3>
+      {countries.map(c => <details key={c.country} className="rounded border p-2">
+        <summary className="cursor-pointer flex flex-wrap items-center gap-2 text-sm">
+          <span className="font-medium">{c.country}</span>
+          <Badge variant="secondary">{c.people.length} {c.people.length === 1 ? 'person' : 'people'}</Badge>
+          <Badge variant="secondary">{c.locs.length} sign-in record{c.locs.length === 1 ? '' : 's'}</Badge>
+          <span className="text-muted-foreground">{c.people.join(', ')}</span>
+        </summary>
+        <div className="overflow-x-auto mt-2"><table className="w-full min-w-[640px] text-sm"><thead><tr className="text-left text-muted-foreground">{['Person', 'Place', 'First seen', 'Last seen', 'Internet provider'].map(h => <th key={h} className="py-1 font-medium">{h}</th>)}</tr></thead>
+          <tbody>{c.locs.map(l => <tr key={l.id} className="border-t"><td className="py-1">{staffName(l.admin_user_id)}</td><td>{l.city || 'Unknown'}</td><td className="tabular-nums">{t(l.first_seen_at)}</td><td className="tabular-nums">{t(l.last_seen_at)}</td><td>{l.isp || '—'}</td></tr>)}</tbody></table></div>
+      </details>)}
+    </div>}
     {!rows.length && <p className="text-sm text-muted-foreground">No sign-ins in this period.</p>}
     {rows.map(r => <details key={r.s.id} open={r.flags.length > 0} className="rounded-md border p-3">
       <summary className="cursor-pointer flex flex-wrap items-center gap-2">
