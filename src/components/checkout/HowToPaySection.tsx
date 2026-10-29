@@ -124,7 +124,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
               <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Pay in full</h3>
             </div>
             {displayedSaving > 0 && (
-              <span className="flex-shrink-0 rounded bg-success px-2 py-1 text-xs font-bold text-success-foreground">
+              <span className="flex-shrink-0 rounded bg-[#0BA360] px-2 py-1 text-xs font-bold text-success-foreground">
                 {isFullTenPercent ? 'Save 10%' : `Save £${displayedSaving}`}
               </span>
             )}
@@ -135,11 +135,11 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             <div className="pl-7">
               <p className="text-xs font-semibold text-muted-foreground">Total payable</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-extrabold text-success leading-none">
+                <span className="text-3xl sm:text-4xl font-extrabold text-[#0BA360] leading-none">
                   £{fullPrice}
                 </span>
               </div>
-              <p className="text-base text-success font-bold mt-2">
+              <p className="text-base text-[#0BA360] font-bold mt-2">
                 {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day
               </p>
               <p className="text-xs text-muted-foreground">Over your full cover term</p>
