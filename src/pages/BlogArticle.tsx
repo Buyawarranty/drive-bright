@@ -15,6 +15,9 @@ import BlogRegQuoteCTA from '@/components/blog/BlogRegQuoteCTA';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import defaultBlogHero from '@/assets/blog/used-car-warranty-uk-hero-2026.png.asset.json';
+
+// Articles that ship their own approved schema graph (matching the visible Home / The Warranty Hub / title breadcrumb).
+const CUSTOM_SCHEMA_SLUGS = ['bmw-x5-vs-bmw-5-series', 'used-car-warranty-electrical-faults'];
 import comparisonVehicles from '@/assets/blog/uk-vehicles-comparison-warranty-2026.png.asset.json';
 
 interface BlogPost {
@@ -523,7 +526,7 @@ const BlogArticle = () => {
       />
       {/* Article + FAQ schema lives in <head> so crawlers pick it up with the meta tags */}
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify(post.slug === 'bmw-x5-vs-bmw-5-series' ? post.structured_data : structuredData)}</script>
+        <script type="application/ld+json">{JSON.stringify(CUSTOM_SCHEMA_SLUGS.includes(post.slug) ? post.structured_data : structuredData)}</script>
       </Helmet>
 
       {/* Editorial serif for headings */}
@@ -539,10 +542,16 @@ const BlogArticle = () => {
         <article className="bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden">
           {/* Article Header */}
           <header className="pt-10 md:pt-14 pb-8 px-6 md:px-16 border-b border-slate-100">
-            <nav className="mb-8 flex items-center flex-wrap gap-2 text-sm text-slate-500 font-medium">
+            <nav aria-label="Breadcrumb" className="mb-8 flex items-center flex-wrap gap-2 text-sm text-slate-500 font-medium">
+              {CUSTOM_SCHEMA_SLUGS.includes(post.slug) && (
+                <>
+                  <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+                  <span className="text-slate-300">/</span>
+                </>
+              )}
               <Link to="/thewarrantyhub/" className="hover:text-primary transition-colors inline-flex items-center">
-                <ArrowLeft className="mr-1.5 h-4 w-4" />
-                {post.blog_categories?.name || 'Warranty Guides'}
+                {!CUSTOM_SCHEMA_SLUGS.includes(post.slug) && <ArrowLeft className="mr-1.5 h-4 w-4" />}
+                {CUSTOM_SCHEMA_SLUGS.includes(post.slug) ? 'The Warranty Hub' : (post.blog_categories?.name || 'Warranty Guides')}
               </Link>
               <span className="text-slate-300">/</span>
               <span className="text-slate-900 line-clamp-1">{post.title}</span>
@@ -624,13 +633,13 @@ const BlogArticle = () => {
 
           {/* Hero Image */}
           <figure className="px-6 md:px-16 -mt-4">
-            <div className={`relative ${['mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes','bmw-x5-vs-audi-q7','bmw-x5-vs-mercedes-gle-maintenance-costs', 'used-bmw-x5-repair-costs', 'bmw-x5-vs-bmw-5-series'].includes(post.slug) ? 'aspect-[1376/768]' : 'aspect-[21/9]'} bg-muted rounded-xl overflow-hidden shadow-xl`}>
+            <div className={`relative ${['mercedes-eq-warranty-uk-out-of-warranty-electric-mercedes','bmw-x5-vs-audi-q7','bmw-x5-vs-mercedes-gle-maintenance-costs', 'used-bmw-x5-repair-costs', 'bmw-x5-vs-bmw-5-series', 'used-car-warranty-electrical-faults'].includes(post.slug) ? 'aspect-[1376/768]' : 'aspect-[21/9]'} bg-muted rounded-xl overflow-hidden shadow-xl`}>
               <img
                 src={heroImage}
                 alt={post.meta_tags?.featured_image_alt || `${post.title}: UK car warranty guide illustration`}
                 title={post.meta_tags?.featured_image_title || post.seo_title || post.title}
-                width={post.slug === 'bmw-x5-vs-bmw-5-series' ? 1376 : 1600}
-                height={post.slug === 'bmw-x5-vs-bmw-5-series' ? 768 : 900}
+                width={CUSTOM_SCHEMA_SLUGS.includes(post.slug) ? 1376 : 1600}
+                height={CUSTOM_SCHEMA_SLUGS.includes(post.slug) ? 768 : 900}
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"
