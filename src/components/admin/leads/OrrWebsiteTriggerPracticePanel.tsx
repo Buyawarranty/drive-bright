@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { OrrPracticeManagementReport } from './OrrPracticeManagementReport';
 import type { ClaimResult } from '@/lib/orrPractice/engine';
 import {
   OPEN_CLAIM_CARD_LIMIT,
@@ -454,6 +455,7 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
   const [cursor, setCursor] = useState(0);
   const [source, setSource] = useState<ContactSource>('zoiper');
   const [secondsOnLine, setSecondsOnLine] = useState(180);
+  const [reportingRole, setReportingRole] = useState<PracticeRole>('admin');
 
   const pushNotes = useCallback((incoming: string[]) => {
     if (!incoming.length) return;
@@ -861,7 +863,9 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
         </div>
       </Section>
 
-      <Section
+      <OrrPracticeManagementReport leads={leads} agents={agents} settings={settings} clock={clock} role={reportingRole} onRole={setReportingRole} />
+
+      {canOverride(reportingRole) && <Section
         title="Management controls"
         subtitle="These rules apply to this practice run only. Nothing here reaches the live website or the phone system."
         icon={<Sliders className="h-4 w-4 text-primary" />}
@@ -1048,9 +1052,9 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
         <Button size="sm" variant="ghost" onClick={() => setSettings(DEFAULT_ORR_PRACTICE_SETTINGS)}>
           <RotateCcw className="h-3 w-3 mr-1" /> Restore the defaults
         </Button>
-      </Section>
+      </Section>}
 
-      <Section
+      {canOverride(reportingRole) && <Section
         title="Does calling sooner help?"
         subtitle="Compare a one-minute, two-minute and five-minute wait using only made-up leads."
         icon={<Users className="h-4 w-4 text-primary" />}
@@ -1102,6 +1106,8 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
           conclusion. Nothing here changes a live customer journey.
         </p>
       </Section>
+
+      }
 
       {notes.length > 0 && (
         <Section
