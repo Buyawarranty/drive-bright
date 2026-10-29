@@ -51,6 +51,7 @@ import {
   queueViews,
   runIntakeTick,
   type PresenceMap,
+  type TickState,
 } from '@/lib/orrPractice/intake';
 import {
   OFFER_SECONDS,
@@ -258,7 +259,7 @@ const IntakeSection = ({
   onLeads: (leads: PracticeLead[], notes: string[]) => void;
 }) => {
   const [presence, setPresence] = useState<PresenceMap>({});
-  const [lastTickAt, setLastTickAt] = useState(0);
+  const [tickState, setTickState] = useState<TickState>({ lastTickAt: 0 });
   const views = queueViews(leads, settings);
   const lists: [string, PracticeLead[]][] = [
     ['Waiting to go quiet', views.pending],
@@ -281,8 +282,8 @@ const IntakeSection = ({
           size="sm"
           variant="outline"
           onClick={() => {
-            const r = runIntakeTick(leads, settings, clock, { lastTickAt });
-            setLastTickAt(r.state.lastTickAt);
+            const r = runIntakeTick(leads, settings, clock, tickState);
+            setTickState(r.state);
             onLeads(r.leads, r.notes.length ? r.notes : ['Review pass ran; nothing changed (running it again at the same time is safe)']);
           }}
         >
@@ -456,6 +457,7 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
   const [source, setSource] = useState<ContactSource>('zoiper');
   const [secondsOnLine, setSecondsOnLine] = useState(180);
   const [reportingRole, setReportingRole] = useState<PracticeRole>('admin');
+  const [resetVersion, setResetVersion] = useState(0);
 
   const pushNotes = useCallback((incoming: string[]) => {
     if (!incoming.length) return;
@@ -551,6 +553,7 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
     setNotes([]);
     setCursor(0);
     setClock(startOfPracticeDay());
+    setResetVersion(v => v + 1);
   }, []);
 
   const summary = useMemo(() => poolSummary(leads), [leads]);
@@ -582,6 +585,7 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
       </div>
 
       <IntakeSection
+        key={`intake-${resetVersion}`}
         leads={leads}
         agents={agents}
         settings={settings}
@@ -593,6 +597,7 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
       />
 
       <AutoRoundRobinSection
+        key={`offers-${resetVersion}`}
         leads={leads}
         agents={agents}
         settings={settings}
@@ -606,6 +611,7 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
       />
 
       <OpenClaimSection
+        key={`claims-${resetVersion}`}
         leads={leads}
         agents={agents}
         settings={settings}

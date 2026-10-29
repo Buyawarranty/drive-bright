@@ -109,10 +109,15 @@ export const acceptOffer = (
   const state = expireOffers(input, at);
   const offer = state.offers.find(o => o.leadId === leadId && o.agentId === agentId && o.status === 'open');
   if (!offer) return { leads, agents, state, notes: ['That offer has lapsed or belongs to someone else'] };
+  const agent = agents.find(a => a.id === agentId);
+  if (!agent || !canTakeOffer(agent, leads)) {
+    return { leads, agents, state, notes: ['Work a held lead or free capacity before accepting this offer'] };
+  }
   const claim = claimLead(leads, agents, leadId, agentId, settings, at);
+  const accepted = claim.leads.some(l => l.id === leadId && l.stage === 'reserved' && l.reservedAgentId === agentId);
   return {
     ...claim,
-    state: { ...state, offers: state.offers.map(o => (o === offer ? { ...o, status: 'accepted' as const } : o)) },
+    state: { ...state, offers: state.offers.map(o => (o === offer ? { ...o, status: accepted ? 'accepted' as const : 'cancelled' as const } : o)) },
   };
 };
 

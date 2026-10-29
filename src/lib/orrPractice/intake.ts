@@ -52,6 +52,7 @@ export const TICK_LIMIT = 500;
 
 export interface TickState {
   lastTickAt: number;
+  nextOffset?: number;
 }
 
 /**
@@ -65,10 +66,17 @@ export const runIntakeTick = (
   state: TickState,
 ): { leads: PracticeLead[]; notes: string[]; state: TickState; deferred: number } => {
   if (at <= state.lastTickAt) return { leads, notes: [], state, deferred: 0 };
-  const batch = leads.slice(0, TICK_LIMIT);
-  const rest = leads.slice(TICK_LIMIT);
+  const start = (state.nextOffset ?? 0) % Math.max(1, leads.length);
+  const indices = Array.from({ length: Math.min(TICK_LIMIT, leads.length) }, (_, i) => (start + i) % leads.length);
+  const batch = indices.map(i => leads[i]);
   const result = evaluateStages(batch, settings, at);
-  return { leads: [...result.leads, ...rest], notes: result.notes, state: { lastTickAt: at }, deferred: rest.length };
+  const updates = new Map(indices.map((index, i) => [index, result.leads[i]]));
+  return {
+    leads: leads.map((lead, i) => updates.get(i) ?? lead),
+    notes: result.notes,
+    state: { lastTickAt: at, nextOffset: (start + batch.length) % Math.max(1, leads.length) },
+    deferred: Math.max(0, leads.length - batch.length),
+  };
 };
 
 /** Made-up enquiries that came in overnight and went quiet straight away. */
