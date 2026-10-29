@@ -1,5 +1,10 @@
 # Roadmap
 
+## Blog 19 BMW family comparison
+- [ ] Preserve the supplied article structure, internal links and original image; make only verified generation-specific and BAW policy corrections.
+- [ ] Add article-only metadata, canonical, optimized descriptive image and matching structured data with crawler-readable content, without changing other pages.
+- [ ] Verify the article and clarify publication scope before shipping unrelated preview changes.
+
 ## Concise customer quote email
 - [x] Removed inaccurate claims hours and authored dash punctuation in shared HTML and both text alternatives; shortened cover copy, moved clickable quote link and CTA above details, preserved sender and delivery logic.
 - [x] Mobile and desktop email rendering checked: button within first 154px, two clickable quote links, no overflow. Three quote-edit persistence checks pass; preview build OK. Public SPF and DMARC records exist, but provider DKIM alignment and actual inbox delivery remain unverified. No publication, sender deployment or customer test send.
