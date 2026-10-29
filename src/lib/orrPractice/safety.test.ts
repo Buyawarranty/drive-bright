@@ -181,11 +181,13 @@ describe('Isolation', () => {
   const files = [
     './engine.ts',
     './analytics.ts',
+    './managementReport.ts',
     './contactSafety.ts',
     './settings.ts',
     './syntheticLeads.ts',
     './types.ts',
     '../../components/admin/leads/OrrWebsiteTriggerPracticePanel.tsx',
+    '../../components/admin/leads/OrrPracticeManagementReport.tsx',
   ];
 
   /** Comments explain the rules in plain words, so they are removed before checking. */
