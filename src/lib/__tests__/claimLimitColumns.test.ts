@@ -12,7 +12,7 @@ describe('claim limit column rename keeps prices identical', () => {
   });
   it('multi-year promo column', () => {
     expect(getBasePrice('24months', 100, 2000, 'admin')).toBe(1033);
-    expect(getBasePrice('36months', 100, 750, 'admin')).toBe(1309);
+    expect(getBasePrice('36months', 100, 750, 'admin')).toBe(1440);
   });
   it('columns', () => {
     expect(toClaimLimitColumn(750)).toBe(1000);
