@@ -6,7 +6,7 @@
 
 - [x] Phases 1–3 approved and implemented as synthetic in-memory practice: Open Claim, continuous intake/recycling, and 20-second automatic offers.
 - [x] Phase 4: synthetic backlog, agent workload, separate first-attempt/conversation averages and samples, escalation and pending callback reports; management-only rehearsal settings/report views. All 75 practice tests pass; isolated browser verifies backlog, callback timing, role restrictions and changed inactivity setting; preview build OK. Nothing published or connected to real customers.
-- [ ] Phase 5 acceptance/handover waits for separate approval. Any real production connection, communications, routing, deployment or publication remains blocked pending verified isolation and separate approval.
+- [ ] Phase 5 approved: run repeatable synthetic acceptance checks, record limitations and prepare handover. Any real production connection, communications, routing, deployment or publication remains blocked pending verified isolation and separate approval.
 
 ## Blog 19 BMW family comparison
 - [x] Published Blog 19 only through the existing database-backed article route; all nine original internal links remain in order, all eight sections/two tables/five FAQs retained, original image compressed from 2.7 MB to 316 KB without crop or replacement. Corrected variant-specific boot figures and relevant BAW terms; no unsupported repair prices or reliability rates added.
