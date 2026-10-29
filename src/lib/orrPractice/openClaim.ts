@@ -49,7 +49,7 @@ export const unworkedHolds = (leads: PracticeLead[], agentId: string) =>
 /** The three oldest pool leads, with no phone, email or registration shown. */
 export const openClaimCards = (leads: PracticeLead[], at: number): OpenClaimCard[] =>
   leads
-    .filter(l => l.stage === 'queued' && !l.suppressed && !l.purchased)
+    .filter(l => l.stage === 'queued' && !l.ownerAgentId && !l.suppressed && !l.purchased)
     .sort((a, b) => a.createdAt - b.createdAt || a.lastStageChangeAt - b.lastStageChangeAt)
     .slice(0, OPEN_CLAIM_CARD_LIMIT)
     .map(l => ({

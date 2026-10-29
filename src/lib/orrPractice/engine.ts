@@ -52,6 +52,10 @@ export const applyJourneyEvent = (
     events: [...lead.events, event],
     lastActivityAt: Math.max(lead.lastActivityAt, at),
   };
+  // Browsing again never discards an established owner or a current exclusive hold.
+  if ((lead.ownerAgentId || lead.stage === 'reserved') && event.kind !== 'purchase_completed') {
+    return withNote(next, at, `Customer journey event recorded: ${event.kind}`);
+  }
 
   switch (event.kind) {
     case 'pricing_page_entered': {
@@ -295,7 +299,7 @@ export const claimLead = (
   const lead = leads.find(l => l.id === leadId);
   const agent = agents.find(a => a.id === agentId);
   if (!lead || !agent) return { leads, agents, notes: ['That practice lead or agent no longer exists'] };
-  if (lead.stage !== 'queued') {
+  if (lead.stage !== 'queued' || lead.ownerAgentId || lead.purchased || lead.suppressed) {
     return { leads, agents, notes: [`${lead.name} is not in the pool right now, so it cannot be taken`] };
   }
   if (!hasCapacity(agent)) {
