@@ -31,6 +31,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import type { ClaimResult } from '@/lib/orrPractice/engine';
+import {
+  OPEN_CLAIM_CARD_LIMIT,
+  OPEN_CLAIM_UNWORKED_LIMIT,
+  canOverride,
+  managerMoveHold,
+  openClaim,
+  openClaimCards,
+  unworkedHolds,
+  type PracticeRole,
+} from '@/lib/orrPractice/openClaim';
 
 import {
   DEFAULT_ORR_PRACTICE_SETTINGS,
@@ -146,6 +157,107 @@ const ToggleField = ({
     <Switch checked={checked} onCheckedChange={onChange} />
   </div>
 );
+
+const OpenClaimSection = ({
+  leads,
+  agents,
+  settings,
+  clock,
+  onResult,
+}: {
+  leads: PracticeLead[];
+  agents: PracticeAgent[];
+  settings: OrrPracticeSettings;
+  clock: number;
+  onResult: (r: ClaimResult) => void;
+}) => {
+  const seats = agents.filter(a => a.available);
+  const [seatId, setSeatId] = useState(seats[0]?.id ?? '');
+  const [role, setRole] = useState<PracticeRole>('sales');
+  const [moveTo, setMoveTo] = useState(seats[1]?.id ?? '');
+  const [reason, setReason] = useState('');
+  const cards = openClaimCards(leads, clock);
+  const held = leads.filter(l => l.stage === 'reserved');
+  const mine = unworkedHolds(leads, seatId).length;
+
+  return (
+    <Section
+      id="orr-open-claim"
+      title="Phase 1: Open Claim (agent view)"
+      subtitle={`Each agent sees up to ${OPEN_CLAIM_CARD_LIMIT} pool cards with first name only, and can hold up to ${OPEN_CLAIM_UNWORKED_LIMIT} leads nobody has worked yet.`}
+      icon={<Users className="h-4 w-4 text-primary" />}
+    >
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="space-y-1">
+          <Label className="text-xs">Seat</Label>
+          <Select value={seatId} onValueChange={setSeatId}>
+            <SelectTrigger className="w-48 h-8"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {seats.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Practice role</Label>
+          <Select value={role} onValueChange={v => setRole(v as PracticeRole)}>
+            <SelectTrigger className="w-40 h-8"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {(['sales', 'sales_lead', 'sales_manager', 'admin', 'viewer'] as PracticeRole[]).map(r => (
+                <SelectItem key={r} value={r}>{r.replace('_', ' ')}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <Badge variant="outline">Unworked holds: {mine} of {OPEN_CLAIM_UNWORKED_LIMIT}</Badge>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-3 mt-3">
+        {cards.length === 0 && <p className="text-xs text-muted-foreground">Nothing in the pool right now.</p>}
+        {cards.map(c => (
+          <div key={c.leadId} className="rounded-md border border-border p-3 space-y-1 bg-card">
+            <p className="text-sm font-semibold text-foreground">{c.firstName}</p>
+            <p className="text-xs text-muted-foreground">{c.stepReached}</p>
+            <p className="text-xs text-muted-foreground">Waiting {c.minutesWaiting} min</p>
+            <Button
+              size="sm"
+              className="w-full mt-1"
+              onClick={() => onResult(openClaim(leads, agents, c.leadId, seatId, role, settings, clock))}
+            >
+              Take this lead
+            </Button>
+          </div>
+        ))}
+      </div>
+
+      {canOverride(role) && held.length > 0 && (
+        <div className="mt-4 space-y-2 rounded-md border border-border p-3">
+          <p className="text-sm font-semibold text-foreground">Management: move a held lead</p>
+          <div className="flex flex-wrap items-end gap-2">
+            <Select value={moveTo} onValueChange={setMoveTo}>
+              <SelectTrigger className="w-48 h-8"><SelectValue placeholder="Move to" /></SelectTrigger>
+              <SelectContent>
+                {seats.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Input className="h-8 w-64" placeholder="Reason (required)" value={reason} onChange={e => setReason(e.target.value)} />
+          </div>
+          {held.map(l => (
+            <div key={l.id} className="flex items-center justify-between text-xs">
+              <span>{l.name}, held by {agents.find(a => a.id === l.reservedAgentId)?.name}</span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onResult(managerMoveHold(leads, agents, l.id, moveTo, role, reason, settings, clock))}
+              >
+                Move
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </Section>
+  );
+};
 
 const Section = ({
   id,
@@ -311,6 +423,18 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
           on and watch the lead move through the stages.
         </p>
       </div>
+
+      <OpenClaimSection
+        leads={leads}
+        agents={agents}
+        settings={settings}
+        clock={clock}
+        onResult={(r: ClaimResult) => {
+          setLeads(r.leads);
+          setAgents(r.agents);
+          pushNotes(r.notes);
+        }}
+      />
 
       <Section
         title="Practice clock and queue at a glance"
