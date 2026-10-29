@@ -62,9 +62,8 @@
           "encodingFormat": "image/jpeg"
         },
         "author": {
-          "@type": "Organization",
-          "name": "Buy A Warranty",
-          "url": "https://buyawarranty.co.uk/"
+          "@type": "Person",
+          "name": "David Yash"
         },
         "publisher": {
           "@type": "Organization",
@@ -165,7 +164,7 @@
     "featured_image_caption": "The BMW X5 offers an elevated SUV driving position, while the BMW 5 Series Touring combines estate practicality with a lower, more streamlined profile.",
     "featured_image_width": 1376,
     "featured_image_height": 768,
-    "author_name": "Buy A Warranty",
+    "author_name": "David Yash",
     "source_document_tab": "BLOG 19",
     "primary_keyword": "BMW X5 vs BMW 5 Series",
     "suggested_url": "/bmw-x5-vs-bmw-5-series/"
