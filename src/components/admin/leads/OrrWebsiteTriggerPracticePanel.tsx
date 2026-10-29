@@ -51,6 +51,15 @@ import {
   runIntakeTick,
   type PresenceMap,
 } from '@/lib/orrPractice/intake';
+import {
+  OFFER_SECONDS,
+  acceptOffer,
+  declineOffer,
+  initialRoundRobin,
+  makeOffers,
+  switchMode,
+  type RoundRobinState,
+} from '@/lib/orrPractice/autoRoundRobin';
 
 import {
   DEFAULT_ORR_PRACTICE_SETTINGS,
@@ -166,6 +175,73 @@ const ToggleField = ({
     <Switch checked={checked} onCheckedChange={onChange} />
   </div>
 );
+
+const AutoRoundRobinSection = ({
+  leads,
+  agents,
+  settings,
+  clock,
+  onResult,
+  onTick,
+}: {
+  leads: PracticeLead[];
+  agents: PracticeAgent[];
+  settings: OrrPracticeSettings;
+  clock: number;
+  onResult: (r: ClaimResult) => void;
+  onTick: (minutes: number) => void;
+}) => {
+  const [rr, setRr] = useState<RoundRobinState>(initialRoundRobin);
+  const open = rr.offers.filter(o => o.status === 'open' && clock < o.expiresAt);
+  const recent = rr.offers.slice(-8).reverse();
+  const nameOf = (id: string) => agents.find(a => a.id === id)?.name ?? id;
+  const leadName = (id: string) => leads.find(l => l.id === id)?.name.split(' ')[0] ?? 'lead';
+  return (
+    <Section
+      id="orr-auto"
+      title="Phase 3: Automatic round robin"
+      subtitle={`Each pool lead is offered to one agent at a time for ${OFFER_SECONDS} seconds, in turn. Accepting gives the usual ${settings.claimExpiryMinutes}-minute hold.`}
+      icon={<RotateCcw className="h-4 w-4 text-primary" />}
+    >
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <Switch checked={rr.mode === 'auto'} onCheckedChange={v => setRr(s => switchMode(s, v ? 'auto' : 'open_claim'))} />
+          <span className="text-sm">{rr.mode === 'auto' ? 'Automatic offers on' : 'Open Claim mode'}</span>
+        </div>
+        <Button size="sm" variant="outline" disabled={rr.mode !== 'auto'} onClick={() => setRr(s => makeOffers(leads, agents, s, clock).state)}>
+          Send offers
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => onTick(10 / 60)}>
+          <ArrowRight className="h-3.5 w-3.5 mr-1" /> +10 sec
+        </Button>
+      </div>
+      <div className="mt-3 space-y-1">
+        {open.length === 0 && <p className="text-xs text-muted-foreground">No open offers.</p>}
+        {open.map(o => (
+          <div key={o.leadId + o.agentId + o.offeredAt} className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="font-semibold text-foreground">{leadName(o.leadId)}</span>
+            <span>offered to {nameOf(o.agentId)}, {Math.ceil((o.expiresAt - clock) / 1000)}s left</span>
+            <Button size="sm" onClick={() => {
+              const r = acceptOffer(leads, agents, rr, o.leadId, o.agentId, settings, clock);
+              setRr(r.state);
+              onResult(r);
+            }}>Accept</Button>
+            <Button size="sm" variant="outline" onClick={() => setRr(s => declineOffer(s, o.leadId, o.agentId, clock))}>Decline</Button>
+          </div>
+        ))}
+      </div>
+      {recent.length > 0 && (
+        <ul className="mt-3 space-y-0.5">
+          {recent.map(o => (
+            <li key={o.leadId + o.agentId + o.offeredAt} className="text-xs text-muted-foreground">
+              {leadName(o.leadId)} to {nameOf(o.agentId)}: {o.status.replace('_', ' ')}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Section>
+  );
+};
 
 const IntakeSection = ({
   leads,
@@ -511,6 +587,19 @@ export const OrrWebsiteTriggerPracticePanel: React.FC = () => {
         onLeads={(l, n) => {
           setLeads(l);
           pushNotes(n);
+        }}
+      />
+
+      <AutoRoundRobinSection
+        leads={leads}
+        agents={agents}
+        settings={settings}
+        clock={clock}
+        onTick={m => tick(m)}
+        onResult={(r: ClaimResult) => {
+          setLeads(r.leads);
+          setAgents(r.agents);
+          pushNotes(r.notes);
         }}
       />
 
