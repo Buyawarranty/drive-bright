@@ -4341,6 +4341,45 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_history_access_requests: {
+        Row: {
+          created_at: string
+          customer_id: string
+          decided_at: string | null
+          decided_by: string | null
+          expires_at: string | null
+          id: string
+          reason: string
+          requester_admin_user_id: string
+          search_value: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          decided_at?: string | null
+          decided_by?: string | null
+          expires_at?: string | null
+          id?: string
+          reason: string
+          requester_admin_user_id: string
+          search_value: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          expires_at?: string | null
+          id?: string
+          reason?: string
+          requester_admin_user_id?: string
+          search_value?: string
+          status?: string
+        }
+        Relationships: []
+      }
       customer_lock_events: {
         Row: {
           agent_id: string | null
@@ -13879,6 +13918,92 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_leaver_archive_items: {
+        Row: {
+          archive_id: string
+          archived_at: string
+          id: number
+          matched_column: string
+          row_data: Json
+          source_table: string
+        }
+        Insert: {
+          archive_id: string
+          archived_at?: string
+          id?: number
+          matched_column: string
+          row_data: Json
+          source_table: string
+        }
+        Update: {
+          archive_id?: string
+          archived_at?: string
+          id?: number
+          matched_column?: string
+          row_data?: Json
+          source_table?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_leaver_archive_items_archive_id_fkey"
+            columns: ["archive_id"]
+            isOneToOne: false
+            referencedRelation: "staff_leaver_archives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_leaver_archives: {
+        Row: {
+          admin_user_id: string
+          auth_user_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          profile_snapshot: Json
+          staff_email: string | null
+          staff_name: string | null
+          staff_role: string | null
+          status: string
+          table_counts: Json
+          total_records: number
+          trigger_reason: string
+        }
+        Insert: {
+          admin_user_id: string
+          auth_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          profile_snapshot?: Json
+          staff_email?: string | null
+          staff_name?: string | null
+          staff_role?: string | null
+          status?: string
+          table_counts?: Json
+          total_records?: number
+          trigger_reason: string
+        }
+        Update: {
+          admin_user_id?: string
+          auth_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          profile_snapshot?: Json
+          staff_email?: string | null
+          staff_name?: string | null
+          staff_role?: string | null
+          status?: string
+          table_counts?: Json
+          total_records?: number
+          trigger_reason?: string
+        }
+        Relationships: []
+      }
       staff_password_renewals: {
         Row: {
           changed_at: string
@@ -16110,6 +16235,10 @@ export type Database = {
         Args: { p_email?: string; p_phone?: string; p_reg?: string }
         Returns: string
       }
+      decide_customer_history_access: {
+        Args: { _approve: boolean; _request_id: string }
+        Returns: undefined
+      }
       decide_seo_proposal: {
         Args: { p_decision: string; p_id: string; p_note?: string }
         Returns: undefined
@@ -16446,6 +16575,7 @@ export type Database = {
         Args: { p_action?: string; p_tab: string; p_user_id: string }
         Returns: boolean
       }
+      is_active_admin_or_super: { Args: { _uid: string }; Returns: boolean }
       is_active_admin_user: { Args: { _user_id: string }; Returns: boolean }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_admin_or_sales: { Args: { _user_id: string }; Returns: boolean }
@@ -16472,10 +16602,42 @@ export type Database = {
         | { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       is_super_admin_user: { Args: { _user_id: string }; Returns: boolean }
+      is_two_month_sales_scope: { Args: { _uid: string }; Returns: boolean }
       lead_has_been_worked: { Args: { p_lead_id: string }; Returns: boolean }
       lead_has_human_activity: { Args: { p_lead_id: string }; Returns: boolean }
       lead_routing_scope: { Args: { _user_id: string }; Returns: string }
       lead_source_aliases: { Args: { _source: string }; Returns: string[] }
+      leaver_archive_copy_table: {
+        Args: { _archive_id: string; _table: string }
+        Returns: number
+      }
+      leaver_archive_finish: {
+        Args: { _archive_id: string }
+        Returns: undefined
+      }
+      leaver_archive_pending_tables: {
+        Args: { _archive_id: string }
+        Returns: string[]
+      }
+      leaver_archive_start: {
+        Args: { _admin_user_id: string; _reason: string }
+        Returns: string
+      }
+      list_customer_history_requests: {
+        Args: never
+        Returns: {
+          created_at: string
+          customer_name: string
+          expires_at: string
+          id: string
+          reason: string
+          registration_plate: string
+          requester_name: string
+          search_value: string
+          signup_date: string
+          status: string
+        }[]
+      }
       list_recent_bulk_reassignments: {
         Args: { p_hours?: number; p_min_batch?: number }
         Returns: {
@@ -17059,6 +17221,10 @@ export type Database = {
         }
         Returns: string
       }
+      request_customer_history_access: {
+        Args: { _reason: string; _search: string }
+        Returns: number
+      }
       reset_agent_caps_daily: { Args: never; Returns: undefined }
       reset_daily_caps: { Args: never; Returns: undefined }
       resolve_sale_credit: {
@@ -17118,6 +17284,15 @@ export type Database = {
       }
       rota_sync_in_progress: { Args: never; Returns: boolean }
       run_renewal_milestones: { Args: never; Returns: number }
+      sales_can_see_customer: {
+        Args: {
+          _assigned: string
+          _credit: string
+          _customer_id: string
+          _signup: string
+        }
+        Returns: boolean
+      }
       save_lead_quick_note: {
         Args: { p_lead_id: string; p_note_text: string }
         Returns: {
@@ -17257,6 +17432,29 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      staff_archive_build_all: {
+        Args: { _archive_id: string }
+        Returns: undefined
+      }
+      staff_archive_copy_table: {
+        Args: { _archive_id: string; _table: string }
+        Returns: number
+      }
+      staff_archive_open: {
+        Args: {
+          _admin: Database["public"]["Tables"]["admin_users"]["Row"]
+          _reason: string
+        }
+        Returns: string
+      }
+      staff_archive_sources: {
+        Args: never
+        Returns: {
+          column_name: string
+          data_type: string
+          table_name: string
+        }[]
       }
       staff_device_access: {
         Args: { p_hash: string; p_user_id: string }

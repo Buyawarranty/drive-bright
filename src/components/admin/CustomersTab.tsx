@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { RequestOlderCustomerButton, CustomerHistoryRequestsPanel } from './customers/CustomerHistoryAccess';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
@@ -5246,6 +5247,8 @@ Buyawarranty.co.uk`,
 
 
 
+                  {isSalesScopedRole && <RequestOlderCustomerButton />}
+                  {['admin','super_admin','sales_manager'].includes(currentAdminUser?.role ?? '') && <div className="w-full"><CustomerHistoryRequestsPanel /></div>}
                   {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'lead_gen') && (
                     <Select value={filterByAgent} onValueChange={setFilterByAgent}>
                       <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Agent" /></SelectTrigger>

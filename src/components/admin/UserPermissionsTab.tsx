@@ -21,6 +21,7 @@ import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Downlo
 import StaffAccessHistoryDialog from './StaffAccessHistoryDialog';
 import { tagAccessChange } from '@/lib/adminAccessLog';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
+import { LeaverArchivesPanel } from './LeaverArchivesPanel';
 import { ViewAsStaffButton } from './ViewAsStaffButton';
 
 import { TeamActivityPanel } from './TeamActivityPanel';
@@ -1717,6 +1718,7 @@ export const UserPermissionsTab = () => {
       
       {/* Access Requests Panel */}
       <div id="staff-access-requests" className="scroll-mt-16"><AccessRequestsPanel /></div>
+      <LeaverArchivesPanel />
 
       <div id="staff-users" className="flex justify-between items-center scroll-mt-16">
         <div>
