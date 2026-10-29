@@ -952,7 +952,7 @@ Additional Information: ${formData.additionalInfo}
                                   <div>
                                     <Label htmlFor="name" className="text-gray-900 font-bold text-sm block text-left">Full name *</Label>
                                     <div className="relative">
-                                      <Input id="name" name="name" type="text" placeholder="Jane Smith" value={formData.name} onChange={handleInputChange} required
+                                      <Input id="name" name="name" type="text" placeholder="Jane Smith" value={formData.name} onChange={handleInputChange}
                                         className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.name ? 'border-[#FF385C]' : ''}`} />
                                       {!errors.name && formData.name.trim().length >= 2 && (
                                         <Check className="w-5 h-5 text-green-600 absolute right-3 top-1/2 -translate-y-1/2 mt-[3px]" />
@@ -963,7 +963,7 @@ Additional Information: ${formData.additionalInfo}
                                   <div>
                                     <Label htmlFor="email" className="text-gray-900 font-bold text-sm block text-left">Email address *</Label>
                                     <div className="relative">
-                                      <Input id="email" name="email" type="email" placeholder="you@email.com" value={formData.email} onChange={handleInputChange} required
+                                      <Input id="email" name="email" type="email" placeholder="you@email.com" value={formData.email} onChange={handleInputChange}
                                         className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.email ? 'border-[#FF385C]' : ''}`} />
                                       {!errors.email && validateEmail(formData.email) && (
                                         <Check className="w-5 h-5 text-green-600 absolute right-3 top-1/2 -translate-y-1/2 mt-[3px]" />
@@ -1081,7 +1081,7 @@ Additional Information: ${formData.additionalInfo}
                                  <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-sm block text-left">Describe the fault / problem *</Label>
                                  <Textarea id="faultDescription" name="faultDescription"
                                    placeholder="Please explain what's wrong with the vehicle (e.g. strange noise from engine, gearbox slipping, warning lights on dashboard...)"
-                                   value={formData.faultDescription} onChange={handleInputChange} required rows={4}
+                                   value={formData.faultDescription} onChange={handleInputChange} rows={4}
                                    className={`mt-1.5 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.faultDescription ? 'border-[#FF385C]' : ''}`} />
                                  {errors.faultDescription && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.faultDescription}</p>}
                                </div>
