@@ -22,7 +22,10 @@ export interface JourneyEvent {
   /** Server-side clock, milliseconds since the epoch. */
   at: number;
   note?: string;
+  /** Money the practice customer paid, for the purchase_completed event only. */
+  amount?: number;
 }
+
 
 /** Where a practice lead currently sits in the journey. */
 export type LeadStage =
@@ -102,7 +105,10 @@ export interface PracticeLead {
   releaseCount: number;
   /** Minutes between the customer going quiet and the first call attempt. */
   firstAttemptLeadMinutes: number | null;
+  /** What the practice customer paid, once they bought. */
+  value: number;
   events: JourneyEvent[];
+
   outcomes: ContactOutcome[];
   history: string[];
 }
