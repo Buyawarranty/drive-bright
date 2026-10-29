@@ -12,7 +12,7 @@ const S = DEFAULT_ORR_PRACTICE_SETTINGS;
 const pool = (n: number): PracticeLead[] =>
   evaluateStages(
     Array.from({ length: n }, (_, i) => ({
-      ...applyJourneyEvent(makeSyntheticLead(T0 + i, i + 1), { kind: 'quote_details_submitted', at: T0 }),
+      ...applyJourneyEvent(makeSyntheticLead(T0, i + 1), { kind: 'quote_details_submitted', at: T0 }),
       tpsClear: true,
       phoneConsent: true,
     })),
