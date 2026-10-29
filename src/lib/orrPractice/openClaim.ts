@@ -50,7 +50,7 @@ export const unworkedHolds = (leads: PracticeLead[], agentId: string) =>
 export const openClaimCards = (leads: PracticeLead[], at: number): OpenClaimCard[] =>
   leads
     .filter(l => l.stage === 'queued' && !l.suppressed && !l.purchased)
-    .sort((a, b) => a.lastStageChangeAt - b.lastStageChangeAt || a.createdAt - b.createdAt)
+    .sort((a, b) => a.createdAt - b.createdAt || a.lastStageChangeAt - b.lastStageChangeAt)
     .slice(0, OPEN_CLAIM_CARD_LIMIT)
     .map(l => ({
       leadId: l.id,

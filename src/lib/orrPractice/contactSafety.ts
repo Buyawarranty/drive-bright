@@ -1,3 +1,4 @@
+import { inUkWindow } from './ukTime';
 import type { PracticeLead } from './types';
 import type { OrrPracticeSettings } from './settings';
 
@@ -18,14 +19,8 @@ export interface ContactDecision {
 }
 
 /** True when `at` falls inside one of the manager-set calling windows. */
-export const isWithinContactWindow = (settings: OrrPracticeSettings, at: number): boolean => {
-  const when = new Date(at);
-  const day = when.getDay();
-  const hour = when.getHours();
-  return settings.contactWindows.some(
-    w => w.day === day && hour >= w.startHour && hour < w.endHour,
-  );
-};
+export const isWithinContactWindow = (settings: OrrPracticeSettings, at: number): boolean =>
+  inUkWindow(settings, at);
 
 /** Call attempts already made on this lead in the last rolling day. */
 export const attemptsToday = (lead: PracticeLead, at: number): number =>
