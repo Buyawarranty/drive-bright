@@ -3,6 +3,8 @@
 ## Blog 19 BMW family comparison
 - [x] Published Blog 19 only through the existing database-backed article route; all nine original internal links remain in order, all eight sections/two tables/five FAQs retained, original image compressed from 2.7 MB to 316 KB without crop or replacement. Corrected variant-specific boot figures and relevant BAW terms; no unsupported repair prices or reliability rates added.
 - [x] Live browser verifies search title/description, self-referencing canonical, followed links, original inline image, footer and five-question schema. Database HTML and schema exactly match staged article source. Seven targeted tests pass; preview build OK.
+- [x] Author byline added: article now credits David Yash at the bottom with his "Automotive Specialist" label and bio card, matching every other recent article. His name also replaced the company name in that article's own search-engine author markup and page details. Verified in the browser and in the page's structured data; staged article source updated to match.
+
 - [ ] Crawler-readable static article, static metadata and sitemap remain staged: a website publish would also release unrelated held changes, which the user expressly declined. Live raw HTML still serves homepage fallback. Article-only hero uncropping/schema fidelity improvements also remain staged; original inline image is intact live. No whole-site publish requested.
 
 ## Concise customer quote email
