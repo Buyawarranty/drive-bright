@@ -372,9 +372,9 @@ const Claims = () => {
   // DVLA vehicle lookup function
   const lookupVehicle = async (regPlate: string) => {
     const cleanReg = regPlate.replace(/\s/g, '').toUpperCase();
-    if (cleanReg.length < 5) {
+    if (cleanReg.length < 2) {
       setVehicleDetails(null);
-      setErrors((prev) => ({ ...prev, vehicleReg: 'Please enter a valid UK registration plate.' }));
+      setErrors((prev) => ({ ...prev, vehicleReg: '' }));
       return;
     }
 
@@ -390,7 +390,7 @@ const Claims = () => {
       if (error) {
         console.error('Vehicle lookup error:', error);
         setVehicleDetails(null);
-        setErrors((prev) => ({ ...prev, vehicleReg: "We couldn't verify that registration. Please double-check it." }));
+        setErrors((prev) => ({ ...prev, vehicleReg: '' }));
         return;
       }
 
@@ -406,12 +406,12 @@ const Claims = () => {
         setErrors((prev) => ({ ...prev, vehicleReg: '' }));
       } else {
         setVehicleDetails(null);
-        setErrors((prev) => ({ ...prev, vehicleReg: 'No vehicle found for that registration. Please check and try again.' }));
+        setErrors((prev) => ({ ...prev, vehicleReg: '' }));
       }
     } catch (err) {
       console.error('Vehicle lookup failed:', err);
       setVehicleDetails(null);
-      setErrors((prev) => ({ ...prev, vehicleReg: "We couldn't verify that registration. Please try again." }));
+      setErrors((prev) => ({ ...prev, vehicleReg: '' }));
     } finally {
       setIsLookingUpVehicle(false);
     }
@@ -950,7 +950,7 @@ Additional Information: ${formData.additionalInfo}
                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div>
-                                    <Label htmlFor="name" className="text-gray-900 font-bold text-sm block text-left">Full name *</Label>
+                                    <Label htmlFor="name" className="text-gray-900 font-bold text-sm block text-left">Full name</Label>
                                     <div className="relative">
                                       <Input id="name" name="name" type="text" placeholder="Jane Smith" value={formData.name} onChange={handleInputChange}
                                         className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.name ? 'border-[#FF385C]' : ''}`} />
@@ -961,7 +961,7 @@ Additional Information: ${formData.additionalInfo}
                                     {errors.name && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.name}</p>}
                                   </div>
                                   <div>
-                                    <Label htmlFor="email" className="text-gray-900 font-bold text-sm block text-left">Email address *</Label>
+                                    <Label htmlFor="email" className="text-gray-900 font-bold text-sm block text-left">Email address</Label>
                                     <div className="relative">
                                       <Input id="email" name="email" type="email" placeholder="you@email.com" value={formData.email} onChange={handleInputChange}
                                         className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.email ? 'border-[#FF385C]' : ''}`} />
@@ -972,7 +972,7 @@ Additional Information: ${formData.additionalInfo}
                                     {errors.email && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.email}</p>}
                                   </div>
                                   <div className="md:col-span-2">
-                                    <Label htmlFor="phone" className="text-gray-900 font-bold text-sm block text-left">Phone number *</Label>
+                                    <Label htmlFor="phone" className="text-gray-900 font-bold text-sm block text-left">Phone number</Label>
                                     <div className="relative">
                                       <Input id="phone" name="phone" type="tel" placeholder="07123 456 789" value={formData.phone} onChange={handleInputChange}
                                         className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.phone ? 'border-[#FF385C]' : ''}`} />
@@ -1078,7 +1078,7 @@ Additional Information: ${formData.additionalInfo}
                                </div>
 
                                <div>
-                                 <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-sm block text-left">Describe the fault / problem *</Label>
+                                 <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-sm block text-left">Describe the fault / problem</Label>
                                  <Textarea id="faultDescription" name="faultDescription"
                                    placeholder="Please explain what's wrong with the vehicle (e.g. strange noise from engine, gearbox slipping, warning lights on dashboard...)"
                                    value={formData.faultDescription} onChange={handleInputChange} rows={4}
