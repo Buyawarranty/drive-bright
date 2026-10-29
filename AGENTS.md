@@ -1,7 +1,7 @@
 # Project architecture rules
 - Lead/checkout RLS enforces ownership, including failed-payment rows/sounds/claims and lookups. Access events stamp actor/server time; opens/copies log apart from seen receipts. Allocation stays separate.
 - Step 2/4 and Payment Assist share mobile validation; both Step 2 variants share a heading.
-- Postcoder autocomplete uses key-in-query URLs and town pathfilters, avoiding HTML responses.
+- Postcoder autocomplete: key-in-query URLs, town pathfilters (avoids HTML replies).
 - Customer/lead pop-ups and notification bells share a fail-closed current-assignee check for sales and sales leads, including WhatsApp replies and policy-linked authorisation results; unscoped/unassigned alerts cannot be enabled and recent alerts recheck lead IDs, not recipient history. Ownership reads accept only the latest request and clear approval during revalidation, so delayed reads cannot restore a former owner's alerts. 
 - CRM attendance uses a dedicated session ledger and per-user serialized server clock, separate from allocation presence; JWT-checked service-only recording owns timestamps and totals, management-only reporting separates use from open-session time.
 - Attendance reports deduplicate requests per date range and accept only the currently selected range, so a pending live refresh cannot block or overwrite historical searches; date choice never mutates stored attendance. Daily timelines split sessions at the selected display-zone day boundary, preserve repeats and stop at observed last-seen times; a reconnect after a stale heartbeat opens a new attendance session, so saved authentication never implies continuous presence or a computer lock.
