@@ -1,127 +1,115 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ArrowRight, Home, PoundSterling, TrendingUp, Headphones, GraduationCap, Users, CheckCircle2, Briefcase, Laptop, Clock, Award, Sun, Sunrise, Sunset } from 'lucide-react';
+import { ArrowRight, Home, PoundSterling, TrendingUp, Headphones, GraduationCap, Users, CheckCircle2, Briefcase, Laptop, Clock, Award } from 'lucide-react';
 import CareersApplyBlock from '@/components/careers/CareersApplyBlock';
 import careersHeroImage from '@/assets/telesales-sales-manager-vehicle-warranty-jobs-buyawarranty.png.asset.json';
 
-export const SALES_MANAGER_ROLE = 'Remote Telesales Team Manager – KPI Management, Coaching & Sales Performance';
+export const SALES_MANAGER_ROLE = 'Remote Telesales Manager – Call Centre Sales';
 
-const SM_KEYWORDS = 'remote telesales team manager jobs, telesales manager jobs, sales manager jobs, remote sales manager, telesales team leader, call centre sales manager, contact centre manager jobs, vehicle warranty sales manager, warranty sales team leader, car warranty sales manager, inbound sales manager, outbound sales manager, remote team leader jobs, sales coaching jobs, KPI management jobs, sales performance manager, motor finance sales manager, car finance team leader, dealership sales manager, F&I manager jobs, GAP insurance sales manager, insurance sales manager, automotive account manager, vehicle warranty sales jobs, warranty manager jobs, used car sales manager jobs, motor trade sales executive, automotive aftermarket sales, B2B telesales jobs, outbound telesales jobs UK, work from home sales jobs, uncapped commission, insurance sales jobs, financial services sales, buyawarranty careers';
+const SM_KEYWORDS = 'remote telesales manager jobs, telesales manager jobs, call centre sales manager, contact centre manager jobs, remote sales manager, telesales team leader, vehicle warranty sales manager, warranty sales team leader, car warranty sales manager, inbound sales manager, outbound sales manager, remote team leader jobs, sales coaching jobs, KPI management jobs, sales performance manager, motor finance sales manager, car finance team leader, dealership sales manager, F&I manager jobs, GAP insurance sales manager, insurance sales manager, automotive account manager, vehicle warranty sales jobs, warranty manager jobs, used car sales manager jobs, motor trade sales executive, automotive aftermarket sales, B2B telesales jobs, outbound telesales jobs UK, work from home sales jobs, uncapped commission, insurance sales jobs, financial services sales, buyawarranty careers';
 
-const dailyManagement = [
-  "Ensure all team members are logged in, available and ready to work at their scheduled start times",
-  "Monitor staff attendance, punctuality, availability and adherence to working schedules",
-  "Maintain regular telephone and online contact with individual sales executives throughout the day",
-  "Actively monitor staff productivity and ensure working time is being used effectively",
-  "Identify agents who are inactive, falling behind or not meeting expected activity levels",
-  "Contact team members directly to address performance concerns and provide support",
-  "Keep the team focused, disciplined, motivated and accountable",
-  "Conduct daily team briefings, individual check-ins and performance follow-ups",
-  "Maintain strong communication and management presence despite the team working remotely",
+const teamManagement = [
+  "Take full responsibility for the daily management of remote sales agents",
+  "Monitor attendance, punctuality, availability and productivity",
+  "Maintain professional standards, staff discipline and accountability",
+  "Ensure every agent is working towards and achieving their individual sales targets",
+  "Address poor performance and implement structured improvement plans",
+  "Conduct regular remote team meetings and individual performance reviews",
+  "Manage conduct and disciplinary matters fairly and in line with company procedures",
+  "Build a motivated, focused and high-performing sales environment",
 ];
 
-const kpiMonitoring = [
-  "Monitor live sales dashboards, CRM activity and performance reports",
-  "Track individual and team KPIs throughout the working day",
-  "Monitor call volumes, talk time, leads handled, conversion rates, sales achieved and revenue generated",
-  "Ensure every salesperson understands their individual daily sales targets",
-  "Identify underperformance early and take immediate corrective action",
-  "Proactively telephone or speak with agents who are falling behind",
-  "Maintain regular performance check-ins to keep sales executives on track",
-  "Set clear expectations and hold individuals accountable for agreed performance standards",
-  "Identify patterns affecting sales productivity and implement practical improvements",
-  "Take ownership of daily, weekly and monthly team results",
+const kpiManagement = [
+  "Set and monitor daily, weekly and monthly agent targets",
+  "Track calls, contact rates, lead conversions and sales activity",
+  "Monitor individual and overall team revenue and profitability",
+  "Identify agents falling behind and intervene promptly",
+  "Analyse performance dashboards and implement corrective action",
+  "Improve conversion rates, call quality and customer outcomes",
+  "Ensure sales targets are achieved through effective coaching and operational management",
+  "Provide accurate performance reports and forecasts to senior management",
+];
+
+const systemsData = [
+  "Manage daily operations through CRM platforms, cloud telephony, diallers and live KPI dashboards",
+  "Track agent login status, call activity and customer follow-ups",
+  "Ensure staff use approved laptops, software and telephone systems correctly",
+  "Review call recordings and monitor sales quality",
+  "Maintain accurate customer records and operational data",
+  "Identify technical issues affecting agent productivity and coordinate support",
+  "Ensure customer data is handled securely and in line with company policies and UK data protection requirements",
 ];
 
 const coaching = [
-  "Listen to sales calls and assess sales techniques",
-  "Provide regular, practical one-to-one coaching",
-  "Improve objection handling, customer engagement, product presentation and closing techniques",
-  "Identify why individual salespeople are not converting leads effectively",
-  "Work directly with underperforming agents to improve their results",
-  "Deliver structured performance improvement plans where required",
-  "Mentor team members and build their confidence and sales ability",
-  "Identify successful techniques used by top performers and share them across the team",
-  "Provide immediate feedback and support when performance problems arise",
-  "Create a results-driven environment where people are continuously developing",
-];
-
-const training = [
-  "Deliver ongoing remote sales training and refresher sessions",
-  "Train employees on sales processes, objection handling and closing techniques",
-  "Support the onboarding and development of new sales executives",
-  "Identify knowledge gaps and arrange targeted training",
-  "Improve consistency in sales conversations and customer handling",
-  "Ensure salespeople understand Buyawarranty's products, processes and sales expectations",
-  "Help build a skilled, confident and high-performing remote sales team",
-];
-
-const revenue = [
-  "Take responsibility for the team's overall sales performance and target achievement",
-  "Improve conversion rates and maximise revenue from available sales opportunities",
-  "Analyse individual and team sales results to identify areas for improvement",
-  "Ensure leads are handled promptly and effectively",
-  "Reduce missed sales opportunities and avoidable underperformance",
-  "Support sustainable revenue growth through better team productivity and sales execution",
-  "Maintain strong customer service standards and ensure sales activity follows company compliance requirements",
-];
-
-const reporting = [
-  "Provide daily updates on team sales performance and target achievement",
-  "Report on attendance, activity levels, conversion rates and revenue",
-  "Highlight underperforming team members and actions being taken",
-  "Explain performance trends and identify potential problems before they escalate",
-  "Provide weekly and monthly performance summaries",
-  "Recommend practical improvements to increase team productivity and sales results",
-  "Take accountability for the management actions required to achieve agreed targets",
+  "Motivate agents to consistently achieve and exceed their targets",
+  "Deliver daily sales briefings and regular remote coaching",
+  "Improve objection handling, closing techniques and sales conversations",
+  "Provide practical support to agents struggling with performance",
+  "Identify top performers and encourage best practices across the team",
+  "Introduce effective sales training, recognition and motivational initiatives",
+  "Maintain a positive and accountable remote working culture",
 ];
 
 const recruitment = [
-  "Assist with interviewing and selecting new sales executives",
-  "Support onboarding and initial training",
-  "Help develop consistent training and performance standards",
-  "Identify potential future team leaders",
-  "Support the growth of a structured and scalable remote sales operation",
+  "Recruit, interview and onboard additional telesales agents",
+  "Deliver effective training and performance expectations for new starters",
+  "Monitor new-agent productivity and development",
+  "Develop scalable management processes as headcount increases",
+  "Introduce additional team leaders where operationally required",
+  "Ensure growth in agent numbers translates into increased revenue and profitability",
 ];
 
 const essentials = [
-  "Significant experience as a Telesales Manager, Sales Team Manager or Contact Centre Sales Manager",
-  "Proven success managing and improving telesales teams day to day, not just reporting on them",
-  "Strong experience with telephone sales, conversions and performance coaching",
-  "Experience managing remote or distributed sales teams",
-  "Hands-on approach: actively involved with the team throughout the working day",
-  "Excellent leadership, communication and motivational skills",
-  "Strong understanding of sales targets, CRM reporting and KPIs",
-  "Experience recruiting, training and developing salespeople",
-  "Ability to demonstrate that your coaching has genuinely improved sales performance",
+  "Minimum 3 years' experience managing a telesales or call centre sales operation",
+  "A proven track record of consistently achieving sales KPIs and revenue targets",
+  "Experience managing staff performance, attendance and discipline",
+  "Strong knowledge of call centre productivity, conversion rates and reporting",
+  "Experience using CRM software, diallers and call monitoring systems",
+  "Confidence managing agents and performance through remote technology",
+  "Proven ability to improve underperforming sales teams",
+  "Experience recruiting, training and motivating sales agents",
+  "Strong leadership, organisational and communication skills",
 ];
 
-const industries = [
-  "Vehicle warranty sales",
-  "Automotive or motor trade sales",
-  "Insurance, financial services or related telesales",
-  "Managing high-volume inbound sales operations",
-  "Telesales Manager / Contact Centre Sales Manager",
-  "Car Finance Sales Manager / Motor Finance Team Leader",
-  "Dealership Sales Manager / F&I Manager",
+const desirable = [
+  "Managing a fully remote telesales operation",
+  "High-volume inbound or outbound consumer sales",
+  "Vehicle warranties, automotive sales, insurance or financial-services telesales",
+  "Scaling sales teams and developing supervisors",
 ];
 
-const benefits = [
-  'Fully remote: manage the team from anywhere in the UK',
-  'Flexible engagement: PAYE employment or a suitable self-employed arrangement',
-  '£45,000 PAYE basic salary plus uncapped commission, or an agreed contractor package',
-  'Uncapped commission — the better the team performs, the more you earn',
-  'Up to £80,000 a year for exceptional performance',
-  'Real ownership of daily sales performance, coaching and team results',
-  'Benefit financially from the success of the team you manage',
-  'Report directly to senior management with real influence on how the team runs',
+const commission = [
+  "Commission linked to qualifying team revenue and gross profit",
+  "Additional earnings for exceeding agreed commercial targets",
+  "Opportunity to increase commission as the number of productive agents grows",
+  "Performance measured against conversion rates, sales quality and profitability",
+  "Potential total annual earnings of up to £100,000 for exceptional results",
+];
+
+const lookingFor = [
+  "Consistent achievement of sales targets",
+  "Strong staff management and accountability",
+  "Confidence managing remote agents through technology and data",
+  "Effective motivation, coaching and performance improvement",
+  "Ability to grow an operation without losing control of productivity",
+  "Measurable improvements in revenue, conversions and commercial performance",
+];
+
+const applicationQuestions = [
+  "What is the largest telesales team you have directly managed?",
+  "Have you previously managed a fully remote telephone sales operation?",
+  "Which CRM, dialler and telephone systems have you used?",
+  "What KPIs and revenue targets were you personally accountable for?",
+  "How do you manage agents who consistently fail to reach targets?",
+  "Can you demonstrate previous improvements in sales conversions or revenue?",
+  "How have you maintained staff discipline and productivity remotely?",
 ];
 
 export const SalesManagerJob: React.FC = () => (
   <>
     <Helmet>
-      <title>Remote Telesales Team Manager Jobs UK – KPI Management & Coaching | Buyawarranty</title>
-      <meta name="description" content="Experienced Remote Telesales Team Manager wanted to own daily sales performance, KPIs and coaching at Buyawarranty. £45,000 PAYE basic plus uncapped commission, up to £80,000. PAYE or self-employed." />
+      <title>Remote Telesales Manager Jobs UK – Call Centre Sales | Buyawarranty</title>
+      <meta name="description" content="Experienced Remote Telesales Manager wanted to run Buyawarranty's growing remote call centre sales operation. £45,000 basic plus team performance commission, up to £100,000 OTE. PAYE or self-employed." />
       <meta name="keywords" content={SM_KEYWORDS} />
     </Helmet>
 
@@ -131,9 +119,9 @@ export const SalesManagerJob: React.FC = () => (
           <div>
             <div className="mb-4 inline-flex items-center rounded-full bg-[#FFF4EC] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#F97316]">We're hiring</div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Careers at Buya<span className="text-brand-orange">warranty</span></h1>
-            <p className="mt-4 text-lg font-semibold text-[#111827]">Remote Telesales Team Manager – KPI Management, Coaching &amp; Sales Performance</p>
+            <p className="mt-4 text-lg font-semibold text-[#111827]">Remote Telesales Manager – Call Centre Sales</p>
             <p className="mt-3 max-w-xl text-base leading-7 text-[#6B7280]">
-              <span className="font-bold">Fully remote</span> (anywhere in the UK) · Full-time · PAYE or self-employed · £45,000 basic + uncapped commission · Up to £80,000 for exceptional performance
+              <span className="font-bold">100% remote</span> (anywhere in the UK) · Full-time · PAYE or self-employed contractor · £45,000 basic + team performance commission · Up to £100,000 OTE
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a href="#apply" className="inline-flex items-center justify-center rounded-xl bg-[#F97316] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#EA580C] focus:outline-none focus:ring-4 focus:ring-orange-200">
@@ -143,7 +131,7 @@ export const SalesManagerJob: React.FC = () => (
             </div>
           </div>
           <div className="flex justify-center">
-            <img src={careersHeroImage.url} alt="Remote telesales team manager job in vehicle warranties – Miles the Buyawarranty panda leading a line-up of a car, van, SUV and motorbike" width={1920} height={640} className="w-full max-w-2xl h-auto object-contain" loading="eager" />
+            <img src={careersHeroImage.url} alt="Remote telesales manager job in vehicle warranties – Miles the Buyawarranty panda leading a line-up of a car, van, SUV and motorbike" width={1920} height={640} className="w-full max-w-2xl h-auto object-contain" loading="eager" />
           </div>
         </div>
       </div>
@@ -153,60 +141,53 @@ export const SalesManagerJob: React.FC = () => (
       <section id="role" aria-labelledby="sm-about" className="mb-14">
         <Header id="sm-about" n={1} title="About the role" />
         <div className="space-y-4 text-sm leading-7 text-[#374151]">
-          <p>Buyawarranty is a growing UK vehicle warranty company, and we're looking for an experienced, highly motivated and hands-on <strong>Remote Telesales Team Manager</strong> to take responsibility for the daily management, productivity and performance of our remote sales team.</p>
-          <p><strong>This is not a traditional Sales Manager position focused primarily on strategy, business development or managing your own sales pipeline.</strong> We need someone who is actively involved in managing salespeople throughout the working day, ensuring staff are online, productive, motivated, achieving their KPIs and consistently working towards their sales targets.</p>
-          <p>You will be responsible for monitoring sales activity, maintaining daily accountability, coaching underperforming team members, improving conversion rates and ensuring the team delivers strong, consistent results. We are looking for someone who doesn't just review sales figures at the end of the day, but actively manages performance as it happens.</p>
-          <p><strong>Your primary responsibility is simple: make sure our remote sales team is working effectively, improving continuously and achieving its sales targets.</strong></p>
+          <p>Buyawarranty is a growing UK vehicle warranty company looking for an <strong>exceptional, experienced Telesales Manager</strong> to take full responsibility for our expanding remote sales operation.</p>
+          <p><strong>We need a proven call centre leader who can manage a large team, maintain staff discipline, consistently achieve sales targets and drive profitable growth.</strong></p>
+          <p>This is a hands-on management position requiring strong leadership, commercial awareness and the ability to run an entire telephone sales operation remotely.</p>
+          <p>Our agents work from home using laptops, cloud-based telephone systems, diallers and CRM software. You must have the skills and experience to manage staff, monitor productivity and achieve results without being physically present.</p>
+          <p><strong>Meeting agreed sales targets and KPIs is a fundamental requirement of this position. Exceptional performance beyond those targets is rewarded through additional commission.</strong></p>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Perk Icon={Briefcase} title="Option 1 – PAYE employment" body="£45,000 annual basic salary, uncapped commission linked to qualifying team performance, full-time remote employment with applicable benefits and statutory entitlements. Up to £80,000 a year for exceptional performance." />
-          <Perk Icon={Award} title="Option 2 – Self-employed" body="For suitably experienced professionals where the arrangement genuinely supports self-employed status. Contractual management fee plus uncapped performance commission, subject to agreement, up to £80,000 a year." />
+          <Perk Icon={Briefcase} title="Option 1 – PAYE employment" body="Guaranteed £45,000 basic salary plus performance-related commission. Fully remote UK-based employment with applicable statutory employment benefits and entitlements." />
+          <Perk Icon={Award} title="Option 2 – Self-employed contractor" body="A self-employed arrangement may be considered for suitable candidates where the actual working relationship supports independent contractor status. Negotiable contractual remuneration, remote service delivery, and you manage your own tax affairs through Self Assessment, where applicable." />
         </div>
-        <p className="mt-4 text-xs text-[#6B7280]">The arrangement, payment structure and performance expectations will be agreed before you start, subject to the correct legal and tax status.</p>
-      </section>
-
-      <section aria-labelledby="sm-earn" className="mb-14">
-        <Header id="sm-earn" n={2} title="Performance and earnings tiers (PAYE)" />
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Earn tier="Tier 1 – Successful" range="£60,000" note="£45,000 basic + illustrative £15,000 commission" />
-          <Earn tier="Tier 2 – High performance" range="£70,000" note="£45,000 basic + illustrative £25,000 commission" highlight />
-          <Earn tier="Tier 3 – Exceptional" range="£80,000" note="£45,000 basic + illustrative £35,000 commission" />
-        </div>
-        <p className="mt-4 text-xs text-[#6B7280]">Commission is uncapped and linked to agreed qualifying sales and performance targets. These tiers are illustrative, and earnings above the basic salary are not guaranteed. Self-employed remuneration is negotiated separately.</p>
+        <p className="mt-4 text-xs text-[#6B7280]">Employment arrangements are subject to the correct legal and tax classification.</p>
       </section>
 
       <section aria-labelledby="sm-resp" className="mb-14">
-        <Header id="sm-resp" n={3} title="Your key responsibilities" />
+        <Header id="sm-resp" n={2} title="Key responsibilities" />
         <div className="space-y-8">
-          <RespGroup title="Daily remote team management & accountability" intro="You will take full ownership of the day-to-day management of our remote sales executives." items={dailyManagement} note="We need someone who knows exactly how their team is performing throughout the day, not just at the end of it." />
-          <RespGroup title="Daily KPI monitoring & sales target achievement" intro="You will be directly responsible for monitoring, managing and improving individual and team sales performance." items={kpiMonitoring} note="Success in this role means actively driving results, rather than simply reporting on them." />
-          <RespGroup title="Sales coaching, mentoring & performance improvement" intro="A major part of this role is helping salespeople become more effective and achieve higher conversion rates." items={coaching} note="We are looking for someone who can demonstrate that their coaching has genuinely improved sales performance." />
-          <RespGroup title="Remote sales training & development" items={training} />
-          <RespGroup title="Sales performance, conversion & revenue" items={revenue} />
-          <RespGroup title="Reporting & management communication" intro="You will report directly to senior management and provide clear visibility of the team's performance." items={reporting} />
-          <RespGroup title="Recruitment & team development" intro="As the business grows, you will also support the expansion of our remote sales team." items={recruitment} />
-        </div>
-      </section>
-
-      <section aria-labelledby="sm-day" className="mb-14">
-        <Header id="sm-day" n={4} title="What a typical working day looks like" />
-        <p className="mb-4 text-sm leading-7 text-[#374151]">This is an active, hands-on management position. Your working day will involve:</p>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Perk Icon={Sunrise} title="Start of the day" body="Check all scheduled sales agents are online and ready to work. Review previous performance and communicate daily targets. Identify individuals requiring additional attention." />
-          <Perk Icon={Sun} title="Throughout the morning" body="Monitor live sales activity and productivity. Check agents are on track with expected activity and sales targets. Contact individuals who are falling behind. Listen to calls and provide coaching." />
-          <Perk Icon={Sunset} title="Throughout the afternoon" body="Continue monitoring sales figures and conversion rates. Follow up with agents who need support, keep the team motivated through to the end of the day, and prepare your daily performance update for senior management." />
+          <RespGroup title="Remote sales team management & staff discipline" intro="You must have proven experience managing 20–50+ telesales agents and be capable of managing a growing team as the business expands." items={teamManagement} />
+          <RespGroup title="Sales targets & KPI management" intro="You will be accountable for achieving the agreed team sales targets and maintaining consistently strong performance." items={kpiManagement} />
+          <RespGroup title="Remote systems & data management" items={systemsData} />
+          <RespGroup title="Staff motivation, coaching & development" items={coaching} />
+          <RespGroup title="Recruitment & team expansion" intro="Buyawarranty's remote telesales operation is growing, and you will be responsible for managing an increasing number of agents." items={recruitment} />
         </div>
       </section>
 
       <section aria-labelledby="sm-skills" className="mb-14">
-        <Header id="sm-skills" n={5} title="Essential experience" />
-        <p className="mb-4 text-sm leading-7 text-[#374151]">We are looking for an exceptional, experienced telesales leader with a proven record of delivering results through a team.</p>
+        <Header id="sm-skills" n={3} title="Essential experience" />
+        <p className="mb-4 text-sm leading-7 text-[#374151]"><strong>This role is for an experienced call centre sales manager, not a first-time team leader.</strong> Applicants must demonstrate:</p>
         <Ticks items={essentials} />
       </section>
 
       <section aria-labelledby="sm-industry" className="mb-14">
-        <Header id="sm-industry" n={6} title="Desirable experience" />
-        <Ticks items={industries} />
+        <Header id="sm-industry" n={4} title="Desirable experience" />
+        <Ticks items={desirable} />
+      </section>
+
+      <section aria-labelledby="sm-earn" className="mb-14">
+        <Header id="sm-earn" n={5} title="Commission & earning potential" />
+        <p className="mb-4 text-sm leading-7 text-[#374151]"><strong>We reward exceptional performance above the agreed minimum sales and KPI requirements.</strong> In addition to the basic salary, the successful candidate can earn commission based on the performance of the sales operation.</p>
+        <Ticks items={commission} />
+        <p className="mt-4 text-sm text-[#374151]">The commission structure and qualifying performance thresholds will be agreed before commencement.</p>
+        <p className="mt-2 text-xs text-[#6B7280]">Commission is performance-based and not guaranteed. The advertised OTE represents exceptional earning potential.</p>
+      </section>
+
+      <section aria-labelledby="sm-who" className="mb-14">
+        <Header id="sm-who" n={6} title="Who we're looking for" />
+        <p className="mb-4 text-sm leading-7 text-[#374151]">We want someone who takes full ownership of team results, maintains high standards and knows how to manage a busy remote telesales operation. You must be able to demonstrate:</p>
+        <Ticks items={lookingFor} />
       </section>
 
       <section aria-labelledby="sm-hours" className="mb-14">
@@ -220,36 +201,35 @@ export const SalesManagerJob: React.FC = () => (
 
       <section aria-labelledby="sm-benefits" className="mb-14">
         <Header id="sm-benefits" n={8} title="Why join Buyawarranty?" />
-        <Ticks items={benefits} />
-        <p className="mt-4 text-sm text-[#6B7280]">Both PAYE employment and self-employed arrangements can be considered, subject to the nature of the working relationship and applicable requirements.</p>
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3">
           <Perk Icon={GraduationCap} title="Full training" body="Product training and ongoing support from day one." />
           <Perk Icon={Headphones} title="Ongoing support" body="A supportive team behind you from day one." />
-          <Perk Icon={TrendingUp} title="Earnings upside" body="Uncapped commission linked to qualifying team performance." />
+          <Perk Icon={TrendingUp} title="Earnings upside" body="Team performance commission with up to £100,000 OTE for exceptional results." />
         </div>
       </section>
 
       <section id="apply" aria-labelledby="sm-apply" className="rounded-3xl border border-[#E5E7EB] bg-white p-8 shadow-sm">
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF4EC] text-[#F97316]"><Award className="h-6 w-6" /></div>
-          <h2 id="sm-apply" className="text-2xl font-bold">Apply for the Remote Telesales Team Manager role</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#6B7280]">If you're an experienced telesales team manager who can demonstrate success driving daily performance, coaching salespeople and improving conversions, we'd like to hear from you. Own the numbers. Coach the team. Be rewarded for results.</p>
+          <h2 id="sm-apply" className="text-2xl font-bold">Apply for the Remote Telesales Manager role</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#6B7280]">If you're an experienced Telesales Manager who can run a disciplined, motivated and successful remote sales operation, consistently deliver targets and manage an expanding team, we'd like to hear from you. Take ownership. Drive performance. Deliver results.</p>
         </div>
         <div className="mt-8 rounded-2xl bg-[#F9FAFB] p-6 border border-[#E5E7EB]">
-          <p className="text-sm font-semibold text-[#111827] mb-3">Please submit your CV with a short note explaining:</p>
-          <ul className="space-y-2 text-sm text-[#374151]">
-            {['The size and type of telesales teams you have managed day to day', 'How your coaching and KPI management measurably improved team results', 'Any vehicle warranty, automotive or insurance sales background'].map(l => (
-              <li key={l} className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-[#F97316] mt-0.5 flex-none" /><span>{l}</span></li>
+          <p className="text-sm font-semibold text-[#111827] mb-3">Please submit your CV and be prepared to answer:</p>
+          <ol className="space-y-2 text-sm text-[#374151] list-decimal pl-5">
+            {applicationQuestions.map(q => (
+              <li key={q}>{q}</li>
             ))}
-          </ul>
+          </ol>
+          <p className="mt-4 text-sm font-semibold text-[#111827]">Applicants must be able to demonstrate previous management success and measurable sales results.</p>
         </div>
         <CareersApplyBlock role={SALES_MANAGER_ROLE} experienceLabel="I have significant experience managing a telesales or contact-centre sales team" />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 text-sm">
           <Summary Icon={Briefcase} label="Job type" value="Full-time" />
           <Summary Icon={Award} label="Employment type" value="PAYE or self-employed" />
-          <Summary Icon={Home} label="Location" value="Remote, United Kingdom" />
-          <Summary Icon={PoundSterling} label="PAYE basic" value="£45,000 + uncapped commission" />
-          <Summary Icon={TrendingUp} label="Potential" value="Up to £80,000" />
+          <Summary Icon={Home} label="Location" value="100% remote, United Kingdom" />
+          <Summary Icon={PoundSterling} label="Basic salary" value="£45,000 + team commission" />
+          <Summary Icon={TrendingUp} label="Potential" value="Up to £100,000 OTE" />
           <Summary Icon={Users} label="Team" value="Remote telesales" />
         </div>
       </section>
@@ -277,13 +257,6 @@ const Perk = ({ Icon, title, body }: { Icon: IconT; title: string; body: string 
     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF4EC] text-[#F97316]"><Icon className="h-5 w-5" /></div>
     <h3 className="text-base font-bold">{title}</h3>
     <p className="mt-2 text-sm leading-6 text-[#6B7280]">{body}</p>
-  </article>
-);
-const Earn = ({ tier, range, highlight, note }: { tier: string; range: string; highlight?: boolean; note?: string }) => (
-  <article className={`rounded-2xl border p-6 shadow-sm ${highlight ? 'border-[#F97316] bg-[#FFF4EC]' : 'border-[#E5E7EB] bg-white'}`}>
-    <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{tier}</p>
-    <p className="mt-2 text-2xl font-bold text-[#111827]">{range}</p>
-    <p className="mt-2 text-xs text-[#6B7280]">{note ?? 'per year'}</p>
   </article>
 );
 const Ticks = ({ items }: { items: string[] }) => (
