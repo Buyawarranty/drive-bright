@@ -2,8 +2,11 @@ import { supabase } from '@/integrations/supabase/client';
 
 const keys = new Set(['view', 'status', 'period', 'from', 'to', 'assignment', 'sort', 'source', 'age', 'plan', 'payment', 'search_omitted']);
 export function safeDepartureFilters(input: Record<string, unknown>): Record<string, string | boolean> {
-  return Object.fromEntries(Object.entries(input).filter(([key, value]) => keys.has(key) &&
-    (typeof value === 'boolean' || (typeof value === 'string' && /^[a-zA-Z0-9_.: -]{0,60}$/.test(value)))));
+  const result: Record<string, string | boolean> = {};
+  for (const [key, value] of Object.entries(input)) {
+    if (keys.has(key) && (typeof value === 'boolean' || (typeof value === 'string' && /^[a-zA-Z0-9_.: -]{0,60}$/.test(value)))) result[key] = value;
+  }
+  return result;
 }
 export function departureTime(value: unknown): string {
   if (typeof value !== 'string' || !Number.isFinite(Date.parse(value))) return 'Not recorded';
