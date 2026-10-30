@@ -12,6 +12,60 @@ interface ArchiveRow { id: string; staff_name: string | null; staff_email: strin
 
 const rpc = (name: string, args?: object) => (supabase.rpc as any)(name, args);
 
+/** Copies every pending table into the archive and locks it. Throws on failure. */
+export async function finishLeaverArchive(id: string): Promise<void> {
+  const { data: tables, error } = await rpc('leaver_archive_pending_tables', { _archive_id: id });
+  if (error) throw error;
+  for (const t of (tables as string[]) ?? []) {
+    const { error: e } = await rpc('leaver_archive_copy_table', { _archive_id: id, _table: t });
+    if (e) throw new Error(`${t}: ${e.message}`);
+  }
+  const { error: f } = await rpc('leaver_archive_finish', { _archive_id: id });
+  if (f) throw f;
+}
+
+/** Downloads the full archive as one file; saves nothing if any page fails. */
+export async function downloadLeaverArchive(a: ArchiveRow): Promise<void> {
+  const all: unknown[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await (supabase.from as any)('staff_leaver_archive_items')
+      .select('source_table,matched_column,row_data').eq('archive_id', a.id).order('id').range(from, from + 999);
+    if (error) throw new Error('Download stopped; no incomplete file was saved.');
+    all.push(...(data ?? []));
+    if (!data || data.length < 1000) break;
+  }
+  const { data: departure, error: departureError } = await supabase.from('staff_crm_departures').select('*').eq('archive_id', a.id).maybeSingle();
+  if (departureError) throw new Error('Departure record could not be included. Please retry.');
+  const savedItems: unknown[] = [];
+  for (let from = 0; departure; from += 1000) {
+    const { data, error } = await supabase.from('staff_crm_departure_items').select('kind,source_id,record,created_at').eq('archive_id', a.id).order('id').range(from, from + 999);
+    if (error) throw new Error('Download stopped; no incomplete file was saved.');
+    savedItems.push(...(data ?? []));
+    if (!data || data.length < 1000) break;
+  }
+  const blob = new Blob([JSON.stringify({ archive: a, records: all, departure, departureRecords: savedItems }, null, 1)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `leaver-archive-${(a.staff_name || a.staff_email || a.id).replace(/\W+/g, '-')}.json`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+/** After switching someone off: finish their newest archive, then download it. */
+export async function finishAndDownloadLatestArchive(adminUserId: string): Promise<void> {
+  let row: ArchiveRow | null = null;
+  for (let i = 0; i < 5 && !row; i++) {
+    const { data } = await (supabase.from as any)('staff_leaver_archives').select('*')
+      .eq('admin_user_id', adminUserId).order('created_at', { ascending: false }).limit(1).maybeSingle();
+    row = data ?? null;
+    if (!row) await new Promise(r => setTimeout(r, 1000));
+  }
+  if (!row) throw new Error('No archive was found for this person.');
+  if (row.status !== 'complete') await finishLeaverArchive(row.id);
+  const { data: fresh } = await (supabase.from as any)('staff_leaver_archives').select('*').eq('id', row.id).maybeSingle();
+  await downloadLeaverArchive((fresh as ArchiveRow) ?? row);
+}
+
 /** Admin/super-admin only: locked archive of everything recorded against each leaver. */
 export const LeaverArchivesPanel: React.FC = () => {
   const [rows, setRows] = useState<ArchiveRow[]>([]);
@@ -28,14 +82,7 @@ export const LeaverArchivesPanel: React.FC = () => {
   const build = useCallback(async (id: string) => {
     setBusy(id);
     try {
-      const { data: tables, error } = await rpc('leaver_archive_pending_tables', { _archive_id: id });
-      if (error) throw error;
-      for (const t of (tables as string[]) ?? []) {
-        const { error: e } = await rpc('leaver_archive_copy_table', { _archive_id: id, _table: t });
-        if (e) throw new Error(`${t}: ${e.message}`);
-      }
-      const { error: f } = await rpc('leaver_archive_finish', { _archive_id: id });
-      if (f) throw f;
+      await finishLeaverArchive(id);
       toast.success('Archive complete and locked');
     } catch (e: any) { toast.error(`Archive not finished: ${e.message}`); }
     setBusy(null); load();
@@ -45,29 +92,7 @@ export const LeaverArchivesPanel: React.FC = () => {
 
   const download = async (a: ArchiveRow) => {
     setBusy(a.id);
-    const all: unknown[] = [];
-    for (let from = 0; ; from += 1000) {
-      const { data, error } = await (supabase.from as any)('staff_leaver_archive_items')
-        .select('source_table,matched_column,row_data').eq('archive_id', a.id).order('id').range(from, from + 999);
-      if (error) { toast.error('Download stopped; no incomplete file was saved.'); setBusy(null); return; }
-      all.push(...(data ?? []));
-      if (!data || data.length < 1000) break;
-    }
-    const { data: departure, error: departureError } = await supabase.from('staff_crm_departures').select('*').eq('archive_id', a.id).maybeSingle();
-    if (departureError) { toast.error('Departure record could not be included. Please retry.'); setBusy(null); return; }
-    const savedItems: unknown[] = [];
-    for (let from = 0; departure; from += 1000) {
-      const { data, error } = await supabase.from('staff_crm_departure_items').select('kind,source_id,record,created_at').eq('archive_id', a.id).order('id').range(from, from + 999);
-      if (error) { toast.error('Download stopped; no incomplete file was saved.'); setBusy(null); return; }
-      savedItems.push(...(data ?? []));
-      if (!data || data.length < 1000) break;
-    }
-    const blob = new Blob([JSON.stringify({ archive: a, records: all, departure, departureRecords: savedItems }, null, 1)], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `leaver-archive-${(a.staff_name || a.staff_email || a.id).replace(/\W+/g, '-')}.json`;
-    link.click();
-    URL.revokeObjectURL(link.href);
+    try { await downloadLeaverArchive(a); } catch (e: any) { toast.error(e.message); }
     setBusy(null);
   };
 
