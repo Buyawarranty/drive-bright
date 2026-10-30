@@ -1,5 +1,9 @@
 # Roadmap
 
+## CRM at departure — 30 October 2026
+- [ ] Preserve a read-only departure state inside Leaver archives, with recorded last page/filters, permissions and then-visible leads/customers before reassignment; retain existing activity history and label unavailable past state honestly.
+- [ ] Plan review, implementation and safety tests; no publication without explicit instruction.
+
 ## Staff deactivation timeout — 30 October 2026
 - [x] Database logs confirm status updates rolled back during repeated missing-contact recovery in the offboarding lead update; contact trigger now skips unchanged contact details, preserving edits, clear-field protection, archives and existing allocation rules.
 - [x] Three temporary-row database checks pass: clear-field protection, recovery after contact edits, and owner-only updates without contact recovery. Deployment confirmed; preview build OK. No employee or stored lead changed during testing.
