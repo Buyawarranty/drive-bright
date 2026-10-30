@@ -5,6 +5,7 @@ import { streamText, tool, stepCountIs, convertToModelMessages } from "npm:ai@^7
 import { createOpenAI } from "npm:@ai-sdk/openai@^3";
 import { z } from "npm:zod@^3.25.76";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { canReadCompanySalesValues } from "../_shared/companySalesPrivacy.ts";
 import {
   createLovableAiGatewayRunIdFetch,
   getLovableAiGatewayRunId,
@@ -67,7 +68,7 @@ Deno.serve(async (req) => {
     const anyPart = ["tab_growth-sales", "tab_growth-leads", "tab_growth-marketing", "tab_growth-branding"].some((k) => perms[k] === true);
     const can = (k: string) => isSuper || perms[k] === true || (!anyPart && (k === "tab_growth-marketing" || k === "tab_growth-branding"));
     const parts = {
-      sales: can("tab_growth-sales"), leads: can("tab_growth-leads"),
+      sales: canReadCompanySalesValues(adminRow?.role) && can("tab_growth-sales"), leads: can("tab_growth-leads"),
       marketing: can("tab_growth-marketing"), branding: can("tab_growth-branding"),
     };
 
@@ -184,7 +185,7 @@ Deno.serve(async (req) => {
     if (parts.leads) allowedTools.lead_followups = tools.lead_followups;
     if (parts.marketing) allowedTools.recent_blogs = tools.recent_blogs;
     const allowedNames = Object.entries(parts).filter(([, v]) => v).map(([k]) => k).join(", ");
-    const accessNote = `\n\nThis user's access: ${allowedNames}. Only help with those areas. If they ask for something outside them (for example sales figures or lead details without access), say politely that their login doesn't include that part and a super admin can add it in User Permissions. Never guess figures you can't look up.`;
+    const accessNote = `\n\nThis user's access: ${allowedNames}. Only help with those areas. Company sales values are never available to sales agents or sales leads, even through permission grants; do not repeat financial figures from earlier conversation messages for those roles. For other unavailable areas, say politely that their login does not include that part. Never guess figures you cannot look up.`;
 
     const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(req));
     const provider = createOpenAI({

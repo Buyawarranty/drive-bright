@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
-import { canAccessSeoAudit, canAccessCallData } from '@/lib/tabAccess';
+import { canAccessSeoAudit, canAccessCallData, isCompanySalesValueTabBlocked } from '@/lib/tabAccess';
 import { canViewCyberSecurity } from '../../../supabase/functions/_shared/cyber-security-rules';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -817,6 +817,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     ]);
     const priceUpdatesAllowed = !!userRole && PRICE_UPDATES_ROLES.has(userRole);
     let base = priceUpdatesAllowed ? callDataFiltered : callDataFiltered.filter(t => t.id !== 'price-updates');
+    base = base.filter(t => !isCompanySalesValueTabBlocked(t.id, userRole));
     // Step 3 Sandbox is hard-restricted to super admin only, regardless of any
     // per-user tab permission grant (the tab itself also re-checks server-side).
     if (userRole !== 'super_admin') base = base.filter(t => t.id !== 'step3-sandbox');

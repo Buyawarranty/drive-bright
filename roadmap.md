@@ -1,5 +1,10 @@
 # Roadmap
 
+## Company sales totals privacy — 30 October 2026
+- [x] Company sales-value pages blocked before permission grants and render/menu paths; team scoreboard now returns self rows without team aggregates. Company-target RLS and four reporting shortcuts block sales/sales_lead. Assistant sales tools refuse those roles; own prices/scores retained.
+- [x] Nineteen frontend privacy tests and database checks across active sales accounts pass; preview build OK, no new security warnings (603 existing findings separate). Nothing published; database protections already apply to the connected service.
+- [ ] Real signed-in UI verification unavailable on external unmanaged Supabase; full saved regression transaction remains available for rerunning with an elevated test connection.
+
 ## CRM at departure — 30 October 2026
 - [x] Added Open saved CRM inside Leaver archives: frozen assigned leads, own accessible customers, permissions and recorded session/location/access history, with UK/UTC dates and source references. Pre-departure capture now runs before offboarding; archive RPC status update precedes queue cleanup. Older views unavailable, management-wide screen reconstruction explicitly excluded.
 - [x] Approved plan implemented; three frontend tests and rollback-only database checks cover filter/secret sanitisation, immutable snapshots, repeated archives, two-month visibility and 24-hour approval expiry. Isolated browser verifies viewer/tabs/pagination; recording endpoint rejects invalid tokens; preview build OK. No publication or real staff deactivation. No new linter warnings; 612 existing findings remain separate.

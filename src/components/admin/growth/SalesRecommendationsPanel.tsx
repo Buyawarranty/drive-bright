@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { buildRecommendations, computeSalesGap, type SalesSnapshot } from '@/lib/salesRecommendations';
+import { isCompanySalesValueTabBlocked } from '@/lib/tabAccess';
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
@@ -21,11 +22,18 @@ export default function SalesRecommendationsPanel() {
   const [open, setOpen] = useState(true);
   const [snap, setSnap] = useState<SalesSnapshot | null>(null);
   const [error, setError] = useState('');
+  const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
+        const { data: auth } = await supabase.auth.getUser();
+        if (!auth.user) return;
+        const { data: staff, error: staffError } = await supabase.from('admin_users')
+          .select('role, is_active').eq('user_id', auth.user.id).maybeSingle();
+        if (staffError || !staff?.is_active || isCompanySalesValueTabBlocked('growth-sales', staff.role)) return;
+        if (active) setAllowed(true);
         const today = new Date();
         const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
         const lastStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
@@ -62,6 +70,8 @@ export default function SalesRecommendationsPanel() {
   const gap = snap ? computeSalesGap(snap) : null;
   const recs = snap ? buildRecommendations(snap) : [];
   const tone = { high: 'border-l-destructive', medium: 'border-l-primary', low: 'border-l-muted-foreground' } as const;
+
+  if (!allowed) return null;
 
   return (
     <section className="mb-4 rounded-lg border bg-card">
