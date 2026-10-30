@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Archive, Download } from 'lucide-react';
 import { StaffDepartureViewer } from './StaffDepartureViewer';
+import { LeaverArchiveReport } from './LeaverArchiveReport';
 
 interface ArchiveRow { id: string; staff_name: string | null; staff_email: string | null; staff_role: string | null;
   trigger_reason: string; status: string; total_records: number; table_counts: Record<string, number>; created_at: string; created_by: string | null; }
@@ -71,6 +72,7 @@ export const LeaverArchivesPanel: React.FC = () => {
   const [rows, setRows] = useState<ArchiveRow[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [selected, setSelected] = useState<ArchiveRow | null>(null);
+  const [reportFor, setReportFor] = useState<ArchiveRow | null>(null);
   const [loadError, setLoadError] = useState(false);
 
   const load = useCallback(async () => {
