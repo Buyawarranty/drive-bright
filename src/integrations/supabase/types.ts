@@ -17576,6 +17576,16 @@ export type Database = {
       }
       staff_crm_redact: { Args: { _row: Json }; Returns: Json }
       staff_crm_safe_filters: { Args: { _filters: Json }; Returns: Json }
+      staff_departure_customer_visible: {
+        Args: {
+          _approval_expires: string
+          _at: string
+          _owned: boolean
+          _role: string
+          _signup: string
+        }
+        Returns: boolean
+      }
       staff_device_access: {
         Args: { p_hash: string; p_user_id: string }
         Returns: Json
