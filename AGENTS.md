@@ -23,9 +23,9 @@
 - Reuse CallMeBackPanel/sandbox-callback-request for callback leads. Gate live offers/requests on server config plus fresh presence, changed by management via the availability endpoint. Pair question replies to their turn; drafts need explicit approval.
 - Use the shared sale-subject formatter for manager direct-sale email source labels in both subject and body; keep existing attribution and delivery logic unchanged to avoid affecting payment flows.
 - ORR: synthetic in-memory practice/reports only; one sandbox, same gates, read-only Allocation mirror; real integrations need proven isolation.
-- Goldmine releases share a guarded allocation RPC and role/count validation; legacy self-claim fails closed to prevent bypasses.
+- Goldmine uses a role/count-guarded release RPC; legacy self-claim fails closed.
 
-- Analytics goals stay separate in `monthly_revenue_targets`; shared month selector/bar shape preserve maths. Daily seller grouping is presentation-only, never changes sale credit.
+- Analytics goals stay separate; month/bar maths and seller credit stay unchanged. Company-value gates precede tab grants; RPC/RLS deny sales aggregates, scoreboard returns self only, assistant checks roles.
 - Multi-year quotes offer 12 instalments or BAW PayLater. Shared yearlySaleRevenue avoids double division; paginated paid anniversaries use collection date and sale owner, never new-deal credit; future money is not revenue.
 - A manual Quotes & Orders total is the final BAW PayLater term total; split it across yearly collections without adding the standard 10% uplift again.
 - Route renewal leads only to active agents with the Renewals workstream; prefer the original seller, otherwise use longest-waiting rotation so new starters never receive catch-up batches.
