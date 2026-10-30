@@ -22,6 +22,7 @@ export default function SalesRecommendationsPanel() {
   const [open, setOpen] = useState(true);
   const [snap, setSnap] = useState<SalesSnapshot | null>(null);
   const [error, setError] = useState('');
+  const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -32,6 +33,7 @@ export default function SalesRecommendationsPanel() {
         const { data: staff, error: staffError } = await supabase.from('admin_users')
           .select('role, is_active').eq('user_id', auth.user.id).maybeSingle();
         if (staffError || !staff?.is_active || isCompanySalesValueTabBlocked('growth-sales', staff.role)) return;
+        if (active) setAllowed(true);
         const today = new Date();
         const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
         const lastStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
@@ -68,6 +70,8 @@ export default function SalesRecommendationsPanel() {
   const gap = snap ? computeSalesGap(snap) : null;
   const recs = snap ? buildRecommendations(snap) : [];
   const tone = { high: 'border-l-destructive', medium: 'border-l-primary', low: 'border-l-muted-foreground' } as const;
+
+  if (!allowed) return null;
 
   return (
     <section className="mb-4 rounded-lg border bg-card">
