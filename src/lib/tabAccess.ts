@@ -18,6 +18,16 @@ const ANALYTICS_TABS = new Set(['analytics', 'page-analytics']);
 
 const SOCIAL_ANALYTICS_BLOCKED_ROLES = new Set(['sales', 'sales_lead']);
 
+// Reporting grants must not override company financial privacy for sales staff.
+const COMPANY_SALES_VALUE_TABS = new Set([
+  'analytics', 'page-analytics', 'social-analytics', 'vehicle-stats',
+  'sales-tracking', 'direct-sales', 'reporting', 'growth-sales',
+]);
+
+export function isCompanySalesValueTabBlocked(tab: string, role: string | null | undefined): boolean {
+  return (role === 'sales' || role === 'sales_lead') && COMPANY_SALES_VALUE_TABS.has(tab);
+}
+
 /** All bookmarks for Call data share the same per-user permission. */
 export function canAccessCallData(role: string | null | undefined, permissions?: Record<string, boolean> | null): boolean {
   if (role === 'super_admin' || role === 'dev_tester') return true;

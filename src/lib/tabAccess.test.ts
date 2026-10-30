@@ -1,5 +1,27 @@
 import { describe, it, expect } from 'vitest';
-import { isAnalyticsBlocked, canAccessSeoAudit, canAccessCallData, canAccessLeadsArchive } from './tabAccess';
+import { isAnalyticsBlocked, isCompanySalesValueTabBlocked, canAccessSeoAudit, canAccessCallData, canAccessLeadsArchive } from './tabAccess';
+
+describe('Company sales value privacy', () => {
+  for (const role of ['sales', 'sales_lead']) {
+    it(`blocks company financial reporting for ${role}`, () => {
+      for (const tab of ['analytics', 'page-analytics', 'social-analytics', 'vehicle-stats', 'sales-tracking', 'direct-sales', 'reporting', 'growth-sales']) {
+        expect(isCompanySalesValueTabBlocked(tab, role)).toBe(true);
+      }
+    });
+  }
+  it('preserves management reporting', () => {
+    for (const role of ['admin', 'super_admin', 'sales_manager']) {
+      expect(isCompanySalesValueTabBlocked('analytics', role)).toBe(false);
+      expect(isCompanySalesValueTabBlocked('reporting', role)).toBe(false);
+    }
+  });
+  it('keeps own customer prices, quotes and scoreboard available', () => {
+    for (const tab of ['customers', 'get-quote', 'sales-scoreboard', 'new-leads', 'overview']) {
+      expect(isCompanySalesValueTabBlocked(tab, 'sales')).toBe(false);
+      expect(isCompanySalesValueTabBlocked(tab, 'sales_lead')).toBe(false);
+    }
+  });
+});
 
 describe('Leads data (archive) permission', () => {
   it('is always on for admin and super admin', () => {
