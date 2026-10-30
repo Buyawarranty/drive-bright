@@ -21,7 +21,7 @@ import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Downlo
 import StaffAccessHistoryDialog from './StaffAccessHistoryDialog';
 import { tagAccessChange } from '@/lib/adminAccessLog';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
-import { LeaverArchivesPanel } from './LeaverArchivesPanel';
+import { LeaverArchivesPanel, finishAndDownloadLatestArchive } from './LeaverArchivesPanel';
 import { ViewAsStaffButton } from './ViewAsStaffButton';
 
 import { TeamActivityPanel } from './TeamActivityPanel';
@@ -1139,6 +1139,10 @@ export const UserPermissionsTab = () => {
       if (isActive) {
         const ok = await forceSignOut(userId, true);
         toast.success(ok ? 'User deactivated and signed out on every computer' : 'User deactivated — sign out failed, press Sign out to retry');
+        const archiveToast = toast.loading(`Building and downloading ${displayName}'s leaver archive…`);
+        finishAndDownloadLatestArchive(userId)
+          .then(() => toast.success('Leaver archive locked and downloaded', { id: archiveToast }))
+          .catch((e: any) => toast.error(`Archive not downloaded: ${e.message}. Use Leaver archives to retry.`, { id: archiveToast }));
       } else {
         toast.success('User reactivated successfully');
       }
