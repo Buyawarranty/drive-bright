@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Archive, Download } from 'lucide-react';
+import { StaffDepartureViewer } from './StaffDepartureViewer';
 
 interface ArchiveRow { id: string; staff_name: string | null; staff_email: string | null; staff_role: string | null;
   trigger_reason: string; status: string; total_records: number; table_counts: Record<string, number>; created_at: string; }
@@ -15,9 +16,12 @@ const rpc = (name: string, args?: object) => (supabase.rpc as any)(name, args);
 export const LeaverArchivesPanel: React.FC = () => {
   const [rows, setRows] = useState<ArchiveRow[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [selected, setSelected] = useState<ArchiveRow | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await (supabase.from as any)('staff_leaver_archives').select('*').order('created_at', { ascending: false }).limit(100);
+    const { data, error } = await (supabase.from as any)('staff_leaver_archives').select('*').order('created_at', { ascending: false }).limit(100);
+    setLoadError(!!error);
     setRows((data as ArchiveRow[]) ?? []);
   }, []);
 
@@ -45,15 +49,25 @@ export const LeaverArchivesPanel: React.FC = () => {
     for (let from = 0; ; from += 1000) {
       const { data, error } = await (supabase.from as any)('staff_leaver_archive_items')
         .select('source_table,matched_column,row_data').eq('archive_id', a.id).order('id').range(from, from + 999);
-      if (error) { toast.error(error.message); break; }
+      if (error) { toast.error('Download stopped; no incomplete file was saved.'); setBusy(null); return; }
       all.push(...(data ?? []));
       if (!data || data.length < 1000) break;
     }
-    const blob = new Blob([JSON.stringify({ archive: a, records: all }, null, 1)], { type: 'application/json' });
+    const { data: departure, error: departureError } = await supabase.from('staff_crm_departures').select('*').eq('archive_id', a.id).maybeSingle();
+    if (departureError) { toast.error('Departure record could not be included. Please retry.'); setBusy(null); return; }
+    const savedItems: unknown[] = [];
+    for (let from = 0; departure; from += 1000) {
+      const { data, error } = await supabase.from('staff_crm_departure_items').select('kind,source_id,record,created_at').eq('archive_id', a.id).order('id').range(from, from + 999);
+      if (error) { toast.error('Download stopped; no incomplete file was saved.'); setBusy(null); return; }
+      savedItems.push(...(data ?? []));
+      if (!data || data.length < 1000) break;
+    }
+    const blob = new Blob([JSON.stringify({ archive: a, records: all, departure, departureRecords: savedItems }, null, 1)], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `leaver-archive-${(a.staff_name || a.staff_email || a.id).replace(/\W+/g, '-')}.json`;
     link.click();
+    URL.revokeObjectURL(link.href);
     setBusy(null);
   };
 
@@ -61,20 +75,23 @@ export const LeaverArchivesPanel: React.FC = () => {
     <Card id="leaver-archives">
       <CardHeader><CardTitle className="flex items-center gap-2"><Archive className="h-5 w-5" />Leaver archives</CardTitle></CardHeader>
       <CardContent className="space-y-2 text-sm">
-        <p className="text-muted-foreground">Created automatically when a staff member is switched off, archived, blocked or removed. Each holds a locked copy of every record linked to them: calls, notes, lead openings, clicks, sign-ins, attendance, sales and changes. Nobody can edit or delete it.</p>
-        {rows.length === 0 && <p>No leaver archives yet.</p>}
+        <p className="text-muted-foreground">Locked copies of recorded staff activity and available departure state. Missing past screens or unrecorded clicks cannot be recovered.</p>
+        {loadError && <p role="alert" className="text-destructive">Unable to load archives. <Button variant="outline" size="sm" onClick={load}>Retry</Button></p>}
+        {!loadError && rows.length === 0 && <p>No leaver archives yet.</p>}
         {rows.map(a => (
           <div key={a.id} className="flex flex-wrap items-center gap-2 border-t pt-2">
             <span className="font-medium">{a.staff_name || a.staff_email}</span>
             <span className="text-muted-foreground">{a.staff_role} · {a.trigger_reason} · {new Date(a.created_at).toLocaleString('en-GB')}</span>
             <Badge variant={a.status === 'complete' ? 'default' : 'destructive'}>{a.status === 'complete' ? `${a.total_records.toLocaleString()} records locked` : 'Needs finishing'}</Badge>
             <span className="ml-auto flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setSelected(a)}>Open saved CRM</Button>
               {a.status !== 'complete' && <Button size="sm" disabled={!!busy} onClick={() => build(a.id)}>{busy === a.id ? 'Copying…' : 'Finish archive'}</Button>}
               {a.status === 'complete' && <Button size="sm" variant="outline" disabled={!!busy} onClick={() => download(a)}><Download className="h-3.5 w-3.5 mr-1" />{busy === a.id ? 'Preparing…' : 'Download'}</Button>}
             </span>
           </div>
         ))}
       </CardContent>
+      {selected && <StaffDepartureViewer archiveId={selected.id} name={selected.staff_name || selected.staff_email || 'Staff member'} onClose={() => setSelected(null)} />}
     </Card>
   );
 };

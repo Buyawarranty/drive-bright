@@ -59,6 +59,7 @@ import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { initAdminTelemetry, logAdminUiEvent, logAdminSlowLoad } from '@/lib/adminTelemetry';
+import { recordDepartureView } from '@/lib/staffDepartureView';
 import { installAdminStallGuard } from '@/lib/adminStallGuard';
 const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
 const PaymentsPendingTab = lazy(() => import('@/components/admin/PaymentsPendingTab'));
@@ -516,6 +517,9 @@ const AdminDashboard = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<Record<string, boolean> | null>(null);
   const [adminUserId, setAdminUserId] = useState<string | null>(null);
+  useEffect(() => {
+    if (hasAdminAccess && adminUserId && !['new-leads', 'customers'].includes(activeTab)) recordDepartureView(activeTab);
+  }, [hasAdminAccess, adminUserId, activeTab]);
   const [hasSetInitialTab, setHasSetInitialTab] = useState(!!urlTab);
   const [selectedLeadForQuote, setSelectedLeadForQuote] = useState<LeadForQuote | null>(null);
   const navigate = useNavigate();
