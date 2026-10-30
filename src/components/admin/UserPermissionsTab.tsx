@@ -1087,6 +1087,22 @@ export const UserPermissionsTab = () => {
     }
   };
 
+  const forceSignOut = async (userId: string, silent = false) => {
+    const { data, error } = await supabase.functions.invoke('staff-force-signout', { body: { adminUserId: userId } });
+    if (error || !data?.signedOut) {
+      const msg = (error as any)?.context?.error || data?.error || 'Could not sign them out';
+      toast.error(`Sign out failed: ${msg}`);
+      return false;
+    }
+    if (!silent) toast.success(`Signed out of ${data.sessions} session${data.sessions === 1 ? '' : 's'} on every computer`);
+    return true;
+  };
+
+  const handleForceSignOut = async (userId: string, displayName: string) => {
+    if (!confirm(`Sign ${displayName} out of the CRM on every computer now?\n\nThey can sign back in unless they are deactivated.`)) return;
+    await forceSignOut(userId);
+  };
+
   const toggleUserStatus = async (userId: string, isActive: boolean) => {
     const targetUser = users.find(u => u.id === userId);
     const displayName = targetUser ? `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim() || targetUser.email : 'this user';
@@ -1120,7 +1136,12 @@ export const UserPermissionsTab = () => {
 
       await tagAccessChange(userId, !isActive, 'Staff list (User permissions)');
 
-      toast.success(`User ${!isActive ? 'reactivated' : 'deactivated (temporarily blocked)'} successfully`);
+      if (isActive) {
+        const ok = await forceSignOut(userId, true);
+        toast.success(ok ? 'User deactivated and signed out on every computer' : 'User deactivated — sign out failed, press Sign out to retry');
+      } else {
+        toast.success('User reactivated successfully');
+      }
       fetchUsers();
     } catch (error) {
       console.error('Error updating user status:', error);
