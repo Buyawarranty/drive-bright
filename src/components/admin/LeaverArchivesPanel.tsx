@@ -8,7 +8,7 @@ import { Archive, Download } from 'lucide-react';
 import { StaffDepartureViewer } from './StaffDepartureViewer';
 
 interface ArchiveRow { id: string; staff_name: string | null; staff_email: string | null; staff_role: string | null;
-  trigger_reason: string; status: string; total_records: number; table_counts: Record<string, number>; created_at: string; }
+  trigger_reason: string; status: string; total_records: number; table_counts: Record<string, number>; created_at: string; created_by: string | null; }
 
 const rpc = (name: string, args?: object) => (supabase.rpc as any)(name, args);
 
@@ -91,7 +91,7 @@ export const LeaverArchivesPanel: React.FC = () => {
           </div>
         ))}
       </CardContent>
-      {selected && <StaffDepartureViewer archiveId={selected.id} name={selected.staff_name || selected.staff_email || 'Staff member'} onClose={() => setSelected(null)} />}
+      {selected && <StaffDepartureViewer archiveId={selected.id} name={selected.staff_name || selected.staff_email || 'Staff member'} actor={selected.created_by} reason={selected.trigger_reason} onClose={() => setSelected(null)} />}
     </Card>
   );
 };

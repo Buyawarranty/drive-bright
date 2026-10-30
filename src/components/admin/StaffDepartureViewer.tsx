@@ -8,7 +8,7 @@ import { departureTime } from '@/lib/staffDepartureView';
 interface Snapshot { captured_at: string; view_observed_at: string | null; tab: string | null; filters: Record<string, unknown>; permissions: Record<string, unknown>; scope_note: string }
 interface Item { id: number; source_id: string; record: Record<string, unknown> }
 const sections = { leads: 'Assigned leads', customers: 'Accessible customers', crm_attendance_sessions: 'CRM sessions', lead_access_events: 'Lead openings / copies', staff_work_locations: 'Recorded locations', admin_user_access_periods: 'Access history' };
-export function StaffDepartureViewer({ archiveId, name, onClose }: { archiveId: string; name: string; onClose: () => void }) {
+export function StaffDepartureViewer({ archiveId, name, actor, reason, onClose }: { archiveId: string; name: string; actor?: string | null; reason?: string; onClose: () => void }) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [kind, setKind] = useState('leads');
@@ -36,7 +36,7 @@ export function StaffDepartureViewer({ archiveId, name, onClose }: { archiveId: 
     {busy && <p role="status">Loading saved records…</p>}
     {!busy && loaded && !snapshot && <p>Departure view unavailable. This archive predates departure-state recording; the existing history download remains available.</p>}
     {snapshot && <>
-      <div className="space-y-2 border-b pb-4 text-sm"><p><strong>Captured:</strong> {departureTime(snapshot.captured_at)}</p><p><strong>Last recorded page:</strong> {snapshot.tab ?? 'Not recorded'} · {departureTime(snapshot.view_observed_at)}</p><p className="text-muted-foreground">{snapshot.scope_note} Recorded page context is not proof of the person using the account.</p><p><strong>Filters:</strong> {Object.entries(snapshot.filters).map(([k,v]) => `${k}: ${String(v)}`).join(' · ') || 'Not recorded'}</p>
+      <div className="space-y-2 border-b pb-4 text-sm"><p><strong>Captured:</strong> {departureTime(snapshot.captured_at)}</p><p><strong>Departure:</strong> {reason ?? 'Not recorded'} · actor account reference: {actor ?? 'System / not recorded'}</p><p><strong>Last recorded page:</strong> {snapshot.tab ?? 'Not recorded'} · {departureTime(snapshot.view_observed_at)}</p><p className="text-muted-foreground">{snapshot.scope_note} Recorded page context is not proof of the person using the account.</p><p><strong>Filters:</strong> {Object.entries(snapshot.filters).map(([k,v]) => `${k}: ${String(v)}`).join(' · ') || 'Not recorded'}</p>
       <details><summary className="cursor-pointer">Permissions at departure</summary><pre className="whitespace-pre-wrap break-words text-xs mt-2">{JSON.stringify(snapshot.permissions,null,2)}</pre></details></div>
       <Tabs value={kind} onValueChange={value => { setKind(value); setPage(0); }}><TabsList className="h-auto flex flex-wrap justify-start">{Object.entries(sections).map(([key,label]) => <TabsTrigger key={key} value={key}>{label}</TabsTrigger>)}</TabsList></Tabs>
       {!busy && !error && items.length === 0 && <p>No recorded entries in this section.</p>}

@@ -1,8 +1,9 @@
 # Roadmap
 
 ## CRM at departure — 30 October 2026
-- [ ] Preserve a read-only departure state inside Leaver archives, with recorded last page/filters, permissions and then-visible leads/customers before reassignment; retain existing activity history and label unavailable past state honestly.
-- [ ] Plan review, implementation and safety tests; no publication without explicit instruction.
+- [x] Added Open saved CRM inside Leaver archives: frozen assigned leads, own accessible customers, permissions and recorded session/location/access history, with UK/UTC dates and source references. Pre-departure capture now runs before offboarding; archive RPC status update precedes queue cleanup. Older views unavailable, management-wide screen reconstruction explicitly excluded.
+- [x] Approved plan implemented; three frontend tests and rollback-only database checks cover filter/secret sanitisation, immutable snapshots, repeated archives, two-month visibility and 24-hour approval expiry. Isolated browser verifies viewer/tabs/pagination; recording endpoint rejects invalid tokens; preview build OK. No publication or real staff deactivation. No new linter warnings; 612 existing findings remain separate.
+- [ ] Real authenticated departure-to-viewer read-back remains unavailable on externally managed Supabase. Exact screen replay and historic unrecorded filters cannot be supplied; new page/filter recording reaches the published client only after explicit publication.
 
 ## Staff deactivation timeout — 30 October 2026
 - [x] Database logs confirm status updates rolled back during repeated missing-contact recovery in the offboarding lead update; contact trigger now skips unchanged contact details, preserving edits, clear-field protection, archives and existing allocation rules.
