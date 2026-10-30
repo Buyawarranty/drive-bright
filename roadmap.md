@@ -1,5 +1,9 @@
 # Roadmap
 
+## Staff deactivation timeout — 30 October 2026
+- [x] Database logs confirm status updates rolled back during repeated missing-contact recovery in the offboarding lead update; contact trigger now skips unchanged contact details, preserving edits, clear-field protection, archives and existing allocation rules.
+- [ ] Run temporary-row contact regression and confirm deployment. Authenticated Deactivate/sign-out UI verification is unavailable on external unmanaged Supabase; do not switch off a real employee for testing.
+
 ## ORR phased sandbox updates — 29 October 2026
 - [x] Phase 0 source inspection: full guide reviewed; shared external Supabase client, operational controls and communication/job paths show no verified isolation. Safety report and phased plan prepared; documentation only, no database access/writes or functional changes.
 - [x] Website lead triggers and continuous re-release rehearsed in practice mode only: two-minute quiet release, three-minute claim hold, two-hourly round-the-clock review with no attempt cap, ownership only from a confirmed conversation with voicemails disregarded, permitted calling hours kept separate from intake, and a one/two/five-minute comparison table. Runs on invented customers and cannot reach the live system. Forty-two checks pass; preview build OK; nothing published.
