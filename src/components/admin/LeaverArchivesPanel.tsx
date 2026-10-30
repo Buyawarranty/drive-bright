@@ -109,6 +109,7 @@ export const LeaverArchivesPanel: React.FC = () => {
             <span className="text-muted-foreground">{a.staff_role} · {a.trigger_reason} · {new Date(a.created_at).toLocaleString('en-GB')}</span>
             <Badge variant={a.status === 'complete' ? 'default' : 'destructive'}>{a.status === 'complete' ? `${a.total_records.toLocaleString()} records locked` : 'Needs finishing'}</Badge>
             <span className="ml-auto flex gap-2">
+              {a.status === 'complete' && <Button size="sm" onClick={() => setReportFor(a)}>View report</Button>}
               <Button size="sm" variant="outline" onClick={() => setSelected(a)}>Open saved CRM</Button>
               {a.status !== 'complete' && <Button size="sm" disabled={!!busy} onClick={() => build(a.id)}>{busy === a.id ? 'Copying…' : 'Finish archive'}</Button>}
               {a.status === 'complete' && <Button size="sm" variant="outline" disabled={!!busy} onClick={() => download(a)}><Download className="h-3.5 w-3.5 mr-1" />{busy === a.id ? 'Preparing…' : 'Download'}</Button>}
@@ -117,6 +118,7 @@ export const LeaverArchivesPanel: React.FC = () => {
         ))}
       </CardContent>
       {selected && <StaffDepartureViewer archiveId={selected.id} name={selected.staff_name || selected.staff_email || 'Staff member'} actor={selected.created_by} reason={selected.trigger_reason} onClose={() => setSelected(null)} />}
+      {reportFor && <LeaverArchiveReport archive={reportFor} onClose={() => setReportFor(null)} />}
     </Card>
   );
 };
