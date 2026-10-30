@@ -19,6 +19,7 @@ The saved view cannot call, message, edit, reassign, take payments or reactivate
 
 ## Technical approach
 - Extend the existing leaver archive with immutable departure metadata and paginated snapshot items. Use explicit table grants, RLS and protected server functions; exclude new archive tables from generic recursive source discovery.
+- Use explicit display-field allowlists and secret redaction for new snapshots; review existing full-row archive sources for credential-bearing fields rather than copying them into the new viewer. Omit free-text searches that contain personal data and mark those filters unavailable.
 - Capture permissions and server-authorised record visibility using the pre-departure identity and timestamp. Preserve the sales/sales-lead two-month customer boundary and any then-valid 24-hour approval; ownership alone is not proof of visibility.
 - Order capture ahead of existing offboarding/unassignment triggers and verify deletion paths that reassign before deleting. Use bounded indexed operations and rollback-safe capture so a failed snapshot cannot silently claim completeness or repeat the deactivation timeout.
 - Keep browser-reported view observations distinct from server-verified permissions and ownership. Store observed and captured timestamps separately and identify the latest recorded browser session without claiming it represents every computer.
