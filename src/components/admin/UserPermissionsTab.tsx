@@ -2672,6 +2672,16 @@ export const UserPermissionsTab = () => {
                         )}
                       </Button>
                       )}
+                      {currentAdminUser?.role !== 'dev_tester' && user.user_id && user.user_id !== currentAdminUser?.user_id && !(currentAdminUser?.role !== 'super_admin' && user.role === 'super_admin') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleForceSignOut(user.id, `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email)}
+                          title="Sign them out of the CRM on every computer right now"
+                        >
+                          <LogOut className="h-4 w-4 mr-1" /> Sign out
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="outline"
