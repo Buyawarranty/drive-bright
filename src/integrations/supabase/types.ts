@@ -13811,6 +13811,106 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_crm_departure_items: {
+        Row: {
+          archive_id: string
+          created_at: string
+          id: number
+          kind: string
+          record: Json
+          source_id: string
+        }
+        Insert: {
+          archive_id: string
+          created_at?: string
+          id?: never
+          kind: string
+          record: Json
+          source_id: string
+        }
+        Update: {
+          archive_id?: string
+          created_at?: string
+          id?: never
+          kind?: string
+          record?: Json
+          source_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_crm_departure_items_archive_id_fkey"
+            columns: ["archive_id"]
+            isOneToOne: false
+            referencedRelation: "staff_crm_departures"
+            referencedColumns: ["archive_id"]
+          },
+        ]
+      }
+      staff_crm_departures: {
+        Row: {
+          archive_id: string
+          captured_at: string
+          counts: Json
+          filters: Json
+          permissions: Json
+          scope_note: string
+          tab: string | null
+          view_observed_at: string | null
+        }
+        Insert: {
+          archive_id: string
+          captured_at?: string
+          counts?: Json
+          filters?: Json
+          permissions?: Json
+          scope_note?: string
+          tab?: string | null
+          view_observed_at?: string | null
+        }
+        Update: {
+          archive_id?: string
+          captured_at?: string
+          counts?: Json
+          filters?: Json
+          permissions?: Json
+          scope_note?: string
+          tab?: string | null
+          view_observed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_crm_departures_archive_id_fkey"
+            columns: ["archive_id"]
+            isOneToOne: true
+            referencedRelation: "staff_leaver_archives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_crm_view_observations: {
+        Row: {
+          created_at: string
+          filters: Json
+          id: number
+          staff_admin_id: string
+          tab: string
+        }
+        Insert: {
+          created_at?: string
+          filters?: Json
+          id?: never
+          staff_admin_id: string
+          tab: string
+        }
+        Update: {
+          created_at?: string
+          filters?: Json
+          id?: never
+          staff_admin_id?: string
+          tab?: string
+        }
+        Relationships: []
+      }
       staff_device_settings: {
         Row: {
           enabled: boolean
@@ -17173,6 +17273,12 @@ export type Database = {
         Args: { p_current_tab?: string; p_kind: string; p_session_id: string }
         Returns: undefined
       }
+      record_staff_crm_view:
+        | { Args: { _filters?: Json; _tab: string }; Returns: undefined }
+        | {
+            Args: { _filters?: Json; _tab: string; _user_id?: string }
+            Returns: undefined
+          }
       recover_leads_from_step2: {
         Args: { p_lookback_hours?: number }
         Returns: Json
@@ -17456,6 +17562,29 @@ export type Database = {
           data_type: string
           table_name: string
         }[]
+      }
+      staff_crm_capture: {
+        Args: {
+          _archive: string
+          _staff: Database["public"]["Tables"]["admin_users"]["Row"]
+        }
+        Returns: undefined
+      }
+      staff_crm_pick: {
+        Args: { _keys: string[]; _record: Json }
+        Returns: Json
+      }
+      staff_crm_redact: { Args: { _row: Json }; Returns: Json }
+      staff_crm_safe_filters: { Args: { _filters: Json }; Returns: Json }
+      staff_departure_customer_visible: {
+        Args: {
+          _approval_expires: string
+          _at: string
+          _owned: boolean
+          _role: string
+          _signup: string
+        }
+        Returns: boolean
       }
       staff_device_access: {
         Args: { p_hash: string; p_user_id: string }

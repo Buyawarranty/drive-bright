@@ -1,4 +1,5 @@
 import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
+import { recordDepartureView } from '@/lib/staffDepartureView';
 import { markHeavyTabBusy } from '@/lib/heavyTabBusy';
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { isToday, isPast } from 'date-fns';
@@ -342,6 +343,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Sales users asked to land on their complete lead history. They can still
   // narrow it with the orange date shortcuts, date picker, or age control.
   const [ageWindow, setAgeWindow] = useState<AgeWindow>(() => isSalesFeedUser ? 'all' : 'last_60');
+  useEffect(() => {
+    const timer = setTimeout(() => recordDepartureView('new-leads', { view: activeView, status: activeFilter, period: datePeriod, from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString(), assignment: assignmentFilter, sort: sortOption, source: sourceFilter, age: ageWindow, search_omitted: Boolean(searchTerm) }), 500);
+    return () => clearTimeout(timer);
+  }, [activeView, activeFilter, datePeriod, dateRange, assignmentFilter, sortOption, sourceFilter, ageWindow, searchTerm]);
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   const [notSpokenTagId, setNotSpokenTagId] = useState<string | null>(null);

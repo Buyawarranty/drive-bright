@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { recordDepartureView } from '@/lib/staffDepartureView';
 import { RequestOlderCustomerButton, CustomerHistoryRequestsPanel } from './customers/CustomerHistoryAccess';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { AdminNotification } from '@/hooks/useAdminNotifications';
@@ -616,6 +617,10 @@ export const CustomersTab = ({
 
   // ── Part payment plans (read-only summary used for row tags + filtering) ──────
   const [filterByPartPayment, setFilterByPartPayment] = useState<'all' | 'has' | 'outstanding' | 'completed'>('all');
+  useEffect(() => {
+    const timer = setTimeout(() => recordDepartureView('customers', { status: filterByStatus, sort: sortBy, plan: filterByPlan, source: filterBySource, payment: filterByPaymentSource, from: dateRange?.from?.toISOString(), to: dateRange?.to?.toISOString(), search_omitted: Boolean(searchTerm) }), 500);
+    return () => clearTimeout(timer);
+  }, [filterByStatus, sortBy, filterByPlan, filterBySource, filterByPaymentSource, dateRange, searchTerm]);
   const [partPaymentPlans, setPartPaymentPlans] = useState<Map<string, {
     total_due: number; status: string; next_due_date: string | null; paid: number; hasStripe: boolean;
   }>>(new Map());
