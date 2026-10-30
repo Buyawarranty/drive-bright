@@ -441,6 +441,12 @@ export const defaultTabs: Tab[] = [
     description: 'Manage admin user access and permissions'
   },
   {
+    id: 'leaver-archives',
+    label: 'Leaver archives',
+    icon: Shield,
+    description: 'Locked records of staff who have left (admin and super admin only)'
+  },
+  {
     id: 'cyber-security',
     label: 'Cyber security',
     icon: Shield,
