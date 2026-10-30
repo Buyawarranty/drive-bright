@@ -1,3 +1,4 @@
+import { LeaverArchivesPanel } from '@/components/admin/LeaverArchivesPanel';
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import GrowthAgentTab from '@/components/admin/growth/GrowthAgentTab';
 import { GatewayRenewalBanner } from '@/components/admin/GatewayRenewalBanner';
@@ -1115,6 +1116,9 @@ const AdminDashboard = () => {
         return <Suspense fallback={<TabFallback />}><CyberSecurityTab /></Suspense>;
       case 'user-permissions':
         return <UserPermissionsTab />;
+      case 'leaver-archives':
+        if (!['admin', 'super_admin'].includes(effectiveUserRole || '')) return <AccessDenied label="Leaver archives" />;
+        return <div className="p-4 md:p-6"><LeaverArchivesPanel /></div>;
       case 'staff-system-reports': {
         const isManagerView =
           ['super_admin', 'admin', 'performance_manager', 'sales_manager', 'dev_tester'].includes(effectiveUserRole || '') ||
