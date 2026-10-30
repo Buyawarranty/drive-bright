@@ -195,7 +195,7 @@ export const TeamTargetBoard: React.FC<{
             <p className="text-sm text-muted-foreground">You're not on a sales team yet, so there's nothing to show.</p>
           )}
 
-          {!loading && !error && teams.length > 0 && (
+          {isManagement && !loading && !error && teams.length > 0 && (
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-lg border bg-muted/30 p-3">
                 <p className="text-xs text-muted-foreground">Total sales this month</p>
@@ -221,14 +221,14 @@ export const TeamTargetBoard: React.FC<{
                   <div className="flex items-center gap-2">
                     <span className={`h-2.5 w-2.5 rounded-full ${accent.dot}`} />
                     <span className="font-semibold text-lg">{team.name}</span>
-                    <Badge variant="outline" className={accent.pill}>
+                    {isManagement && <Badge variant="outline" className={accent.pill}>
                       {team.pct != null ? `${team.pct}% of team target` : 'No team target set'}
-                    </Badge>
+                    </Badge>}
                   </div>
-                  <span className="text-sm font-semibold">{gbp(team.revenue)} <span className="font-normal text-muted-foreground">team sales</span></span>
+                  {isManagement && <span className="text-sm font-semibold">{gbp(team.revenue)} <span className="font-normal text-muted-foreground">team sales</span></span>}
                 </div>
                 {/* Quieter team bar with a little car showing how far the team has travelled. */}
-                <div className="relative pt-3">
+                {isManagement && <div className="relative pt-3">
                   <Progress
                     value={teamPct}
                     className={`h-1.5 bg-muted ${progressBarColor(team.pct)}`}
@@ -238,7 +238,7 @@ export const TeamTargetBoard: React.FC<{
                     style={{ left: `${teamPct}%` }}
                     aria-hidden
                   />
-                </div>
+                </div>}
 
 
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

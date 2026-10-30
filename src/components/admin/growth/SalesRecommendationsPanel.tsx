@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { buildRecommendations, computeSalesGap, type SalesSnapshot } from '@/lib/salesRecommendations';
+import { isCompanySalesValueTabBlocked } from '@/lib/tabAccess';
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
@@ -26,6 +27,11 @@ export default function SalesRecommendationsPanel() {
     let active = true;
     (async () => {
       try {
+        const { data: auth } = await supabase.auth.getUser();
+        if (!auth.user) return;
+        const { data: staff, error: staffError } = await supabase.from('admin_users')
+          .select('role, is_active').eq('user_id', auth.user.id).maybeSingle();
+        if (staffError || !staff?.is_active || isCompanySalesValueTabBlocked('growth-sales', staff.role)) return;
         const today = new Date();
         const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
         const lastStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);

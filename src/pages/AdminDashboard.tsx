@@ -13,7 +13,7 @@ import { signOutWithAttendance } from '@/lib/crmAttendanceClient';
 import { lazyWithRetry, forceFreshReload } from '@/utils/lazyWithRetry';
 import { SEOHead } from '@/components/SEOHead';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { isAnalyticsBlocked, canAccessSeoAudit, canAccessCallData } from '@/lib/tabAccess';
+import { isAnalyticsBlocked, isCompanySalesValueTabBlocked, canAccessSeoAudit, canAccessCallData } from '@/lib/tabAccess';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -240,6 +240,7 @@ const AccessDenied: React.FC<{ label: string }> = ({ label }) => (
 const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: Record<string, boolean> | null) => {
   const tab = canonicalTabId(rawTab);
   const permKey = `tab_${tab}`;
+  if (isCompanySalesValueTabBlocked(tab, role)) return false;
   if (tab === 'account') return true;
   if (tab === 'attendance') return canViewCrmAttendance(role);
   if (tab === 'cyber-security') return canViewCyberSecurity(role);
@@ -922,6 +923,7 @@ const AdminDashboard = () => {
 
 
   const renderContent = (effectiveUserRole: string | null, effectiveUserPermissions: Record<string, boolean> | null) => {
+    if (isCompanySalesValueTabBlocked(activeTab, effectiveUserRole)) return <AccessDenied label="Company sales reporting" />;
     switch (activeTab) {
       case 'overview':
       case 'call-stats':
