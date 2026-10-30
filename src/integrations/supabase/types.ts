@@ -16720,6 +16720,7 @@ export type Database = {
         Args: { _archive_id: string }
         Returns: string[]
       }
+      leaver_archive_report: { Args: { _archive_id: string }; Returns: Json }
       leaver_archive_start: {
         Args: { _admin_user_id: string; _reason: string }
         Returns: string
