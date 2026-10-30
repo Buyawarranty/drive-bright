@@ -1,0 +1,1 @@
+ALTER FUNCTION public.leaver_archive_report(uuid) SECURITY INVOKER;
