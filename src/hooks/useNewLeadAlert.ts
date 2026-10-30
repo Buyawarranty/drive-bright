@@ -533,7 +533,7 @@ export const useNewLeadAlert = () => {
     const connect = () => {
       if (disposed) return;
       channel = supabase
-        .channel(`new-lead-alert-${adminId}-${Date.now()}`)
+        .channel(`new-lead-alert-${adminId}-${Date.now()}-${Math.random().toString(36).slice(2)}`)
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'sales_leads', filter: `assigned_to=eq.${adminId}` },
