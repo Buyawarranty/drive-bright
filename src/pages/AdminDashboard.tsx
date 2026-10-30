@@ -589,6 +589,26 @@ const AdminDashboard = () => {
   const accessAttemptsRef = React.useRef(0);
   const [accessCheckStalled, setAccessCheckStalled] = useState(false);
   const [accountDeactivated, setAccountDeactivated] = useState(false);
+
+  // A manager can end this login remotely (Sign out / Deactivate). Recheck with
+  // the server every minute so an open dashboard closes within ~60 seconds.
+  useEffect(() => {
+    const id = window.setInterval(async () => {
+      if (document.visibilityState !== 'visible') return;
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) return;
+      const { data, error } = await supabase.auth.getUser();
+      const revoked = (error && (error as any).status && [401, 403].includes((error as any).status)) || (!error && !data.user);
+      if (revoked) {
+        await supabase.auth.signOut({ scope: 'local' });
+        window.location.href = '/auth';
+        return;
+      }
+      const { data: row } = await supabase.from('admin_users').select('is_active').eq('user_id', sess.session.user.id).maybeSingle();
+      if (row && (row as any).is_active === false) setAccountDeactivated(true);
+    }, 60000);
+    return () => window.clearInterval(id);
+  }, []);
   // True while we're showing the shell from cached (last-known) access and the
   // server verification hasn't come back yet.
   const [accessFromCache, setAccessFromCache] = useState(false);
