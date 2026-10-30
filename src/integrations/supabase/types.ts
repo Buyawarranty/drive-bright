@@ -17273,10 +17273,12 @@ export type Database = {
         Args: { p_current_tab?: string; p_kind: string; p_session_id: string }
         Returns: undefined
       }
-      record_staff_crm_view: {
-        Args: { _filters?: Json; _tab: string }
-        Returns: undefined
-      }
+      record_staff_crm_view:
+        | { Args: { _filters?: Json; _tab: string }; Returns: undefined }
+        | {
+            Args: { _filters?: Json; _tab: string; _user_id?: string }
+            Returns: undefined
+          }
       recover_leads_from_step2: {
         Args: { p_lookback_hours?: number }
         Returns: Json
@@ -17572,6 +17574,7 @@ export type Database = {
         Args: { _keys: string[]; _record: Json }
         Returns: Json
       }
+      staff_crm_redact: { Args: { _row: Json }; Returns: Json }
       staff_crm_safe_filters: { Args: { _filters: Json }; Returns: Json }
       staff_device_access: {
         Args: { p_hash: string; p_user_id: string }
