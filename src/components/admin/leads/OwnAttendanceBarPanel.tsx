@@ -54,7 +54,7 @@ export function OwnAttendanceBarPanel() {
               <div className="min-w-0">
                 <p className="text-sm font-medium text-foreground">{name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {!agent.setting ? 'Assign to a team first' : agent.setting.show_own_attendance_bar ? 'Own attendance bar on' : 'Off (default)'}
+                  {!agent.setting ? 'Assign to a team first' : agent.setting.show_own_attendance_bar ? 'Own attendance bar on (default)' : 'Off'}
                 </p>
               </div>
               <Switch aria-label={`Own attendance bar for ${name}`}
