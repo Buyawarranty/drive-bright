@@ -1,5 +1,10 @@
 # Roadmap
 
+## ORR corrected inactivity & availability rules — 31 October 2026
+- [x] User uploaded corrected rules doc (truncated at "### 6. Sandbox" — rest requested if it exists). Agreed: build in sandbox, 60-minute break grace.
+- [x] Built practice-only in src/lib/orrPractice/availability.ts: voluntary claiming (no strikes for unclaimed leads), telephony-driven Busy with status restore, On Break with 60-min penalty-free lead recycling, strict 5-condition inactivity events (single event recycles, 3+ in 5 days flags manager review), manual Busy/manager corrections when telephony unavailable.
+- [x] Wired into settings (breakGraceMinutes, inactivityReviewThreshold), openClaim (only available agents can claim), and OrrLogicExplainer (documented rules + manager controls). 114 ORR tests pass; preview build OK. Sandbox only — nothing live or published.
+
 ## ORR no-sale block ladder — 31 October 2026
 - [x] Rule agreed with user: 1 sale-free working day = 1 day out of new ORR leads, 2 = 2, 3 = 3; capped at 3 days then flagged for management review; any confirmed sale resets to zero; new starters exempt for 14 calendar days; Mon–Sat only count (Sundays/days off never).
 - [x] Built practice-only in src/lib/orrPractice/noSaleBlock.ts (pure, no Supabase/network); manager controls (on/off, cap 1–7, grace 0–60) added to OrrLogicExplainer and OrrPracticeSettings; rehearsal roster skips held-out agents and shows an amber status note (fake history: Thomas 3 sale-free days, Liam in grace).
