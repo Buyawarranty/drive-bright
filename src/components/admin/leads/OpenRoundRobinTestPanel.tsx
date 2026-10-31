@@ -765,6 +765,16 @@ export const OpenRoundRobinTestPanel: React.FC<{
 
 
   const [tick, setTick] = useState(0);
+  // Overnight backlog parked for the controlled 09:00 release (declared early —
+  // the manager stat cards and the top-up sweep both read it).
+  const [overnightParked, setOvernightParked] = useState(12);
+  const [morningReleasedAt, setMorningReleasedAt] = useState<Date | null>(null);
+  const overnightParkedRef = useRef(overnightParked);
+  const morningReleasedAtRef = useRef<Date | null>(null);
+  useEffect(() => {
+    overnightParkedRef.current = overnightParked;
+    morningReleasedAtRef.current = morningReleasedAt;
+  }, [overnightParked, morningReleasedAt]);
   // 'practice' = made-up TEST leads. 'live' = a READ-ONLY copy of the leads we
   // really received, so ORR can be proven against real-world data while it is
   // still switched off. Live mode never writes: New Leads stays untouched.
@@ -1331,15 +1341,6 @@ export const OpenRoundRobinTestPanel: React.FC<{
    * and released into this same flow at 09:00. From then on the day continues as
    * normal — same table, same columns, same rules.
    */
-  const [overnightParked, setOvernightParked] = useState(12);
-  const [morningReleasedAt, setMorningReleasedAt] = useState<Date | null>(null);
-  const overnightParkedRef = useRef(overnightParked);
-  const morningReleasedAtRef = useRef<Date | null>(null);
-  useEffect(() => {
-    overnightParkedRef.current = overnightParked;
-    morningReleasedAtRef.current = morningReleasedAt;
-  }, [overnightParked, morningReleasedAt]);
-
   /**
    * Controlled 09:00 release: only enough leads to match the team's free slots
    * (available agents × up to 2 unworked each) enter the flow. The rest of the
