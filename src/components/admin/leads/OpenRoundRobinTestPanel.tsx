@@ -2563,6 +2563,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                 chaseDays={cadence.releaseDays}
                 agents={roster.map((a) => ({ id: a.id, name: a.name }))}
                 onAssign={assignQueueLead}
+                showSource={canSeeLeadSource}
               />
               <OrrAgentCapacityPanel
                 rows={capacityRows}
@@ -2619,6 +2620,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
             chaseDays={cadence.releaseDays}
             onClaim={claimNextOpportunity}
             claimDisabledReason={claimDisabledReason}
+            showSource={canSeeLeadSource}
           />
           <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1 shadow-sm">
             {(() => {
