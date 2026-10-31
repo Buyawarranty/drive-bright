@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Download } from 'lucide-react';
+import { Download, Tag } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
@@ -21,7 +22,6 @@ const EMPTY: GrantFlags = {
 const OPTIONS: { key: keyof GrantFlags; label: string; hint: string }[] = [
   { key: 'can_export_new_leads', label: 'New leads export', hint: 'Download lead data from New Leads and Recontacted Leads' },
   { key: 'can_export_customers', label: 'Customer management export', hint: 'Download customer data from Customer Management' },
-  { key: 'can_see_lead_source', label: 'See lead source', hint: 'See where a lead came from (Google/Facebook/Organic) in Customer Management, New Leads and Recontacted Leads' },
 ];
 
 export function ExportFilesPermission({ adminUserId, role, canManage }: { adminUserId: string; role: string; canManage: boolean }) {
@@ -72,7 +72,25 @@ export function ExportFilesPermission({ adminUserId, role, canManage }: { adminU
     <div className="border-y py-4 space-y-3">
       <div className="flex items-center gap-2">
         <Download className="h-4 w-4 text-primary" />
-        <h3 className="font-semibold">Export files &amp; lead source</h3>
+        <h3 className="font-semibold">Export files</h3>
+      </div>
+      <div className="flex items-center justify-between gap-4 border-t pt-4">
+        <div className="space-y-1">
+          <Label htmlFor={`can_see_lead_source-${adminUserId}`} className="flex items-center gap-2 font-semibold">
+            <Tag className="h-4 w-4 text-primary" />
+            Lead source
+          </Label>
+          <p className="text-xs text-muted-foreground">Where an enquiry came from, such as Google, Facebook or Organic.</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="text-sm text-muted-foreground">{automatic || flags.can_see_lead_source ? 'On' : 'Off'}</span>
+          <Switch
+            id={`can_see_lead_source-${adminUserId}`}
+            checked={automatic || flags.can_see_lead_source}
+            disabled={loading || !canManage || automatic}
+            onCheckedChange={checked => void change('can_see_lead_source', checked)}
+          />
+        </div>
       </div>
       <div className="space-y-3">
         {OPTIONS.map(opt => (

@@ -1,5 +1,10 @@
 # Roadmap
 
+## Lead-source permission — 31 October 2026
+- [x] Lead source is a separate On/Off switch in Edit user permissions. Protected scoped grant controls New Leads, Recontacted Leads and Customer Management; removed conflicting legacy controls and display restrictions without widening record access.
+- [x] Twelve permission/export regression tests pass; preview build OK. Nothing published.
+- [ ] Real signed-in switch save/read-back unavailable on external unmanaged Supabase; isolated browser mounting failed, so visual/end-to-end verification is not claimed.
+
 ## Emailed payment form validation — 31 October 2026
 - [x] Reuse Step 4 mobile/name rules, immediate ticks/errors, quiet empty fields, submit focus/pulse and mileage confirmation; preserve quoted prices and provider routing.
 - [x] 24 shared regression checks pass; desktop/mobile fixture verifies immediate warnings, correction, submit blocking/focus and low-mileage confirmation through payment invocation. Payment endpoint deployed; website unpublished. No real quote or payment exercised.

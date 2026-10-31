@@ -12,6 +12,7 @@ import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
 import { canViewPayLaterClaims, hasPayLaterClaim } from '@/lib/payLaterClaims';
 import { canUseStaffExport, canUseFullStaffExport, staffExportRows } from '@/lib/staffExportAccess';
 import { useExportPermissions } from '@/hooks/useExportPermissions';
+import { canDisplayLeadSource } from '@/lib/leadSourceAccess';
 import { requireCustomersExport } from '@/lib/customerDataExport';
 
 import { ReferencePriceCell } from '@/components/admin/customers/ReferencePriceCell';
@@ -830,11 +831,8 @@ export const CustomersTab = ({
   // Management only: raise a "save the deal" rescue lead straight from a customer record
   const canRaiseSaveDeal = isSuperAdmin || isAdmin || normalizedRole === 'sales_manager';
 
-  // See Source column — off by default for everyone except admin/super admin;
-  // anyone else needs the granular tick or the "See lead source" grant.
-  const seeSourceGranular = hasGranularPermission('customers', 'see-source');
-  const seeSourceDefault = isSuperAdmin || normalizedRole === 'admin';
-  const canSeeSourceColumn = (seeSourceGranular === undefined ? seeSourceDefault : seeSourceGranular) || canSeeLeadSource;
+  // Old per-tab flags cannot override the protected Lead source switch.
+  const canSeeSourceColumn = canDisplayLeadSource(canSeeLeadSource);
   const isSalesAgent = normalizedRole === 'sales';
   const isSalesLead = normalizedRole === 'sales_lead';
   const isSalesScopedRole = isSalesAgent || isSalesLead;

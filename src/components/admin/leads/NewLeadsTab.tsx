@@ -1,4 +1,5 @@
 import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
+import { canDisplayLeadSource } from '@/lib/leadSourceAccess';
 import { recordDepartureView } from '@/lib/staffDepartureView';
 import { markHeavyTabBusy } from '@/lib/heavyTabBusy';
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
@@ -384,24 +385,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       return next;
     });
   };
-  // Granular permission: tab_new-leads_see-source.
-  // Defaults: super_admin, admin and lead_gen see source. Others don't.
-  // Super admin can still locally hide via the H toggle.
-  const seeSourceGranular = hasGranularPermission('new-leads', 'see-source');
-  const isAdminRole = userRole === 'admin';
-  // Off by default: only admin/super admin see source automatically; anyone
-  // else needs the granular tick or the "See lead source" grant.
-  const seeSourceDefault = isSuperAdmin || isAdminRole;
-  const seeSourceAllowed = (seeSourceGranular === undefined ? seeSourceDefault : seeSourceGranular) || canSeeLeadSource;
-  // Hard rule: sales roles (agents, sales leads, sales managers) never see the
-  // lead source anywhere in New Leads — not even if a granular permission was
-  // switched on for them by mistake.
-  const isSalesSideRole =
-    userRole === 'sales' || userRole === 'sales_lead' || userRole === 'sales_manager';
+  // One protected grant controls source labels for every staff role.
   const sourceVisible =
-    !isSupportUser &&
-    !isSalesSideRole &&
-    seeSourceAllowed &&
+    canDisplayLeadSource(canSeeLeadSource) &&
     !(isSuperAdmin && superAdminHideSource);
   const sourceHidden = !sourceVisible;
   const canSeeSourceFilter = sourceVisible;
@@ -2424,7 +2410,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onSendQuote={handleSendQuote}
                     showFbBadge={isDigitalAccess}
                     showRecoveredBadge={isAdminOrSuperAdmin}
-                    showSourceColumn={!sourceHidden && (isAdminOrSuperAdmin || isLeadGenUser)}
+                    showSourceColumn={!sourceHidden}
                     isPaidLocked={isPaidLocked}
                     paidLeadAccessCheck={paidLeadAccessCheck}
                     onRequestPaidAccess={handleRequestPaidAccess}

@@ -166,13 +166,11 @@ const GRANULAR_PERMISSIONS = {
   'customers': [
     { key: 'view', label: 'View', description: 'Can view customer data' },
     { key: 'own-only', label: 'Own Customers Only', description: 'Only see customers from their own orders (via Quotes & Orders)' },
-    { key: 'see-source', label: 'See Source', description: 'Can see the customer acquisition source (Google/Facebook/Organic/Website)' },
     { key: 'delete', label: 'Delete', description: 'Can delete customer records' },
   ],
   'new-leads': [
     { key: 'view', label: 'View', description: 'Can view lead data' },
     { key: 'assign', label: 'Assign Leads', description: 'Can assign or reassign leads to agents' },
-    { key: 'see-source', label: 'See Source', description: 'Can see the lead source (Google/Facebook/Organic)' },
     { key: 'delete', label: 'Delete', description: 'Can delete lead records' },
     { key: 'all-leads', label: 'See All Leads', description: 'Can see all leads (OFF = only their own assigned leads)' },
     { key: 'my-dashboard', label: 'My Dashboard', description: 'Can view My Dashboard section' },
