@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 import { staffDeviceRequest } from '@/lib/staffDeviceAccess';
+import { nextStaffGateState, type StaffGateOutcome } from '@/lib/staffGateState';
 
 const bounded = async <T,>(promise: PromiseLike<T>, ms: number): Promise<T | 'timeout'> => {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -25,32 +26,42 @@ export function StaffPasswordGate({ children }: { children: React.ReactNode }) {
   const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
   const checking = useRef(false);
+  const runCheck = useCallback(async (): Promise<StaffGateOutcome> => {
+    const sessionResult = await bounded(supabase.auth.getSession(), 8000);
+    if (sessionResult === 'timeout') return 'transient';
+    const session = sessionResult.data.session;
+    if (!session) return 'ready';
+    let device;
+    try {
+      device = await staffDeviceRequest('request');
+    } catch { return 'transient'; }
+    if (!device?.allowed) return 'device';
+    const result = await bounded(supabase.functions.invoke('staff-password', {
+      body: { action: 'status' },
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    }), 15000);
+    if (result === 'timeout') return 'transient';
+    const { data, error } = result;
+    if (error || data?.error) return 'transient';
+    return data?.must_change ? 'expired' : 'ready';
+  }, []);
   const check = useCallback(async () => {
     if (checking.current) return;
     checking.current = true;
     try {
-      const sessionResult = await bounded(supabase.auth.getSession(), 8000);
-      if (sessionResult === 'timeout') { setState('error'); return; }
-      const session = sessionResult.data.session;
-      if (!session) { setState('ready'); return; }
-      try {
-        const device = await staffDeviceRequest('request');
-        if (!device.allowed) { setState('device'); return; }
-      } catch { setState('device'); return; }
-      const result = await bounded(supabase.functions.invoke('staff-password', {
-        body: { action: 'status' },
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      }), 15000);
-      if (result === 'timeout') { setState('error'); return; }
-      const { data, error } = result;
-      if (error || data?.error) { setState('error'); return; }
-      setState(data?.must_change ? 'expired' : 'ready');
-    } catch {
-      setState('error');
+      let outcome: StaffGateOutcome;
+      try { outcome = await runCheck(); } catch { outcome = 'transient'; }
+      if (outcome === 'transient') {
+        // One quiet retry after refreshing the sign-in token (e.g. after the computer slept).
+        await bounded(supabase.auth.refreshSession(), 8000).catch(() => undefined);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        try { outcome = await runCheck(); } catch { outcome = 'transient'; }
+      }
+      setState(prev => nextStaffGateState(prev, outcome));
     } finally {
       checking.current = false;
     }
-  }, []);
+  }, [runCheck]);
   useEffect(() => {
     void check();
     const timer = window.setInterval(check, 60000);
