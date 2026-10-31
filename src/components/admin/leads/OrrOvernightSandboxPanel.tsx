@@ -253,9 +253,10 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
     refresh: refreshLive,
   } = useSandboxLiveLeads(dataSource === 'live', { window: 'overnight', limit: 40 });
   const [agents, setAgents] = React.useState<PracticeAgent[]>([
-    { id: 'a1', name: 'Freddie Howard', ext: '202', on: true },
-    { id: 'a2', name: 'James Reed', ext: '201', on: true },
-    { id: 'a3', name: 'Thomas Clark', ext: '203', on: true },
+    { id: 'a1', name: 'James', ext: '201', on: true },
+    { id: 'a2', name: 'Thomas', ext: '203', on: true },
+    { id: 'a3', name: 'Adam', ext: '202', on: true },
+    { id: 'a4', name: 'Mike', ext: '205', on: true },
   ]);
   const [leads, setLeads] = React.useState<PracticeLead[]>(() => seedOvernightLeads(14));
   const [autoOn, setAutoOn] = React.useState(false);

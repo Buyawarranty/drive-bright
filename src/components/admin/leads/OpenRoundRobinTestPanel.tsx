@@ -264,22 +264,18 @@ const nextCallWindow = (from: number, cfg: OrrCadenceConfig) => {
 
 
 // Fake sale history so the no-sale block ladder can be rehearsed: Thomas is
-// three sale-free working days in (held out, flagged for review), Liam is a
-// new starter inside his grace period, everyone else sold recently.
+// three sale-free working days in (held out, flagged for review).
+// All history is simulated, not the named staff members' real history.
 const DAY_MS = 24 * 60 * 60 * 1000;
 const dummyNow = Date.now();
 const DUMMY_AGENTS: DummyAgent[] = [
-  { id: 'dummy-james', name: 'James Reed', extension: '201', order: 1, startedAt: dummyNow - 400 * DAY_MS, lastSaleAt: dummyNow - DAY_MS },
-  { id: 'dummy-freddie', name: 'Freddie', extension: '202', order: 2, startedAt: dummyNow - 300 * DAY_MS, lastSaleAt: dummyNow - 2 * DAY_MS },
-  { id: 'dummy-thomas', name: 'Thomas', extension: '203', order: 3, startedAt: dummyNow - 200 * DAY_MS, lastSaleAt: dummyNow - 5 * DAY_MS },
-  { id: 'dummy-greg', name: 'Greg sales@', extension: '205', order: 4, startedAt: dummyNow - 500 * DAY_MS, lastSaleAt: dummyNow - DAY_MS },
-  { id: 'dummy-aisha', name: 'Aisha', extension: '206', order: 5, startedAt: dummyNow - 100 * DAY_MS, lastSaleAt: dummyNow - 2 * DAY_MS },
-  { id: 'dummy-liam', name: 'Liam', extension: '207', order: 6, startedAt: dummyNow - 5 * DAY_MS, lastSaleAt: null },
-  { id: 'dummy-chloe', name: 'Chloe', extension: '208', order: 7, startedAt: dummyNow - 250 * DAY_MS, lastSaleAt: dummyNow - DAY_MS },
-  { id: 'dummy-mo', name: 'Mo', extension: '209', order: 8, startedAt: dummyNow - 180 * DAY_MS, lastSaleAt: dummyNow - 3 * DAY_MS },
+  { id: 'dummy-james', name: 'James', extension: '201', order: 1, startedAt: dummyNow - 400 * DAY_MS, lastSaleAt: dummyNow - DAY_MS },
+  { id: 'dummy-thomas', name: 'Thomas', extension: '203', order: 2, startedAt: dummyNow - 200 * DAY_MS, lastSaleAt: dummyNow - 5 * DAY_MS },
+  { id: 'dummy-adam', name: 'Adam', extension: '202', order: 3, startedAt: dummyNow - 300 * DAY_MS, lastSaleAt: dummyNow - 2 * DAY_MS },
+  { id: 'dummy-mike', name: 'Mike', extension: '205', order: 4, startedAt: dummyNow - 500 * DAY_MS, lastSaleAt: dummyNow - DAY_MS },
 ];
 
-const AGENT_COUNT_OPTIONS = [1, 2, 3, 4, 6, 8];
+const AGENT_COUNT_OPTIONS = [1, 2, 3, 4];
 
 const getAgent = (agentId: string | null) => DUMMY_AGENTS.find((agent) => agent.id === agentId) ?? DUMMY_AGENTS[0];
 
@@ -1889,9 +1885,9 @@ export const OpenRoundRobinTestPanel: React.FC<{
       {
         id: 'busy-day',
         title: 'Busy morning — everyone gets one at a time',
-        what: 'Eight agents on shift, eight enquiries land together.',
+        what: 'Four agents on shift, four enquiries land together.',
         watch: 'Each lead sits with a different agent, nobody holds more than two.',
-        agents: 8,
+        agents: 4,
         build: (r: DummyAgent[], now: number) =>
           r.map((agent, i) =>
             buildLead({
@@ -1987,9 +1983,9 @@ export const OpenRoundRobinTestPanel: React.FC<{
       {
         id: 'overnight',
         title: 'Overnight backlog at 09:00',
-        what: 'Twelve enquiries came in overnight, eight agents start at 09:00.',
+        what: 'Twelve enquiries came in overnight, four agents start at 09:00.',
         watch: 'Oldest first: eight go straight out, four wait their turn.',
-        agents: 8,
+        agents: 4,
         build: (_r: DummyAgent[], now: number) =>
           Array.from({ length: 12 }, (_, i) =>
             buildLead({ n: i + 1, createdAt: now - (12 - i) * 45 * 60 * 1000 }),
