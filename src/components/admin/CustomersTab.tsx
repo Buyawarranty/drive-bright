@@ -832,7 +832,7 @@ export const CustomersTab = ({
   const canRaiseSaveDeal = isSuperAdmin || isAdmin || normalizedRole === 'sales_manager';
 
   // Old per-tab flags cannot override the protected Lead source switch.
-  const canSeeSourceColumn = canDisplayLeadSource(canSeeLeadSource);
+  const canSeeSourceColumn = canDisplayLeadSource(canSeeLeadSource, normalizedRole);
   const isSalesAgent = normalizedRole === 'sales';
   const isSalesLead = normalizedRole === 'sales_lead';
   const isSalesScopedRole = isSalesAgent || isSalesLead;

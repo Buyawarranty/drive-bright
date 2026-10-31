@@ -387,7 +387,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   };
   // One protected grant controls source labels for every staff role.
   const sourceVisible =
-    canDisplayLeadSource(canSeeLeadSource) &&
+    canDisplayLeadSource(canSeeLeadSource, userRole) &&
     !(isSuperAdmin && superAdminHideSource);
   const sourceHidden = !sourceVisible;
   const canSeeSourceFilter = sourceVisible;

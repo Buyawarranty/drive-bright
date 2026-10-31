@@ -1759,7 +1759,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 mileage: lead.mileage,
                 plan_interest: lead.plan_interest,
               }) : undefined}
-              showSourceColumn={canDisplayLeadSource(canSeeLeadSource)}
+              showSourceColumn={canDisplayLeadSource(canSeeLeadSource, userRole)}
               userRole={userRole}
               hideNewStatus
               recontactMode
