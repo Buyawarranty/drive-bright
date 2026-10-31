@@ -2526,6 +2526,127 @@ export const OpenRoundRobinTestPanel: React.FC<{
         </div>
       </section>
 
+      {/* Manager view — full queue & control (new design, 31 Oct 2026) */}
+      {isManagerView && !isLive && (
+        <div className="space-y-3">
+          <OrrManagerStatCards stats={managerStats} />
+          <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1 shadow-sm">
+            {([
+              { key: 'queue', label: `Open Round Robin Queue (${queueRows.length})` },
+              { key: 'all', label: `All Leads (${effectiveLeads.length})` },
+              { key: 'schedule', label: 'Release Schedule' },
+              { key: 'capacity', label: 'Agent Capacity' },
+              { key: 'performance', label: 'Performance' },
+              { key: 'audit', label: 'Audit Log' },
+            ] as const).map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setManagerTab(tab.key)}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-semibold rounded-md transition-colors',
+                  managerTab === tab.key ? 'bg-teal-600 text-white' : 'text-muted-foreground hover:bg-muted',
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {managerTab === 'queue' && (
+            <div className="grid gap-3 xl:grid-cols-[1fr_280px] items-start">
+              <OrrQueueTable
+                rows={queueRows}
+                chaseDays={cadence.releaseDays}
+                agents={roster.map((a) => ({ id: a.id, name: a.name }))}
+                onAssign={assignQueueLead}
+              />
+              <OrrAgentCapacityPanel
+                rows={capacityRows}
+                onToggleBreak={(id) =>
+                  setBreakAgentIds((current) =>
+                    current.includes(id) ? current.filter((x) => x !== id) : [...current, id],
+                  )
+                }
+              />
+            </div>
+          )}
+          {managerTab === 'schedule' && (
+            <OrrReleaseSchedulePanel
+              releaseTimesLabel={describeReleaseTimes(cadence)}
+              releaseDays={cadence.releaseDays}
+              maxReleases={maxReleases(cadence)}
+              nextReleaseLabel={formatTimeOfDay(nextReleaseAt(Date.now(), cadence))}
+              maxPerAgent={DEFAULT_MAX_UNWORKED_PER_AGENT}
+            />
+          )}
+          {managerTab === 'capacity' && (
+            <OrrAgentCapacityPanel
+              rows={capacityRows}
+              onToggleBreak={(id) =>
+                setBreakAgentIds((current) =>
+                  current.includes(id) ? current.filter((x) => x !== id) : [...current, id],
+                )
+              }
+            />
+          )}
+          {managerTab === 'performance' && <OrrPerformancePanel rows={performanceRows} />}
+          {managerTab === 'audit' && <OrrAuditLogPanel entries={auditEntries} />}
+        </div>
+      )}
+
+      {/* Agent view — one shared opportunity at a time + working tabs (new design) */}
+      {!isLive && !isManagerView && (
+        <div className="space-y-3">
+          <OrrNextOpportunityCard
+            lead={
+              nextOpportunity
+                ? {
+                    id: nextOpportunity.id,
+                    leadRef: leadRefFor(nextOpportunity.id, nextOpportunity.leadRef),
+                    sourceLabel: sourceLabelOf(nextOpportunity.leadSource),
+                    leadType: leadTypeOf(nextOpportunity.createdAt, nextOpportunity.displayStatus),
+                    ageLabel: formatClock(Math.round((Date.now() - nextOpportunity.createdAt) / 1000)),
+                    callsToday: nextOpportunity.dayDials,
+                    callsTotal: nextOpportunity.dials,
+                    chaseDay: Math.max(1, nextOpportunity.followUpDay),
+                  }
+                : null
+            }
+            chaseDays={cadence.releaseDays}
+            onClaim={claimNextOpportunity}
+            claimDisabledReason={claimDisabledReason}
+          />
+          <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1 shadow-sm">
+            {(() => {
+              const mine = effectiveLeads.filter((l) => l.assignedTo === simulatedAgentId && !l.waiting);
+              const callbacks = mine.filter(
+                (l) => l.displayStatus === 'callback_booked' || l.displayStatus === 'urgent_callback',
+              ).length;
+              const followups = mine.filter((l) => l.displayStatus === 'follow_up').length;
+              const tabs = [
+                { key: 'mine' as const, label: `My Leads (${mine.length})` },
+                { key: 'all' as const, label: 'All Leads' },
+                { key: 'callbacks' as const, label: `Callbacks (${callbacks})` },
+                { key: 'followups' as const, label: `Follow-ups (${followups})` },
+              ];
+              return tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setAgentTab(tab.key)}
+                  className={cn(
+                    'px-3 py-1.5 text-xs font-semibold rounded-md transition-colors',
+                    agentTab === tab.key ? 'bg-teal-600 text-white' : 'text-muted-foreground hover:bg-muted',
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ));
+            })()}
+          </div>
+        </div>
+      )}
+
       {/* Rules, timings and editable variables */}
       {isManagerView && !isLive && (
         <OrrLogicExplainer
