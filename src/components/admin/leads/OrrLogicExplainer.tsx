@@ -50,6 +50,12 @@ export interface OrrCadenceConfig {
   releaseDays: number;
   /** Staff a manager has blocked from Open Round Robin. */
   blockedAgentIds: string[];
+  /** Hold agents out of new ORR leads after sale-free working days. */
+  noSaleBlockEnabled: boolean;
+  /** Calendar days a new starter is exempt from the no-sale block. */
+  newStarterGraceDays: number;
+  /** Cap on the no-sale block ladder (1 day out per sale-free day, up to this). */
+  maxNoSaleBlockDays: number;
 }
 
 export const DEFAULT_ORR_CADENCE: OrrCadenceConfig = {
@@ -71,6 +77,9 @@ export const DEFAULT_ORR_CADENCE: OrrCadenceConfig = {
   releaseTimes: DEFAULT_RELEASE_TIMES,
   releaseDays: DEFAULT_RELEASE_DAYS,
   blockedAgentIds: [],
+  noSaleBlockEnabled: true,
+  newStarterGraceDays: 14,
+  maxNoSaleBlockDays: 3,
 };
 
 const NumberField = ({
@@ -170,6 +179,9 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
               </li>
               <li>After <strong>{config.maxAttempts} unanswered offers</strong> the lead keeps cycling through ORR and a manager alert is raised so a human can reassign it.</li>
               <li>An uncontacted lead is released at <strong>{describeReleaseTimes(config)}</strong> UK time for <strong>{config.releaseDays} days</strong> — at most <strong>{maxReleases(config)} releases</strong>. A release is a chance to allocate, not permission to call.</li>
+              <li>
+                <strong>No-sale block:</strong> an agent with no confirmed sale for 1 working day is held out of new leads for 1 day, 2 days = 2 out, 3 days = 3 out. The block never grows past <strong>{config.maxNoSaleBlockDays} days</strong> — at that point the agent is flagged for a management review instead. Any confirmed sale resets the count to zero, and new starters are exempt for their first <strong>{config.newStarterGraceDays} days</strong>. Sundays and recorded days off never count.
+              </li>
             </ul>
           </div>
 
@@ -243,6 +255,52 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
               </div>
             </div>
           )}
+
+          {/* No-sale block ladder */}
+          <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground">No-sale block ladder</span>
+              <Badge variant="outline" className="text-[10px]">
+                {config.noSaleBlockEnabled ? `On — capped at ${config.maxNoSaleBlockDays} days` : 'Off'}
+              </Badge>
+            </div>
+            <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-1">
+              <li>1 sale-free working day = 1 day out of new leads, 2 = 2, 3 = 3. The block never grows past the cap — the agent is flagged for a management review instead.</li>
+              <li>Any confirmed sale resets the count to zero and releases the agent immediately.</li>
+              <li>Only working days count (Monday to Saturday). Sundays, holidays and recorded days off never count as sale-free.</li>
+            </ul>
+            <div className="flex items-center gap-3">
+              <Switch
+                id="orr-no-sale-block"
+                checked={config.noSaleBlockEnabled}
+                onCheckedChange={(v) => set('noSaleBlockEnabled', v)}
+              />
+              <Label htmlFor="orr-no-sale-block" className="text-xs font-medium text-foreground">
+                Hold agents out of new leads after sale-free days
+              </Label>
+            </div>
+            {config.noSaleBlockEnabled && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <NumberField
+                  label="Block cap (days)"
+                  hint="Longest an agent can be held out before a management review"
+                  value={config.maxNoSaleBlockDays}
+                  min={1}
+                  max={7}
+                  onChange={(n) => set('maxNoSaleBlockDays', n)}
+                />
+                <NumberField
+                  label="New-starter grace (days)"
+                  hint="How long a new starter is exempt from the block"
+                  value={config.newStarterGraceDays}
+                  min={0}
+                  max={60}
+                  onChange={(n) => set('newStarterGraceDays', n)}
+                />
+              </div>
+            )}
+          </div>
 
           {/* Self-assign rule */}
           <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-4 space-y-2">

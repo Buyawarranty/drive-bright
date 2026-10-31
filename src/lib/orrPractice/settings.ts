@@ -40,6 +40,12 @@ export interface OrrPracticeSettings {
   tpsCheckEnabled: boolean;
   /** Require the fake customer phone-consent flag. */
   phoneConsentRequired: boolean;
+  /** Hold agents out of new ORR leads after sale-free working days. */
+  noSaleBlockEnabled: boolean;
+  /** Calendar days a new starter is exempt from the no-sale block. */
+  newStarterGraceDays: number;
+  /** Cap on the no-sale block ladder (1 day out per sale-free day, up to this). */
+  maxNoSaleBlockDays: number;
 }
 
 const weekdayWindow = (day: number): ContactWindow => ({ day, startHour: 9, endHour: 18 });
@@ -65,6 +71,9 @@ export const DEFAULT_ORR_PRACTICE_SETTINGS: OrrPracticeSettings = {
   permanentSuppressionAfterReleases: 0,
   tpsCheckEnabled: true,
   phoneConsentRequired: true,
+  noSaleBlockEnabled: true,
+  newStarterGraceDays: 14,
+  maxNoSaleBlockDays: 3,
 };
 
 /** Intervals management can pick from for the re-release review. */
@@ -90,6 +99,9 @@ export const sanitiseSettings = (input: Partial<OrrPracticeSettings>): OrrPracti
   activeCheckoutSuppression: input.activeCheckoutSuppression !== false,
   tpsCheckEnabled: input.tpsCheckEnabled !== false,
   phoneConsentRequired: input.phoneConsentRequired !== false,
+  noSaleBlockEnabled: input.noSaleBlockEnabled !== false,
+  newStarterGraceDays: clamp(Number(input.newStarterGraceDays ?? 14), 0, 60),
+  maxNoSaleBlockDays: clamp(Number(input.maxNoSaleBlockDays ?? 3), 1, 7),
   contactWindows: Array.isArray(input.contactWindows) && input.contactWindows.length
     ? input.contactWindows
         .map(w => ({
