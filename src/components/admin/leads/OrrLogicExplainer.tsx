@@ -50,6 +50,12 @@ export interface OrrCadenceConfig {
   releaseDays: number;
   /** Staff a manager has blocked from Open Round Robin. */
   blockedAgentIds: string[];
+  /** Hold agents out of new ORR leads after sale-free working days. */
+  noSaleBlockEnabled: boolean;
+  /** Calendar days a new starter is exempt from the no-sale block. */
+  newStarterGraceDays: number;
+  /** Cap on the no-sale block ladder (1 day out per sale-free day, up to this). */
+  maxNoSaleBlockDays: number;
 }
 
 export const DEFAULT_ORR_CADENCE: OrrCadenceConfig = {
@@ -71,6 +77,9 @@ export const DEFAULT_ORR_CADENCE: OrrCadenceConfig = {
   releaseTimes: DEFAULT_RELEASE_TIMES,
   releaseDays: DEFAULT_RELEASE_DAYS,
   blockedAgentIds: [],
+  noSaleBlockEnabled: true,
+  newStarterGraceDays: 14,
+  maxNoSaleBlockDays: 3,
 };
 
 const NumberField = ({
