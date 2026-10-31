@@ -24,6 +24,7 @@ const ORR_LOGIC_POINTS: string[] = [
   'Every real call attempt across all agents is recorded; releases never reset those counts.',
   'Chasing stops at once on a genuine two-way conversation — the lead stays with that salesperson for normal CRM follow-up and any agreed callback.',
   'A refusal, request not to call again or other suppression stops chasing even without a conversation.',
+  'Waiting leads are fed back progressively, oldest and due first — never one big batch.',
   'Managers can block or allow individual staff from Open Round Robin; blocked staff are skipped by the rotation.',
   'Renewal leads enter Open Round Robin too: the original seller is preferred if they still work renewals, otherwise the lead is offered to ORR agents with the Renewals workstream ticked.',
   'When the releases finish, the lead shows "Chase complete" but is never auto-archived, closed or reassigned.',
