@@ -1513,7 +1513,7 @@ export const UserPermissionsTab = () => {
 
   const renderTabPermissionsSection = (perms: Record<string, boolean>, isEditing: boolean, role?: string) => (
     <div className="space-y-4">
-      {isEditing && editingUser && <ExportFilesPermission adminUserId={editingUser.id} role={editingUser.role} canManage={currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin'} />}
+      {isEditing && editingUser && <ExportFilesPermission adminUserId={editingUser.id} role={editingUser.role} email={editingUser.email} canManage={currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin'} />}
       <div className="flex items-center justify-between">
         <Label className="text-base font-semibold">Tab Access Permissions</Label>
         <div className="flex gap-2">

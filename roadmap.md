@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Lead-source permission — 31 October 2026
+- [x] Latest rule applied server-side and in display: ADS@/SEO@ source defaults, every sales role denied regardless of grants; exports and ownership unchanged. Eighteen tests pass, preview build OK. ADS@ is active; no SEO@ staff account currently exists, but future matching accounts inherit the rule. No publication.
 - [x] Lead source is a separate On/Off switch in Edit user permissions. Protected scoped grant controls New Leads, Recontacted Leads and Customer Management; removed conflicting legacy controls and display restrictions without widening record access.
 - [x] Twelve permission/export regression tests pass; preview build OK. Nothing published.
 - [ ] Real signed-in switch save/read-back unavailable on external unmanaged Supabase; isolated browser mounting failed, so visual/end-to-end verification is not claimed.

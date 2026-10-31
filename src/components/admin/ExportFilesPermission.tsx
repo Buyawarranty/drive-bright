@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { canDisplayLeadSource, hasDefaultLeadSourceAccess, isSalesSourceBlocked } from '@/lib/leadSourceAccess';
 
 type GrantFlags = {
   can_export_new_leads: boolean;
@@ -24,11 +25,14 @@ const OPTIONS: { key: keyof GrantFlags; label: string; hint: string }[] = [
   { key: 'can_export_customers', label: 'Customer management export', hint: 'Download customer data from Customer Management' },
 ];
 
-export function ExportFilesPermission({ adminUserId, role, canManage }: { adminUserId: string; role: string; canManage: boolean }) {
+export function ExportFilesPermission({ adminUserId, role, email, canManage }: { adminUserId: string; role: string; email?: string; canManage: boolean }) {
   const [flags, setFlags] = useState<GrantFlags>(EMPTY);
   const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
   const automatic = role === 'admin' || role === 'super_admin';
+  const sourceBlocked = isSalesSourceBlocked(role);
+  const sourceAutomatic = hasDefaultLeadSourceAccess(role, email);
+  const sourceEnabled = canDisplayLeadSource(sourceAutomatic || flags.can_see_lead_source, role);
 
   useEffect(() => {
     let active = true;
@@ -52,6 +56,7 @@ export function ExportFilesPermission({ adminUserId, role, canManage }: { adminU
 
   const change = async (key: keyof GrantFlags, enabled: boolean) => {
     if (!canManage || automatic) return;
+    if (key === 'can_see_lead_source' && (sourceBlocked || sourceAutomatic)) return;
     setLoading(true);
     const next = { ...flags, [key]: enabled };
     const { error } = await supabase
@@ -83,15 +88,16 @@ export function ExportFilesPermission({ adminUserId, role, canManage }: { adminU
           <p className="text-xs text-muted-foreground">Where an enquiry came from, such as Google, Facebook or Organic.</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <span className="text-sm text-muted-foreground">{automatic || flags.can_see_lead_source ? 'On' : 'Off'}</span>
+          <span className="text-sm text-muted-foreground">{sourceEnabled ? 'On' : 'Off'}</span>
           <Switch
             id={`can_see_lead_source-${adminUserId}`}
-            checked={automatic || flags.can_see_lead_source}
-            disabled={loading || !canManage || automatic}
+            checked={sourceEnabled}
+            disabled={loading || !canManage || sourceAutomatic || sourceBlocked}
             onCheckedChange={checked => void change('can_see_lead_source', checked)}
           />
         </div>
       </div>
+      {(sourceBlocked || sourceAutomatic) && <p className="text-xs text-muted-foreground">{sourceBlocked ? 'Lead sources are restricted for all sales roles.' : 'Lead source access is included by default for this account.'}</p>}
       <div className="space-y-3">
         {OPTIONS.map(opt => (
           <div key={opt.key} className="flex items-start gap-3">
