@@ -2811,11 +2811,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
                 <tr>
                   <th className="px-2 py-2 text-center w-11">#</th>
                   <th className="px-2 py-2 text-left w-9"></th>
-                  <th className="px-2 py-2 text-left">Lead Ref (Reg)</th>
-                  <th className="px-2 py-2 text-left">Lead type</th>
                   <th className="px-2 py-2 text-left">Agent</th>
                   {showSourceColumn && <th className="px-2 py-2 text-center">Src</th>}
-                  <th className="px-2 py-2 text-left">Time to Lead</th>
                   <th className="px-2 py-2 text-left">Status</th>
                   <th className="px-2 py-2 text-center">Calls</th>
                   <th className="px-2 py-2 text-left">Actions</th>
@@ -2830,6 +2827,9 @@ export const OpenRoundRobinTestPanel: React.FC<{
                   <th className="px-2 py-2 text-left">Lead Date</th>
                   <th className="px-2 py-2 text-left">Customer activity</th>
                   <th className="px-2 py-2 text-left">Time to contact</th>
+                  <th className="px-2 py-2 text-left">Lead Ref (Reg)</th>
+                  <th className="px-2 py-2 text-left">Lead type</th>
+                  <th className="px-2 py-2 text-left">Time to Lead</th>
                 </tr>
               </thead>
               <tbody>
