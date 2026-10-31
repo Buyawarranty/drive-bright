@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { withTimeout } from '@/lib/withTimeout';
+import { canDisplayLeadSource, hasDefaultLeadSourceAccess } from '@/lib/leadSourceAccess';
 
 export interface ExportPermissions {
   canExportNewLeads: boolean;
@@ -22,9 +23,9 @@ const NONE: ExportPermissions = {
  * checked server-side by get_my_export_permissions().
  */
 export function useExportPermissions(): ExportPermissions {
-  const { isImpersonating, effectiveRole, effectiveAdminUserId } = useViewAs();
+  const { isImpersonating, effectiveRole, effectiveAdminUserId, viewAsAgent } = useViewAs();
   const { data } = useQuery({
-    queryKey: ['export-permissions', isImpersonating, effectiveAdminUserId],
+    queryKey: ['export-permissions', isImpersonating, effectiveAdminUserId, effectiveRole, viewAsAgent?.email],
     queryFn: async (): Promise<ExportPermissions> => {
       if (isImpersonating) {
         if (effectiveRole === 'admin' || effectiveRole === 'super_admin') {
@@ -36,11 +37,11 @@ export function useExportPermissions(): ExportPermissions {
           .select('can_export_new_leads, can_export_customers, can_see_lead_source')
           .eq('admin_user_id', effectiveAdminUserId)
           .maybeSingle();
-        if (error || !data) return NONE;
+        if (error) return NONE;
         return {
-          canExportNewLeads: data.can_export_new_leads === true,
-          canExportCustomers: data.can_export_customers === true,
-          canSeeLeadSource: data.can_see_lead_source === true,
+          canExportNewLeads: data?.can_export_new_leads === true,
+          canExportCustomers: data?.can_export_customers === true,
+          canSeeLeadSource: canDisplayLeadSource(data?.can_see_lead_source === true || hasDefaultLeadSourceAccess(effectiveRole, viewAsAgent?.email), effectiveRole),
         };
       }
       const { data, error } = await withTimeout(
@@ -53,12 +54,12 @@ export function useExportPermissions(): ExportPermissions {
       return {
         canExportNewLeads: row.can_export_new_leads === true,
         canExportCustomers: row.can_export_customers === true,
-        canSeeLeadSource: row.can_see_lead_source === true,
+        canSeeLeadSource: canDisplayLeadSource(row.can_see_lead_source === true, effectiveRole),
       };
     },
     staleTime: 15000,
     refetchInterval: 30000,
     retry: false,
   });
-  return data ?? NONE;
+  return data ? { ...data, canSeeLeadSource: canDisplayLeadSource(data.canSeeLeadSource, effectiveRole) } : NONE;
 }
