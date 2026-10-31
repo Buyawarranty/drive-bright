@@ -73,12 +73,12 @@ const isWorkingDay = (ukDateKey: string) => {
   return dow !== 0;
 };
 
-/** Working days strictly between two instants, excluding recorded days off. */
+/** Whole working days since `fromExclusive`, up to yesterday — today never counts yet. */
 export const saleFreeWorkingDaysBetween = (fromExclusive: number, to: number, daysOff: string[] = []): number => {
   const off = new Set(daysOff);
   const span = londonDaysBetween(fromExclusive, to);
   let count = 0;
-  for (let i = 1; i <= span; i += 1) {
+  for (let i = 1; i < span; i += 1) {
     const key = londonDateKey(Date.parse(londonDateKey(fromExclusive)) + i * DAY);
     if (!isWorkingDay(key) || off.has(key)) continue;
     count += 1;
