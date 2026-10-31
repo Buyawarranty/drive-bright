@@ -1010,7 +1010,6 @@ export const OpenRoundRobinTestPanel: React.FC<{
         if (plan.releaseCount > 0) {
           const drafts: DummyLead[] = Array.from({ length: plan.releaseCount }, (_, i) => ({
             id: `dummy-orr-topup-${now}-${i}`,
-            leadRef: nextLeadRef(),
             firstName: 'TEST',
             lastName: `Backlog ${String(i + 1).padStart(2, '0')}`,
             email: `backlog.lead${i + 1}@example.com`,
@@ -1019,7 +1018,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
             assignedTo: null,
             attemptCount: 0,
             deadlineAt: now,
-            vehicleReg: 'TEST123',
+            vehicleReg: nextPracticeReg(),
             phone: '07902222222',
             createdAt: now - 6 * 60 * 60 * 1000,
             dials: 0,
@@ -1303,7 +1302,6 @@ export const OpenRoundRobinTestPanel: React.FC<{
 
       const draft: DummyLead = {
         id: `dummy-orr-${now}-${Math.random().toString(36).slice(2, 7)}`,
-        leadRef: nextLeadRef(),
         firstName: 'TEST',
         lastName: `Lead ${String(leadNumber).padStart(2, '0')}`,
         email: `test.lead${leadNumber}@example.com`,
@@ -1312,7 +1310,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
         assignedTo: offeredTo ? offeredTo.id : null,
         attemptCount: offeredTo ? 1 : 0,
         deadlineAt: offeredTo ? now + cadenceRef.current.claimWindowSeconds * 1000 : now,
-        vehicleReg: 'TEST123',
+        vehicleReg: nextPracticeReg(),
         phone: '07902222222',
         createdAt: now,
         dials: 0,
@@ -1404,7 +1402,6 @@ export const OpenRoundRobinTestPanel: React.FC<{
       const leadNumber = current.length + i + 1;
       drafts.push({
         id: `dummy-orr-overnight-${now}-${i}`,
-        leadRef: nextLeadRef(),
         firstName: 'TEST',
         lastName: `Overnight ${String(i + 1).padStart(2, '0')}`,
         email: `overnight.lead${leadNumber}@example.com`,
@@ -1413,7 +1410,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
         assignedTo: offeredTo ? offeredTo.id : null,
         attemptCount: offeredTo ? 1 : 0,
         deadlineAt: offeredTo ? now + cadenceRef.current.claimWindowSeconds * 1000 : now,
-        vehicleReg: 'TEST123',
+        vehicleReg: nextPracticeReg(),
         phone: '07902222222',
         createdAt: now - (count - i) * 45 * 60 * 1000,
         dials: 0,
@@ -1770,7 +1767,6 @@ export const OpenRoundRobinTestPanel: React.FC<{
     const now = Date.now();
     const drafts: DummyLead[] = liveLeads.map((lead) => ({
       id: `live-orr-${lead.id}`,
-      leadRef: nextLeadRef(),
       firstName: lead.firstName || 'Customer',
       lastName: lead.lastName || '',
       email: lead.email,
@@ -1814,7 +1810,6 @@ export const OpenRoundRobinTestPanel: React.FC<{
       const { n, ...rest } = over;
       return {
         id: `dummy-scenario-${now}-${n}-${Math.random().toString(36).slice(2, 7)}`,
-        leadRef: nextLeadRef(),
         firstName: 'TEST',
         lastName: `Lead ${String(n).padStart(2, '0')}`,
         email: `test.lead${n}@example.com`,
@@ -1823,7 +1818,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
         assignedTo: null,
         attemptCount: 0,
         deadlineAt: now,
-        vehicleReg: 'TEST123',
+        vehicleReg: nextPracticeReg(),
         phone: '07902222222',
         createdAt: now,
         dials: 0,
@@ -1861,7 +1856,6 @@ export const OpenRoundRobinTestPanel: React.FC<{
       const leadNumber = current.length + 1;
       const draft: DummyLead = {
         id: `dummy-rr-${now}-${Math.random().toString(36).slice(2, 7)}`,
-        leadRef: nextLeadRef(),
         firstName: 'TEST',
         lastName: `RR Lead ${String(leadNumber).padStart(2, '0')}`,
         email: `test.rr${leadNumber}@example.com`,
@@ -1870,7 +1864,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
         assignedTo: owner?.id ?? null,
         attemptCount: 1,
         deadlineAt: now,
-        vehicleReg: 'TEST123',
+        vehicleReg: nextPracticeReg(),
         phone: '07903333333',
         createdAt: now,
         dials: 0,
