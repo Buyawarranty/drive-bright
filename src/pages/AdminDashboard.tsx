@@ -176,10 +176,12 @@ const isExplicitlyPermittedTab = (tab: string, permissions?: Record<string, bool
 };
 
 const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
+  // New Leads is the opening page for everyone who is allowed to see it.
+  if (isTabAllowedForRole('new-leads', role, permissions)) return 'new-leads';
   const isClaimsUser = role === 'claims_agent' || role === 'claims_manager' || permissions?.['tab_claims'] === true;
   const preferredOrder = isClaimsUser
     ? ['claims', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account']
-    : ['get-quote', 'customers', 'new-leads', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+    : ['new-leads', 'get-quote', 'customers', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
 
 
   if (permissions) {
