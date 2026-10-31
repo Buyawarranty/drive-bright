@@ -212,12 +212,18 @@ export const OrrQueueTable: React.FC<{
           <th className="px-2 py-2 text-left">Assigned Agent</th>
           <th className="px-2 py-2 text-left">Next Release</th>
           <th className="px-2 py-2 text-left">Actions</th>
+          <th className="px-2 py-2 text-left">Name</th>
+          <th className="px-2 py-2 text-left">Phone</th>
+          <th className="px-2 py-2 text-left">WhatsApp</th>
+          <th className="px-2 py-2 text-left">Email</th>
+          <th className="px-2 py-2 text-left">Reg</th>
+          <th className="px-2 py-2 text-left">Lead Date</th>
         </tr>
       </thead>
       <tbody>
         {rows.length === 0 ? (
           <tr>
-            <td colSpan={showSource ? 11 : 10} className="px-4 py-8 text-center text-sm text-muted-foreground">
+            <td colSpan={showSource ? 17 : 16} className="px-4 py-8 text-center text-sm text-muted-foreground">
               The shared queue is empty — add a practice lead or run the 09:00 release.
             </td>
           </tr>
@@ -276,6 +282,22 @@ export const OrrQueueTable: React.FC<{
                   )}
                 </div>
               </td>
+              <td className="px-2 py-2 text-xs font-semibold text-foreground whitespace-nowrap">{row.name || '—'}</td>
+              <td className="px-2 py-2 text-xs whitespace-nowrap">
+                {row.phone ? (
+                  <a href={`tel:${row.phone}`} className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-900">{row.phone}</a>
+                ) : '—'}
+              </td>
+              <td className="px-2 py-2">
+                <span className="inline-flex items-center rounded border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800 whitespace-nowrap">WhatsApp</span>
+              </td>
+              <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">{row.email || '—'}</td>
+              <td className="px-2 py-2">
+                {row.vehicleReg ? (
+                  <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-0.5 text-xs font-bold text-yellow-950 font-mono">{row.vehicleReg}</span>
+                ) : '—'}
+              </td>
+              <td className="px-2 py-2 text-xs whitespace-nowrap">{row.leadDateLabel ?? '—'}</td>
             </tr>
           ))
         )}
