@@ -202,7 +202,7 @@ export const OrrQueueTable: React.FC<{
       <thead className="bg-muted/50 text-[11px] uppercase tracking-wide text-muted-foreground">
         <tr>
           <th className="px-2 py-2 text-center w-11">#</th>
-          <th className="px-2 py-2 text-left">Lead Ref</th>
+          <th className="px-2 py-2 text-left">Lead Ref (Reg)</th>
           <th className="px-2 py-2 text-left">Lead Type</th>
           {showSource && <th className="px-2 py-2 text-left">Source</th>}
           <th className="px-2 py-2 text-left">Status</th>

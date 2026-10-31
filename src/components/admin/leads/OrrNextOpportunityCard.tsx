@@ -8,10 +8,12 @@ import { LEAD_TYPE_LABELS, type OrrLeadType } from '@/lib/orrPractice/leadBadges
 /**
  * Agent view — "Next Available Opportunity" card.
  *
- * One shared lead at a time, first to claim. Only the lead reference, source,
- * type, age, call counts and chase day are shown — the customer's name, phone,
- * email and reg stay hidden until the agent claims the lead. Practice only.
+ * One shared lead at a time, first to claim. The lead reference is the vehicle
+ * registration that arrived with the lead, so it is shown alongside the source,
+ * type, age, call counts and chase day — the customer's name, phone and email
+ * stay hidden until the agent claims the lead. Practice only.
  */
+
 export interface NextOpportunityLead {
   id: string;
   leadRef: string;
@@ -54,7 +56,7 @@ export const OrrNextOpportunityCard: React.FC<{
           Open Round Robin — <span className="text-emerald-800">Next Available Opportunity</span>
         </h3>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Shared lead (first to claim) · Customer details hidden until claimed
+          Shared lead (first to claim) · Name, phone and email hidden until claimed
         </p>
       </div>
     </div>

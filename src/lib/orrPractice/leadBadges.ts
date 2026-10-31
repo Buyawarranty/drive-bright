@@ -1,10 +1,12 @@
 /**
- * Open Round Robin practice — lead reference numbers and lead-type badges.
+ * Open Round Robin practice — lead reference and lead-type badges.
  *
- * Lead refs (BW-89421, BW-89422, …) are synthetic labels for practice leads
- * only, so a shared lead can be discussed while its customer details stay
- * hidden until claimed. Pure module: no Supabase, no network.
+ * A lead's reference is the vehicle registration that arrives with it, so a
+ * shared lead can be discussed while its customer details stay hidden until
+ * claimed. Practice leads are synthetic, so they are given made-up plates in the
+ * normal UK format. Pure module: no Supabase, no network.
  */
+
 
 export type OrrLeadType = 'overnight' | 'live' | 'callback';
 
@@ -26,15 +28,22 @@ export const LEAD_TYPE_LABELS: Record<OrrLeadType, string> = {
   callback: 'Callback',
 };
 
-let leadRefCounter = 89420;
+/** UK plate letters — the DVLA alphabet excludes I and Q. */
+const PLATE_LETTERS = 'ABCDEFGHJKLMNPRSTUVWXYZ';
 
-/** Next synthetic lead reference, e.g. "BW-89421". Practice leads only. */
-export const nextLeadRef = (): string => `BW-${(leadRefCounter += 1)}`;
+let plateCounter = 0;
 
-/** Stable ref for a lead that predates refs (derived from its id). */
-export const leadRefFor = (id: string, existing?: string | null): string => {
-  if (existing) return existing;
-  let hash = 0;
-  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) % 90000;
-  return `BW-${10000 + hash}`;
+/** Next synthetic registration plate for a practice lead, e.g. "BW24 AAB". */
+export const nextPracticeReg = (): string => {
+  plateCounter += 1;
+  const at = (n: number) => PLATE_LETTERS[n % PLATE_LETTERS.length];
+  const suffix =
+    at(Math.floor(plateCounter / (PLATE_LETTERS.length * PLATE_LETTERS.length))) +
+    at(Math.floor(plateCounter / PLATE_LETTERS.length)) +
+    at(plateCounter);
+  return `BW24 ${suffix}`;
 };
+
+/** The lead reference is the registration plate that comes with the lead. */
+export const leadRefFor = (vehicleReg?: string | null): string => (vehicleReg ?? '').trim().toUpperCase();
+
