@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0";
+import { validateQuoteCustomer } from '../_shared/quoteCustomerValidation.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -163,6 +164,22 @@ serve(async (req) => {
     const resolvedTown = submittedCustomerData.city || '';
     const resolvedPostcode = submittedCustomerData.postcode || '';
     const resolvedStartDate = submittedCustomerData.startDate || null;
+
+    const validationErrors = validateQuoteCustomer({
+      firstName: resolvedFirstName, lastName: resolvedLastName,
+      email: resolvedEmail, phone: resolvedPhone,
+      addressLine1: resolvedStreet, city: resolvedTown, postcode: resolvedPostcode,
+      mileage: String(submittedCustomerData.mileage ?? quote.vehicle_mileage ?? ''),
+    });
+    const resolvedMileage = Number(submittedCustomerData.mileage ?? quote.vehicle_mileage);
+    if (resolvedMileage < 10000 && submittedCustomerData.mileageConfirmedLow !== true) {
+      validationErrors.mileage = 'Please confirm your current mileage.';
+    }
+    if (Object.keys(validationErrors).length) {
+      return new Response(JSON.stringify({ error: 'Please check your details before paying.', fieldErrors: validationErrors }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     await supabaseClient
       .from('live_quotes')

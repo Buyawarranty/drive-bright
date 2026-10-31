@@ -1,5 +1,9 @@
 # Roadmap
 
+## Emailed payment form validation — 31 October 2026
+- [x] Reuse Step 4 mobile/name rules, immediate ticks/errors, quiet empty fields, submit focus/pulse and mileage confirmation; preserve quoted prices and provider routing.
+- [x] 24 shared regression checks pass; desktop/mobile fixture verifies immediate warnings, correction, submit blocking/focus and low-mileage confirmation through payment invocation. Payment endpoint deployed; website unpublished. No real quote or payment exercised.
+
 ## Company sales totals privacy — 30 October 2026
 - [x] Company sales-value pages blocked before permission grants and render/menu paths; team scoreboard now returns self rows without team aggregates. Company-target RLS and four reporting shortcuts block sales/sales_lead. Assistant sales tools refuse those roles; own prices/scores retained.
 - [x] Nineteen frontend privacy tests and database checks across active sales accounts pass; preview build OK, no new security warnings (603 existing findings separate). Nothing published; database protections already apply to the connected service.
