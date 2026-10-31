@@ -2838,6 +2838,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                   <th className="px-2 py-2 text-left">Actions</th>
                   <th className="px-2 py-2 text-left">Name</th>
                   <th className="px-2 py-2 text-left">Phone</th>
+                  <th className="px-2 py-2 text-left">Warranty</th>
                   <th className="px-2 py-2 text-left">Email</th>
                   <th className="px-2 py-2 text-left">Reg</th>
                   <th className="px-2 py-2 text-left">Payment</th>
