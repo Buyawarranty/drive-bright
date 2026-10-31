@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { leadRefFor, leadTypeOf, nextLeadRef } from './leadBadges';
+import { leadRefFor, leadTypeOf, nextPracticeReg } from './leadBadges';
 
 describe('leadTypeOf', () => {
   it('marks callback statuses as Callback regardless of arrival time', () => {
@@ -16,15 +16,20 @@ describe('leadTypeOf', () => {
 });
 
 describe('lead refs', () => {
-  it('hands out sequential BW refs', () => {
-    const a = nextLeadRef();
-    const b = nextLeadRef();
-    expect(a).toMatch(/^BW-\d{5}$/);
-    expect(Number(b.slice(3))).toBe(Number(a.slice(3)) + 1);
+  it('uses the registration plate that comes with the lead', () => {
+    expect(leadRefFor('bv24 aaa')).toBe('BV24 AAA');
+    expect(leadRefFor('  BV24 AAB  ')).toBe('BV24 AAB');
   });
-  it('keeps an existing ref and derives a stable one from the id otherwise', () => {
-    expect(leadRefFor('abc', 'BW-90001')).toBe('BW-90001');
-    expect(leadRefFor('some-lead-id')).toBe(leadRefFor('some-lead-id'));
-    expect(leadRefFor('some-lead-id')).toMatch(/^BW-\d{5}$/);
+  it('shows nothing when the lead arrived without a plate', () => {
+    expect(leadRefFor('')).toBe('');
+    expect(leadRefFor(undefined)).toBe('');
+    expect(leadRefFor(null)).toBe('');
+  });
+  it('hands out a fresh, distinct practice plate for every made-up lead', () => {
+    const a = nextPracticeReg();
+    const b = nextPracticeReg();
+    expect(a).toMatch(/^BW24 [A-Z]{3}$/);
+    expect(b).toMatch(/^BW24 [A-Z]{3}$/);
+    expect(a).not.toBe(b);
   });
 });
