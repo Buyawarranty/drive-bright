@@ -3118,14 +3118,19 @@ export const OpenRoundRobinTestPanel: React.FC<{
                           </button>
                           <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
+                        )}
                       </td>
                       <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                        <CopyEmail email={lead.email} />
+                        {detailsHidden ? <span>Hidden</span> : <CopyEmail email={lead.email} />}
                       </td>
                       <td className="px-2 py-2">
+                        {detailsHidden ? (
+                          <span className="text-xs text-muted-foreground">Hidden</span>
+                        ) : (
                         <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
                           {lead.vehicleReg}
                         </span>
+                        )}
                       </td>
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
                         {isLive ? (
