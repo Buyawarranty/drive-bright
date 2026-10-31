@@ -1106,15 +1106,21 @@ export const OpenRoundRobinTestPanel: React.FC<{
 
     setLeads((current) => {
       const leadNumber = current.length + 1;
-      const busy = new Set(current.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
+      const heldCounts = new Map<string, number>();
+      for (const lead of current) {
+        if (isHeldLive(lead, now)) {
+          heldCounts.set(lead.assignedTo as string, (heldCounts.get(lead.assignedTo as string) ?? 0) + 1);
+        }
+      }
 
       let offeredTo: DummyAgent | null = null;
       const activeRoster = rosterRef.current;
       for (let step = 0; step < activeRoster.length; step += 1) {
         const candidate = activeRoster[(nextAgentIndexRef.current + step) % activeRoster.length];
-        if (!busy.has(candidate.id)) {
+        const held = heldCounts.get(candidate.id) ?? 0;
+        if (held < DEFAULT_MAX_UNWORKED_PER_AGENT) {
           nextAgentIndexRef.current = (nextAgentIndexRef.current + step + 1) % activeRoster.length;
-
+          heldCounts.set(candidate.id, held + 1);
           offeredTo = candidate;
           break;
         }
@@ -1122,6 +1128,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
 
       const draft: DummyLead = {
         id: `dummy-orr-${now}-${Math.random().toString(36).slice(2, 7)}`,
+        leadRef: nextLeadRef(),
         firstName: 'TEST',
         lastName: `Lead ${String(leadNumber).padStart(2, '0')}`,
         email: `test.lead${leadNumber}@example.com`,
