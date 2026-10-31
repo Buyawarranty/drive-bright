@@ -1,5 +1,11 @@
 # Roadmap
 
+## ORR sandbox new dashboard design — 31 October 2026
+- [x] User supplied new design mockup (agent working screen + manager queue & control); plan approved. All existing New Leads columns retained in the working table.
+- [x] Built practice-only: capacity-matched controlled release (src/lib/orrPractice/capacityRelease.ts — release only enough leads to match available agents × free slots, max 2 unworked each, top-ups as capacity frees, backlog waits), synthetic Lead Refs + lead-type badges (leadBadges.ts), agent Next Available Opportunity card with details hidden until claimed (OrrNextOpportunityCard.tsx), manager stat cards / slim queue table with Assign / Agent Capacity panel with On Break toggle / Release Schedule / Performance / Audit Log tabs (OrrManagerControl.tsx), agent tabs My Leads / All Leads / Callbacks / Follow-ups with masked unclaimed details.
+- [x] 136 ORR tests pass (17 new), app typecheck clean, preview build OK. Sandbox only — ORR not live, nothing published.
+- [ ] Signed-in on-screen verification unavailable on external unmanaged Supabase.
+
 ## ORR corrected inactivity & availability rules — 31 October 2026
 - [x] User uploaded corrected rules doc (truncated at "### 6. Sandbox" — rest requested if it exists). Agreed: build in sandbox, 60-minute break grace.
 - [x] Built practice-only in src/lib/orrPractice/availability.ts: voluntary claiming (no strikes for unclaimed leads), telephony-driven Busy with status restore, On Break with 60-min penalty-free lead recycling, strict 5-condition inactivity events (single event recycles, 3+ in 5 days flags manager review), manual Busy/manager corrections when telephony unavailable.
