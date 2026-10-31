@@ -601,17 +601,29 @@ const AdminDashboard = () => {
   // A manager can end this login remotely (Sign out / Deactivate). Recheck with
   // the server every minute so an open dashboard closes within ~60 seconds.
   useEffect(() => {
+    let checking = false;
     const id = window.setInterval(async () => {
-      if (document.visibilityState !== 'visible') return;
-      const { data: sess } = await supabase.auth.getSession();
-      if (!sess.session) return;
-      const { data, error } = await supabase.auth.getUser();
-      const revoked = (error && (error as any).status && [401, 403].includes((error as any).status)) || (!error && !data.user);
-      if (revoked) {
-        await supabase.auth.signOut({ scope: 'local' });
-        window.location.href = '/auth';
-        return;
-      }
+      if (document.visibilityState !== 'visible' || checking) return;
+      checking = true;
+      try {
+        const { data: sess } = await supabase.auth.getSession();
+        if (!sess.session) return;
+        const first = await supabase.auth.getUser();
+        let looksEnded = sessionCheckLooksEnded(first.error, first.data?.user);
+        // A refused check is often just an access token that expired while the
+        // tab slept. Refresh once and ask again before ending the login.
+        if (looksEnded) {
+          const refreshed = await supabase.auth.refreshSession().catch(() => null);
+          if (refreshed && !refreshed.error && refreshed.data?.session) {
+            const second = await supabase.auth.getUser();
+            looksEnded = sessionCheckLooksEnded(second.error, second.data?.user);
+          }
+        }
+        if (looksEnded) {
+          await supabase.auth.signOut({ scope: 'local' });
+          window.location.href = '/auth?ended=1';
+          return;
+        }
       const { data: row } = await supabase.from('admin_users').select('is_active').eq('user_id', sess.session.user.id).maybeSingle();
       if (row && (row as any).is_active === false) setAccountDeactivated(true);
     }, 60000);
