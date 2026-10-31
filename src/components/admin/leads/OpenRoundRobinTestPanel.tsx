@@ -1323,12 +1323,12 @@ export const OpenRoundRobinTestPanel: React.FC<{
           cadenceRef.current,
         );
         const chaseOver = plan.done;
-        const eligibleAt = plan.done ? null : plan.at;
+        const eligibleAt = plan.done ? null : (plan as any).at;
         const limit = maxReleases(cadenceRef.current);
 
         toastBody = plan.done
           ? `Chase complete — ${releasesUsed} of ${limit} releases used.`
-          : `Release ${plan.releaseNumber} of ${limit} (day ${plan.contactDay} of ${cadenceRef.current.releaseDays}) from ${formatEligible(plan.at)}.`;
+          : `Release ${(plan as any).releaseNumber} of ${limit} (day ${(plan as any).contactDay} of ${cadenceRef.current.releaseDays}) from ${formatEligible((plan as any).at)}.`;
         if (chaseOver) toastTitle = 'Chase complete';
 
         return {
@@ -1337,7 +1337,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
           releasesUsed,
           chaseStartedAt,
           dayDials: 0,
-          followUpDay: plan.done ? lead.followUpDay : plan.contactDay,
+          followUpDay: plan.done ? lead.followUpDay : (plan as any).contactDay,
           displayStatus: 'no_answer',
           previousOutcome: 'No answer',
           waiting: !chaseOver,
