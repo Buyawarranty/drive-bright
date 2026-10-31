@@ -22,7 +22,7 @@
 - Published document blogs may supply exact article HTML and schema via route metadata, so crawler output keeps the same approved content as the database article without altering existing page schemas.
 - Reuse CallMeBackPanel/sandbox-callback-request for callback leads. Gate live offers/requests on server config plus fresh presence, changed by management via the availability endpoint. Pair question replies to their turn; drafts need explicit approval.
 - Use the shared sale-subject formatter for manager direct-sale email source labels in both subject and body; keep existing attribution and delivery logic unchanged to avoid affecting payment flows.
-- ORR: synthetic in-memory practice/reports only; one sandbox, same gates, read-only Allocation mirror; real integrations need proven isolation.
+- ORR: synthetic in-memory practice/reports only; separate agent/manager screens share one rehearsal state and existing gates; Allocation mirror read-only; real integrations need proven isolation.
 - Goldmine uses a role/count-guarded release RPC; legacy self-claim fails closed.
 
 - Analytics goals stay separate; month/bar maths and seller credit stay unchanged. Company-value gates precede tab grants; RPC/RLS deny sales aggregates, scoreboard returns self only, assistant checks roles.
