@@ -1,4 +1,5 @@
 import { useExportPermissions } from '@/hooks/useExportPermissions';
+import { canDisplayLeadSource } from '@/lib/leadSourceAccess';
 import { requireNewLeadsExport } from '@/lib/customerDataExport';
 import { canReleaseGoldmineLeads } from '@/lib/goldmineRelease';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -117,7 +118,6 @@ function agentLabel(a: Agent | undefined): string {
 }
 
 export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string, leadData?: any) => void }> = ({ userRole, onNavigateToTab }) => {
-  // Source column intentionally hidden on Recontact page for all roles per product decision.
   const [segment, setSegment] = useState<SegmentId>('all_leads');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
@@ -1759,7 +1759,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 mileage: lead.mileage,
                 plan_interest: lead.plan_interest,
               }) : undefined}
-              showSourceColumn={false}
+              showSourceColumn={canDisplayLeadSource(canSeeLeadSource)}
               userRole={userRole}
               hideNewStatus
               recontactMode
