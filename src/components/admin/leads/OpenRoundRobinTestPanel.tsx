@@ -2838,6 +2838,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                   <th className="px-2 py-2 text-left">Actions</th>
                   <th className="px-2 py-2 text-left">Name</th>
                   <th className="px-2 py-2 text-left">Phone</th>
+                  <th className="px-2 py-2 text-left">Warranty</th>
                   <th className="px-2 py-2 text-left">Email</th>
                   <th className="px-2 py-2 text-left">Reg</th>
                   <th className="px-2 py-2 text-left">Payment</th>
@@ -3123,6 +3124,17 @@ export const OpenRoundRobinTestPanel: React.FC<{
                           </button>
                           <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
+                        )}
+                      </td>
+                      <td className="px-2 py-2">
+                        {detailsHidden ? (
+                          <span className="text-xs text-muted-foreground">Hidden</span>
+                        ) : isLive ? (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        ) : (
+                          <span className="inline-flex items-center rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 whitespace-nowrap">
+                            Open pot
+                          </span>
                         )}
                       </td>
                       <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
