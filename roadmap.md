@@ -1,5 +1,9 @@
 # Roadmap
 
+## Lead-source permission — 31 October 2026
+- [ ] Make Lead source a clear switch in Edit user permissions; reuse the protected scoped grant as the sole display permission across New Leads, Recontacted Leads and Customer Management.
+- [ ] Verify on/off rules, retaining record ownership and admin/super-admin automatic access; do not publish.
+
 ## Emailed payment form validation — 31 October 2026
 - [x] Reuse Step 4 mobile/name rules, immediate ticks/errors, quiet empty fields, submit focus/pulse and mileage confirmation; preserve quoted prices and provider routing.
 - [x] 24 shared regression checks pass; desktop/mobile fixture verifies immediate warnings, correction, submit blocking/focus and low-mileage confirmation through payment invocation. Payment endpoint deployed; website unpublished. No real quote or payment exercised.
