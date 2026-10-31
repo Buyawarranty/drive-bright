@@ -2858,6 +2858,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
                   const ageSec = Math.round((now - lead.createdAt) / 1000);
                   const agent = resolveAgent(lead.assignedTo);
                   const orrLead = isOrr(lead);
+                  // Agent view: customer details stay hidden until the lead is claimed.
+                  const detailsHidden = !isLive && !isManagerView && orrLead && lead.assignedTo !== simulatedAgentId;
 
                   return (
                     <tr
@@ -2870,6 +2872,9 @@ export const OpenRoundRobinTestPanel: React.FC<{
                       <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
                       <td className="px-2 py-2">
                         <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
+                      </td>
+                      <td className="px-2 py-2 text-xs font-semibold text-foreground whitespace-nowrap">
+                        {leadRefFor(lead.id, lead.leadRef)}
                       </td>
                       <td className="px-2 py-2">
                         {(() => {
