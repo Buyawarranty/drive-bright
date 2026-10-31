@@ -178,6 +178,7 @@ Updated: just now
 - [Miles Friendly Emoji Tone](mem://chat/miles-friendly-emoji-tone) — Warm conversational UK tone with one or two relevant emojis in every reply; sensitive topics stay calm
 
 - [Admin Sidebar Tab Order](mem://admin/sidebar-tab-order) — Persist any user-directed reordering of admin side nav tabs; never reorder unprompted
+- [Default page New Leads](mem://admin/default-tab-new-leads) — Dashboard opens on New Leads for everyone allowed; others fall back to their first permitted tab
 - [Reassign Preserves History](mem://admin/leads/reassign-preserves-history) — Bulk/offboarding reassign only changes assigned_to; notes, calls, statuses, reminders stay intact; never touch agents outside selected source
 - [ORR Settings Single Source](mem://admin/leads/orr-settings-single-source) — Lead Allocation owns all ORR settings; sandbox/New Leads read them via useOrrLiveSettings, never a local copy
 - [Online Sales Always Website](mem://admin/leads/online-sales-always-website) — Converted google_ad/social_ad/bing_ad/website leads are always credited to Website; only management can attach an agent
