@@ -67,7 +67,7 @@ import {
   DEFAULT_MAX_UNWORKED_PER_AGENT,
   planCapacityRelease,
 } from '@/lib/orrPractice/capacityRelease';
-import { leadRefFor, leadTypeOf, nextLeadRef } from '@/lib/orrPractice/leadBadges';
+import { leadRefFor, leadTypeOf, nextPracticeReg } from '@/lib/orrPractice/leadBadges';
 import { OrrNextOpportunityCard } from './OrrNextOpportunityCard';
 import {
   OrrAgentCapacityPanel,
@@ -216,8 +216,6 @@ interface DummyLead {
   notes?: { at: number; by: string; text: string }[];
   /** Which system the lead arrived under. 'rr' leads have no countdown and never move on. */
   source?: 'orr' | 'rr';
-  /** Synthetic reference (BW-89421…) shown while customer details are hidden. */
-  leadRef?: string;
   /** Live-mode only: real payment/source fields pulled from sales_leads. */
   isPaid?: boolean | null;
   paymentAmount?: number | null;
@@ -1108,7 +1106,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
       .sort((a, b) => a.createdAt - b.createdAt)
       .map((lead) => ({
         id: lead.id,
-        leadRef: leadRefFor(lead.id, lead.leadRef),
+        leadRef: leadRefFor(lead.vehicleReg),
+
         leadType: leadTypeOf(lead.createdAt, lead.displayStatus),
         sourceLabel: sourceLabelOf(lead.leadSource),
         queueStatus: lead.waiting
@@ -1192,7 +1191,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
           lead.history
             .slice()
             .reverse()
-            .map((text) => ({ leadRef: leadRefFor(lead.id, lead.leadRef), text })),
+            .map((text) => ({ leadRef: leadRefFor(lead.vehicleReg), text })),
         ),
     [effectiveLeads],
   );
@@ -1531,7 +1530,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
     );
     toast({
       title: 'Lead claimed',
-      description: `${viewer.name} took ${leadRefFor(leadId, nextOpportunity?.leadRef)} — the customer details are now visible.`,
+      description: `${viewer.name} took ${leadRefFor(nextOpportunity?.vehicleReg) || 'the lead'} — the customer details are now visible.`,
     });
   };
 
@@ -2596,7 +2595,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
               nextOpportunity
                 ? {
                     id: nextOpportunity.id,
-                    leadRef: leadRefFor(nextOpportunity.id, nextOpportunity.leadRef),
+                    leadRef: leadRefFor(nextOpportunity.vehicleReg),
                     sourceLabel: sourceLabelOf(nextOpportunity.leadSource),
                     leadType: leadTypeOf(nextOpportunity.createdAt, nextOpportunity.displayStatus),
                     ageLabel: formatClock(Math.round((Date.now() - nextOpportunity.createdAt) / 1000)),
@@ -2859,7 +2858,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                         <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
                       </td>
                       <td className="px-2 py-2 text-xs font-semibold text-foreground whitespace-nowrap">
-                        {leadRefFor(lead.id, lead.leadRef)}
+                        {leadRefFor(lead.vehicleReg) || '—'}
                       </td>
                       <td className="px-2 py-2">
                         {(() => {
