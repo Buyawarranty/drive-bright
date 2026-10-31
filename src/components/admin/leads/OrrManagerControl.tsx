@@ -189,7 +189,9 @@ export const OrrQueueTable: React.FC<{
   agents: { id: string; name: string }[];
   onAssign: (leadId: string, agentId: string) => void;
   onInspect?: (leadId: string) => void;
-}> = ({ rows, chaseDays, agents, onAssign, onInspect }) => (
+  /** Follows the account's lead-source entitlement; sales roles never see it. */
+  showSource?: boolean;
+}> = ({ rows, chaseDays, agents, onAssign, onInspect, showSource = true }) => (
   <div className="overflow-x-auto border border-border rounded-md bg-card">
     <table className="w-full text-sm">
       <thead className="bg-muted/50 text-[11px] uppercase tracking-wide text-muted-foreground">
@@ -197,7 +199,7 @@ export const OrrQueueTable: React.FC<{
           <th className="px-2 py-2 text-center w-11">#</th>
           <th className="px-2 py-2 text-left">Lead Ref</th>
           <th className="px-2 py-2 text-left">Lead Type</th>
-          <th className="px-2 py-2 text-left">Source</th>
+          {showSource && <th className="px-2 py-2 text-left">Source</th>}
           <th className="px-2 py-2 text-left">Status</th>
           <th className="px-2 py-2 text-center">Calls (Today/Total)</th>
           <th className="px-2 py-2 text-left">Chase Day</th>
@@ -210,7 +212,7 @@ export const OrrQueueTable: React.FC<{
       <tbody>
         {rows.length === 0 ? (
           <tr>
-            <td colSpan={11} className="px-4 py-8 text-center text-sm text-muted-foreground">
+            <td colSpan={showSource ? 11 : 10} className="px-4 py-8 text-center text-sm text-muted-foreground">
               The shared queue is empty — add a practice lead or run the 09:00 release.
             </td>
           </tr>
@@ -224,7 +226,7 @@ export const OrrQueueTable: React.FC<{
                   {LEAD_TYPE_LABELS[row.leadType]}
                 </span>
               </td>
-              <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">{row.sourceLabel}</td>
+              {showSource && <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">{row.sourceLabel}</td>}
               <td className="px-2 py-2">
                 <span className={cn('inline-flex rounded-md px-2 py-0.5 text-xs font-semibold whitespace-nowrap', QUEUE_STATUS_STYLES[row.queueStatus])}>
                   {QUEUE_STATUS_LABELS[row.queueStatus]}
