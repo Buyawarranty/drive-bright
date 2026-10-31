@@ -748,8 +748,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
   );
   const noSaleBlockedIdList = useMemo(() => noSaleBlocks.filter((r) => r.blockedDays > 0).map((r) => r.agentId), [noSaleBlocks]);
   const roster = useMemo(
-    () => allowedOrrStaff(DUMMY_AGENTS.slice(0, agentCount), [...blockedIds, ...noSaleBlockedIdList]),
-    [agentCount, blockedIds, noSaleBlockedIdList],
+    () => allowedOrrStaff(DUMMY_AGENTS.slice(0, agentCount), [...blockedIds, ...noSaleBlockedIdList, ...breakAgentIds]),
+    [agentCount, blockedIds, noSaleBlockedIdList, breakAgentIds],
   );
   const rosterRef = useRef(roster);
   useEffect(() => {
@@ -988,15 +988,23 @@ export const OpenRoundRobinTestPanel: React.FC<{
   /** The rows the table renders — real ORR leads in live mode, practice leads in the sandbox. */
   const effectiveLeads = isLive ? liveRows : leads;
 
-  const rosterLeads = useMemo(
-    () =>
-      effectiveLeads.filter((lead) =>
-        simulatedAgentId === 'all'
-          ? lead.assignedTo !== null || lead.status === 'queued'
-          : lead.assignedTo === simulatedAgentId && !lead.waiting,
-      ),
-    [effectiveLeads, simulatedAgentId],
-  );
+  const rosterLeads = useMemo(() => {
+    if (!isLive && !isManagerView) {
+      // Agent view: tabs over the agent's own leads plus the shared opportunity.
+      const mine = effectiveLeads.filter((lead) => lead.assignedTo === simulatedAgentId && !lead.waiting);
+      if (agentTab === 'mine') return mine;
+      if (agentTab === 'callbacks')
+        return mine.filter((lead) => lead.displayStatus === 'callback_booked' || lead.displayStatus === 'urgent_callback');
+      if (agentTab === 'followups') return mine.filter((lead) => lead.displayStatus === 'follow_up');
+      // 'all' — own leads plus the one shared opportunity (details hidden until claimed).
+      return nextOpportunity ? [...mine, nextOpportunity] : mine;
+    }
+    return effectiveLeads.filter((lead) =>
+      simulatedAgentId === 'all'
+        ? lead.assignedTo !== null || lead.status === 'queued'
+        : lead.assignedTo === simulatedAgentId && !lead.waiting,
+    );
+  }, [effectiveLeads, simulatedAgentId, isLive, isManagerView, agentTab, nextOpportunity]);
 
   const chromeLeads = useMemo<SandboxChromeLead[]>(
     () =>
