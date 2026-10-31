@@ -60,6 +60,35 @@ import {
   type SandboxChromeLead,
   type SandboxStatusChip,
 } from './OrrSandboxLeadsChrome';
+import {
+  DEFAULT_MAX_UNWORKED_PER_AGENT,
+  planCapacityRelease,
+} from '@/lib/orrPractice/capacityRelease';
+import { leadRefFor, leadTypeOf, nextLeadRef } from '@/lib/orrPractice/leadBadges';
+import { OrrNextOpportunityCard } from './OrrNextOpportunityCard';
+import {
+  OrrAgentCapacityPanel,
+  OrrAuditLogPanel,
+  OrrManagerStatCards,
+  OrrPerformancePanel,
+  OrrQueueTable,
+  OrrReleaseSchedulePanel,
+  type CapacityRow,
+  type OrrManagerStats,
+  type QueueRow,
+} from './OrrManagerControl';
+
+/** Source labels shared by the opportunity card, queue table and full table. */
+const SOURCE_LABELS: Record<string, string> = {
+  google_ad: 'Google',
+  social_ad: 'Meta',
+  bing_ad: 'Bing',
+  tiktok_ad: 'TikTok',
+  organic: 'Organic',
+  renewal: 'Renewal',
+};
+const sourceLabelOf = (source?: string | null) =>
+  source ? SOURCE_LABELS[source] ?? source.replaceAll('_', ' ') : 'Website';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned';
 
@@ -184,6 +213,8 @@ interface DummyLead {
   notes?: { at: number; by: string; text: string }[];
   /** Which system the lead arrived under. 'rr' leads have no countdown and never move on. */
   source?: 'orr' | 'rr';
+  /** Synthetic reference (BW-89421…) shown while customer details are hidden. */
+  leadRef?: string;
   /** Live-mode only: real payment/source fields pulled from sales_leads. */
   isPaid?: boolean | null;
   paymentAmount?: number | null;
@@ -566,14 +597,21 @@ const advance = (
     }
   }
 
-  const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
+  // An agent may hold up to the maximum unworked claimed leads (2 by default).
+  const heldCounts = new Map<string, number>();
+  for (const lead of leads) {
+    if (isHeldLive(lead, now)) {
+      heldCounts.set(lead.assignedTo as string, (heldCounts.get(lead.assignedTo as string) ?? 0) + 1);
+    }
+  }
 
   const takeFreeAgent = (): DummyAgent | null => {
     for (let step = 0; step < roster.length; step += 1) {
       const candidate = roster[(index + step) % roster.length];
-      if (!busy.has(candidate.id)) {
+      const held = heldCounts.get(candidate.id) ?? 0;
+      if (held < DEFAULT_MAX_UNWORKED_PER_AGENT) {
         index = (index + step + 1) % roster.length;
-        busy.add(candidate.id);
+        heldCounts.set(candidate.id, held + 1);
         return candidate;
       }
     }
@@ -1545,7 +1583,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
         id: 'busy-day',
         title: 'Busy morning — everyone gets one at a time',
         what: 'Eight agents on shift, eight enquiries land together.',
-        watch: 'Each lead sits with a different agent, nobody holds two.',
+        watch: 'Each lead sits with a different agent, nobody holds more than two.',
         agents: 8,
         build: (r: DummyAgent[], now: number) =>
           r.map((agent, i) =>
