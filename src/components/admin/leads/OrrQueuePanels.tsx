@@ -3,6 +3,7 @@ import { Clock, Sunrise, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
+import { useExportPermissions } from '@/hooks/useExportPermissions';
 
 /**
  * Live lead queue + morning queue — read-only waiting views for Open Round Robin.
@@ -29,6 +30,7 @@ const waitClass = (m: number) =>
   m > SLA_MINS ? 'text-destructive font-semibold' : m > SLA_MINS * 0.6 ? 'text-amber-600 font-semibold' : 'text-foreground';
 
 export const OrrQueuePanels: React.FC = () => {
+  const { canSeeLeadSource } = useExportPermissions();
   const [leads, setLeads] = React.useState<QueueLead[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -113,14 +115,14 @@ export const OrrQueuePanels: React.FC = () => {
               <tr className="border-b border-border bg-muted/40 text-[11px] uppercase tracking-wide text-muted-foreground">
                 <th className="text-left font-semibold px-4 py-2">Wait time</th>
                 <th className="text-left font-semibold px-4 py-2">Lead</th>
-                <th className="text-left font-semibold px-4 py-2">Source</th>
+                {canSeeLeadSource && <th className="text-left font-semibold px-4 py-2">Source</th>}
                 <th className="text-left font-semibold px-4 py-2">Held by</th>
               </tr>
             </thead>
             <tbody>
               {leads.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  <td colSpan={canSeeLeadSource ? 4 : 3} className="px-4 py-6 text-center text-sm text-muted-foreground">
                     {loading ? 'Loading queue…' : 'Nothing waiting — every lead today has had a first contact.'}
                   </td>
                 </tr>
@@ -135,7 +137,7 @@ export const OrrQueuePanels: React.FC = () => {
                       {l.reg !== '—' ? ` · ${l.reg}` : ''}
                     </div>
                   </td>
-                  <td className="px-4 py-2.5 text-muted-foreground capitalize">{l.source.replace(/_/g, ' ')}</td>
+                  {canSeeLeadSource && <td className="px-4 py-2.5 text-muted-foreground capitalize">{l.source.replace(/_/g, ' ')}</td>}
                   <td className="px-4 py-2.5 text-foreground">{l.agent}</td>
                 </tr>
               ))}
@@ -187,7 +189,7 @@ export const OrrQueuePanels: React.FC = () => {
                 <th className="text-left font-semibold px-4 py-2">Position</th>
                 <th className="text-left font-semibold px-4 py-2">Lead</th>
                 <th className="text-left font-semibold px-4 py-2">Wait</th>
-                <th className="text-left font-semibold px-4 py-2">Source</th>
+                {canSeeLeadSource && <th className="text-left font-semibold px-4 py-2">Source</th>}
                 <th className="text-left font-semibold px-4 py-2">Status</th>
                 <th className="text-left font-semibold px-4 py-2">Assigned to</th>
               </tr>
@@ -195,7 +197,7 @@ export const OrrQueuePanels: React.FC = () => {
             <tbody>
               {morning.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  <td colSpan={canSeeLeadSource ? 6 : 5} className="px-4 py-6 text-center text-sm text-muted-foreground">
                     {loading ? 'Loading morning queue…' : 'Morning queue is clear.'}
                   </td>
                 </tr>
@@ -210,7 +212,7 @@ export const OrrQueuePanels: React.FC = () => {
                       <div className="text-[11px] text-muted-foreground">{l.phone}</div>
                     </td>
                     <td className={cn('px-4 py-2.5 whitespace-nowrap', waitClass(l.waitMins))}>{fmtWait(l.waitMins)}</td>
-                    <td className="px-4 py-2.5 text-muted-foreground capitalize">{l.source.replace(/_/g, ' ')}</td>
+                    {canSeeLeadSource && <td className="px-4 py-2.5 text-muted-foreground capitalize">{l.source.replace(/_/g, ' ')}</td>}
                     <td className="px-4 py-2.5">
                       <span
                         className={cn(

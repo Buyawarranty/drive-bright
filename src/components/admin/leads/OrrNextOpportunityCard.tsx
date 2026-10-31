@@ -41,7 +41,9 @@ export const OrrNextOpportunityCard: React.FC<{
   chaseDays: number;
   onClaim: (leadId: string) => void;
   claimDisabledReason?: string | null;
-}> = ({ lead, chaseDays, onClaim, claimDisabledReason }) => (
+  /** Follows the account's lead-source entitlement; sales roles never see it. */
+  showSource?: boolean;
+}> = ({ lead, chaseDays, onClaim, claimDisabledReason, showSource = true }) => (
   <section className="rounded-xl border-2 border-emerald-300 bg-emerald-50/50 shadow-sm p-4">
     <div className="flex items-start gap-3 flex-wrap">
       <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
@@ -60,7 +62,7 @@ export const OrrNextOpportunityCard: React.FC<{
     {lead ? (
       <div className="mt-3 flex items-center gap-x-6 gap-y-3 flex-wrap">
         <Field label="Lead Ref">{lead.leadRef}</Field>
-        <Field label="Source">{lead.sourceLabel}</Field>
+        {showSource && <Field label="Source">{lead.sourceLabel}</Field>}
         <Field label="Lead Type">
           <span className={cn('inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold', TYPE_STYLES[lead.leadType])}>
             {LEAD_TYPE_LABELS[lead.leadType]}

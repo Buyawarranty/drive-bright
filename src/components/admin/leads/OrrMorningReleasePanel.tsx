@@ -3,6 +3,7 @@ import { Sunrise, RefreshCw, Moon, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
+import { useExportPermissions } from '@/hooks/useExportPermissions';
 
 /**
  * Morning lead release — read-only view of the overnight batch.
@@ -60,6 +61,7 @@ const fmtDayTime = (iso: string) => {
 };
 
 export const OrrMorningReleasePanel: React.FC = () => {
+  const { canSeeLeadSource } = useExportPermissions();
   const [rows, setRows] = React.useState<Row[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -196,7 +198,7 @@ export const OrrMorningReleasePanel: React.FC = () => {
               <th className="text-left font-semibold px-4 py-2">Lead</th>
               <th className="text-left font-semibold px-4 py-2">Came in</th>
               <th className="text-left font-semibold px-4 py-2">Release</th>
-              <th className="text-left font-semibold px-4 py-2">Source</th>
+              {canSeeLeadSource && <th className="text-left font-semibold px-4 py-2">Source</th>}
               <th className="text-left font-semibold px-4 py-2">State</th>
               <th className="text-left font-semibold px-4 py-2">Assigned to</th>
             </tr>
@@ -204,7 +206,7 @@ export const OrrMorningReleasePanel: React.FC = () => {
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                <td colSpan={canSeeLeadSource ? 7 : 6} className="px-4 py-6 text-center text-sm text-muted-foreground">
                   {loading
                     ? 'Loading the overnight batch…'
                     : 'No out-of-hours enquiries in the current window — nothing is waiting for a morning release.'}
@@ -227,7 +229,7 @@ export const OrrMorningReleasePanel: React.FC = () => {
                   <td className="px-4 py-2.5 whitespace-nowrap text-foreground">
                     {r.eligibleAt ? fmtDayTime(r.eligibleAt) : 'Released'}
                   </td>
-                  <td className="px-4 py-2.5 text-muted-foreground capitalize">{r.source.replace(/_/g, ' ')}</td>
+                  {canSeeLeadSource && <td className="px-4 py-2.5 text-muted-foreground capitalize">{r.source.replace(/_/g, ' ')}</td>}
                   <td className="px-4 py-2.5">
                     <span
                       className={cn(

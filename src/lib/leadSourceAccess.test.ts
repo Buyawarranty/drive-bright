@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canDisplayLeadSource, hasDefaultLeadSourceAccess } from './leadSourceAccess';
+import { canDisplayLeadSource, canDisplayOrrSource, hasDefaultLeadSourceAccess } from './leadSourceAccess';
 
 describe('Lead source permission', () => {
   it('shows sources when the protected permission is on', () => {
@@ -19,5 +19,18 @@ describe('Lead source permission', () => {
   it('does not allow lookalike addresses or unknown roles by default', () => {
     expect(hasDefaultLeadSourceAccess('lead_gen', 'notads@buyawarranty.co.uk')).toBe(false);
     expect(canDisplayLeadSource(true, null)).toBe(false);
+  });
+
+  it('shows the Open Round Robin source only to entitled staff in the manager view', () => {
+    expect(canDisplayOrrSource(true, true)).toBe(true);
+    expect(canDisplayOrrSource(true, false)).toBe(false);
+    expect(canDisplayOrrSource(false, true)).toBe(false);
+    expect(canDisplayOrrSource(false, false)).toBe(false);
+  });
+  it('keeps a sales role out of the Open Round Robin source even in the manager view', () => {
+    for (const role of ['sales', 'sales_lead', 'sales_manager']) {
+      const entitled = canDisplayLeadSource(true, role) || hasDefaultLeadSourceAccess(role, 'ads@buyawarranty.co.uk');
+      expect(canDisplayOrrSource(entitled, true)).toBe(false);
+    }
   });
 });

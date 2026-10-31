@@ -1,5 +1,9 @@
 # Roadmap
 
+## ORR source follows the lead-source permission — 31 October 2026
+- [x] Open Round Robin source display now follows the same entitlement as New Leads (admin/super_admin, ADS@/SEO@ default, every sales role always denied): sandbox Src column + show/hide control, manager queue table, agent opportunity card, morning release and both live queue panels. Inside the rehearsal the source only appears in the manager view.
+- [x] 146 tests pass (2 new lead-source checks), typecheck clean, preview build OK. Sandbox only — nothing published.
+
 ## Separate ORR practice screens — 31 October 2026
 - [x] Separate sales agent working screen from manager controls, retaining existing columns and the shared practice run; manager setup/live preview collapsed separately.
 - [x] 131 practice checks and 5 view-switch access checks pass; preview build OK. No publication or live activation.

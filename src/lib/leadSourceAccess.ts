@@ -11,3 +11,11 @@ export function hasDefaultLeadSourceAccess(role: string | null | undefined, emai
 export function canDisplayLeadSource(granted: boolean, role: string | null | undefined): boolean {
   return Boolean(role) && !isSalesSourceBlocked(role) && granted === true;
 }
+
+/**
+ * Open Round Robin surfaces follow the same entitlement as New Leads, and the
+ * practice agent rehearsal never reveals the source — only the manager view can.
+ */
+export function canDisplayOrrSource(entitled: boolean, isManagerView: boolean): boolean {
+  return entitled === true && isManagerView === true;
+}
