@@ -827,8 +827,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
       if (isLive) {
         const real = agentId ? liveAgents[agentId] : undefined;
         return real
-          ? { id: real.id, name: real.name, extension: '', order: 0 }
-          : { id: agentId ?? '', name: 'Agent', extension: '', order: 0 };
+          ? { id: real.id, name: real.name, extension: '', order: 0, startedAt: 0, lastSaleAt: null }
+          : { id: agentId ?? '', name: 'Agent', extension: '', order: 0, startedAt: 0, lastSaleAt: null };
       }
       return getAgent(agentId);
     },
