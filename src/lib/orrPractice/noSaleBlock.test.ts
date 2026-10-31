@@ -23,8 +23,8 @@ const agent = (over: Partial<Parameters<typeof noSaleBlockStatus>[0]> = {}) => (
 
 describe('ORR no-sale block ladder', () => {
   it('counts working days only — Sunday never counts', () => {
-    // Sold Friday lunch; by next Monday lunch only Saturday counts (Sun skipped).
-    expect(saleFreeWorkingDaysBetween(FRI, NEXT_MON)).toBe(1);
+    // Sold Friday lunch; by next Monday lunch Saturday and Monday count, Sunday is skipped.
+    expect(saleFreeWorkingDaysBetween(FRI, NEXT_MON)).toBe(2);
   });
 
   it('skips recorded days off', () => {
