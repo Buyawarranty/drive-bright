@@ -47,6 +47,9 @@ import {
   CONTACT_OUTCOMES,
   SUPPRESSION_OUTCOMES,
   allowedOrrStaff,
+} from '@/lib/orrPractice/releaseSchedule';
+import { noSaleBlockStatus } from '@/lib/orrPractice/noSaleBlock';
+import {
   describeReleaseTimes,
   maxReleases,
   planNextRelease,
@@ -683,6 +686,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
   // How many agents are "on shift" for this rehearsal (1–4).
   // Default rehearsal: two agents live, which is the everyday picture on the floor.
   const [agentCount, setAgentCount] = useState(2);
+  // Manager-editable timing / frequency rules for this practice run.
+  const [cadence, setCadence] = useState<OrrCadenceConfig>(DEFAULT_ORR_CADENCE);
   // Staff a manager has blocked from ORR are skipped by the rotation.
   const [blockedIds, setBlockedIds] = useState<string[]>([]);
   // Agents held out by the no-sale block ladder (fake sale history above).
@@ -892,7 +897,6 @@ export const OpenRoundRobinTestPanel: React.FC<{
   }, [isLive, keepRolling, canWrite, runLivePass]);
 
   // Manager-editable timing / frequency rules for this practice run.
-  const [cadence, setCadence] = useState<OrrCadenceConfig>(DEFAULT_ORR_CADENCE);
   const cadenceRef = useRef(cadence);
   useEffect(() => {
     cadenceRef.current = cadence;
