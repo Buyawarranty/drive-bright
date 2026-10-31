@@ -31,6 +31,7 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean;
   const [orrLiveOverride, setOrrLiveOverride] = React.useState<boolean | null>(null);
   const [teamSelectionOverride, setTeamSelectionOverride] = React.useState<string[] | null>(null);
   const [sandboxOpen, setSandboxOpen] = React.useState(true);
+  const [livePreviewOpen, setLivePreviewOpen] = React.useState(false);
   const [view, setView] = React.useState<'manager' | 'agent'>('manager');
   const agentView = showViewToggle && view === 'agent';
 
