@@ -721,9 +721,14 @@ export const OpenRoundRobinTestPanel: React.FC<{
   }, [leads]);
   const [simulatedAgentId, setSimulatedAgentId] = useState<string>('all');
   const [roleView, setRoleView] = useState<'manager' | 'agent'>('manager');
-  const [showSourceColumn, setShowSourceColumn] = useState(true);
+  const [sourceColumnToggled, setSourceColumnToggled] = useState(true);
   // Live mode is always the manager view — there is nothing to rehearse as.
   const isManagerView = isLive ? true : (viewOverride ?? roleView) === 'manager';
+  // Source follows the same rule as New Leads: entitled staff only (never a
+  // sales role), and inside the rehearsal only in the manager view.
+  const { canSeeLeadSource } = useExportPermissions();
+  const sourceEntitled = canDisplayOrrSource(canSeeLeadSource, isManagerView);
+  const showSourceColumn = sourceEntitled && sourceColumnToggled;
   // How many agents are "on shift" for this rehearsal (1–4).
   // Default rehearsal: two agents live, which is the everyday picture on the floor.
   const [agentCount, setAgentCount] = useState(2);
@@ -2747,10 +2752,10 @@ export const OpenRoundRobinTestPanel: React.FC<{
             </div>
           </div>
           <div className="flex items-center gap-5 text-[11px] font-medium text-muted-foreground">
-            {isManagerView && (
-              <Button variant="outline" size="sm" aria-pressed={showSourceColumn} onClick={() => setShowSourceColumn(current => !current)}>
-                {showSourceColumn ? <EyeOff /> : <Eye />}
-                {showSourceColumn ? 'Hide source' : 'Show source'}
+            {sourceEntitled && (
+              <Button variant="outline" size="sm" aria-pressed={sourceColumnToggled} onClick={() => setSourceColumnToggled(current => !current)}>
+                {sourceColumnToggled ? <EyeOff /> : <Eye />}
+                {sourceColumnToggled ? 'Hide source' : 'Show source'}
               </Button>
             )}
             <span>Fair</span>
@@ -2818,7 +2823,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                   <th className="px-2 py-2 text-left">Lead Ref</th>
                   <th className="px-2 py-2 text-left">Lead type</th>
                   <th className="px-2 py-2 text-left">Agent</th>
-                  {isManagerView && showSourceColumn && <th className="px-2 py-2 text-center">Src</th>}
+                  {showSourceColumn && <th className="px-2 py-2 text-center">Src</th>}
                   <th className="px-2 py-2 text-left">Time to Lead</th>
                   <th className="px-2 py-2 text-left">Status</th>
                   <th className="px-2 py-2 text-center">Calls</th>
@@ -2912,7 +2917,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                         </div>
                       </td>
 
-                      {isManagerView && showSourceColumn && (
+                      {showSourceColumn && (
                         <td className="px-2 py-2 text-center">
                           {lead.leadSource ? (
                             <span className="orr-source-badge inline-flex items-center rounded border px-2 py-1 text-[10px] font-bold uppercase whitespace-nowrap" data-source={lead.leadSource} title={lead.leadSource.replaceAll('_', ' ')}>
