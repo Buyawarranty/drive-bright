@@ -2832,7 +2832,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                   <th className="px-2 py-2 text-left">Actions</th>
                   <th className="px-2 py-2 text-left">Name</th>
                   <th className="px-2 py-2 text-left">Phone</th>
-                  <th className="px-2 py-2 text-left">Warranty</th>
+                  <th className="px-2 py-2 text-left">WhatsApp</th>
                   <th className="px-2 py-2 text-left">Email</th>
                   <th className="px-2 py-2 text-left">Reg</th>
                   <th className="px-2 py-2 text-left">Payment</th>
@@ -3123,11 +3123,9 @@ export const OpenRoundRobinTestPanel: React.FC<{
                       <td className="px-2 py-2">
                         {detailsHidden ? (
                           <span className="text-xs text-muted-foreground">Hidden</span>
-                        ) : isLive ? (
-                          <span className="text-xs text-muted-foreground">—</span>
                         ) : (
-                          <span className="inline-flex items-center rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 whitespace-nowrap">
-                            Open pot
+                          <span className="inline-flex items-center rounded border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800 whitespace-nowrap">
+                            WhatsApp
                           </span>
                         )}
                       </td>
