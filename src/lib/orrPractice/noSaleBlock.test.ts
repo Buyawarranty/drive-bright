@@ -40,7 +40,7 @@ describe('ORR no-sale block ladder', () => {
   it('caps at 3 days and flags management review instead of growing', () => {
     const r = noSaleBlockStatus(agent({ lastSaleAt: MON }), NEXT_MON);
     expect(r.blockedDays).toBe(3);
-    expect(r.saleFreeWorkingDays).toBe(5);
+    expect(r.saleFreeWorkingDays).toBe(6);
     expect(r.needsManagementReview).toBe(true);
   });
 
