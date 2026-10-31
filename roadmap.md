@@ -1,5 +1,10 @@
 # Roadmap
 
+## ORR no-sale block ladder — 31 October 2026
+- [x] Rule agreed with user: 1 sale-free working day = 1 day out of new ORR leads, 2 = 2, 3 = 3; capped at 3 days then flagged for management review; any confirmed sale resets to zero; new starters exempt for 14 calendar days; Mon–Sat only count (Sundays/days off never).
+- [x] Built practice-only in src/lib/orrPractice/noSaleBlock.ts (pure, no Supabase/network); manager controls (on/off, cap 1–7, grace 0–60) added to OrrLogicExplainer and OrrPracticeSettings; rehearsal roster skips held-out agents and shows an amber status note (fake history: Thomas 3 sale-free days, Liam in grace).
+- [x] 10 new tests + all 104 ORR practice tests pass; preview build OK. Sandbox only — ORR not live, nothing published.
+
 ## Bing verification + 31 Oct publish
 - [x] Full site publish requested by user on 31 Oct 2026 and confirmed serving on drive-bright.lovable.app (Bing verification meta tag present, correct title). Pre-publish scan: info/warn only, no criticals; no blog drafts pending.
 - [x] Bing records read for https://buyawarranty.co.uk/ through the connected account: site listed, not yet verified; meta-tag code and DNS verification code both returned.
