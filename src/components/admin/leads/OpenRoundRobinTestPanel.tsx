@@ -3093,9 +3093,18 @@ export const OpenRoundRobinTestPanel: React.FC<{
                         </div>
                       </td>
                       <td className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
-                        {lead.firstName} {lead.lastName}
+                        {detailsHidden ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                            <Lock className="h-3 w-3" /> Hidden until claimed
+                          </span>
+                        ) : (
+                          <>{lead.firstName} {lead.lastName}</>
+                        )}
                       </td>
                       <td className="px-2 py-2">
+                        {detailsHidden ? (
+                          <span className="text-xs text-muted-foreground">••• ••• •••</span>
+                        ) : (
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
                           <span className="h-5 w-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center">Z</span>
                           <a
