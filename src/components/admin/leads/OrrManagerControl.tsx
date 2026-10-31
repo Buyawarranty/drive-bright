@@ -161,6 +161,11 @@ export interface QueueRow {
   ageLabel: string;
   assignedAgentName: string | null;
   nextReleaseLabel: string;
+  name?: string;
+  phone?: string;
+  email?: string;
+  vehicleReg?: string;
+  leadDateLabel?: string;
 }
 
 const QUEUE_STATUS_STYLES: Record<QueueStatus, string> = {

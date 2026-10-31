@@ -1129,6 +1129,11 @@ export const OpenRoundRobinTestPanel: React.FC<{
           : lead.waiting && lead.eligibleAt
             ? formatEligible(lead.eligibleAt)
             : 'Now',
+        name: `${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim(),
+        phone: lead.phone,
+        email: lead.email,
+        vehicleReg: lead.vehicleReg,
+        leadDateLabel: new Date(lead.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
       }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveLeads, tick]);
@@ -2557,23 +2562,13 @@ export const OpenRoundRobinTestPanel: React.FC<{
             ))}
           </div>
           {managerTab === 'queue' && (
-            <div className="grid gap-3 xl:grid-cols-[1fr_280px] items-start">
-              <OrrQueueTable
-                rows={queueRows}
-                chaseDays={cadence.releaseDays}
-                agents={roster.map((a) => ({ id: a.id, name: a.name }))}
-                onAssign={assignQueueLead}
-                showSource={canSeeLeadSource}
-              />
-              <OrrAgentCapacityPanel
-                rows={capacityRows}
-                onToggleBreak={(id) =>
-                  setBreakAgentIds((current) =>
-                    current.includes(id) ? current.filter((x) => x !== id) : [...current, id],
-                  )
-                }
-              />
-            </div>
+            <OrrQueueTable
+              rows={queueRows}
+              chaseDays={cadence.releaseDays}
+              agents={roster.map((a) => ({ id: a.id, name: a.name }))}
+              onAssign={assignQueueLead}
+              showSource={canSeeLeadSource}
+            />
           )}
           {managerTab === 'schedule' && (
             <OrrReleaseSchedulePanel
