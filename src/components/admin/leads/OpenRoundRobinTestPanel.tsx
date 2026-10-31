@@ -52,6 +52,7 @@ import { noSaleBlockStatus } from '@/lib/orrPractice/noSaleBlock';
 import {
   describeReleaseTimes,
   maxReleases,
+  nextReleaseAt,
   planNextRelease,
 } from '@/lib/orrPractice/releaseSchedule';
 import { SendWhatsAppLeadButton } from './SendWhatsAppLeadButton';
@@ -60,6 +61,35 @@ import {
   type SandboxChromeLead,
   type SandboxStatusChip,
 } from './OrrSandboxLeadsChrome';
+import {
+  DEFAULT_MAX_UNWORKED_PER_AGENT,
+  planCapacityRelease,
+} from '@/lib/orrPractice/capacityRelease';
+import { leadRefFor, leadTypeOf, nextLeadRef } from '@/lib/orrPractice/leadBadges';
+import { OrrNextOpportunityCard } from './OrrNextOpportunityCard';
+import {
+  OrrAgentCapacityPanel,
+  OrrAuditLogPanel,
+  OrrManagerStatCards,
+  OrrPerformancePanel,
+  OrrQueueTable,
+  OrrReleaseSchedulePanel,
+  type CapacityRow,
+  type OrrManagerStats,
+  type QueueRow,
+} from './OrrManagerControl';
+
+/** Source labels shared by the opportunity card, queue table and full table. */
+const SOURCE_LABELS: Record<string, string> = {
+  google_ad: 'Google',
+  social_ad: 'Meta',
+  bing_ad: 'Bing',
+  tiktok_ad: 'TikTok',
+  organic: 'Organic',
+  renewal: 'Renewal',
+};
+const sourceLabelOf = (source?: string | null) =>
+  source ? SOURCE_LABELS[source] ?? source.replaceAll('_', ' ') : 'Website';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned';
 
@@ -184,6 +214,8 @@ interface DummyLead {
   notes?: { at: number; by: string; text: string }[];
   /** Which system the lead arrived under. 'rr' leads have no countdown and never move on. */
   source?: 'orr' | 'rr';
+  /** Synthetic reference (BW-89421…) shown while customer details are hidden. */
+  leadRef?: string;
   /** Live-mode only: real payment/source fields pulled from sales_leads. */
   isPaid?: boolean | null;
   paymentAmount?: number | null;
@@ -566,14 +598,21 @@ const advance = (
     }
   }
 
-  const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
+  // An agent may hold up to the maximum unworked claimed leads (2 by default).
+  const heldCounts = new Map<string, number>();
+  for (const lead of leads) {
+    if (isHeldLive(lead, now)) {
+      heldCounts.set(lead.assignedTo as string, (heldCounts.get(lead.assignedTo as string) ?? 0) + 1);
+    }
+  }
 
   const takeFreeAgent = (): DummyAgent | null => {
     for (let step = 0; step < roster.length; step += 1) {
       const candidate = roster[(index + step) % roster.length];
-      if (!busy.has(candidate.id)) {
+      const held = heldCounts.get(candidate.id) ?? 0;
+      if (held < DEFAULT_MAX_UNWORKED_PER_AGENT) {
         index = (index + step + 1) % roster.length;
-        busy.add(candidate.id);
+        heldCounts.set(candidate.id, held + 1);
         return candidate;
       }
     }
@@ -678,6 +717,10 @@ export const OpenRoundRobinTestPanel: React.FC<{
   const { toast } = useToast();
   const [leads, setLeads] = useState<DummyLead[]>([]);
   const nextAgentIndexRef = useRef(0);
+  const leadsRef = useRef<DummyLead[]>([]);
+  useEffect(() => {
+    leadsRef.current = leads;
+  }, [leads]);
   const [simulatedAgentId, setSimulatedAgentId] = useState<string>('all');
   const [roleView, setRoleView] = useState<'manager' | 'agent'>('manager');
   const [showSourceColumn, setShowSourceColumn] = useState(true);
@@ -690,6 +733,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
   const [cadence, setCadence] = useState<OrrCadenceConfig>(DEFAULT_ORR_CADENCE);
   // Staff a manager has blocked from ORR are skipped by the rotation.
   const [blockedIds, setBlockedIds] = useState<string[]>([]);
+  // Practice break toggle (corrected availability rules) — agents on break get no offers.
+  const [breakAgentIds, setBreakAgentIds] = useState<string[]>([]);
   // Agents held out by the no-sale block ladder (fake sale history above).
   const noSaleBlocks = useMemo(
     () =>
@@ -704,8 +749,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
   );
   const noSaleBlockedIdList = useMemo(() => noSaleBlocks.filter((r) => r.blockedDays > 0).map((r) => r.agentId), [noSaleBlocks]);
   const roster = useMemo(
-    () => allowedOrrStaff(DUMMY_AGENTS.slice(0, agentCount), [...blockedIds, ...noSaleBlockedIdList]),
-    [agentCount, blockedIds, noSaleBlockedIdList],
+    () => allowedOrrStaff(DUMMY_AGENTS.slice(0, agentCount), [...blockedIds, ...noSaleBlockedIdList, ...breakAgentIds]),
+    [agentCount, blockedIds, noSaleBlockedIdList, breakAgentIds],
   );
   const rosterRef = useRef(roster);
   useEffect(() => {
@@ -932,6 +977,51 @@ export const OpenRoundRobinTestPanel: React.FC<{
         nextAgentIndexRef.current = result.index;
         return result.leads;
       });
+
+      // Capacity top-up: once the morning release has run, freed slots pull
+      // more leads out of the parked backlog (a couple at a time).
+      if (morningReleasedAtRef.current && overnightParkedRef.current > 0) {
+        const current = leadsRef.current;
+        const activeRoster = rosterRef.current;
+        const heldCounts = new Map<string, number>();
+        for (const lead of current) {
+          if (isHeldLive(lead, now)) {
+            heldCounts.set(lead.assignedTo as string, (heldCounts.get(lead.assignedTo as string) ?? 0) + 1);
+          }
+        }
+        const plan = planCapacityRelease({
+          backlog: Math.min(overnightParkedRef.current, 2),
+          agents: activeRoster.map((a) => ({ id: a.id, eligible: true, unworkedClaimed: heldCounts.get(a.id) ?? 0 })),
+          maxUnworkedPerAgent: DEFAULT_MAX_UNWORKED_PER_AGENT,
+        });
+        if (plan.releaseCount > 0) {
+          const drafts: DummyLead[] = Array.from({ length: plan.releaseCount }, (_, i) => ({
+            id: `dummy-orr-topup-${now}-${i}`,
+            leadRef: nextLeadRef(),
+            firstName: 'TEST',
+            lastName: `Backlog ${String(i + 1).padStart(2, '0')}`,
+            email: `backlog.lead${i + 1}@example.com`,
+            status: 'queued' as const,
+            displayStatus: 'new' as const,
+            assignedTo: null,
+            attemptCount: 0,
+            deadlineAt: now,
+            vehicleReg: 'TEST123',
+            phone: '07902222222',
+            createdAt: now - 6 * 60 * 60 * 1000,
+            dials: 0,
+            contactedAt: null,
+            dayDials: 0,
+            nextCallAt: null,
+            greenTeamAt: null,
+            followUpDay: 0,
+            chaseComplete: false,
+            history: ['Released from the overnight backlog as capacity freed up'],
+          }));
+          setLeads((prev) => [...drafts, ...prev]);
+          setOvernightParked((n) => Math.max(0, n - plan.releaseCount));
+        }
+      }
     }, 1000);
     return () => window.clearInterval(clock);
   }, [isLive]);
@@ -944,15 +1034,169 @@ export const OpenRoundRobinTestPanel: React.FC<{
   /** The rows the table renders — real ORR leads in live mode, practice leads in the sandbox. */
   const effectiveLeads = isLive ? liveRows : leads;
 
-  const rosterLeads = useMemo(
+  // New design (31 Oct 2026): agent tabs over their own leads, manager tabs
+  // across the queue, schedule, capacity, performance and audit log.
+  const [agentTab, setAgentTab] = useState<'mine' | 'all' | 'callbacks' | 'followups'>('mine');
+  const [managerTab, setManagerTab] = useState<'queue' | 'all' | 'schedule' | 'capacity' | 'performance' | 'audit'>('queue');
+
+  /** The single shared opportunity shown to an agent — oldest unclaimed pool lead. */
+  const nextOpportunity = useMemo(() => {
+    if (isLive || isManagerView) return null;
+    return (
+      effectiveLeads
+        .filter((lead) => isOrr(lead) && lead.status === 'queued' && !lead.waiting && lead.assignedTo === null && !lead.chaseComplete)
+        .sort((a, b) => a.createdAt - b.createdAt)[0] ?? null
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveLeads, isLive, isManagerView, tick]);
+
+  /** Unworked leads the viewed agent currently holds (max 2 allowed). */
+  const myUnworkedCount = useMemo(() => {
+    if (simulatedAgentId === 'all') return 0;
+    const now = Date.now();
+    return effectiveLeads.filter(
+      (lead) => lead.assignedTo === simulatedAgentId && !isWorked(lead) && isHeldLive(lead, now),
+    ).length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveLeads, simulatedAgentId, tick]);
+
+  const claimDisabledReason = useMemo(() => {
+    if (isLive || isManagerView) return null;
+    if (simulatedAgentId === 'all') return 'Pick an agent to practise as first';
+    if (!roster.some((a) => a.id === simulatedAgentId)) return 'You are not available for Open Round Robin right now';
+    if (myUnworkedCount >= DEFAULT_MAX_UNWORKED_PER_AGENT)
+      return `You already hold ${DEFAULT_MAX_UNWORKED_PER_AGENT} unworked leads — record an outcome to free a slot`;
+    return null;
+  }, [isLive, isManagerView, simulatedAgentId, roster, myUnworkedCount]);
+
+  /* Manager view — full queue & control (practice data only). */
+  const managerStats = useMemo<OrrManagerStats>(() => {
+    const now = Date.now();
+    const orrLeads = effectiveLeads.filter(isOrr);
+    return {
+      totalLeads: effectiveLeads.length + overnightParked,
+      readyNow: orrLeads.filter(
+        (l) => l.status === 'queued' && !l.waiting && l.assignedTo === null && !l.chaseComplete,
+      ).length,
+      overnightWaiting: overnightParked + orrLeads.filter((l) => l.waiting && !l.chaseComplete).length,
+      nextReleaseLabel: formatTimeOfDay(nextReleaseAt(now, cadence)),
+      availableAgents: roster.length,
+      totalAgents: agentCount,
+      activeLeads: orrLeads.filter((l) => l.assignedTo !== null && !isWorked(l) && isHeldLive(l, now)).length,
+      maxPerAgent: DEFAULT_MAX_UNWORKED_PER_AGENT,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveLeads, overnightParked, roster.length, agentCount, cadence, tick]);
+
+  const queueRows = useMemo<QueueRow[]>(() => {
+    const now = Date.now();
+    return effectiveLeads
+      .filter(isOrr)
+      .slice()
+      .sort((a, b) => a.createdAt - b.createdAt)
+      .map((lead) => ({
+        id: lead.id,
+        leadRef: leadRefFor(lead.id, lead.leadRef),
+        leadType: leadTypeOf(lead.createdAt, lead.displayStatus),
+        sourceLabel: sourceLabelOf(lead.leadSource),
+        queueStatus: lead.waiting
+          ? ('waiting' as const)
+          : lead.assignedTo
+            ? lead.displayStatus === 'callback_booked' || lead.displayStatus === 'urgent_callback'
+              ? ('held_callback' as const)
+              : ('claimed' as const)
+            : ('ready' as const),
+        callsToday: lead.dayDials,
+        callsTotal: lead.dials,
+        chaseDay: Math.max(1, lead.followUpDay),
+        ageLabel: formatClock(Math.round((now - lead.createdAt) / 1000)),
+        assignedAgentName: lead.assignedTo ? getAgent(lead.assignedTo).name : null,
+        nextReleaseLabel: lead.assignedTo
+          ? '—'
+          : lead.waiting && lead.eligibleAt
+            ? formatEligible(lead.eligibleAt)
+            : 'Now',
+      }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveLeads, tick]);
+
+  const capacityRows = useMemo<CapacityRow[]>(() => {
+    const now = Date.now();
+    return DUMMY_AGENTS.slice(0, agentCount).map((agent) => {
+      const usedSlots = effectiveLeads.filter(
+        (l) => l.assignedTo === agent.id && !isWorked(l) && isHeldLive(l, now),
+      ).length;
+      const onBreak = breakAgentIds.includes(agent.id);
+      const blocked = blockedIds.includes(agent.id);
+      const noSale = noSaleBlocks.find((r) => r.agentId === agent.id);
+      const heldNoSale = !!noSale && noSale.blockedDays > 0;
+      const onCall = effectiveLeads.some((l) => l.assignedTo === agent.id && l.dialedThisOffer && !isWorked(l));
+      return {
+        id: agent.id,
+        name: agent.name,
+        usedSlots,
+        maxSlots: DEFAULT_MAX_UNWORKED_PER_AGENT,
+        state: blocked
+          ? ('blocked' as const)
+          : heldNoSale
+            ? ('held_no_sale' as const)
+            : onBreak
+              ? ('on_break' as const)
+              : onCall
+                ? ('on_call' as const)
+                : ('available' as const),
+        note: heldNoSale ? noSale?.reason : undefined,
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agentCount, effectiveLeads, breakAgentIds, blockedIds, noSaleBlocks, tick]);
+
+  const performanceRows = useMemo(() => {
+    const now = Date.now();
+    return DUMMY_AGENTS.slice(0, agentCount).map((agent) => {
+      const mine = effectiveLeads.filter((l) => l.assignedTo === agent.id);
+      return {
+        name: agent.name,
+        claimed: mine.length,
+        contacted: mine.filter((l) => l.contactedAt).length,
+        dials: mine.reduce((sum, l) => sum + l.dials, 0),
+        unworked: mine.filter((l) => !isWorked(l) && isHeldLive(l, now)).length,
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agentCount, effectiveLeads, tick]);
+
+  const auditEntries = useMemo(
     () =>
-      effectiveLeads.filter((lead) =>
-        simulatedAgentId === 'all'
-          ? lead.assignedTo !== null || lead.status === 'queued'
-          : lead.assignedTo === simulatedAgentId && !lead.waiting,
-      ),
-    [effectiveLeads, simulatedAgentId],
+      effectiveLeads
+        .slice()
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .flatMap((lead) =>
+          lead.history
+            .slice()
+            .reverse()
+            .map((text) => ({ leadRef: leadRefFor(lead.id, lead.leadRef), text })),
+        ),
+    [effectiveLeads],
   );
+
+  const rosterLeads = useMemo(() => {
+    if (!isLive && !isManagerView) {
+      // Agent view: tabs over the agent's own leads plus the shared opportunity.
+      const mine = effectiveLeads.filter((lead) => lead.assignedTo === simulatedAgentId && !lead.waiting);
+      if (agentTab === 'mine') return mine;
+      if (agentTab === 'callbacks')
+        return mine.filter((lead) => lead.displayStatus === 'callback_booked' || lead.displayStatus === 'urgent_callback');
+      if (agentTab === 'followups') return mine.filter((lead) => lead.displayStatus === 'follow_up');
+      // 'all' — own leads plus the one shared opportunity (details hidden until claimed).
+      return nextOpportunity ? [...mine, nextOpportunity] : mine;
+    }
+    return effectiveLeads.filter((lead) =>
+      simulatedAgentId === 'all'
+        ? lead.assignedTo !== null || lead.status === 'queued'
+        : lead.assignedTo === simulatedAgentId && !lead.waiting,
+    );
+  }, [effectiveLeads, simulatedAgentId, isLive, isManagerView, agentTab, nextOpportunity]);
 
   const chromeLeads = useMemo<SandboxChromeLead[]>(
     () =>
@@ -1019,15 +1263,21 @@ export const OpenRoundRobinTestPanel: React.FC<{
 
     setLeads((current) => {
       const leadNumber = current.length + 1;
-      const busy = new Set(current.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
+      const heldCounts = new Map<string, number>();
+      for (const lead of current) {
+        if (isHeldLive(lead, now)) {
+          heldCounts.set(lead.assignedTo as string, (heldCounts.get(lead.assignedTo as string) ?? 0) + 1);
+        }
+      }
 
       let offeredTo: DummyAgent | null = null;
       const activeRoster = rosterRef.current;
       for (let step = 0; step < activeRoster.length; step += 1) {
         const candidate = activeRoster[(nextAgentIndexRef.current + step) % activeRoster.length];
-        if (!busy.has(candidate.id)) {
+        const held = heldCounts.get(candidate.id) ?? 0;
+        if (held < DEFAULT_MAX_UNWORKED_PER_AGENT) {
           nextAgentIndexRef.current = (nextAgentIndexRef.current + step + 1) % activeRoster.length;
-
+          heldCounts.set(candidate.id, held + 1);
           offeredTo = candidate;
           break;
         }
@@ -1035,6 +1285,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
 
       const draft: DummyLead = {
         id: `dummy-orr-${now}-${Math.random().toString(36).slice(2, 7)}`,
+        leadRef: nextLeadRef(),
         firstName: 'TEST',
         lastName: `Lead ${String(leadNumber).padStart(2, '0')}`,
         email: `test.lead${leadNumber}@example.com`,
@@ -1082,69 +1333,103 @@ export const OpenRoundRobinTestPanel: React.FC<{
    */
   const [overnightParked, setOvernightParked] = useState(12);
   const [morningReleasedAt, setMorningReleasedAt] = useState<Date | null>(null);
+  const overnightParkedRef = useRef(overnightParked);
+  const morningReleasedAtRef = useRef<Date | null>(null);
+  useEffect(() => {
+    overnightParkedRef.current = overnightParked;
+    morningReleasedAtRef.current = morningReleasedAt;
+  }, [overnightParked, morningReleasedAt]);
 
+  /**
+   * Controlled 09:00 release: only enough leads to match the team's free slots
+   * (available agents × up to 2 unworked each) enter the flow. The rest of the
+   * overnight backlog stays parked for the next window or until capacity opens.
+   */
   const releaseOvernight = useCallback(() => {
-    const count = overnightParked;
-    if (count <= 0) return;
     const now = Date.now();
+    const current = leadsRef.current;
+    const activeRoster = rosterRef.current;
 
-    setLeads((current) => {
-      const activeRoster = rosterRef.current;
-      let index = activeRoster.length ? nextAgentIndexRef.current % activeRoster.length : 0;
-      const busy = new Set(
-        current.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string),
-      );
-      const drafts: DummyLead[] = [];
-
-      for (let i = 0; i < count; i += 1) {
-        let offeredTo: DummyAgent | null = null;
-        for (let step = 0; step < activeRoster.length; step += 1) {
-          const candidate = activeRoster[(index + step) % activeRoster.length];
-          if (!busy.has(candidate.id)) {
-            index = (index + step + 1) % activeRoster.length;
-            busy.add(candidate.id);
-            offeredTo = candidate;
-            break;
-          }
-        }
-
-
-        const leadNumber = current.length + i + 1;
-        drafts.push({
-          id: `dummy-orr-overnight-${now}-${i}`,
-          firstName: 'TEST',
-          lastName: `Overnight ${String(i + 1).padStart(2, '0')}`,
-          email: `overnight.lead${leadNumber}@example.com`,
-          status: offeredTo ? 'new' : 'queued',
-          displayStatus: 'new',
-          assignedTo: offeredTo ? offeredTo.id : null,
-          attemptCount: offeredTo ? 1 : 0,
-          deadlineAt: offeredTo ? now + cadenceRef.current.claimWindowSeconds * 1000 : now,
-          vehicleReg: 'TEST123',
-          phone: '07902222222',
-          createdAt: now - (count - i) * 45 * 60 * 1000,
-          dials: 0,
-          contactedAt: null,
-          dayDials: 0,
-          nextCallAt: null,
-          greenTeamAt: null,
-          followUpDay: 0,
-          chaseComplete: false,
-          history: offeredTo
-            ? [`Arrived overnight — released at 09:00 and offered to ${offeredTo.name}`]
-            : ['Arrived overnight — released at 09:00, waiting in the open pool queue'],
-        });
+    const heldCounts = new Map<string, number>();
+    for (const lead of current) {
+      if (isHeldLive(lead, now)) {
+        heldCounts.set(lead.assignedTo as string, (heldCounts.get(lead.assignedTo as string) ?? 0) + 1);
       }
-
-      nextAgentIndexRef.current = index;
-      return [...drafts.reverse(), ...current];
+    }
+    const plan = planCapacityRelease({
+      backlog: overnightParked,
+      agents: activeRoster.map((a) => ({
+        id: a.id,
+        eligible: true,
+        unworkedClaimed: heldCounts.get(a.id) ?? 0,
+      })),
+      maxUnworkedPerAgent: DEFAULT_MAX_UNWORKED_PER_AGENT,
     });
 
-    setOvernightParked(0);
+    if (plan.releaseCount <= 0) {
+      toast({
+        title: 'No free capacity',
+        description:
+          'Every available agent already holds the maximum unworked leads — the overnight backlog stays parked until a slot frees up.',
+      });
+      return;
+    }
+
+    const count = plan.releaseCount;
+    let index = activeRoster.length ? nextAgentIndexRef.current % activeRoster.length : 0;
+    const drafts: DummyLead[] = [];
+
+    for (let i = 0; i < count; i += 1) {
+      let offeredTo: DummyAgent | null = null;
+      for (let step = 0; step < activeRoster.length; step += 1) {
+        const candidate = activeRoster[(index + step) % activeRoster.length];
+        const held = heldCounts.get(candidate.id) ?? 0;
+        if (held < DEFAULT_MAX_UNWORKED_PER_AGENT) {
+          index = (index + step + 1) % activeRoster.length;
+          heldCounts.set(candidate.id, held + 1);
+          offeredTo = candidate;
+          break;
+        }
+      }
+
+      const leadNumber = current.length + i + 1;
+      drafts.push({
+        id: `dummy-orr-overnight-${now}-${i}`,
+        leadRef: nextLeadRef(),
+        firstName: 'TEST',
+        lastName: `Overnight ${String(i + 1).padStart(2, '0')}`,
+        email: `overnight.lead${leadNumber}@example.com`,
+        status: offeredTo ? 'new' : 'queued',
+        displayStatus: 'new',
+        assignedTo: offeredTo ? offeredTo.id : null,
+        attemptCount: offeredTo ? 1 : 0,
+        deadlineAt: offeredTo ? now + cadenceRef.current.claimWindowSeconds * 1000 : now,
+        vehicleReg: 'TEST123',
+        phone: '07902222222',
+        createdAt: now - (count - i) * 45 * 60 * 1000,
+        dials: 0,
+        contactedAt: null,
+        dayDials: 0,
+        nextCallAt: null,
+        greenTeamAt: null,
+        followUpDay: 0,
+        chaseComplete: false,
+        history: offeredTo
+          ? [`Arrived overnight — released at 09:00 and offered to ${offeredTo.name}`]
+          : ['Arrived overnight — released at 09:00 into the shared pool'],
+      });
+    }
+
+    nextAgentIndexRef.current = index;
+    setLeads((prev) => [...drafts.reverse(), ...prev]);
+    setOvernightParked(plan.backlogAfter);
     setMorningReleasedAt(new Date());
     toast({
       title: '09:00 release done',
-      description: `${count} overnight leads went into the same flow — one at a time, oldest first.`,
+      description:
+        plan.backlogAfter > 0
+          ? `${count} leads released to match free capacity — ${plan.backlogAfter} stay parked for the next window or until slots open.`
+          : `${count} overnight leads released — one at a time, oldest first.`,
     });
   }, [overnightParked, toast]);
 
@@ -1210,6 +1495,62 @@ export const OpenRoundRobinTestPanel: React.FC<{
     toast({ title: 'Lead claimed', description: `${viewer.name} took a waiting lead with manager permission.` });
   };
 
+
+  /**
+   * First-to-claim: the agent takes the shared opportunity. Claiming is
+   * voluntary — never claiming is never penalised — and customer details are
+   * only revealed once the lead is claimed.
+   */
+  const claimNextOpportunity = (leadId: string) => {
+    if (claimDisabledReason) {
+      toast({ title: 'Cannot claim right now', description: claimDisabledReason, variant: 'destructive' });
+      return;
+    }
+    const viewer = getAgent(simulatedAgentId);
+    const now = Date.now();
+    setLeads((current) =>
+      current.map((lead) =>
+        lead.id === leadId
+          ? {
+              ...lead,
+              status: 'new',
+              assignedTo: viewer.id,
+              attemptCount: Math.max(1, lead.attemptCount),
+              deadlineAt: now + cadenceRef.current.claimWindowSeconds * 1000,
+              chaseStartedAt: lead.chaseStartedAt ?? lead.createdAt,
+              history: [...lead.history, `Claimed from the shared pool by ${viewer.name} — customer details now visible`],
+            }
+          : lead,
+      ),
+    );
+    toast({
+      title: 'Lead claimed',
+      description: `${viewer.name} took ${leadRefFor(leadId, nextOpportunity?.leadRef)} — the customer details are now visible.`,
+    });
+  };
+
+  /** Manager assigns a waiting or queued lead straight to a chosen agent. */
+  const assignQueueLead = (leadId: string, agentId: string) => {
+    const agent = getAgent(agentId);
+    const now = Date.now();
+    setLeads((current) =>
+      current.map((lead) =>
+        lead.id === leadId
+          ? {
+              ...lead,
+              status: 'new',
+              assignedTo: agentId,
+              waiting: false,
+              eligibleAt: null,
+              attemptCount: Math.max(1, lead.attemptCount),
+              deadlineAt: now + cadenceRef.current.claimWindowSeconds * 1000,
+              history: [...lead.history, `Assigned to ${agent.name} by a manager`],
+            }
+          : lead,
+      ),
+    );
+    toast({ title: 'Lead assigned', description: `${agent.name} now holds the lead. Nothing real was changed.` });
+  };
 
   // A dial only logs an attempt. It never marks the lead as spoken to and never
   // hands ownership over — the agent must pick an outcome status (Spoken to,
@@ -1420,6 +1761,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
     const now = Date.now();
     const drafts: DummyLead[] = liveLeads.map((lead) => ({
       id: `live-orr-${lead.id}`,
+      leadRef: nextLeadRef(),
       firstName: lead.firstName || 'Customer',
       lastName: lead.lastName || '',
       email: lead.email,
@@ -1463,6 +1805,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
       const { n, ...rest } = over;
       return {
         id: `dummy-scenario-${now}-${n}-${Math.random().toString(36).slice(2, 7)}`,
+        leadRef: nextLeadRef(),
         firstName: 'TEST',
         lastName: `Lead ${String(n).padStart(2, '0')}`,
         email: `test.lead${n}@example.com`,
@@ -1509,6 +1852,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
       const leadNumber = current.length + 1;
       const draft: DummyLead = {
         id: `dummy-rr-${now}-${Math.random().toString(36).slice(2, 7)}`,
+        leadRef: nextLeadRef(),
         firstName: 'TEST',
         lastName: `RR Lead ${String(leadNumber).padStart(2, '0')}`,
         email: `test.rr${leadNumber}@example.com`,
@@ -1545,7 +1889,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
         id: 'busy-day',
         title: 'Busy morning — everyone gets one at a time',
         what: 'Eight agents on shift, eight enquiries land together.',
-        watch: 'Each lead sits with a different agent, nobody holds two.',
+        watch: 'Each lead sits with a different agent, nobody holds more than two.',
         agents: 8,
         build: (r: DummyAgent[], now: number) =>
           r.map((agent, i) =>
@@ -2182,6 +2526,127 @@ export const OpenRoundRobinTestPanel: React.FC<{
         </div>
       </section>
 
+      {/* Manager view — full queue & control (new design, 31 Oct 2026) */}
+      {isManagerView && !isLive && (
+        <div className="space-y-3">
+          <OrrManagerStatCards stats={managerStats} />
+          <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1 shadow-sm">
+            {([
+              { key: 'queue', label: `Open Round Robin Queue (${queueRows.length})` },
+              { key: 'all', label: `All Leads (${effectiveLeads.length})` },
+              { key: 'schedule', label: 'Release Schedule' },
+              { key: 'capacity', label: 'Agent Capacity' },
+              { key: 'performance', label: 'Performance' },
+              { key: 'audit', label: 'Audit Log' },
+            ] as const).map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setManagerTab(tab.key)}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-semibold rounded-md transition-colors',
+                  managerTab === tab.key ? 'bg-teal-600 text-white' : 'text-muted-foreground hover:bg-muted',
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {managerTab === 'queue' && (
+            <div className="grid gap-3 xl:grid-cols-[1fr_280px] items-start">
+              <OrrQueueTable
+                rows={queueRows}
+                chaseDays={cadence.releaseDays}
+                agents={roster.map((a) => ({ id: a.id, name: a.name }))}
+                onAssign={assignQueueLead}
+              />
+              <OrrAgentCapacityPanel
+                rows={capacityRows}
+                onToggleBreak={(id) =>
+                  setBreakAgentIds((current) =>
+                    current.includes(id) ? current.filter((x) => x !== id) : [...current, id],
+                  )
+                }
+              />
+            </div>
+          )}
+          {managerTab === 'schedule' && (
+            <OrrReleaseSchedulePanel
+              releaseTimesLabel={describeReleaseTimes(cadence)}
+              releaseDays={cadence.releaseDays}
+              maxReleases={maxReleases(cadence)}
+              nextReleaseLabel={formatTimeOfDay(nextReleaseAt(Date.now(), cadence))}
+              maxPerAgent={DEFAULT_MAX_UNWORKED_PER_AGENT}
+            />
+          )}
+          {managerTab === 'capacity' && (
+            <OrrAgentCapacityPanel
+              rows={capacityRows}
+              onToggleBreak={(id) =>
+                setBreakAgentIds((current) =>
+                  current.includes(id) ? current.filter((x) => x !== id) : [...current, id],
+                )
+              }
+            />
+          )}
+          {managerTab === 'performance' && <OrrPerformancePanel rows={performanceRows} />}
+          {managerTab === 'audit' && <OrrAuditLogPanel entries={auditEntries} />}
+        </div>
+      )}
+
+      {/* Agent view — one shared opportunity at a time + working tabs (new design) */}
+      {!isLive && !isManagerView && (
+        <div className="space-y-3">
+          <OrrNextOpportunityCard
+            lead={
+              nextOpportunity
+                ? {
+                    id: nextOpportunity.id,
+                    leadRef: leadRefFor(nextOpportunity.id, nextOpportunity.leadRef),
+                    sourceLabel: sourceLabelOf(nextOpportunity.leadSource),
+                    leadType: leadTypeOf(nextOpportunity.createdAt, nextOpportunity.displayStatus),
+                    ageLabel: formatClock(Math.round((Date.now() - nextOpportunity.createdAt) / 1000)),
+                    callsToday: nextOpportunity.dayDials,
+                    callsTotal: nextOpportunity.dials,
+                    chaseDay: Math.max(1, nextOpportunity.followUpDay),
+                  }
+                : null
+            }
+            chaseDays={cadence.releaseDays}
+            onClaim={claimNextOpportunity}
+            claimDisabledReason={claimDisabledReason}
+          />
+          <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1 shadow-sm">
+            {(() => {
+              const mine = effectiveLeads.filter((l) => l.assignedTo === simulatedAgentId && !l.waiting);
+              const callbacks = mine.filter(
+                (l) => l.displayStatus === 'callback_booked' || l.displayStatus === 'urgent_callback',
+              ).length;
+              const followups = mine.filter((l) => l.displayStatus === 'follow_up').length;
+              const tabs = [
+                { key: 'mine' as const, label: `My Leads (${mine.length})` },
+                { key: 'all' as const, label: 'All Leads' },
+                { key: 'callbacks' as const, label: `Callbacks (${callbacks})` },
+                { key: 'followups' as const, label: `Follow-ups (${followups})` },
+              ];
+              return tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setAgentTab(tab.key)}
+                  className={cn(
+                    'px-3 py-1.5 text-xs font-semibold rounded-md transition-colors',
+                    agentTab === tab.key ? 'bg-teal-600 text-white' : 'text-muted-foreground hover:bg-muted',
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ));
+            })()}
+          </div>
+        </div>
+      )}
+
       {/* Rules, timings and editable variables */}
       {isManagerView && !isLive && (
         <OrrLogicExplainer
@@ -2261,7 +2726,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
       </div>
       )}
 
-      {/* Leads */}
+      {/* Leads — the full working table (manager "All Leads" tab, agent view, live mode) */}
+      {(isLive || !isManagerView || managerTab === 'all') && (
       <section className={cn('rounded-xl border-l-4 border-y border-r border-border bg-card shadow-sm overflow-hidden', theme.cardBorder)}>
         <div className="px-5 py-4 border-b border-border flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
@@ -2361,6 +2827,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                 <tr>
                   <th className="px-2 py-2 text-center w-11">#</th>
                   <th className="px-2 py-2 text-left w-9"></th>
+                  <th className="px-2 py-2 text-left">Lead Ref</th>
                   <th className="px-2 py-2 text-left">Lead type</th>
                   <th className="px-2 py-2 text-left">Agent</th>
                   {isManagerView && showSourceColumn && <th className="px-2 py-2 text-center">Src</th>}
@@ -2391,6 +2858,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
                   const ageSec = Math.round((now - lead.createdAt) / 1000);
                   const agent = resolveAgent(lead.assignedTo);
                   const orrLead = isOrr(lead);
+                  // Agent view: customer details stay hidden until the lead is claimed.
+                  const detailsHidden = !isLive && !isManagerView && orrLead && lead.assignedTo !== simulatedAgentId;
 
                   return (
                     <tr
@@ -2403,6 +2872,9 @@ export const OpenRoundRobinTestPanel: React.FC<{
                       <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
                       <td className="px-2 py-2">
                         <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
+                      </td>
+                      <td className="px-2 py-2 text-xs font-semibold text-foreground whitespace-nowrap">
+                        {leadRefFor(lead.id, lead.leadRef)}
                       </td>
                       <td className="px-2 py-2">
                         {(() => {
@@ -2755,6 +3227,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
 
         </div>
       </section>
+      )}
     </div>
   );
 
