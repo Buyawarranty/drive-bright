@@ -1298,6 +1298,62 @@ export const OpenRoundRobinTestPanel: React.FC<{
   };
 
 
+  /**
+   * First-to-claim: the agent takes the shared opportunity. Claiming is
+   * voluntary — never claiming is never penalised — and customer details are
+   * only revealed once the lead is claimed.
+   */
+  const claimNextOpportunity = (leadId: string) => {
+    if (claimDisabledReason) {
+      toast({ title: 'Cannot claim right now', description: claimDisabledReason, variant: 'destructive' });
+      return;
+    }
+    const viewer = getAgent(simulatedAgentId);
+    const now = Date.now();
+    setLeads((current) =>
+      current.map((lead) =>
+        lead.id === leadId
+          ? {
+              ...lead,
+              status: 'new',
+              assignedTo: viewer.id,
+              attemptCount: Math.max(1, lead.attemptCount),
+              deadlineAt: now + cadenceRef.current.claimWindowSeconds * 1000,
+              chaseStartedAt: lead.chaseStartedAt ?? lead.createdAt,
+              history: [...lead.history, `Claimed from the shared pool by ${viewer.name} — customer details now visible`],
+            }
+          : lead,
+      ),
+    );
+    toast({
+      title: 'Lead claimed',
+      description: `${viewer.name} took ${leadRefFor(leadId, nextOpportunity?.leadRef)} — the customer details are now visible.`,
+    });
+  };
+
+  /** Manager assigns a waiting or queued lead straight to a chosen agent. */
+  const assignQueueLead = (leadId: string, agentId: string) => {
+    const agent = getAgent(agentId);
+    const now = Date.now();
+    setLeads((current) =>
+      current.map((lead) =>
+        lead.id === leadId
+          ? {
+              ...lead,
+              status: 'new',
+              assignedTo: agentId,
+              waiting: false,
+              eligibleAt: null,
+              attemptCount: Math.max(1, lead.attemptCount),
+              deadlineAt: now + cadenceRef.current.claimWindowSeconds * 1000,
+              history: [...lead.history, `Assigned to ${agent.name} by a manager`],
+            }
+          : lead,
+      ),
+    );
+    toast({ title: 'Lead assigned', description: `${agent.name} now holds the lead. Nothing real was changed.` });
+  };
+
   // A dial only logs an attempt. It never marks the lead as spoken to and never
   // hands ownership over — the agent must pick an outcome status (Spoken to,
   // Quote sent, etc.) for that to happen.
