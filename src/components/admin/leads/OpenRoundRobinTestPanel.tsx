@@ -1176,69 +1176,103 @@ export const OpenRoundRobinTestPanel: React.FC<{
    */
   const [overnightParked, setOvernightParked] = useState(12);
   const [morningReleasedAt, setMorningReleasedAt] = useState<Date | null>(null);
+  const overnightParkedRef = useRef(overnightParked);
+  const morningReleasedAtRef = useRef<Date | null>(null);
+  useEffect(() => {
+    overnightParkedRef.current = overnightParked;
+    morningReleasedAtRef.current = morningReleasedAt;
+  }, [overnightParked, morningReleasedAt]);
 
+  /**
+   * Controlled 09:00 release: only enough leads to match the team's free slots
+   * (available agents × up to 2 unworked each) enter the flow. The rest of the
+   * overnight backlog stays parked for the next window or until capacity opens.
+   */
   const releaseOvernight = useCallback(() => {
-    const count = overnightParked;
-    if (count <= 0) return;
     const now = Date.now();
+    const current = leadsRef.current;
+    const activeRoster = rosterRef.current;
 
-    setLeads((current) => {
-      const activeRoster = rosterRef.current;
-      let index = activeRoster.length ? nextAgentIndexRef.current % activeRoster.length : 0;
-      const busy = new Set(
-        current.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string),
-      );
-      const drafts: DummyLead[] = [];
-
-      for (let i = 0; i < count; i += 1) {
-        let offeredTo: DummyAgent | null = null;
-        for (let step = 0; step < activeRoster.length; step += 1) {
-          const candidate = activeRoster[(index + step) % activeRoster.length];
-          if (!busy.has(candidate.id)) {
-            index = (index + step + 1) % activeRoster.length;
-            busy.add(candidate.id);
-            offeredTo = candidate;
-            break;
-          }
-        }
-
-
-        const leadNumber = current.length + i + 1;
-        drafts.push({
-          id: `dummy-orr-overnight-${now}-${i}`,
-          firstName: 'TEST',
-          lastName: `Overnight ${String(i + 1).padStart(2, '0')}`,
-          email: `overnight.lead${leadNumber}@example.com`,
-          status: offeredTo ? 'new' : 'queued',
-          displayStatus: 'new',
-          assignedTo: offeredTo ? offeredTo.id : null,
-          attemptCount: offeredTo ? 1 : 0,
-          deadlineAt: offeredTo ? now + cadenceRef.current.claimWindowSeconds * 1000 : now,
-          vehicleReg: 'TEST123',
-          phone: '07902222222',
-          createdAt: now - (count - i) * 45 * 60 * 1000,
-          dials: 0,
-          contactedAt: null,
-          dayDials: 0,
-          nextCallAt: null,
-          greenTeamAt: null,
-          followUpDay: 0,
-          chaseComplete: false,
-          history: offeredTo
-            ? [`Arrived overnight — released at 09:00 and offered to ${offeredTo.name}`]
-            : ['Arrived overnight — released at 09:00, waiting in the open pool queue'],
-        });
+    const heldCounts = new Map<string, number>();
+    for (const lead of current) {
+      if (isHeldLive(lead, now)) {
+        heldCounts.set(lead.assignedTo as string, (heldCounts.get(lead.assignedTo as string) ?? 0) + 1);
       }
-
-      nextAgentIndexRef.current = index;
-      return [...drafts.reverse(), ...current];
+    }
+    const plan = planCapacityRelease({
+      backlog: overnightParked,
+      agents: activeRoster.map((a) => ({
+        id: a.id,
+        eligible: true,
+        unworkedClaimed: heldCounts.get(a.id) ?? 0,
+      })),
+      maxUnworkedPerAgent: DEFAULT_MAX_UNWORKED_PER_AGENT,
     });
 
-    setOvernightParked(0);
+    if (plan.releaseCount <= 0) {
+      toast({
+        title: 'No free capacity',
+        description:
+          'Every available agent already holds the maximum unworked leads — the overnight backlog stays parked until a slot frees up.',
+      });
+      return;
+    }
+
+    const count = plan.releaseCount;
+    let index = activeRoster.length ? nextAgentIndexRef.current % activeRoster.length : 0;
+    const drafts: DummyLead[] = [];
+
+    for (let i = 0; i < count; i += 1) {
+      let offeredTo: DummyAgent | null = null;
+      for (let step = 0; step < activeRoster.length; step += 1) {
+        const candidate = activeRoster[(index + step) % activeRoster.length];
+        const held = heldCounts.get(candidate.id) ?? 0;
+        if (held < DEFAULT_MAX_UNWORKED_PER_AGENT) {
+          index = (index + step + 1) % activeRoster.length;
+          heldCounts.set(candidate.id, held + 1);
+          offeredTo = candidate;
+          break;
+        }
+      }
+
+      const leadNumber = current.length + i + 1;
+      drafts.push({
+        id: `dummy-orr-overnight-${now}-${i}`,
+        leadRef: nextLeadRef(),
+        firstName: 'TEST',
+        lastName: `Overnight ${String(i + 1).padStart(2, '0')}`,
+        email: `overnight.lead${leadNumber}@example.com`,
+        status: offeredTo ? 'new' : 'queued',
+        displayStatus: 'new',
+        assignedTo: offeredTo ? offeredTo.id : null,
+        attemptCount: offeredTo ? 1 : 0,
+        deadlineAt: offeredTo ? now + cadenceRef.current.claimWindowSeconds * 1000 : now,
+        vehicleReg: 'TEST123',
+        phone: '07902222222',
+        createdAt: now - (count - i) * 45 * 60 * 1000,
+        dials: 0,
+        contactedAt: null,
+        dayDials: 0,
+        nextCallAt: null,
+        greenTeamAt: null,
+        followUpDay: 0,
+        chaseComplete: false,
+        history: offeredTo
+          ? [`Arrived overnight — released at 09:00 and offered to ${offeredTo.name}`]
+          : ['Arrived overnight — released at 09:00 into the shared pool'],
+      });
+    }
+
+    nextAgentIndexRef.current = index;
+    setLeads((prev) => [...drafts.reverse(), ...prev]);
+    setOvernightParked(plan.backlogAfter);
     setMorningReleasedAt(new Date());
     toast({
       title: '09:00 release done',
-      description: `${count} overnight leads went into the same flow — one at a time, oldest first.`,
+      description:
+        plan.backlogAfter > 0
+          ? `${count} leads released to match free capacity — ${plan.backlogAfter} stay parked for the next window or until slots open.`
+          : `${count} overnight leads released — one at a time, oldest first.`,
     });
   }, [overnightParked, toast]);
 
