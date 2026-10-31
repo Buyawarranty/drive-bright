@@ -82,7 +82,7 @@ export const applyTelephonyCallState = (s: AvailabilityState, callActive: boolea
     if (s.status === 'busy_call') return s;
     return {
       status: 'busy_call',
-      previousStatus: s.status === 'busy_call' ? s.previousStatus : s.status,
+      previousStatus: s.status,
       breakStartedAt: s.breakStartedAt,
     };
   }
@@ -97,7 +97,7 @@ export const applyTelephonyCallState = (s: AvailabilityState, callActive: boolea
 /** Agent chooses a status themselves (Break, Offline, manual Busy, back to Available). */
 export const setManualStatus = (s: AvailabilityState, next: Exclude<AgentAvailability, 'busy_call'>, at: number): AvailabilityState => ({
   status: next,
-  previousStatus: next === 'available' || next === 'busy_manual' ? next : s.previousStatus === 'busy_call' ? 'available' : s.previousStatus,
+  previousStatus: next === 'available' || next === 'busy_manual' ? next : s.previousStatus,
   breakStartedAt: next === 'on_break' ? (s.breakStartedAt ?? at) : null,
 });
 
