@@ -988,6 +988,41 @@ export const OpenRoundRobinTestPanel: React.FC<{
   /** The rows the table renders — real ORR leads in live mode, practice leads in the sandbox. */
   const effectiveLeads = isLive ? liveRows : leads;
 
+  // New design (31 Oct 2026): agent tabs over their own leads, manager tabs
+  // across the queue, schedule, capacity, performance and audit log.
+  const [agentTab, setAgentTab] = useState<'mine' | 'all' | 'callbacks' | 'followups'>('mine');
+  const [managerTab, setManagerTab] = useState<'queue' | 'all' | 'schedule' | 'capacity' | 'performance' | 'audit'>('queue');
+
+  /** The single shared opportunity shown to an agent — oldest unclaimed pool lead. */
+  const nextOpportunity = useMemo(() => {
+    if (isLive || isManagerView) return null;
+    return (
+      effectiveLeads
+        .filter((lead) => isOrr(lead) && lead.status === 'queued' && !lead.waiting && lead.assignedTo === null && !lead.chaseComplete)
+        .sort((a, b) => a.createdAt - b.createdAt)[0] ?? null
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveLeads, isLive, isManagerView, tick]);
+
+  /** Unworked leads the viewed agent currently holds (max 2 allowed). */
+  const myUnworkedCount = useMemo(() => {
+    if (simulatedAgentId === 'all') return 0;
+    const now = Date.now();
+    return effectiveLeads.filter(
+      (lead) => lead.assignedTo === simulatedAgentId && !isWorked(lead) && isHeldLive(lead, now),
+    ).length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveLeads, simulatedAgentId, tick]);
+
+  const claimDisabledReason = useMemo(() => {
+    if (isLive || isManagerView) return null;
+    if (simulatedAgentId === 'all') return 'Pick an agent to practise as first';
+    if (!roster.some((a) => a.id === simulatedAgentId)) return 'You are not available for Open Round Robin right now';
+    if (myUnworkedCount >= DEFAULT_MAX_UNWORKED_PER_AGENT)
+      return `You already hold ${DEFAULT_MAX_UNWORKED_PER_AGENT} unworked leads — record an outcome to free a slot`;
+    return null;
+  }, [isLive, isManagerView, simulatedAgentId, roster, myUnworkedCount]);
+
   const rosterLeads = useMemo(() => {
     if (!isLive && !isManagerView) {
       // Agent view: tabs over the agent's own leads plus the shared opportunity.
