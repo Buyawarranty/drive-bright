@@ -1,5 +1,12 @@
 # Roadmap
 
+## ORR Lead Ref is the reg plate — 31 October 2026
+- [x] "Lead Ref" now shows the registration plate that arrives with the lead, everywhere it appeared: practice working table, manager queue, agent Next Available Opportunity card, audit log and the claim notice. The synthetic BW-89421-style numbers are gone.
+- [x] Made-up practice leads are given their own fresh UK-format plate (nextPracticeReg in src/lib/orrPractice/leadBadges.ts) instead of every row repeating TEST123; live-mode leads keep their real plate from sales_leads.
+- [x] Headers read "Lead Ref (Reg)"; the plate is no longer masked before claim (it is the identifier), while name, phone, WhatsApp and email stay hidden until claimed.
+- [x] 132 ORR practice tests pass (3 rewritten lead-ref checks), typecheck clean, preview build OK. Sandbox only — nothing published.
+
+
 ## ORR source follows the lead-source permission — 31 October 2026
 - [x] Open Round Robin source display now follows the same entitlement as New Leads (admin/super_admin, ADS@/SEO@ default, every sales role always denied): sandbox Src column + show/hide control, manager queue table, agent opportunity card, morning release and both live queue panels. Inside the rehearsal the source only appears in the manager view.
 - [x] 146 tests pass (2 new lead-source checks), typecheck clean, preview build OK. Sandbox only — nothing published.
