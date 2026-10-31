@@ -1527,7 +1527,7 @@ export default function LiveQuotePage() {
 
             {/* Payment Options - Below form on all screen sizes */}
             <div id="payment-options">
-              <PaymentOptionsSection />
+              {PaymentOptionsSection()}
             </div>
           </div>
 
