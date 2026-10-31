@@ -17,10 +17,8 @@ const NONE: ExportPermissions = {
 };
 
 /**
- * Scoped export / lead-source permissions. All three are OFF by default for
- * every role except admin and super admin (automatic). Anyone else needs an
- * explicit grant in User Permissions, stored in staff_export_grants and
- * checked server-side by get_my_export_permissions().
+ * Exports retain scoped grants. Source access includes protected account
+ * defaults and unconditional sales-role denial, checked by the server RPC.
  */
 export function useExportPermissions(): ExportPermissions {
   const { isImpersonating, effectiveRole, effectiveAdminUserId, viewAsAgent } = useViewAs();
