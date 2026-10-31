@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { ChevronDown, Info, RotateCcw, ShieldCheck, Sliders, Users } from 'lucide-react';
+import { ChevronDown, Clock, Info, RotateCcw, ShieldCheck, Sliders, Users } from 'lucide-react';
+import {
+  DEFAULT_RELEASE_DAYS,
+  DEFAULT_RELEASE_TIMES,
+  describeReleaseTimes,
+  maxReleases,
+  sanitiseReleaseTimes,
+} from '@/lib/orrPractice/releaseSchedule';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,6 +44,12 @@ export interface OrrCadenceConfig {
   whenAllBusy: 'queue' | 'keep_offering';
   /** Agents may claim a waiting lead for themselves (manager permission). */
   allowSelfAssign: boolean;
+  /** Uncontacted-lead release times, "HH:MM" UK time. */
+  releaseTimes: string[];
+  /** Contact days the release schedule runs for. */
+  releaseDays: number;
+  /** Staff a manager has blocked from Open Round Robin. */
+  blockedAgentIds: string[];
 }
 
 export const DEFAULT_ORR_CADENCE: OrrCadenceConfig = {
@@ -50,11 +63,14 @@ export const DEFAULT_ORR_CADENCE: OrrCadenceConfig = {
   maxDialsFullDay: 3,
   maxDialsAfterMidday: 2,
   greenTeamHandoverHour: 18,
-  followUpDays: 7,
-  followUpDailyDials: 2,
+  followUpDays: DEFAULT_RELEASE_DAYS,
+  followUpDailyDials: DEFAULT_RELEASE_TIMES.length,
   maxAttempts: 7,
   whenAllBusy: 'queue',
   allowSelfAssign: false,
+  releaseTimes: DEFAULT_RELEASE_TIMES,
+  releaseDays: DEFAULT_RELEASE_DAYS,
+  blockedAgentIds: [],
 };
 
 const NumberField = ({
@@ -93,10 +109,12 @@ interface Props {
   config: OrrCadenceConfig;
   onChange: (next: OrrCadenceConfig) => void;
   teamLabel?: string;
+  staff?: { id: string; name: string }[];
 }
 
-export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel = 'Team Green' }) => {
+export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel = 'Team Green', staff = [] }) => {
   const [open, setOpen] = useState(false);
+  const [timesDraft, setTimesDraft] = useState(config.releaseTimes.join(', '));
   const set = <K extends keyof OrrCadenceConfig>(key: K, value: OrrCadenceConfig[K]) =>
     onChange({ ...config, [key]: value });
 
@@ -151,9 +169,80 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
                 )}
               </li>
               <li>After <strong>{config.maxAttempts} unanswered offers</strong> the lead keeps cycling through ORR and a manager alert is raised so a human can reassign it.</li>
-              <li>At <strong>{String(config.greenTeamHandoverHour).padStart(2, '0')}:00</strong> unworked day-one leads move to Team Green, then chased for <strong>{config.followUpDays} days</strong> with up to <strong>{config.followUpDailyDials} dials a day</strong>.</li>
+              <li>An uncontacted lead is released at <strong>{describeReleaseTimes(config)}</strong> UK time for <strong>{config.releaseDays} days</strong> — at most <strong>{maxReleases(config)} releases</strong>. A release is a chance to allocate, not permission to call.</li>
             </ul>
           </div>
+
+          {/* Release schedule — manager editable */}
+          <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Clock className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground">Uncontacted lead release schedule</span>
+              <Badge variant="outline" className="text-[10px]">{maxReleases(config)} releases maximum</Badge>
+            </div>
+            <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-1">
+              <li>Chasing stops at once after a genuine two-way conversation; the lead stays with that salesperson for normal follow-up.</li>
+              <li>Voicemail, no answer, engaged or a failed dial is not contact. A refusal or do-not-call request stops chasing straight away.</li>
+              <li>Before each release the lead must still be uncontacted, unconverted, eligible and legally callable. Call counts across all staff are never reset.</li>
+            </ul>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-[11px] font-semibold text-foreground">Release times (UK, comma separated)</Label>
+                <Input
+                  className="h-8 text-sm"
+                  value={timesDraft}
+                  onChange={(e) => setTimesDraft(e.target.value)}
+                  onBlur={() => {
+                    const next = sanitiseReleaseTimes(timesDraft.split(','));
+                    const times = next.length ? next : config.releaseTimes;
+                    setTimesDraft(times.join(', '));
+                    set('releaseTimes', times);
+                  }}
+                />
+                <p className="text-[10px] text-muted-foreground">For example 09:00, 12:00, 14:30, 17:00</p>
+              </div>
+              <NumberField
+                label="Release days"
+                value={config.releaseDays}
+                min={1}
+                max={30}
+                onChange={(n) => set('releaseDays', n)}
+              />
+            </div>
+          </div>
+
+          {/* Staff allowed in ORR */}
+          {staff.length > 0 && (
+            <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Staff allowed to use Open Round Robin</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Switch someone off to block them; they are skipped by the rotation until switched back on.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {staff.map((s) => {
+                  const allowed = !config.blockedAgentIds.includes(s.id);
+                  return (
+                    <label key={s.id} className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-1.5 text-xs">
+                      <span className="text-foreground">{s.name}</span>
+                      <span className="flex items-center gap-2">
+                        <span className={allowed ? 'text-foreground' : 'text-destructive'}>{allowed ? 'Allowed' : 'Blocked'}</span>
+                        <Switch
+                          checked={allowed}
+                          onCheckedChange={(v) =>
+                            set(
+                              'blockedAgentIds',
+                              v ? config.blockedAgentIds.filter((id) => id !== s.id) : [...config.blockedAgentIds, s.id],
+                            )
+                          }
+                        />
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Self-assign rule */}
           <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-4 space-y-2">
@@ -227,20 +316,6 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
                 min={1}
                 max={12}
                 onChange={(n) => set('maxDialsAfterMidday', n)}
-              />
-              <NumberField
-                label="Follow-up chase (days)"
-                value={config.followUpDays}
-                min={0}
-                max={30}
-                onChange={(n) => set('followUpDays', n)}
-              />
-              <NumberField
-                label="Follow-up dials a day"
-                value={config.followUpDailyDials}
-                min={1}
-                max={10}
-                onChange={(n) => set('followUpDailyDials', n)}
               />
               <NumberField
                 label="Offers before manager alert"

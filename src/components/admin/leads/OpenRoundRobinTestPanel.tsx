@@ -43,6 +43,14 @@ import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
 import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
 import { OrrLogicExplainer, DEFAULT_ORR_CADENCE, type OrrCadenceConfig } from './OrrLogicExplainer';
+import {
+  CONTACT_OUTCOMES,
+  SUPPRESSION_OUTCOMES,
+  allowedOrrStaff,
+  describeReleaseTimes,
+  maxReleases,
+  planNextRelease,
+} from '@/lib/orrPractice/releaseSchedule';
 import { SendWhatsAppLeadButton } from './SendWhatsAppLeadButton';
 import {
   OrrSandboxLeadsChrome,
@@ -153,6 +161,10 @@ interface DummyLead {
   followUpDay: number;
   /** True once the seven-day follow-up chase is finished with no contact. */
   chaseComplete: boolean;
+  /** Scheduled releases used so far (never resets the real attempt count). */
+  releasesUsed?: number;
+  /** When the release schedule started for this lead. */
+  chaseStartedAt?: number;
   /** True while the lead waits for its next eligible calling window. */
   waiting?: boolean;
   /** Last recorded outcome, shown to the next salesperson as context. */
@@ -662,7 +674,12 @@ export const OpenRoundRobinTestPanel: React.FC<{
   // How many agents are "on shift" for this rehearsal (1–4).
   // Default rehearsal: two agents live, which is the everyday picture on the floor.
   const [agentCount, setAgentCount] = useState(2);
-  const roster = useMemo(() => DUMMY_AGENTS.slice(0, agentCount), [agentCount]);
+  // Staff a manager has blocked from ORR are skipped by the rotation.
+  const [blockedIds, setBlockedIds] = useState<string[]>([]);
+  const roster = useMemo(
+    () => allowedOrrStaff(DUMMY_AGENTS.slice(0, agentCount), blockedIds),
+    [agentCount, blockedIds],
+  );
   const rosterRef = useRef(roster);
   useEffect(() => {
     rosterRef.current = roster;
@@ -857,6 +874,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
   const cadenceRef = useRef(cadence);
   useEffect(() => {
     cadenceRef.current = cadence;
+    setBlockedIds(cadence.blockedAgentIds);
   }, [cadence]);
 
 
@@ -1262,11 +1280,19 @@ export const OpenRoundRobinTestPanel: React.FC<{
     setLeads((current) =>
       current.map((lead) => {
         if (lead.id !== id) return lead;
+        // Genuine contact, conversion or a refusal stops automatic chasing at once.
+        const stopsChase =
+          CONTACT_OUTCOMES.has(status) || SUPPRESSION_OUTCOMES.has(status) || status === 'converted';
         return {
           ...lead,
           displayStatus: status,
           contactedAt: status === 'new' ? null : (lead.contactedAt ?? Date.now()),
-          history: [...lead.history, `${statusLabels[status]} recorded`],
+          ...(stopsChase ? { waiting: false, eligibleAt: null, nextCallAt: null } : {}),
+          history: [
+            ...lead.history,
+            `${statusLabels[status]} recorded`,
+            ...(stopsChase ? ['Automatic release chasing stopped'] : []),
+          ],
         };
       }),
     );
@@ -1287,25 +1313,31 @@ export const OpenRoundRobinTestPanel: React.FC<{
       current.map((lead) => {
         if (lead.id !== id) return lead;
         const now = Date.now();
+        // Real attempts across every agent; releases never reset this.
         const dials = lead.dials + 1;
-        const day = Math.max(1, lead.followUpDay);
-        const allowance = callsAllowedOn(now);
-        const callsToday = Math.min(allowance, lead.dayDials + 1);
-        const dayDone = callsToday >= allowance;
-        const nextDay = day + 1;
-        const chaseOver = dayDone && nextDay > CONTACT_DAYS;
-        const eligibleAt = dayDone ? nextDayStaffedTime(now) : nextEligibleAfterAttempt(now);
+        const releasesUsed = (lead.releasesUsed ?? 0) + 1;
+        const chaseStartedAt = lead.chaseStartedAt ?? lead.createdAt;
+        const plan = planNextRelease(
+          { chaseStartedAt, releasesUsed, contacted: false, converted: false, suppressed: false },
+          now,
+          cadenceRef.current,
+        );
+        const chaseOver = plan.done;
+        const eligibleAt = plan.done ? null : (plan as any).at;
+        const limit = maxReleases(cadenceRef.current);
 
-        toastBody = chaseOver
-          ? `Contact day ${day} of ${CONTACT_DAYS} · call ${callsToday} of ${allowance} complete. Chase complete — ${CONTACT_DAYS} contact days done.`
-          : `Day ${day} of ${CONTACT_DAYS} · Call ${callsToday} of ${allowance} complete. Back in Round Robin from ${formatEligible(eligibleAt)}.`;
+        toastBody = plan.done
+          ? `Chase complete — ${releasesUsed} of ${limit} releases used.`
+          : `Release ${(plan as any).releaseNumber} of ${limit} (day ${(plan as any).contactDay} of ${cadenceRef.current.releaseDays}) from ${formatEligible((plan as any).at)}.`;
         if (chaseOver) toastTitle = 'Chase complete';
 
         return {
           ...lead,
           dials,
-          dayDials: dayDone ? 0 : callsToday,
-          followUpDay: dayDone && !chaseOver ? nextDay : day,
+          releasesUsed,
+          chaseStartedAt,
+          dayDials: 0,
+          followUpDay: plan.done ? lead.followUpDay : (plan as any).contactDay,
           displayStatus: 'no_answer',
           previousOutcome: 'No answer',
           waiting: !chaseOver,
@@ -1313,15 +1345,13 @@ export const OpenRoundRobinTestPanel: React.FC<{
           status: 'queued',
           dialedThisOffer: false,
           chaseComplete: chaseOver,
-          eligibleAt: chaseOver ? null : eligibleAt,
-          nextCallAt: chaseOver ? null : eligibleAt,
+          eligibleAt,
+          nextCallAt: eligibleAt,
           greenTeamAt: null,
           history: [
             ...lead.history,
-            `No answer logged — day ${day} of ${CONTACT_DAYS}, call ${callsToday} of ${allowance} (${dials} attempts in total)`,
-            chaseOver
-              ? `Chase complete — ${CONTACT_DAYS} contact days done`
-              : `Back in Round Robin from ${formatEligible(eligibleAt)}`,
+            `No answer logged — ${dials} real attempts in total, ${releasesUsed} of ${limit} releases used`,
+            chaseOver ? 'Chase complete — no more releases' : `Next release ${formatEligible(eligibleAt as number)}`,
           ],
         };
       }),
@@ -2109,7 +2139,14 @@ export const OpenRoundRobinTestPanel: React.FC<{
       </section>
 
       {/* Rules, timings and editable variables */}
-      {isManagerView && !isLive && <OrrLogicExplainer config={cadence} onChange={setCadence} teamLabel={theme.label} />}
+      {isManagerView && !isLive && (
+        <OrrLogicExplainer
+          config={cadence}
+          onChange={setCadence}
+          teamLabel={theme.label}
+          staff={DUMMY_AGENTS.slice(0, agentCount).map((a) => ({ id: a.id, name: a.name }))}
+        />
+      )}
 
       {allAgentsBusy && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
@@ -2203,9 +2240,9 @@ export const OpenRoundRobinTestPanel: React.FC<{
                   <>
                     <li>A new lead is unowned. The rotation holds it for one salesperson for the current call attempt only.</li>
                     <li>Nobody owns future attempts — if the countdown runs out with no call, it goes straight back into the pool and no attempt is counted.</li>
-                    <li>No answer counts as one genuine attempt, leaves your queue and comes back at its next eligible time — the rotation decides who gets it.</li>
-                    <li>Weekdays 09:00–18:00, weekends about 10:00–13:00 when staffed. At least 3 hours between attempts.</li>
-                    <li>Up to 2 attempts a weekday, normally 1 at a weekend, across 7 contact days.</li>
+                    <li>No answer, voicemail or engaged counts as one genuine attempt, leaves your queue and waits for the next release — the rotation decides who gets it.</li>
+                    <li>Releases at {describeReleaseTimes(cadence)} UK time for {cadence.releaseDays} days — {maxReleases(cadence)} releases maximum. A release is not permission to call.</li>
+                    <li>Chasing stops at once on a real conversation (the lead stays with you), a refusal or a do-not-call request.</li>
                   </>
                 )}
               </ul>
@@ -2660,9 +2697,10 @@ export const OpenRoundRobinTestPanel: React.FC<{
             <Clock className="h-3 w-3 text-primary" />
           </span>
           <p className="text-[11px] text-muted-foreground">
-            <span className="font-semibold text-foreground">Calling plan:</span>{' '}
-            Weekdays 09:00–18:00, weekends roughly 10:00–13:00 when staffed. Up to 2 genuine attempts a full weekday and
-            normally 1 a weekend day, always at least {MIN_GAP_HOURS} hours apart, across {CONTACT_DAYS} contact days.
+            <span className="font-semibold text-foreground">Release plan:</span>{' '}
+            Uncontacted leads are released at {describeReleaseTimes(cadence)} UK time for {cadence.releaseDays} days, at
+            most {maxReleases(cadence)} releases. A release is a chance to allocate, not permission to call; chasing stops
+            on genuine contact, a refusal or a do-not-call request.
             After No answer the lead leaves your queue and returns to Open Round Robin from its next eligible time — waiting
             leads are fed back a couple at a time, so nothing lands in one batch.
             {isLive
