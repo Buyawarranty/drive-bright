@@ -3094,6 +3094,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                             <ChevronDown className="h-3.5 w-3.5" />
                           </span>
                         </div>
+                        )}
                       </td>
                       <td className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
                         {detailsHidden ? (
