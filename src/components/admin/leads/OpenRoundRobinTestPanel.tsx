@@ -1938,6 +1938,19 @@ export const OpenRoundRobinTestPanel: React.FC<{
             <li>With one agent, every lead queues behind the one they are holding.</li>
             <li>Changing this clears the practice list so the rotation starts clean.</li>
           </ul>
+          {cadence.noSaleBlockEnabled && noSaleBlocks.some((r) => r.blockedDays > 0 || r.inGracePeriod) && (
+            <div className="mt-2 rounded-md border border-amber-200 bg-amber-50/70 px-3 py-2 space-y-0.5">
+              <p className="text-xs font-semibold text-amber-900">No-sale block ladder (practice)</p>
+              {noSaleBlocks
+                .filter((r) => r.blockedDays > 0 || r.inGracePeriod)
+                .map((r) => (
+                  <p key={r.agentId} className="text-xs text-amber-900/90">
+                    {getAgent(r.agentId).name}: {r.reason}
+                    {r.needsManagementReview ? ' — management review due' : ''}
+                  </p>
+                ))}
+            </div>
+          )}
         </div>
         )}
 
