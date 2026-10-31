@@ -17,3 +17,16 @@ export function nextStaffGateState(prev: StaffGateState, outcome: StaffGateOutco
   if (outcome !== 'transient') return outcome;
   return prev === 'ready' ? 'ready' : 'error';
 }
+
+/**
+ * Background "is this login still alive?" check. Only a definitive refusal
+ * (401/403) or a missing user counts as an ended login. Network errors and
+ * timeouts (no status) never sign anyone out.
+ */
+export function sessionCheckLooksEnded(error: unknown, user: unknown): boolean {
+  if (error) {
+    const status = (error as { status?: number } | null)?.status;
+    return status === 401 || status === 403;
+  }
+  return !user;
+}

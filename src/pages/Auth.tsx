@@ -131,6 +131,16 @@ const Auth = () => {
     }
   }, [searchParams]);
 
+  // Explain why someone landed back here after the dashboard ended their login.
+  useEffect(() => {
+    if (searchParams.get('ended') !== '1') return;
+    toast({
+      title: 'You were signed out',
+      description: 'This login was ended — usually because the same account signed in on another computer or browser, or a manager signed it out. Please sign in again.',
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     // Set up auth state listener to handle navigation on successful sign in
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
