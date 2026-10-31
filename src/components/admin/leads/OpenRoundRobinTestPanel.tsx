@@ -1512,7 +1512,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
         firstName: 'TEST',
         lastName: `RR Lead ${String(leadNumber).padStart(2, '0')}`,
         email: `test.rr${leadNumber}@example.com`,
-        status: 'new',
+        status: owner ? 'new' : 'queued',
         displayStatus: 'new',
         assignedTo: owner?.id ?? null,
         attemptCount: 1,
