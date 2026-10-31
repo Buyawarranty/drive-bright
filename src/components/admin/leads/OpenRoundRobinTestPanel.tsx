@@ -2811,11 +2811,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
                 <tr>
                   <th className="px-2 py-2 text-center w-11">#</th>
                   <th className="px-2 py-2 text-left w-9"></th>
-                  <th className="px-2 py-2 text-left">Lead Ref (Reg)</th>
-                  <th className="px-2 py-2 text-left">Lead type</th>
                   <th className="px-2 py-2 text-left">Agent</th>
                   {showSourceColumn && <th className="px-2 py-2 text-center">Src</th>}
-                  <th className="px-2 py-2 text-left">Time to Lead</th>
                   <th className="px-2 py-2 text-left">Status</th>
                   <th className="px-2 py-2 text-center">Calls</th>
                   <th className="px-2 py-2 text-left">Actions</th>
@@ -2830,6 +2827,9 @@ export const OpenRoundRobinTestPanel: React.FC<{
                   <th className="px-2 py-2 text-left">Lead Date</th>
                   <th className="px-2 py-2 text-left">Customer activity</th>
                   <th className="px-2 py-2 text-left">Time to contact</th>
+                  <th className="px-2 py-2 text-left">Lead Ref (Reg)</th>
+                  <th className="px-2 py-2 text-left">Lead type</th>
+                  <th className="px-2 py-2 text-left">Time to Lead</th>
                 </tr>
               </thead>
               <tbody>
@@ -2857,31 +2857,6 @@ export const OpenRoundRobinTestPanel: React.FC<{
                       <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
                       <td className="px-2 py-2">
                         <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
-                      </td>
-                      <td className="px-2 py-2 text-xs font-semibold text-foreground whitespace-nowrap">
-                        {leadRefFor(lead.vehicleReg) || '—'}
-                      </td>
-                      <td className="px-2 py-2">
-                        {(() => {
-                          const h = new Date(lead.createdAt).getHours();
-                          const overnight = h < 9 || h >= 18;
-                          return (
-                            <div className="flex flex-col items-start gap-1">
-                              {orrLead && (
-                                <span className="inline-flex items-center rounded-md border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary whitespace-nowrap">
-                                  Open Round Robin
-                                </span>
-                              )}
-                              <span className={cn(
-                                'inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold whitespace-nowrap',
-                                overnight ? 'bg-primary/10 text-primary' : 'bg-emerald-50 text-emerald-700',
-                              )}>
-                                {overnight ? <Clock className="h-3.5 w-3.5" /> : <span aria-hidden>⚡</span>}
-                                {overnight ? 'Overnight' : 'Live'}
-                              </span>
-                            </div>
-                          );
-                        })()}
                       </td>
                       <td className="px-2 py-2">
                         <div className="flex flex-col items-start gap-1">
@@ -2918,89 +2893,6 @@ export const OpenRoundRobinTestPanel: React.FC<{
                         </td>
                       )}
 
-                      <td className="px-2 py-2">
-                        {!orrLead ? (
-                          <div className="min-w-[160px] rounded-md border border-border bg-muted/40 px-2.5 py-2">
-                            <div className="text-xs font-medium text-muted-foreground">No time limit</div>
-                            <div className="text-sm font-semibold text-foreground">Stays with this agent</div>
-                          </div>
-                        ) : lead.contactedAt ? (
-                          <div className="min-w-[180px] rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-                              <span className="text-sm font-semibold text-emerald-800">This lead is now yours</span>
-                            </div>
-                            <div className="mt-1 text-xs text-emerald-900/80">
-                              Contacted within{' '}
-                              <span className="font-semibold">
-                                {formatClock(Math.max(0, Math.round((lead.contactedAt - lead.createdAt) / 1000)))}
-                              </span>
-                            </div>
-                            <div className="text-xs text-emerald-900/70">The lead has been assigned to you.</div>
-                          </div>
-                        ) : (
-                        <div className={cn('min-w-[170px] max-w-[220px] rounded-md border px-2.5 py-1.5', theme.holdBox)}>
-                          {lead.chaseComplete ? (
-                            <>
-                              <div className="text-xs font-semibold text-foreground">Chase complete</div>
-                              <div className="text-[11px] text-muted-foreground">{CONTACT_DAYS} contact days completed</div>
-                            </>
-                          ) : lead.waiting ? (
-                            <>
-                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
-                                <Clock className="h-3 w-3 text-amber-700" /> Waiting for the next calling window
-                              </div>
-                              <div className="text-sm font-semibold text-amber-900">
-                                Back in Round Robin from {lead.eligibleAt ? formatEligible(lead.eligibleAt) : 'the next staffed window'}
-                              </div>
-                            </>
-                          ) : lead.assignedTo === null ? (
-                            <>
-                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
-                                <Clock className="h-3 w-3 text-amber-700" /> In the queue
-                              </div>
-                              <div className="text-sm font-semibold text-amber-900">
-                                Goes to the next agent who frees up
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
-                                <Lock className={cn('h-3 w-3', theme.holdIcon)} /> Held for you
-                              </div>
-                              <div className={cn('text-sm font-semibold tabular-nums', theme.holdValue)}>
-                                {attempted ? 'Dial logged — set an outcome' : `${formatHold(remaining)} left to call`}
-                              </div>
-                            </>
-                          )}
-
-                          <div className="text-[11px] text-muted-foreground leading-tight">
-                            Lead arrived {formatClock(ageSec)} ago · Day {Math.max(1, lead.followUpDay)} of {CONTACT_DAYS} · Call{' '}
-                            {Math.min(callsAllowedOn(Date.now()), lead.dayDials + 1)} of {callsAllowedOn(Date.now())} today
-                          </div>
-                          {lead.previousOutcome && (
-                            <div className="text-[11px] font-medium text-foreground/80">Previous: {lead.previousOutcome}</div>
-                          )}
-
-
-
-                          <div className={cn('mt-1.5 h-1.5 w-full rounded-full overflow-hidden', theme.bar)}>
-                            <div
-                              className={cn('h-full rounded-full transition-all', theme.barFill)}
-                              style={{
-                                width: `${Math.max(
-                                  0,
-                                  Math.min(
-                                    100,
-                                    (remaining / Math.max(1, Math.round((lead.deadlineAt - lead.createdAt) / 1000))) * 100,
-                                  ),
-                                )}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-                        )}
-                      </td>
                       <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
                         <Select
                           value={lead.displayStatus}
@@ -3206,6 +3098,114 @@ export const OpenRoundRobinTestPanel: React.FC<{
                             </div>
                           );
                         })()}
+                      </td>
+                      <td className="px-2 py-2 text-xs font-semibold text-foreground whitespace-nowrap">
+                        {leadRefFor(lead.vehicleReg) || '—'}
+                      </td>
+                      <td className="px-2 py-2">
+                        {(() => {
+                          const h = new Date(lead.createdAt).getHours();
+                          const overnight = h < 9 || h >= 18;
+                          return (
+                            <div className="flex flex-col items-start gap-1">
+                              {orrLead && (
+                                <span className="inline-flex items-center rounded-md border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary whitespace-nowrap">
+                                  Open Round Robin
+                                </span>
+                              )}
+                              <span className={cn(
+                                'inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold whitespace-nowrap',
+                                overnight ? 'bg-primary/10 text-primary' : 'bg-emerald-50 text-emerald-700',
+                              )}>
+                                {overnight ? <Clock className="h-3.5 w-3.5" /> : <span aria-hidden>⚡</span>}
+                                {overnight ? 'Overnight' : 'Live'}
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </td>
+                      <td className="px-2 py-2">
+                        {!orrLead ? (
+                          <div className="min-w-[160px] rounded-md border border-border bg-muted/40 px-2.5 py-2">
+                            <div className="text-xs font-medium text-muted-foreground">No time limit</div>
+                            <div className="text-sm font-semibold text-foreground">Stays with this agent</div>
+                          </div>
+                        ) : lead.contactedAt ? (
+                          <div className="min-w-[180px] rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                              <span className="text-sm font-semibold text-emerald-800">This lead is now yours</span>
+                            </div>
+                            <div className="mt-1 text-xs text-emerald-900/80">
+                              Contacted within{' '}
+                              <span className="font-semibold">
+                                {formatClock(Math.max(0, Math.round((lead.contactedAt - lead.createdAt) / 1000)))}
+                              </span>
+                            </div>
+                            <div className="text-xs text-emerald-900/70">The lead has been assigned to you.</div>
+                          </div>
+                        ) : (
+                        <div className={cn('min-w-[170px] max-w-[220px] rounded-md border px-2.5 py-1.5', theme.holdBox)}>
+                          {lead.chaseComplete ? (
+                            <>
+                              <div className="text-xs font-semibold text-foreground">Chase complete</div>
+                              <div className="text-[11px] text-muted-foreground">{CONTACT_DAYS} contact days completed</div>
+                            </>
+                          ) : lead.waiting ? (
+                            <>
+                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
+                                <Clock className="h-3 w-3 text-amber-700" /> Waiting for the next calling window
+                              </div>
+                              <div className="text-sm font-semibold text-amber-900">
+                                Back in Round Robin from {lead.eligibleAt ? formatEligible(lead.eligibleAt) : 'the next staffed window'}
+                              </div>
+                            </>
+                          ) : lead.assignedTo === null ? (
+                            <>
+                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
+                                <Clock className="h-3 w-3 text-amber-700" /> In the queue
+                              </div>
+                              <div className="text-sm font-semibold text-amber-900">
+                                Goes to the next agent who frees up
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
+                                <Lock className={cn('h-3 w-3', theme.holdIcon)} /> Held for you
+                              </div>
+                              <div className={cn('text-sm font-semibold tabular-nums', theme.holdValue)}>
+                                {attempted ? 'Dial logged — set an outcome' : `${formatHold(remaining)} left to call`}
+                              </div>
+                            </>
+                          )}
+
+                          <div className="text-[11px] text-muted-foreground leading-tight">
+                            Lead arrived {formatClock(ageSec)} ago · Day {Math.max(1, lead.followUpDay)} of {CONTACT_DAYS} · Call{' '}
+                            {Math.min(callsAllowedOn(Date.now()), lead.dayDials + 1)} of {callsAllowedOn(Date.now())} today
+                          </div>
+                          {lead.previousOutcome && (
+                            <div className="text-[11px] font-medium text-foreground/80">Previous: {lead.previousOutcome}</div>
+                          )}
+
+
+
+                          <div className={cn('mt-1.5 h-1.5 w-full rounded-full overflow-hidden', theme.bar)}>
+                            <div
+                              className={cn('h-full rounded-full transition-all', theme.barFill)}
+                              style={{
+                                width: `${Math.max(
+                                  0,
+                                  Math.min(
+                                    100,
+                                    (remaining / Math.max(1, Math.round((lead.deadlineAt - lead.createdAt) / 1000))) * 100,
+                                  ),
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                        )}
                       </td>
 
                     </tr>
