@@ -25,6 +25,9 @@ import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import MinimalLandingFooter from '@/components/brand-pages/MinimalLandingFooter';
 import MileageWithMotInput from '@/components/checkout/MileageWithMotInput';
+import { quoteCustomerFieldError, validateQuoteCustomer } from '../../supabase/functions/_shared/quoteCustomerValidation';
+import { sanitizePhoneInput, UK_PHONE_EXAMPLE } from '../../supabase/functions/_shared/ukCheckoutPhone';
+import { sanitizeNameInput } from '../../supabase/functions/_shared/ukPersonName';
 
 interface QuoteData {
   id: string;
@@ -96,6 +99,10 @@ export default function LiveQuotePage() {
   });
   const [startDate, setStartDate] = useState<Date | undefined>(startOfDay(new Date()));
   const [showValidation, setShowValidation] = useState(false);
+  const [mileageApproval, setMileageApproval] = useState({ valid: false, confirmedLow: false });
+  const handleMileageValidation = useCallback((valid: boolean, confirmedLow: boolean) => {
+    setMileageApproval({ valid, confirmedLow });
+  }, []);
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   
   // Track which fields are pre-populated (for green tick display)
@@ -334,86 +341,36 @@ export default function LiveQuotePage() {
   };
 
   const validateForm = () => {
-    const errors: {[key: string]: string} = {};
-    
-    // Same validation patterns as Step 4 (CustomerDetailsStep.tsx)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    // UK phone number validation (landline and mobile)
-    const phoneRegex = /^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?1\d{3}|\(?01\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?2\d{2}|\(?02\d{2}\)?)\s?\d{3}\s?\d{4}$/;
-    
-    // UK postcode validation
-    const postcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
-    
-    // First name validation
-    if (!customerData.firstName.trim()) {
-      errors.firstName = 'Please enter your first name.';
-    } else if (customerData.firstName.trim().length < 2) {
-      errors.firstName = 'Please enter your first name.';
+    const errors = validateQuoteCustomer(customerData);
+    if (Number(customerData.mileage) < 10000 && !mileageApproval.valid) {
+      errors.mileage = 'Please confirm your current mileage.';
     }
-    
-    // Last name validation
-    if (!customerData.lastName.trim()) {
-      errors.lastName = 'Please enter your last name.';
-    } else if (customerData.lastName.trim().length < 2) {
-      errors.lastName = 'Please enter your last name.';
-    }
-    
-    // Email validation
-    if (!customerData.email.trim()) {
-      errors.email = 'Please enter your email address.';
-    } else if (!emailRegex.test(customerData.email)) {
-      errors.email = 'Please enter a valid email address.';
-    }
-    
-    // Phone validation (UK format)
-    if (!customerData.phone.trim()) {
-      errors.phone = 'Enter a phone number.';
-    } else if (!phoneRegex.test(customerData.phone)) {
-      errors.phone = 'Enter a valid UK phone number.';
-    }
-    
-    // Address validation
-    if (!customerData.addressLine1.trim()) {
-      errors.addressLine1 = 'Enter your street address.';
-    } else if (customerData.addressLine1.trim().length < 3) {
-      errors.addressLine1 = 'Enter your street address.';
-    }
-    
-    // City validation
-    if (!customerData.city.trim()) {
-      errors.city = 'Enter your city or town.';
-    } else if (customerData.city.trim().length < 2) {
-      errors.city = 'Enter your city or town.';
-    }
-    
-    // Postcode validation (UK format)
-    if (!customerData.postcode.trim()) {
-      errors.postcode = 'Enter your postcode.';
-    } else if (!postcodeRegex.test(customerData.postcode)) {
-      errors.postcode = 'Enter a valid UK postcode.';
-    }
-    
-    // Mileage validation
-    if (!customerData.mileage.trim()) {
-      errors.mileage = 'Please confirm the current mileage.';
-    } else {
-      const mileage = parseInt(customerData.mileage);
-      if (mileage > 150000) {
-        errors.mileage = 'Sorry, we only cover vehicles under 150,000 miles.';
-      }
-    }
-    
     setFieldErrors(errors);
+    if (Object.keys(errors).length) {
+      setShowAddressFields(true);
+      requestAnimationFrame(() => {
+        for (const field of Object.keys(errors)) {
+          const input = document.getElementById(field === 'postcode' ? 'postcodeDisplay' : field);
+          input?.classList.remove('mq-attention');
+          if (input) void input.offsetWidth;
+          input?.classList.add('mq-attention');
+        }
+        const first = Object.keys(errors)[0];
+        const input = document.getElementById(first === 'postcode' ? 'postcodeDisplay' : first);
+        input?.focus({ preventScroll: true });
+        input?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
     return Object.keys(errors).length === 0;
   };
 
   const handlePayment = async (method: 'stripe' | 'bumper') => {
+    if (processingPayment) return;
     setShowValidation(true);
     
     if (!validateForm()) {
       toast.error('Please fill in all required fields');
-      document.getElementById('customer-form')?.scrollIntoView({ behavior: 'smooth' });
+
       return;
     }
 
@@ -427,6 +384,7 @@ export default function LiveQuotePage() {
           discountCode: promoApplied ? promoCode.trim().toUpperCase() : undefined,
           customerData: {
             ...customerData,
+            mileageConfirmedLow: mileageApproval.confirmedLow,
             fullName: `${customerData.firstName} ${customerData.lastName}`.trim(),
             startDate: startDate?.toISOString()
           }
@@ -486,89 +444,30 @@ export default function LiveQuotePage() {
     setPromoDiscount(null);
   };
 
-  // Validation patterns (same as validateForm)
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?1\d{3}|\(?01\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?2\d{2}|\(?02\d{2}\)?)\s?\d{3}\s?\d{4}$/;
-  const postcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+  const validateField = quoteCustomerFieldError;
 
-  // Validate a single field
-  const validateField = (fieldName: string, value: string): string | null => {
-    switch (fieldName) {
-      case 'firstName':
-        if (!value.trim()) return 'Please enter your first name.';
-        if (value.trim().length < 2) return 'Please enter your first name.';
-        return null;
-      case 'lastName':
-        if (!value.trim()) return 'Please enter your last name.';
-        if (value.trim().length < 2) return 'Please enter your last name.';
-        return null;
-      case 'email':
-        if (!value.trim()) return 'Please enter your email address.';
-        if (!emailRegex.test(value)) return 'Please enter a valid email address.';
-        return null;
-      case 'phone':
-        if (!value.trim()) return 'Enter a phone number.';
-        if (!phoneRegex.test(value)) return 'Enter a valid UK phone number.';
-        return null;
-      case 'addressLine1':
-        if (!value.trim()) return 'Enter your street address.';
-        if (value.trim().length < 3) return 'Enter your street address.';
-        return null;
-      case 'city':
-        if (!value.trim()) return 'Enter your city or town.';
-        if (value.trim().length < 2) return 'Enter your city or town.';
-        return null;
-      case 'postcode':
-        if (!value.trim()) return 'Enter your postcode.';
-        if (!postcodeRegex.test(value)) return 'Enter a valid UK postcode.';
-        return null;
-      case 'mileage':
-        if (!value.trim()) return 'Please confirm the current mileage.';
-        const mileage = parseInt(value);
-        if (mileage > 150000) return 'Sorry, we only cover vehicles under 150,000 miles.';
-        return null;
-      default:
-        return null;
-    }
+  const handleInputChange = (fieldName: string, value: string) => {
+    setCustomerData(prev => ({ ...prev, [fieldName]: value }));
+    setTouchedFields(prev => ({ ...prev, [fieldName]: true }));
   };
 
-  // Handle field blur for real-time validation
   const handleFieldBlur = (fieldName: string) => {
     setTouchedFields(prev => ({ ...prev, [fieldName]: true }));
-    const value = customerData[fieldName as keyof typeof customerData];
-    const error = validateField(fieldName, value);
-    setFieldErrors(prev => {
-      if (error) {
-        return { ...prev, [fieldName]: error };
-      } else {
-        const { [fieldName]: _, ...rest } = prev;
-        return rest;
-      }
-    });
   };
 
-  // Check if a field is valid (pre-populated with value OR user-filled and passes validation)
   const isFieldValid = (fieldName: string) => {
     const value = customerData[fieldName as keyof typeof customerData];
-    if (!value || value.trim() === '') return false;
-    
-    // If pre-populated, check it still has value
-    if (prePopulatedFields[fieldName]) {
-      return validateField(fieldName, value) === null;
-    }
-    
-    // If touched by user and passes validation
-    if (touchedFields[fieldName]) {
-      return validateField(fieldName, value) === null;
-    }
-    
-    return false;
+    return Boolean(value?.trim()) && validateField(fieldName, value) === null;
   };
 
-  // Check if we should show error for a field
   const shouldShowError = (fieldName: string) => {
-    return (touchedFields[fieldName] || showValidation) && fieldErrors[fieldName];
+    const value = customerData[fieldName as keyof typeof customerData];
+    return Boolean(value?.trim() || showValidation) && validateField(fieldName, value) !== null;
   };
+
+  const getValidationClass = (field: string) => shouldShowError(field)
+    ? 'border-2 border-destructive bg-destructive/5 ring-2 ring-destructive/20'
+    : isFieldValid(field) ? 'border-success bg-success/5' : '';
 
   // Mileage dropdown options (10,000 to 140,000 in 1,000 increments)
   const mileageOptions = useMemo(() => {
@@ -989,7 +888,7 @@ export default function LiveQuotePage() {
               <button
                 type="button"
                 onClick={handleRemovePromo}
-                className="text-xs text-red-500 hover:text-red-700 font-medium"
+                className="text-xs text-destructive hover:text-red-700 font-medium"
               >
                 Remove
               </button>
@@ -1015,7 +914,7 @@ export default function LiveQuotePage() {
                 </Button>
               </div>
               {promoError && (
-                <p className="text-xs text-red-500">{promoError}</p>
+                <p className="text-xs text-destructive">{promoError}</p>
               )}
             </div>
           )}
@@ -1334,16 +1233,16 @@ export default function LiveQuotePage() {
                       id="email"
                       type="email"
                       value={customerData.email}
-                      onChange={(e) => setCustomerData(prev => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
                       onBlur={() => handleFieldBlur('email')}
-                      className={`pr-10 ${shouldShowError('email') ? 'border-red-500' : isFieldValid('email') ? 'border-green-500' : ''}`}
+                      className={`pr-10 ${getValidationClass('email')}`}
                     />
                     {isFieldValid('email') && (
-                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-success pointer-events-none" />
                     )}
                   </div>
                   {shouldShowError('email') && (
-                    <p className="text-xs text-red-500">{fieldErrors.email}</p>
+                    <p className="text-xs text-destructive">{validateField('email', customerData.email)}</p>
                   )}
                 </div>
 
@@ -1354,17 +1253,21 @@ export default function LiveQuotePage() {
                     <Input
                       id="phone"
                       type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      maxLength={15}
+                      placeholder={UK_PHONE_EXAMPLE}
                       value={customerData.phone}
-                      onChange={(e) => setCustomerData(prev => ({ ...prev, phone: e.target.value }))}
+                      onChange={(e) => handleInputChange('phone', sanitizePhoneInput(e.target.value))}
                       onBlur={() => handleFieldBlur('phone')}
-                      className={`pr-10 ${shouldShowError('phone') ? 'border-red-500' : isFieldValid('phone') ? 'border-green-500' : ''}`}
+                      className={`pr-10 ${getValidationClass('phone')}`}
                     />
                     {isFieldValid('phone') && (
-                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-success pointer-events-none" />
                     )}
                   </div>
                   {shouldShowError('phone') && (
-                    <p className="text-xs text-red-500">{fieldErrors.phone}</p>
+                    <p className="text-xs text-destructive">{validateField('phone', customerData.phone)}</p>
                   )}
                 </div>
 
@@ -1376,16 +1279,16 @@ export default function LiveQuotePage() {
                       <Input
                         id="firstName"
                         value={customerData.firstName}
-                        onChange={(e) => setCustomerData(prev => ({ ...prev, firstName: e.target.value }))}
+                        onChange={(e) => handleInputChange('firstName', sanitizeNameInput(e.target.value))}
                         onBlur={() => handleFieldBlur('firstName')}
-                        className={`pr-10 ${shouldShowError('firstName') ? 'border-red-500' : isFieldValid('firstName') ? 'border-green-500' : ''}`}
+                        className={`pr-10 ${getValidationClass('firstName')}`}
                       />
                       {isFieldValid('firstName') && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-success pointer-events-none" />
                       )}
                     </div>
                     {shouldShowError('firstName') && (
-                      <p className="text-xs text-red-500">{fieldErrors.firstName}</p>
+                      <p className="text-xs text-destructive">{validateField('firstName', customerData.firstName)}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -1394,16 +1297,16 @@ export default function LiveQuotePage() {
                       <Input
                         id="lastName"
                         value={customerData.lastName}
-                        onChange={(e) => setCustomerData(prev => ({ ...prev, lastName: e.target.value }))}
+                        onChange={(e) => handleInputChange('lastName', sanitizeNameInput(e.target.value))}
                         onBlur={() => handleFieldBlur('lastName')}
-                        className={`pr-10 ${shouldShowError('lastName') ? 'border-red-500' : isFieldValid('lastName') ? 'border-green-500' : ''}`}
+                        className={`pr-10 ${getValidationClass('lastName')}`}
                       />
                       {isFieldValid('lastName') && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-success pointer-events-none" />
                       )}
                     </div>
                     {shouldShowError('lastName') && (
-                      <p className="text-xs text-red-500">{fieldErrors.lastName}</p>
+                      <p className="text-xs text-destructive">{validateField('lastName', customerData.lastName)}</p>
                     )}
                   </div>
                 </div>
@@ -1440,17 +1343,17 @@ export default function LiveQuotePage() {
                             lookupPostcode(customerData.postcode);
                           }
                         }}
-                        className={`pr-10 ${shouldShowError('postcode') ? 'border-red-500' : isFieldValid('postcode') ? 'border-green-500' : ''}`}
+                        className={`pr-10 ${getValidationClass('postcode')}`}
                         placeholder="e.g. SW1A 1AA or High Street, Bath"
                       />
                       {isLookingUpPostcode ? (
                         <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500 animate-spin" />
                       ) : isFieldValid('postcode') ? (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-success pointer-events-none" />
                       ) : null}
                     </div>
                     {shouldShowError('postcode') && (
-                      <p className="text-xs text-red-500">{fieldErrors.postcode}</p>
+                      <p className="text-xs text-destructive">{validateField('postcode', customerData.postcode)}</p>
                     )}
                     {postcodeLookupError && !shouldShowError('postcode') && (
                       <p className="text-xs text-amber-600">{postcodeLookupError}</p>
@@ -1549,16 +1452,16 @@ export default function LiveQuotePage() {
                       <Input
                         id="addressLine1"
                         value={customerData.addressLine1}
-                        onChange={(e) => setCustomerData(prev => ({ ...prev, addressLine1: e.target.value }))}
+                        onChange={(e) => handleInputChange('addressLine1', e.target.value)}
                         onBlur={() => handleFieldBlur('addressLine1')}
-                        className={`pr-10 ${shouldShowError('addressLine1') ? 'border-red-500' : isFieldValid('addressLine1') ? 'border-green-500' : ''}`}
+                        className={`pr-10 ${getValidationClass('addressLine1')}`}
                       />
                       {isFieldValid('addressLine1') && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-success pointer-events-none" />
                       )}
                     </div>
                     {shouldShowError('addressLine1') && (
-                      <p className="text-xs text-red-500">{fieldErrors.addressLine1}</p>
+                      <p className="text-xs text-destructive">{validateField('addressLine1', customerData.addressLine1)}</p>
                     )}
                   </div>
 
@@ -1568,7 +1471,7 @@ export default function LiveQuotePage() {
                     <Input
                       id="addressLine2"
                       value={customerData.addressLine2}
-                      onChange={(e) => setCustomerData(prev => ({ ...prev, addressLine2: e.target.value }))}
+                      onChange={(e) => handleInputChange('addressLine2', e.target.value)}
                     />
                   </div>
 
@@ -1579,16 +1482,16 @@ export default function LiveQuotePage() {
                       <Input
                         id="city"
                         value={customerData.city}
-                        onChange={(e) => setCustomerData(prev => ({ ...prev, city: e.target.value }))}
+                        onChange={(e) => handleInputChange('city', e.target.value)}
                         onBlur={() => handleFieldBlur('city')}
-                        className={`pr-10 ${shouldShowError('city') ? 'border-red-500' : isFieldValid('city') ? 'border-green-500' : ''}`}
+                        className={`pr-10 ${getValidationClass('city')}`}
                       />
                       {isFieldValid('city') && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-success pointer-events-none" />
                       )}
                     </div>
                     {shouldShowError('city') && (
-                      <p className="text-xs text-red-500">{fieldErrors.city}</p>
+                      <p className="text-xs text-destructive">{validateField('city', customerData.city)}</p>
                     )}
                   </div>
                   </>
@@ -1602,8 +1505,10 @@ export default function LiveQuotePage() {
                   <MileageWithMotInput
                     registration={quote.vehicle.reg}
                     value={customerData.mileage}
+                    onValidationChange={handleMileageValidation}
                     onChange={(val) => {
-                      setCustomerData(prev => ({ ...prev, mileage: val }));
+                      setMileageApproval({ valid: false, confirmedLow: false });
+                      handleInputChange('mileage', val);
                       // Clear or set error inline
                       const error = validateField('mileage', val);
                       setFieldErrors(prev => {
@@ -1613,7 +1518,7 @@ export default function LiveQuotePage() {
                       });
                     }}
                     onBlur={() => handleFieldBlur('mileage')}
-                    showValidation={Boolean(shouldShowError('mileage'))}
+                    showValidation={showValidation}
                   />
                 </div>
 
