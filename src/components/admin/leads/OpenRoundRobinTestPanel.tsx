@@ -1068,6 +1068,117 @@ export const OpenRoundRobinTestPanel: React.FC<{
     return null;
   }, [isLive, isManagerView, simulatedAgentId, roster, myUnworkedCount]);
 
+  /* Manager view — full queue & control (practice data only). */
+  const managerStats = useMemo<OrrManagerStats>(() => {
+    const now = Date.now();
+    const orrLeads = effectiveLeads.filter(isOrr);
+    return {
+      totalLeads: effectiveLeads.length + overnightParked,
+      readyNow: orrLeads.filter(
+        (l) => l.status === 'queued' && !l.waiting && l.assignedTo === null && !l.chaseComplete,
+      ).length,
+      overnightWaiting: overnightParked + orrLeads.filter((l) => l.waiting && !l.chaseComplete).length,
+      nextReleaseLabel: formatTimeOfDay(nextReleaseAt(now, cadence)),
+      availableAgents: roster.length,
+      totalAgents: agentCount,
+      activeLeads: orrLeads.filter((l) => l.assignedTo !== null && !isWorked(l) && isHeldLive(l, now)).length,
+      maxPerAgent: DEFAULT_MAX_UNWORKED_PER_AGENT,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveLeads, overnightParked, roster.length, agentCount, cadence, tick]);
+
+  const queueRows = useMemo<QueueRow[]>(() => {
+    const now = Date.now();
+    return effectiveLeads
+      .filter(isOrr)
+      .slice()
+      .sort((a, b) => a.createdAt - b.createdAt)
+      .map((lead) => ({
+        id: lead.id,
+        leadRef: leadRefFor(lead.id, lead.leadRef),
+        leadType: leadTypeOf(lead.createdAt, lead.displayStatus),
+        sourceLabel: sourceLabelOf(lead.leadSource),
+        queueStatus: lead.waiting
+          ? ('waiting' as const)
+          : lead.assignedTo
+            ? lead.displayStatus === 'callback_booked' || lead.displayStatus === 'urgent_callback'
+              ? ('held_callback' as const)
+              : ('claimed' as const)
+            : ('ready' as const),
+        callsToday: lead.dayDials,
+        callsTotal: lead.dials,
+        chaseDay: Math.max(1, lead.followUpDay),
+        ageLabel: formatClock(Math.round((now - lead.createdAt) / 1000)),
+        assignedAgentName: lead.assignedTo ? getAgent(lead.assignedTo).name : null,
+        nextReleaseLabel: lead.assignedTo
+          ? '—'
+          : lead.waiting && lead.eligibleAt
+            ? formatEligible(lead.eligibleAt)
+            : 'Now',
+      }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveLeads, tick]);
+
+  const capacityRows = useMemo<CapacityRow[]>(() => {
+    const now = Date.now();
+    return DUMMY_AGENTS.slice(0, agentCount).map((agent) => {
+      const usedSlots = effectiveLeads.filter(
+        (l) => l.assignedTo === agent.id && !isWorked(l) && isHeldLive(l, now),
+      ).length;
+      const onBreak = breakAgentIds.includes(agent.id);
+      const blocked = blockedIds.includes(agent.id);
+      const noSale = noSaleBlocks.find((r) => r.agentId === agent.id);
+      const heldNoSale = !!noSale && noSale.blockedDays > 0;
+      const onCall = effectiveLeads.some((l) => l.assignedTo === agent.id && l.dialedThisOffer && !isWorked(l));
+      return {
+        id: agent.id,
+        name: agent.name,
+        usedSlots,
+        maxSlots: DEFAULT_MAX_UNWORKED_PER_AGENT,
+        state: blocked
+          ? ('blocked' as const)
+          : heldNoSale
+            ? ('held_no_sale' as const)
+            : onBreak
+              ? ('on_break' as const)
+              : onCall
+                ? ('on_call' as const)
+                : ('available' as const),
+        note: heldNoSale ? noSale?.reason : undefined,
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agentCount, effectiveLeads, breakAgentIds, blockedIds, noSaleBlocks, tick]);
+
+  const performanceRows = useMemo(() => {
+    const now = Date.now();
+    return DUMMY_AGENTS.slice(0, agentCount).map((agent) => {
+      const mine = effectiveLeads.filter((l) => l.assignedTo === agent.id);
+      return {
+        name: agent.name,
+        claimed: mine.length,
+        contacted: mine.filter((l) => l.contactedAt).length,
+        dials: mine.reduce((sum, l) => sum + l.dials, 0),
+        unworked: mine.filter((l) => !isWorked(l) && isHeldLive(l, now)).length,
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agentCount, effectiveLeads, tick]);
+
+  const auditEntries = useMemo(
+    () =>
+      effectiveLeads
+        .slice()
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .flatMap((lead) =>
+          lead.history
+            .slice()
+            .reverse()
+            .map((text) => ({ leadRef: leadRefFor(lead.id, lead.leadRef), text })),
+        ),
+    [effectiveLeads],
+  );
+
   const rosterLeads = useMemo(() => {
     if (!isLive && !isManagerView) {
       // Agent view: tabs over the agent's own leads plus the shared opportunity.
