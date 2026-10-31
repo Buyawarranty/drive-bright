@@ -9,6 +9,7 @@ interface MileageWithMotInputProps {
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
+  onValidationChange?: (valid: boolean, confirmedLow: boolean) => void;
   showValidation?: boolean; // show pink error state on submit
   id?: string;
   label?: string;
@@ -28,6 +29,7 @@ export const MileageWithMotInput: React.FC<MileageWithMotInputProps> = ({
   value,
   onChange,
   onBlur,
+  onValidationChange,
   showValidation = false,
   id = 'mileage',
   label = "What's your approximate mileage today?",
@@ -67,6 +69,9 @@ export const MileageWithMotInput: React.FC<MileageWithMotInputProps> = ({
   const isFourDigit = entered >= 1000 && entered < 10000;
   const validValue =
     entered >= 10000 || (isFourDigit && confirmedLow);
+  useEffect(() => {
+    onValidationChange?.(validValue && !overLimit && numericMot <= 150000, confirmedLow);
+  }, [validValue, overLimit, numericMot, confirmedLow, onValidationChange]);
   const showMotWarning =
     !warningDismissed &&
     numericMot > 0 &&
