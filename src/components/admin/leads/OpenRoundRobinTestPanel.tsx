@@ -2810,7 +2810,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
                 <tr>
                   <th className="px-2 py-2 text-center w-11">#</th>
                   <th className="px-2 py-2 text-left w-9"></th>
-                  <th className="px-2 py-2 text-left">Lead Ref</th>
+                  <th className="px-2 py-2 text-left">Lead Ref (Reg)</th>
                   <th className="px-2 py-2 text-left">Lead type</th>
                   <th className="px-2 py-2 text-left">Agent</th>
                   {showSourceColumn && <th className="px-2 py-2 text-center">Src</th>}
@@ -3121,14 +3121,11 @@ export const OpenRoundRobinTestPanel: React.FC<{
                         {detailsHidden ? <span>Hidden</span> : <CopyEmail email={lead.email} />}
                       </td>
                       <td className="px-2 py-2">
-                        {detailsHidden ? (
-                          <span className="text-xs text-muted-foreground">Hidden</span>
-                        ) : (
                         <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
-                          {lead.vehicleReg}
+                          {lead.vehicleReg || '—'}
                         </span>
-                        )}
                       </td>
+
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
                         {isLive ? (
                           lead.isPaid ? (
