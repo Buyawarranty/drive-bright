@@ -1497,10 +1497,15 @@ export const OpenRoundRobinTestPanel: React.FC<{
     const now = Date.now();
     setLeads((current) => {
       const activeRoster = rosterRef.current;
-      const owner =
+      // RR leads go to the agent being viewed (even if held out of ORR), so the
+      // new row always appears in that view; otherwise rotate over the roster.
+      const ownerId: string | null =
         simulatedAgentId !== 'all'
-          ? activeRoster.find((agent) => agent.id === simulatedAgentId) ?? activeRoster[0]
-          : activeRoster[current.filter((lead) => (lead.source ?? 'orr') === 'rr').length % activeRoster.length];
+          ? simulatedAgentId
+          : activeRoster.length
+            ? activeRoster[current.filter((lead) => (lead.source ?? 'orr') === 'rr').length % activeRoster.length].id
+            : null;
+      const owner = ownerId ? { id: ownerId } : null;
       const leadNumber = current.length + 1;
       const draft: DummyLead = {
         id: `dummy-rr-${now}-${Math.random().toString(36).slice(2, 7)}`,
