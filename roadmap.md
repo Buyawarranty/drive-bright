@@ -3,7 +3,9 @@
 ## Bing verification + 31 Oct publish
 - [x] Full site publish requested by user on 31 Oct 2026 and confirmed serving on drive-bright.lovable.app (Bing verification meta tag present, correct title). Pre-publish scan: info/warn only, no criticals; no blog drafts pending.
 - [x] Bing records read for https://buyawarranty.co.uk/ through the connected account: site listed, not yet verified; meta-tag code and DNS verification code both returned.
-- [ ] buyawarranty.co.uk is NOT served by Lovable: it resolves to Hostinger (A 77.37.83.235 / 77.37.53.248, nameservers ns1/ns2.dns-parking.com, SOA dns.hostinger.com) and its live copy carries no Bing tag, so publishing this project cannot verify the real domain. Verification route chosen by user: add Bing's DNS CNAME at Hostinger (name = DNS verification code label, target verify.bing.com), then click Verify in Bing. Awaiting user's DNS change; record live-ness to be re-checked on request.
+- [x] Bing XML verification file placed in the website root (public/BingSiteAuth.xml, user code 00D53323EA471A8451D6CD58B51D4911); preview serves it at /BingSiteAuth.xml as text/xml.
+- [ ] buyawarranty.co.uk is NOT served by this project: it resolves to Hostinger (A 77.37.83.235 / 77.37.53.248, nameservers ns1/ns2.dns-parking.com, SOA dns.hostinger.com) and runs an older copy of the same app (no Bing tag; /BingSiteAuth.xml returns the homepage HTML fallback, not the file). So neither the meta tag nor the XML file can verify that address from here. Verification needs one of: upload Bing's file to the Hostinger copy, connect buyawarranty.co.uk to this project and publish, or add Bing's DNS CNAME (name 12ca958e211cf5a4350095559701d33f, value verify.bing.com) at Hostinger — DNS-only, no server access needed. Awaiting user's choice.
+
 
 
 ## Lead-source permission — 31 October 2026
