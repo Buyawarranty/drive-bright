@@ -1,5 +1,9 @@
 # Roadmap
 
+## Separate ORR practice screens — 31 October 2026
+- [ ] Separate sales agent working screen from manager controls, retaining existing columns and the shared practice run.
+- [ ] Run practice regression checks and verify available preview signals; no publication or live activation.
+
 ## ORR sandbox new dashboard design — 31 October 2026
 - [x] User supplied new design mockup (agent working screen + manager queue & control); plan approved. All existing New Leads columns retained in the working table.
 - [x] Built practice-only: capacity-matched controlled release (src/lib/orrPractice/capacityRelease.ts — release only enough leads to match available agents × free slots, max 2 unworked each, top-ups as capacity frees, backlog waits), synthetic Lead Refs + lead-type badges (leadBadges.ts), agent Next Available Opportunity card with details hidden until claimed (OrrNextOpportunityCard.tsx), manager stat cards / slim queue table with Assign / Agent Capacity panel with On Break toggle / Release Schedule / Performance / Audit Log tabs (OrrManagerControl.tsx), agent tabs My Leads / All Leads / Callbacks / Follow-ups with masked unclaimed details.

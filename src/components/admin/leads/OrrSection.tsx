@@ -32,6 +32,7 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean;
   const [teamSelectionOverride, setTeamSelectionOverride] = React.useState<string[] | null>(null);
   const [sandboxOpen, setSandboxOpen] = React.useState(true);
   const [livePreviewOpen, setLivePreviewOpen] = React.useState(false);
+  const [setupOpen, setSetupOpen] = React.useState(false);
   const [view, setView] = React.useState<'manager' | 'agent'>('manager');
   const agentView = showViewToggle && view === 'agent';
 
@@ -166,6 +167,13 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean;
 
       {/* 1. Setup ------------------------------------------------------- */}
       {!agentView && <>
+      {sandboxTab && (
+        <Button variant="outline" aria-expanded={setupOpen} onClick={() => setSetupOpen(open => !open)}>
+          <Rocket className="h-4 w-4" /> {setupOpen ? 'Hide setup and live preview' : 'Show setup and live preview'}
+          <ChevronDown className={cn('h-4 w-4 transition-transform', setupOpen && 'rotate-180')} />
+        </Button>
+      )}
+      {(!sandboxTab || setupOpen) && <>
       <div className="rounded-lg border border-border bg-card shadow-sm p-4 space-y-4">
         <div className="flex items-center gap-2">
           <Rocket className="h-4 w-4 text-primary" />
@@ -229,6 +237,7 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean;
       </div>
 
       {/* 3. Sandbox ----------------------------------------------------- */}
+      </>}
       </>}
       <div className="rounded-lg border-2 border-amber-400 bg-amber-50/60 overflow-hidden">
         <button
