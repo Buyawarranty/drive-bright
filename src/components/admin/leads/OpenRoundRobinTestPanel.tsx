@@ -976,6 +976,51 @@ export const OpenRoundRobinTestPanel: React.FC<{
         nextAgentIndexRef.current = result.index;
         return result.leads;
       });
+
+      // Capacity top-up: once the morning release has run, freed slots pull
+      // more leads out of the parked backlog (a couple at a time).
+      if (morningReleasedAtRef.current && overnightParkedRef.current > 0) {
+        const current = leadsRef.current;
+        const activeRoster = rosterRef.current;
+        const heldCounts = new Map<string, number>();
+        for (const lead of current) {
+          if (isHeldLive(lead, now)) {
+            heldCounts.set(lead.assignedTo as string, (heldCounts.get(lead.assignedTo as string) ?? 0) + 1);
+          }
+        }
+        const plan = planCapacityRelease({
+          backlog: Math.min(overnightParkedRef.current, 2),
+          agents: activeRoster.map((a) => ({ id: a.id, eligible: true, unworkedClaimed: heldCounts.get(a.id) ?? 0 })),
+          maxUnworkedPerAgent: DEFAULT_MAX_UNWORKED_PER_AGENT,
+        });
+        if (plan.releaseCount > 0) {
+          const drafts: DummyLead[] = Array.from({ length: plan.releaseCount }, (_, i) => ({
+            id: `dummy-orr-topup-${now}-${i}`,
+            leadRef: nextLeadRef(),
+            firstName: 'TEST',
+            lastName: `Backlog ${String(i + 1).padStart(2, '0')}`,
+            email: `backlog.lead${i + 1}@example.com`,
+            status: 'queued' as const,
+            displayStatus: 'new' as const,
+            assignedTo: null,
+            attemptCount: 0,
+            deadlineAt: now,
+            vehicleReg: 'TEST123',
+            phone: '07902222222',
+            createdAt: now - 6 * 60 * 60 * 1000,
+            dials: 0,
+            contactedAt: null,
+            dayDials: 0,
+            nextCallAt: null,
+            greenTeamAt: null,
+            followUpDay: 0,
+            chaseComplete: false,
+            history: ['Released from the overnight backlog as capacity freed up'],
+          }));
+          setLeads((prev) => [...drafts, ...prev]);
+          setOvernightParked((n) => Math.max(0, n - plan.releaseCount));
+        }
+      }
     }, 1000);
     return () => window.clearInterval(clock);
   }, [isLive]);
@@ -1604,6 +1649,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
     const now = Date.now();
     const drafts: DummyLead[] = liveLeads.map((lead) => ({
       id: `live-orr-${lead.id}`,
+      leadRef: nextLeadRef(),
       firstName: lead.firstName || 'Customer',
       lastName: lead.lastName || '',
       email: lead.email,
@@ -1647,6 +1693,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
       const { n, ...rest } = over;
       return {
         id: `dummy-scenario-${now}-${n}-${Math.random().toString(36).slice(2, 7)}`,
+        leadRef: nextLeadRef(),
         firstName: 'TEST',
         lastName: `Lead ${String(n).padStart(2, '0')}`,
         email: `test.lead${n}@example.com`,
@@ -1693,6 +1740,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
       const leadNumber = current.length + 1;
       const draft: DummyLead = {
         id: `dummy-rr-${now}-${Math.random().toString(36).slice(2, 7)}`,
+        leadRef: nextLeadRef(),
         firstName: 'TEST',
         lastName: `RR Lead ${String(leadNumber).padStart(2, '0')}`,
         email: `test.rr${leadNumber}@example.com`,
