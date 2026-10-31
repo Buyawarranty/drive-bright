@@ -3222,6 +3222,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
 
         </div>
       </section>
+      )}
     </div>
   );
 
