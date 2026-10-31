@@ -133,6 +133,10 @@ interface DummyAgent {
   name: string;
   extension: string;
   order: number;
+  /** Fake sale history for rehearsing the no-sale block ladder. */
+  startedAt: number;
+  lastSaleAt: number | null;
+  daysOff?: string[];
 }
 
 interface DummyLead {
@@ -224,15 +228,20 @@ const nextCallWindow = (from: number, cfg: OrrCadenceConfig) => {
 };
 
 
+// Fake sale history so the no-sale block ladder can be rehearsed: Thomas is
+// three sale-free working days in (held out, flagged for review), Liam is a
+// new starter inside his grace period, everyone else sold recently.
+const DAY_MS = 24 * 60 * 60 * 1000;
+const dummyNow = Date.now();
 const DUMMY_AGENTS: DummyAgent[] = [
-  { id: 'dummy-james', name: 'James Reed', extension: '201', order: 1 },
-  { id: 'dummy-freddie', name: 'Freddie', extension: '202', order: 2 },
-  { id: 'dummy-thomas', name: 'Thomas', extension: '203', order: 3 },
-  { id: 'dummy-greg', name: 'Greg sales@', extension: '205', order: 4 },
-  { id: 'dummy-aisha', name: 'Aisha', extension: '206', order: 5 },
-  { id: 'dummy-liam', name: 'Liam', extension: '207', order: 6 },
-  { id: 'dummy-chloe', name: 'Chloe', extension: '208', order: 7 },
-  { id: 'dummy-mo', name: 'Mo', extension: '209', order: 8 },
+  { id: 'dummy-james', name: 'James Reed', extension: '201', order: 1, startedAt: dummyNow - 400 * DAY_MS, lastSaleAt: dummyNow - DAY_MS },
+  { id: 'dummy-freddie', name: 'Freddie', extension: '202', order: 2, startedAt: dummyNow - 300 * DAY_MS, lastSaleAt: dummyNow - 2 * DAY_MS },
+  { id: 'dummy-thomas', name: 'Thomas', extension: '203', order: 3, startedAt: dummyNow - 200 * DAY_MS, lastSaleAt: dummyNow - 5 * DAY_MS },
+  { id: 'dummy-greg', name: 'Greg sales@', extension: '205', order: 4, startedAt: dummyNow - 500 * DAY_MS, lastSaleAt: dummyNow - DAY_MS },
+  { id: 'dummy-aisha', name: 'Aisha', extension: '206', order: 5, startedAt: dummyNow - 100 * DAY_MS, lastSaleAt: dummyNow - 2 * DAY_MS },
+  { id: 'dummy-liam', name: 'Liam', extension: '207', order: 6, startedAt: dummyNow - 5 * DAY_MS, lastSaleAt: null },
+  { id: 'dummy-chloe', name: 'Chloe', extension: '208', order: 7, startedAt: dummyNow - 250 * DAY_MS, lastSaleAt: dummyNow - DAY_MS },
+  { id: 'dummy-mo', name: 'Mo', extension: '209', order: 8, startedAt: dummyNow - 180 * DAY_MS, lastSaleAt: dummyNow - 3 * DAY_MS },
 ];
 
 const AGENT_COUNT_OPTIONS = [1, 2, 3, 4, 6, 8];
@@ -676,9 +685,22 @@ export const OpenRoundRobinTestPanel: React.FC<{
   const [agentCount, setAgentCount] = useState(2);
   // Staff a manager has blocked from ORR are skipped by the rotation.
   const [blockedIds, setBlockedIds] = useState<string[]>([]);
+  // Agents held out by the no-sale block ladder (fake sale history above).
+  const noSaleBlocks = useMemo(
+    () =>
+      DUMMY_AGENTS.slice(0, agentCount).map((a) =>
+        noSaleBlockStatus(a, Date.now(), {
+          noSaleBlockEnabled: cadence.noSaleBlockEnabled,
+          newStarterGraceDays: cadence.newStarterGraceDays,
+          maxNoSaleBlockDays: cadence.maxNoSaleBlockDays,
+        }),
+      ),
+    [agentCount, cadence.noSaleBlockEnabled, cadence.newStarterGraceDays, cadence.maxNoSaleBlockDays],
+  );
+  const noSaleBlockedIdList = useMemo(() => noSaleBlocks.filter((r) => r.blockedDays > 0).map((r) => r.agentId), [noSaleBlocks]);
   const roster = useMemo(
-    () => allowedOrrStaff(DUMMY_AGENTS.slice(0, agentCount), blockedIds),
-    [agentCount, blockedIds],
+    () => allowedOrrStaff(DUMMY_AGENTS.slice(0, agentCount), [...blockedIds, ...noSaleBlockedIdList]),
+    [agentCount, blockedIds, noSaleBlockedIdList],
   );
   const rosterRef = useRef(roster);
   useEffect(() => {
