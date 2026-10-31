@@ -1,5 +1,11 @@
 # Roadmap
 
+## Bing verification + 31 Oct publish
+- [x] Full site publish requested by user on 31 Oct 2026 and confirmed serving on drive-bright.lovable.app (Bing verification meta tag present, correct title). Pre-publish scan: info/warn only, no criticals; no blog drafts pending.
+- [x] Bing records read for https://buyawarranty.co.uk/ through the connected account: site listed, not yet verified; meta-tag code and DNS verification code both returned.
+- [ ] buyawarranty.co.uk is NOT served by Lovable: it resolves to Hostinger (A 77.37.83.235 / 77.37.53.248, nameservers ns1/ns2.dns-parking.com, SOA dns.hostinger.com) and its live copy carries no Bing tag, so publishing this project cannot verify the real domain. Verification route chosen by user: add Bing's DNS CNAME at Hostinger (name = DNS verification code label, target verify.bing.com), then click Verify in Bing. Awaiting user's DNS change; record live-ness to be re-checked on request.
+
+
 ## Lead-source permission — 31 October 2026
 - [x] Latest rule applied server-side and in display: ADS@/SEO@ source defaults, every sales role denied regardless of grants; exports and ownership unchanged. Eighteen tests pass, preview build OK. ADS@ is active; no SEO@ staff account currently exists, but future matching accounts inherit the rule. No publication.
 - [x] Lead source is a separate On/Off switch in Edit user permissions. Protected scoped grant controls New Leads, Recontacted Leads and Customer Management; removed conflicting legacy controls and display restrictions without widening record access.
@@ -39,7 +45,7 @@
 - [x] Live browser verifies search title/description, self-referencing canonical, followed links, original inline image, footer and five-question schema. Database HTML and schema exactly match staged article source. Seven targeted tests pass; preview build OK.
 - [x] Author byline added: article now credits David Yash at the bottom with his "Automotive Specialist" label and bio card, matching every other recent article. His name also replaced the company name in that article's own search-engine author markup and page details. Verified in the browser and in the page's structured data; staged article source updated to match.
 
-- [ ] Crawler-readable static article, static metadata and sitemap remain staged: a website publish would also release unrelated held changes, which the user expressly declined. Live raw HTML still serves homepage fallback. Article-only hero uncropping/schema fidelity improvements also remain staged; original inline image is intact live. No whole-site publish requested.
+- [x] Whole-site publish requested and completed 31 Oct 2026 to drive-bright.lovable.app; staged crawler article, metadata and sitemap shipped there. [ ] buyawarranty.co.uk itself still resolves to Hostinger and serves a copy without the Lovable build, so the crawler article is not yet live on the real domain — connect the domain to Lovable or update the Hostinger copy.
 
 ## Concise customer quote email
 - [x] Removed inaccurate claims hours and authored dash punctuation in shared HTML and both text alternatives; shortened cover copy, moved clickable quote link and CTA above details, preserved sender and delivery logic.
