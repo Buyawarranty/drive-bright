@@ -196,26 +196,36 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean;
 
 
 
-      {/* 2. Live status ------------------------------------------------- */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">Open Round Robin pool status</h3>
-        <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
-          {orrLive === true ? (
-            <>
-              <li>Live figures — running a pass here updates real CRM assignments.</li>
-              <li>Only use this when you are ready to hand out leads for real.</li>
-            </>
-          ) : (
-            <>
-              <li>Read-only while Open Round Robin is not live.</li>
-              <li>No real lead is handed out or pulled back.</li>
-            </>
-          )}
-        </ul>
-        <WidgetErrorBoundary label="Open Round Robin pool status">
-          {/* Same panel as the sandbox, fed by real leads — one shared codebase. */}
-          <OpenRoundRobinTestPanel mode="live" canWrite={isManagement && orrLive === true} />
-        </WidgetErrorBoundary>
+      {/* 2. Live status — collapsed behind a toggle so the practice sandbox
+             stays the main thing on screen. --------------------------- */}
+      <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setLivePreviewOpen(o => !o)}
+          aria-expanded={livePreviewOpen}
+          className="w-full flex items-center justify-between gap-3 text-left px-4 py-3 hover:bg-muted/50 transition-colors"
+        >
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-foreground">Open Round Robin pool status — live preview</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {orrLive === true
+                ? 'Live figures — running a pass here updates real CRM assignments.'
+                : 'Read-only mirror of real leads while Open Round Robin is not live. No real lead is handed out or pulled back.'}
+            </p>
+          </div>
+          <span className="shrink-0 inline-flex items-center gap-1 text-xs font-medium text-primary">
+            {livePreviewOpen ? 'Hide live preview' : 'Show live preview'}
+            <ChevronDown className={cn('h-4 w-4 transition-transform', livePreviewOpen && 'rotate-180')} />
+          </span>
+        </button>
+        {livePreviewOpen && (
+          <div className="border-t border-border p-4">
+            <WidgetErrorBoundary label="Open Round Robin pool status">
+              {/* Same panel as the sandbox, fed by real leads — one shared codebase. */}
+              <OpenRoundRobinTestPanel mode="live" canWrite={isManagement && orrLive === true} />
+            </WidgetErrorBoundary>
+          </div>
+        )}
       </div>
 
       {/* 3. Sandbox ----------------------------------------------------- */}
