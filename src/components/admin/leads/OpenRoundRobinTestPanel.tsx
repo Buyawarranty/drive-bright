@@ -716,6 +716,10 @@ export const OpenRoundRobinTestPanel: React.FC<{
   const { toast } = useToast();
   const [leads, setLeads] = useState<DummyLead[]>([]);
   const nextAgentIndexRef = useRef(0);
+  const leadsRef = useRef<DummyLead[]>([]);
+  useEffect(() => {
+    leadsRef.current = leads;
+  }, [leads]);
   const [simulatedAgentId, setSimulatedAgentId] = useState<string>('all');
   const [roleView, setRoleView] = useState<'manager' | 'agent'>('manager');
   const [showSourceColumn, setShowSourceColumn] = useState(true);
@@ -728,6 +732,8 @@ export const OpenRoundRobinTestPanel: React.FC<{
   const [cadence, setCadence] = useState<OrrCadenceConfig>(DEFAULT_ORR_CADENCE);
   // Staff a manager has blocked from ORR are skipped by the rotation.
   const [blockedIds, setBlockedIds] = useState<string[]>([]);
+  // Practice break toggle (corrected availability rules) — agents on break get no offers.
+  const [breakAgentIds, setBreakAgentIds] = useState<string[]>([]);
   // Agents held out by the no-sale block ladder (fake sale history above).
   const noSaleBlocks = useMemo(
     () =>
