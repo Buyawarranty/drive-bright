@@ -17,6 +17,7 @@ import { isAnalyticsBlocked, isCompanySalesValueTabBlocked, canAccessSeoAudit, c
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { sessionCheckLooksEnded } from '@/lib/staffGateState';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
