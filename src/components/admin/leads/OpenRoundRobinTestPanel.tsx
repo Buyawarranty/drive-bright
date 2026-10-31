@@ -3126,6 +3126,17 @@ export const OpenRoundRobinTestPanel: React.FC<{
                         </div>
                         )}
                       </td>
+                      <td className="px-2 py-2">
+                        {detailsHidden ? (
+                          <span className="text-xs text-muted-foreground">Hidden</span>
+                        ) : isLive ? (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        ) : (
+                          <span className="inline-flex items-center rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 whitespace-nowrap">
+                            Open pot
+                          </span>
+                        )}
+                      </td>
                       <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
                         {detailsHidden ? <span>Hidden</span> : <CopyEmail email={lead.email} />}
                       </td>
