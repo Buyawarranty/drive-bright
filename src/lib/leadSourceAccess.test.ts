@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canDisplayLeadSource, hasDefaultLeadSourceAccess } from './leadSourceAccess';
+import { canDisplayLeadSource, canDisplayOrrSource, hasDefaultLeadSourceAccess } from './leadSourceAccess';
 
 describe('Lead source permission', () => {
   it('shows sources when the protected permission is on', () => {

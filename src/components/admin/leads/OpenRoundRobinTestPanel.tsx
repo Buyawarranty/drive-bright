@@ -38,6 +38,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useSandboxLiveLeads } from '@/hooks/useSandboxLiveLeads';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useExportPermissions } from '@/hooks/useExportPermissions';
+import { canDisplayOrrSource } from '@/lib/leadSourceAccess';
 import { supabase } from '@/integrations/supabase/client';
 import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
 import { cn } from '@/lib/utils';
