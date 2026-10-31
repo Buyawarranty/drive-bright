@@ -765,6 +765,16 @@ export const OpenRoundRobinTestPanel: React.FC<{
 
 
   const [tick, setTick] = useState(0);
+  // Overnight backlog parked for the controlled 09:00 release (declared early —
+  // the manager stat cards and the top-up sweep both read it).
+  const [overnightParked, setOvernightParked] = useState(12);
+  const [morningReleasedAt, setMorningReleasedAt] = useState<Date | null>(null);
+  const overnightParkedRef = useRef(overnightParked);
+  const morningReleasedAtRef = useRef<Date | null>(null);
+  useEffect(() => {
+    overnightParkedRef.current = overnightParked;
+    morningReleasedAtRef.current = morningReleasedAt;
+  }, [overnightParked, morningReleasedAt]);
   // 'practice' = made-up TEST leads. 'live' = a READ-ONLY copy of the leads we
   // really received, so ORR can be proven against real-world data while it is
   // still switched off. Live mode never writes: New Leads stays untouched.
@@ -1331,15 +1341,6 @@ export const OpenRoundRobinTestPanel: React.FC<{
    * and released into this same flow at 09:00. From then on the day continues as
    * normal — same table, same columns, same rules.
    */
-  const [overnightParked, setOvernightParked] = useState(12);
-  const [morningReleasedAt, setMorningReleasedAt] = useState<Date | null>(null);
-  const overnightParkedRef = useRef(overnightParked);
-  const morningReleasedAtRef = useRef<Date | null>(null);
-  useEffect(() => {
-    overnightParkedRef.current = overnightParked;
-    morningReleasedAtRef.current = morningReleasedAt;
-  }, [overnightParked, morningReleasedAt]);
-
   /**
    * Controlled 09:00 release: only enough leads to match the team's free slots
    * (available agents × up to 2 unworked each) enter the flow. The rest of the
@@ -3061,6 +3062,9 @@ export const OpenRoundRobinTestPanel: React.FC<{
                         </div>
                       </td>
                       <td className="px-2 py-2">
+                        {detailsHidden ? (
+                          <span className="text-[11px] text-muted-foreground whitespace-nowrap">Claim to work this lead</span>
+                        ) : (
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
                           <a href={`tel:${lead.phone}`} title="Call" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
                             <Phone className="h-3.5 w-3.5" />
@@ -3091,11 +3095,21 @@ export const OpenRoundRobinTestPanel: React.FC<{
                             <ChevronDown className="h-3.5 w-3.5" />
                           </span>
                         </div>
+                        )}
                       </td>
                       <td className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
-                        {lead.firstName} {lead.lastName}
+                        {detailsHidden ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                            <Lock className="h-3 w-3" /> Hidden until claimed
+                          </span>
+                        ) : (
+                          <>{lead.firstName} {lead.lastName}</>
+                        )}
                       </td>
                       <td className="px-2 py-2">
+                        {detailsHidden ? (
+                          <span className="text-xs text-muted-foreground">••• ••• •••</span>
+                        ) : (
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
                           <span className="h-5 w-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center">Z</span>
                           <a
@@ -3109,14 +3123,19 @@ export const OpenRoundRobinTestPanel: React.FC<{
                           </button>
                           <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
+                        )}
                       </td>
                       <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                        <CopyEmail email={lead.email} />
+                        {detailsHidden ? <span>Hidden</span> : <CopyEmail email={lead.email} />}
                       </td>
                       <td className="px-2 py-2">
+                        {detailsHidden ? (
+                          <span className="text-xs text-muted-foreground">Hidden</span>
+                        ) : (
                         <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
                           {lead.vehicleReg}
                         </span>
+                        )}
                       </td>
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
                         {isLive ? (
