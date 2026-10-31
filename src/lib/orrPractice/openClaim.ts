@@ -1,6 +1,7 @@
 import type { PracticeAgent, PracticeLead } from './types';
 import type { OrrPracticeSettings } from './settings';
 import { claimLead, type ClaimResult } from './engine';
+import { canBeOfferedLeads, AVAILABLE_STATE } from './availability';
 
 /**
  * Phase 1: Open Claim, rehearsed on made-up leads in the browser only.
@@ -70,6 +71,10 @@ export const openClaim = (
 ): ClaimResult => {
   if (!canClaim(role)) {
     return { leads, agents, notes: ['Only sales seats can take leads from the pool'] };
+  }
+  const claimer = agents.find(a => a.id === agentId);
+  if (claimer && !canBeOfferedLeads(claimer.availability ?? AVAILABLE_STATE)) {
+    return { leads, agents, notes: ['New leads are only offered while you are available — not on a call, on break or offline'] };
   }
   const visible = openClaimCards(leads, at).some(c => c.leadId === leadId);
   if (!visible) {

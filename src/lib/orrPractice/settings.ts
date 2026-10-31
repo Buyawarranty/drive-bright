@@ -46,6 +46,10 @@ export interface OrrPracticeSettings {
   newStarterGraceDays: number;
   /** Cap on the no-sale block ladder (1 day out per sale-free day, up to this). */
   maxNoSaleBlockDays: number;
+  /** Minutes of break before unworked claimed leads return to the queue (no penalty). */
+  breakGraceMinutes: number;
+  /** Verified inactivity events in 5 days that flag a manager review. */
+  inactivityReviewThreshold: number;
 }
 
 const weekdayWindow = (day: number): ContactWindow => ({ day, startHour: 9, endHour: 18 });
@@ -74,6 +78,8 @@ export const DEFAULT_ORR_PRACTICE_SETTINGS: OrrPracticeSettings = {
   noSaleBlockEnabled: true,
   newStarterGraceDays: 14,
   maxNoSaleBlockDays: 3,
+  breakGraceMinutes: 60,
+  inactivityReviewThreshold: 3,
 };
 
 /** Intervals management can pick from for the re-release review. */
@@ -102,6 +108,8 @@ export const sanitiseSettings = (input: Partial<OrrPracticeSettings>): OrrPracti
   noSaleBlockEnabled: input.noSaleBlockEnabled !== false,
   newStarterGraceDays: clamp(Number(input.newStarterGraceDays ?? 14), 0, 60),
   maxNoSaleBlockDays: clamp(Number(input.maxNoSaleBlockDays ?? 3), 1, 7),
+  breakGraceMinutes: clamp(Number(input.breakGraceMinutes ?? 60), 5, 480),
+  inactivityReviewThreshold: clamp(Number(input.inactivityReviewThreshold ?? 3), 2, 20),
   contactWindows: Array.isArray(input.contactWindows) && input.contactWindows.length
     ? input.contactWindows
         .map(w => ({

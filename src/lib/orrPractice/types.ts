@@ -125,6 +125,11 @@ export interface PracticeAgent {
   /** Practice leads already given to them today. */
   usedToday: number;
   available: boolean;
+  /**
+   * Corrected availability rule (31 Oct 2026): set by the phone system or by
+   * the agent. Only 'available' agents are offered or may claim new leads.
+   */
+  availability?: import('./availability').AvailabilityState;
 }
 
 /** Result of one engine step, so the panel can explain what moved and why. */

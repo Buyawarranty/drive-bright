@@ -56,6 +56,10 @@ export interface OrrCadenceConfig {
   newStarterGraceDays: number;
   /** Cap on the no-sale block ladder (1 day out per sale-free day, up to this). */
   maxNoSaleBlockDays: number;
+  /** Minutes of break before unworked claimed leads return to the queue (no penalty). */
+  breakGraceMinutes: number;
+  /** Verified inactivity events in 5 days that flag a manager review. */
+  inactivityReviewThreshold: number;
 }
 
 export const DEFAULT_ORR_CADENCE: OrrCadenceConfig = {
@@ -80,6 +84,8 @@ export const DEFAULT_ORR_CADENCE: OrrCadenceConfig = {
   noSaleBlockEnabled: true,
   newStarterGraceDays: 14,
   maxNoSaleBlockDays: 3,
+  breakGraceMinutes: 60,
+  inactivityReviewThreshold: 3,
 };
 
 const NumberField = ({
@@ -300,6 +306,41 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
                 />
               </div>
             )}
+          </div>
+
+          {/* Availability & inactivity rules */}
+          <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Clock className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground">Availability &amp; inactivity rules</span>
+              <Badge variant="outline" className="text-[10px]">No penalties for not claiming</Badge>
+            </div>
+            <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-1">
+              <li>Claiming is voluntary — an agent who does not click Claim never receives an inactivity strike.</li>
+              <li>When the phone system shows an active call, the agent is set to Busy: no new leads offered, claim timers pause, no strikes. Their previous status returns when the call ends, unless they chose Break or Offline.</li>
+              <li>On Break: no claim opportunities and no allocations. Unworked claimed leads return to the queue after the grace period below — with no penalty. Ownership and scheduled callbacks are preserved.</li>
+              <li>An inactivity event is only recorded when the agent deliberately claimed the lead, was available, did nothing in the allowed period, and was not on a call, break, legitimate exception or hit by a technical failure.</li>
+              <li>One event recycles the lead — never an automatic block. Repeated verified neglect flags a manager review and can restrict new claims.</li>
+              <li>When real phone status is unavailable, nobody is assumed idle — a manual Busy status and manager corrections are allowed.</li>
+            </ul>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <NumberField
+                label="Break grace (minutes)"
+                hint="Break length before unworked claimed leads return to the queue"
+                value={config.breakGraceMinutes}
+                min={5}
+                max={480}
+                onChange={(n) => set('breakGraceMinutes', n)}
+              />
+              <NumberField
+                label="Events before manager review"
+                hint="Verified inactivity events in 5 days that flag a review"
+                value={config.inactivityReviewThreshold}
+                min={2}
+                max={20}
+                onChange={(n) => set('inactivityReviewThreshold', n)}
+              />
+            </div>
           </div>
 
           {/* Self-assign rule */}
