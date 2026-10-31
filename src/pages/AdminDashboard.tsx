@@ -624,8 +624,13 @@ const AdminDashboard = () => {
           window.location.href = '/auth?ended=1';
           return;
         }
-      const { data: row } = await supabase.from('admin_users').select('is_active').eq('user_id', sess.session.user.id).maybeSingle();
-      if (row && (row as any).is_active === false) setAccountDeactivated(true);
+        const { data: row } = await supabase.from('admin_users').select('is_active').eq('user_id', sess.session.user.id).maybeSingle();
+        if (row && (row as any).is_active === false) setAccountDeactivated(true);
+      } catch {
+        // Network blips never end a login; the next check tries again.
+      } finally {
+        checking = false;
+      }
     }, 60000);
     return () => window.clearInterval(id);
   }, []);
