@@ -3061,6 +3061,9 @@ export const OpenRoundRobinTestPanel: React.FC<{
                         </div>
                       </td>
                       <td className="px-2 py-2">
+                        {detailsHidden ? (
+                          <span className="text-[11px] text-muted-foreground whitespace-nowrap">Claim to work this lead</span>
+                        ) : (
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
                           <a href={`tel:${lead.phone}`} title="Call" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
                             <Phone className="h-3.5 w-3.5" />
