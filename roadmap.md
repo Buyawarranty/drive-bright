@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Separate ORR practice screens — 31 October 2026
-- [ ] Separate sales agent working screen from manager controls, retaining existing columns and the shared practice run.
-- [ ] Run practice regression checks and verify available preview signals; no publication or live activation.
+- [x] Separate sales agent working screen from manager controls, retaining existing columns and the shared practice run; manager setup/live preview collapsed separately.
+- [x] 131 practice checks and 5 view-switch access checks pass; preview build OK. No publication or live activation.
+- [ ] Signed-in screen verification unavailable because the project uses external unmanaged Supabase.
 
 ## ORR sandbox new dashboard design — 31 October 2026
 - [x] User supplied new design mockup (agent working screen + manager queue & control); plan approved. All existing New Leads columns retained in the working table.
