@@ -1046,7 +1046,7 @@ export const OpenRoundRobinTestPanel: React.FC<{
 
   // New design (31 Oct 2026): agent tabs over their own leads, manager tabs
   // across the queue, schedule, capacity, performance and audit log.
-  const [agentTab, setAgentTab] = useState<'mine' | 'all' | 'callbacks' | 'followups'>('mine');
+  const [agentTab, setAgentTab] = useState<'mine' | 'all' | 'callbacks' | 'followups'>('all');
   const [managerTab, setManagerTab] = useState<'queue' | 'all' | 'schedule' | 'capacity' | 'performance' | 'audit'>('queue');
 
   /** The single shared opportunity shown to an agent — oldest unclaimed pool lead. */
@@ -1204,8 +1204,9 @@ export const OpenRoundRobinTestPanel: React.FC<{
       if (agentTab === 'callbacks')
         return mine.filter((lead) => lead.displayStatus === 'callback_booked' || lead.displayStatus === 'urgent_callback');
       if (agentTab === 'followups') return mine.filter((lead) => lead.displayStatus === 'follow_up');
-      // 'all' — own leads plus the one shared opportunity (details hidden until claimed).
-      return nextOpportunity ? [...mine, nextOpportunity] : mine;
+      // 'all' — the same rows the Manager view shows (every assigned or queued lead).
+      // Other agents' and unclaimed leads keep customer details hidden (detailsHidden).
+      return effectiveLeads.filter((lead) => lead.assignedTo !== null || lead.status === 'queued');
     }
     return effectiveLeads.filter((lead) =>
       simulatedAgentId === 'all'
